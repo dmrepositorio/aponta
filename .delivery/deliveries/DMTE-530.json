@@ -80,6 +80,7 @@
       "EzBadge",
       "EzEntityGrid"
     ],
-    "reason": "Reaproveita EzTag (variantes green e gray, leftIcon), EzBadge (chip +N) e EzEntityGrid (último cabeçalho reserva espaço para o botão de colunas, sem prop nova); só tokens já definidos no @theme; nenhum componente ou token novo no DS."
+    "reason": "Reaproveita EzTag (variantes green e gray, leftIcon), EzBadge (chip +N) e EzEntityGrid (último cabeçalho reserva espaço para o botão de colunas, sem prop nova); só tokens já definidos no @theme; nenhum componente ou token novo no DS.",
+    "exception": "EzEntityGrid muda só o espaçamento do último cabeçalho (pr-10 quando showGridCornerMenu está ligado, que já é o padrão); sem prop, variante ou token novo, e a story EzEntityGrid.stories.tsx já exibe o botão de colunas. Coberto por EzEntityGrid.test.tsx."
   }
 }
