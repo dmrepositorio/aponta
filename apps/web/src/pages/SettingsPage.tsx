@@ -99,8 +99,8 @@ export function SettingsPage() {
         <EzCardItem flat className="p-0" role="status" aria-busy="true">
           <span className="sr-only">Carregando configurações</span>
           {[0, 1, 2].map((row) => (
-            <div key={row} className="px-4 py-2">
-              <div className="h-[var(--control-height-compact)] animate-pulse rounded-[var(--radius-control)] bg-gray-90" />
+            <div key={row} className="flex min-h-[var(--control-height-md)] items-center px-4">
+              <div className="h-4 w-1/3 animate-pulse rounded-control bg-gray-90" />
             </div>
           ))}
         </EzCardItem>

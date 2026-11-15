@@ -1,8 +1,8 @@
 {
   "version": 1,
   "phase": "green",
-  "started_at": "2026-11-15T16:34:04.842754+00:00",
-  "finished_at": "2026-11-15T16:34:16.955825+00:00",
+  "started_at": "2026-11-15T16:40:37.717189+00:00",
+  "finished_at": "2026-11-15T16:40:46.881546+00:00",
   "command": [
     "pnpm",
     "exec",
@@ -13,7 +13,7 @@
     "src/pages/SettingsPage.test.tsx"
   ],
   "base_sha": "0dfd41018d4dc589d5755aee2412ea30a210e9c0",
-  "head_sha": "9cf6768ba4e9e7dec8bc7b94e0434317e544c819",
+  "head_sha": "364d2cbff290fffbd1695358fe3b5fd64e20ebbd",
   "exit_code": 0,
   "tests": {
     "apps/web/src/pages/SettingsPage.test.tsx": "7e3f89d0294d5ab40b3e1d2c6a03804e2179976336aeec49509cc3543d7b9900"
@@ -27,8 +27,8 @@
   ],
   "source_hashes": {
     "apps/web/src/pages/SettingsPage.test.tsx": "7e3f89d0294d5ab40b3e1d2c6a03804e2179976336aeec49509cc3543d7b9900",
-    "apps/web/src/pages/SettingsPage.tsx": "bb45d095d2e89385fa70124bcf2e83f3f0fbc1f097be056b75dbd0bca5f5144a"
+    "apps/web/src/pages/SettingsPage.tsx": "f7a83555c00d088ffc4f7a5d370f6ee30776f44e7d6d386658f1e24267d3a0f3"
   },
   "log": ".delivery/evidence/DMTE-524/green.log",
-  "log_sha256": "399bb2a06e0411759a55acfabe64e3afd333646deaf240116cd438b1832203ad"
+  "log_sha256": "10cb4fedc4a4d1507da3f5b661d3c8d98af9ebb78c7c0c24f3eb0b838d621ce8"
 }
