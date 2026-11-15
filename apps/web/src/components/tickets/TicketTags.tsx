@@ -27,13 +27,15 @@ const dot = (color: string) => (
   <span data-glyph="dot" aria-hidden="true" className={`h-2 w-2 rounded-full ${color}`} />
 );
 
+const waiting = dot('bg-yellow-800');
+
 const statusGlyph: Record<TicketStatus, ReactElement> = {
   OPEN: <span data-glyph="ring" aria-hidden="true" className="h-2 w-2 rounded-full border-2 border-petroleum-500" />,
   IN_PROGRESS: dot('bg-brand-600'),
-  PENDING_CUSTOMER: dot('bg-yellow-800'),
-  ON_HOLD: dot('bg-yellow-800'),
-  PENDING_SANKHYA: dot('bg-yellow-800'),
-  PENDING_APPROVAL: dot('bg-yellow-800'),
+  PENDING_CUSTOMER: waiting,
+  ON_HOLD: waiting,
+  PENDING_SANKHYA: waiting,
+  PENDING_APPROVAL: waiting,
   ESCALATED: dot('bg-red-600'),
   RESOLVED: <Check data-glyph="check" aria-hidden="true" className="h-3 w-3 text-green-600" strokeWidth={3} />,
   CLOSED: dot('bg-gray-400'),
@@ -45,18 +47,18 @@ export function TicketStatusTag({ status }: { status: TicketStatus }) {
       data-ticket-tag="status"
       label={statusLabels[status] ?? status}
       variant="outline"
-      className={status === 'ESCALATED' ? 'text-red-800 border-red-300' : 'border-gray-200'}
+      className={`whitespace-nowrap ${status === 'ESCALATED' ? 'text-red-800 border-red-300' : 'border-gray-200'}`}
       leftIcon={statusGlyph[status]}
     />
   );
 }
 
-const barLevel: Record<TicketPriority, number> = { LOW: 1, MEDIUM: 2, HIGH: 3, CRITICAL: 4 };
-const barColor: Record<TicketPriority, string> = {
-  LOW: 'bg-gray-400',
-  MEDIUM: 'bg-gray-400',
-  HIGH: 'bg-yellow-800',
-  CRITICAL: 'bg-red-600',
+/** Por prioridade: barras acesas, cor das barras e variante da pílula (só Alta e Crítica coloridas). */
+const priorityStyle: Record<TicketPriority, { level: number; bar: string; variant: 'outline' | 'yellow' | 'red' }> = {
+  LOW: { level: 1, bar: 'bg-gray-400', variant: 'outline' },
+  MEDIUM: { level: 2, bar: 'bg-gray-400', variant: 'outline' },
+  HIGH: { level: 3, bar: 'bg-yellow-800', variant: 'yellow' },
+  CRITICAL: { level: 4, bar: 'bg-red-600', variant: 'red' },
 };
 const barHeights = ['h-1', 'h-1.5', 'h-2', 'h-2.5'];
 
@@ -70,7 +72,7 @@ export function TicketPriorityGlyph({
 }) {
   return (
     <span
-      data-glyph={`bars-${barLevel[priority]}`}
+      data-glyph={`bars-${priorityStyle[priority].level}`}
       {...(decorative
         ? { 'aria-hidden': true }
         : { role: 'img', 'aria-label': `Prioridade ${priorityLabels[priority] ?? priority}`, title: `Prioridade ${priorityLabels[priority] ?? priority}` })}
@@ -79,27 +81,20 @@ export function TicketPriorityGlyph({
       {barHeights.map((height, index) => (
         <span
           key={height}
-          className={`w-[3px] rounded-[1px] ${height} ${index < barLevel[priority] ? barColor[priority] : 'bg-gray-200'}`}
+          className={`w-[3px] rounded-[1px] ${height} ${index < priorityStyle[priority].level ? priorityStyle[priority].bar : 'bg-gray-200'}`}
         />
       ))}
     </span>
   );
 }
 
-const priorityVariant: Record<TicketPriority, 'outline' | 'yellow' | 'red'> = {
-  LOW: 'outline',
-  MEDIUM: 'outline',
-  HIGH: 'yellow',
-  CRITICAL: 'red',
-};
-
 export function TicketPriorityTag({ priority }: { priority: TicketPriority }) {
   return (
     <EzTag
       data-ticket-tag="priority"
       label={priorityLabels[priority] ?? priority}
-      variant={priorityVariant[priority]}
-      className={priorityVariant[priority] === 'outline' ? 'border-gray-200' : undefined}
+      variant={priorityStyle[priority].variant}
+      className={`whitespace-nowrap ${priorityStyle[priority].variant === 'outline' ? 'border-gray-200' : ''}`}
       leftIcon={<TicketPriorityGlyph priority={priority} decorative />}
     />
   );
