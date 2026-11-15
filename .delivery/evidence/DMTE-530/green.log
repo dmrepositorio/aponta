@@ -1,23 +1,21 @@
 
  RUN  v4.1.11 /home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-530-34119ddc6284/workdir/aponta/apps/web
 
- ✓ |web| src/components/ServiceDeskStateTags.test.tsx (3 tests) 188ms
- ✓ |web| src/components/ds/EzEntityGrid.test.tsx (54 tests) 4648ms
-     ✓ renders a header cell for each column and a row for each data entry  384ms
-     ✓ sorts rows by column when its header is clicked  308ms
- ✓ |web| src/pages/ServiceDesksPage.test.tsx (18 tests) 4700ms
-     ✓ should list existing service desks for an ADMIN user  362ms
-     ✓ should enable Excluir and Duplicar once a row is selected, and call the delete endpoint on confirmation  377ms
-     ✓ should open the create form only after clicking Incluir, and create a new service desk  361ms
-     ✓ should link a service desk to a client and save its SLA overrides  580ms
-     ✓ filters the grid by search text and status (Sankhya filter drawer)  558ms
-     ✓ filters dynamically by any column using the rule builder (Sankhya Filtros parity)  475ms
-     ✓ saves, applies, and deletes a saved filter from the drawer (Sankhya saved filters parity)  417ms
+ ✓ |web| src/components/ServiceDeskStateTags.test.tsx (3 tests) 144ms
+ ✓ |web| src/components/ds/EzEntityGrid.test.tsx (54 tests) 4557ms
+ ✓ |web| src/pages/ServiceDesksPage.test.tsx (18 tests) 4785ms
+     ✓ should list existing service desks for an ADMIN user  337ms
+     ✓ should enable Excluir and Duplicar once a row is selected, and call the delete endpoint on confirmation  403ms
+     ✓ should open the create form only after clicking Incluir, and create a new service desk  428ms
+     ✓ should link a service desk to a client and save its SLA overrides  500ms
+     ✓ filters the grid by search text and status (Sankhya filter drawer)  688ms
+     ✓ filters dynamically by any column using the rule builder (Sankhya Filtros parity)  449ms
+     ✓ saves, applies, and deletes a saved filter from the drawer (Sankhya saved filters parity)  483ms
 
  Test Files  3 passed (3)
       Tests  75 passed (75)
-   Start at  14:26:01
-   Duration  9.81s (transform 4.18s, setup 584ms, import 7.42s, tests 9.54s, environment 3.64s)
+   Start at  14:31:05
+   Duration  10.10s (transform 4.14s, setup 452ms, import 7.51s, tests 9.49s, environment 3.98s)
 
 stderr | src/components/ds/EzEntityGrid.test.tsx > EzEntityGrid > renders a header cell for each column and a row for each data entry
 An update to EzEntityGrid inside a test was not wrapped in act(...).

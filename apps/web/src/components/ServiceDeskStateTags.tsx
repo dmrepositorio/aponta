@@ -15,6 +15,7 @@ export const serviceDeskStateTokenPairs: Record<string, [string, string]> = {
 };
 
 /** Texto da linha de uma mesa inativa (mais fraco que `gray-900`, ainda acima de 4.5:1). */
+// Literal (não montada por template) para o Tailwind enxergar a classe; par `inactiveRow` acima mede o mesmo token.
 export const inactiveRowText = 'text-gray-500';
 
 const iconClass = 'h-3 w-3';

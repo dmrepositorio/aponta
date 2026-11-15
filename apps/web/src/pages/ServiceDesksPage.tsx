@@ -86,8 +86,8 @@ function deskClientNames(desk: ServiceDesk): string[] {
 function serviceDeskColumns(
   onSelect: (deskId: string) => void,
 ): ColumnDef<ServiceDesk>[] {
-  // Mesa inativa: texto da linha em gray-500 (4,5:1 ou mais; gray-400 reprova).
-  const rowText = (desk: ServiceDesk) => (desk.active === false ? inactiveRowText : undefined);
+  // Mesa inativa: texto da linha mais fraco (ver inactiveRowText; gray-400 reprova 4,5:1).
+  const rowText = (desk: ServiceDesk) => (desk.active === false ? inactiveRowText : '');
   return [
     {
       accessorKey: 'name',
@@ -99,7 +99,7 @@ function serviceDeskColumns(
           onClick={() => onSelect(row.original.id)}
           title={row.original.name}
           className={`block max-w-full truncate text-left font-medium hover:underline ${
-            row.original.active === false ? inactiveRowText : 'text-brand-700'
+            rowText(row.original) || 'text-brand-700'
           }`}
         >
           {row.original.name}
@@ -113,7 +113,7 @@ function serviceDeskColumns(
       cell: ({ row }) => (
         <span
           title={row.original.displayName || undefined}
-          className={`block max-w-full truncate ${rowText(row.original) ?? ''}`}
+          className={`block max-w-full truncate ${rowText(row.original)}`}
         >
           {row.original.displayName || '—'}
         </span>
@@ -138,12 +138,12 @@ function serviceDeskColumns(
       cell: ({ row }) => {
         const names = deskClientNames(row.original);
         if (names.length === 0) {
-          return <span className={rowText(row.original)}>—</span>;
+          return <span className={rowText(row.original) || undefined}>—</span>;
         }
         const all = names.join(', ');
         return (
           <span title={all} className="flex max-w-full items-center gap-1.5 whitespace-nowrap">
-            <span className={`truncate ${rowText(row.original) ?? ''}`}>{names[0]}</span>
+            <span className={`truncate ${rowText(row.original)}`}>{names[0]}</span>
             {names.length > 1 && (
               <EzBadge
                 size="small"
@@ -160,7 +160,7 @@ function serviceDeskColumns(
       header: 'Agentes',
       size: 110,
       cell: ({ row }) => (
-        <span className={rowText(row.original)}>{row.original.agents?.length ?? 0}</span>
+        <span className={rowText(row.original) || undefined}>{row.original.agents?.length ?? 0}</span>
       ),
     },
   ];
