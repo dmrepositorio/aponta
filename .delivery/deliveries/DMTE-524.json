@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "delivery": "DMTE-524",
+  "repository": "dmrepositorio/aponta",
+  "github_issue": 258,
+  "multica_id": "01a1dfa1-8074-7e5c-b39f-ee4fb960405a",
+  "cycle": "2026-11-09/2026-11-22",
+  "tier": 2,
+  "criteria": [
+    {
+      "id": "AC-01",
+      "description": "enquanto `GET /auth/me` não responde, a página mostra um skeleton (`aria-busy`) e nenhum link; ao responder, os itens permitidos entram juntos.",
+      "tests": []
+    },
+    {
+      "id": "AC-02",
+      "description": "o hover não vaza pelos cantos arredondados do cartão (cartão recorta o conteúdo); os links têm `focus-visible` com anel `brand-200` do DS e estado ativo.",
+      "tests": []
+    },
+    {
+      "id": "AC-03",
+      "description": "a linha de link é um único componente local, com altura mínima `--control-height-md` e divisor `gray-90`.",
+      "tests": []
+    },
+    {
+      "id": "AC-04",
+      "description": "um cartão com subtítulos Conta / Usuários / Sistema; some a seção \"Mesa\"; o link Mesa (só ADMIN) fica em Sistema; grupo sem item não aparece.",
+      "tests": []
+    },
+    {
+      "id": "AC-05",
+      "description": "conteúdo centrado com `max-w-2xl`.",
+      "tests": []
+    },
+    {
+      "id": "AC-06",
+      "description": "a visibilidade por permissão não muda e os testes existentes de `SettingsPage` seguem verdes.",
+      "tests": []
+    }
+  ],
+  "spec": "docs/delivery/specs/DMTE-524.md",
+  "tdd": {
+    "mode": "required",
+    "red": ".delivery/evidence/DMTE-524/red.json",
+    "green": ".delivery/evidence/DMTE-524/green.json"
+  },
+  "design_system": {
+    "applicable": true,
+    "reused": []
+  }
+}
