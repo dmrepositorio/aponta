@@ -1,0 +1,70 @@
+{
+  "version": 1,
+  "delivery": "DMTE-524",
+  "repository": "dmrepositorio/aponta",
+  "github_issue": 258,
+  "multica_id": "01a1dfa1-8074-7e5c-b39f-ee4fb960405a",
+  "cycle": "2026-11-09/2026-11-22",
+  "tier": 2,
+  "criteria": [
+    {
+      "id": "AC-01",
+      "description": "enquanto `GET /auth/me` não responde, a página mostra um skeleton (`aria-busy`) e nenhum link; ao responder, os itens permitidos entram juntos.",
+      "tests": [
+        "apps/web/src/pages/SettingsPage.test.tsx: shows a busy skeleton and no links until GET /auth/me responds",
+        "apps/web/src/pages/SettingsPage.test.tsx: falls back to Minha conta right after the first GET /auth/me failure, while retries are pending"
+      ]
+    },
+    {
+      "id": "AC-02",
+      "description": "o hover não vaza pelos cantos arredondados do cartão (cartão recorta o conteúdo); os links têm `focus-visible` com anel `brand-200` do DS e estado ativo.",
+      "tests": [
+        "apps/web/src/pages/SettingsPage.test.tsx: keeps hover inside the rounded card and gives links a focus ring"
+      ]
+    },
+    {
+      "id": "AC-03",
+      "description": "a linha de link é um único componente local, com altura mínima `--control-height-md` e divisor `gray-90`.",
+      "tests": [
+        "apps/web/src/pages/SettingsPage.test.tsx: renders every row with the control height token"
+      ]
+    },
+    {
+      "id": "AC-04",
+      "description": "um cartão com subtítulos Conta / Usuários / Sistema; some a seção \"Mesa\"; o link Mesa (só ADMIN) fica em Sistema; grupo sem item não aparece.",
+      "tests": [
+        "apps/web/src/pages/SettingsPage.test.tsx: groups the links under Conta, Usuários and Sistema, with Mesa under Sistema for an admin",
+        "apps/web/src/pages/SettingsPage.test.tsx: omits the Sistema group when the user has no system item"
+      ]
+    },
+    {
+      "id": "AC-05",
+      "description": "conteúdo centrado com `max-w-2xl`.",
+      "tests": [
+        "apps/web/src/pages/SettingsPage.test.tsx: centers the content in a max-w-2xl column"
+      ]
+    },
+    {
+      "id": "AC-06",
+      "description": "a visibilidade por permissão não muda e os testes existentes de `SettingsPage` seguem verdes.",
+      "tests": [
+        "apps/web/src/pages/SettingsPage.test.tsx: casos existentes de SettingsPage (visibilidade por permissão, Mesa só ADMIN, Tarefas agendadas) no mesmo arquivo"
+      ],
+      "tdd_required": false,
+      "reason": "Preservação de comportamento: os testes já existentes passam antes e depois; sem comportamento novo."
+    }
+  ],
+  "spec": "docs/delivery/specs/DMTE-524.md",
+  "tdd": {
+    "mode": "required",
+    "red": ".delivery/evidence/DMTE-524/red-r2.json",
+    "green": ".delivery/evidence/DMTE-524/green-r2.json"
+  },
+  "design_system": {
+    "applicable": true,
+    "reused": [
+      "EzCardItem"
+    ],
+    "reason": "Reaproveita EzCardItem e os tokens --control-height-md/--control-height-compact/--radius-control e o anel focus-visible brand-200 do DS. SettingsLink é componente local da página (não exportado pelo DS), então não há story; nenhum componente, token ou estilo do DS foi criado ou alterado. O skeleton usa bloco animate-pulse local e não o EzSkeleton do DS: o EzSkeleton usa bg-gray-200, fora de gray-90 que o resto da página usa, e nenhuma outra tela o consome hoje; exceção registrada (revisão independente, rodada 1)."
+  }
+}
