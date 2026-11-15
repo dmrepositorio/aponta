@@ -1,5 +1,6 @@
-import { Fragment, useState, type ReactNode } from 'react';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { Fragment, useState, type MouseEvent, type ReactNode } from 'react';
+import { Link } from 'react-router-dom';
+import { ArrowDown, ArrowUp, ChevronDown, ChevronRight } from 'lucide-react';
 import type { Ticket } from '../../hooks/useTickets';
 import { EzAlert, EzEmptyCard, EzSelect, EzSpinner } from '../ds';
 import { priorityLabels, statusLabels } from './TicketCard';
@@ -25,6 +26,28 @@ interface ColumnDef {
   staffOnly?: boolean;
 }
 
+const ticketPath = (ticket: Ticket) => `/tickets/${ticket.id}`;
+const ticketTabTitle = (ticket: Ticket) => `#${ticket.protocol} - ${ticket.title}`;
+
+/** Same click contract as the Kanban card: modifiers and middle click stay with the browser (new tab). */
+function TicketNumberLink({ ticket }: { ticket: Ticket }) {
+  const openInTab = useOpenInTab();
+  const handleClick = (event: MouseEvent<HTMLAnchorElement>) => {
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return;
+    event.preventDefault();
+    openInTab(ticketPath(ticket), ticketTabTitle(ticket));
+  };
+  return (
+    <Link
+      to={ticketPath(ticket)}
+      onClick={handleClick}
+      className="whitespace-nowrap rounded-control font-mono text-[12px] text-brand-700 outline-none hover:underline focus-visible:ring-2 focus-visible:ring-brand-500"
+    >
+      {ticket.protocol}
+    </Link>
+  );
+}
+
 function formatDateTime(value: string | null | undefined): ReactNode {
   if (!value) return <span className="text-gray-400">—</span>;
   const date = new Date(value);
@@ -42,7 +65,7 @@ const COLUMNS: ColumnDef[] = [
     label: 'Número',
     sortField: 'protocol',
     defaultVisible: true,
-    render: (t) => <span className="whitespace-nowrap font-mono text-[12px]">{t.protocol}</span>,
+    render: (t) => <TicketNumberLink ticket={t} />,
   },
   {
     id: 'title',
@@ -263,8 +286,12 @@ export function TicketList({
   const renderRow = (ticket: Ticket) => (
     <tr
       key={ticket.id}
-      className="border-b border-gray-100 last:border-0 hover:bg-gray-80 cursor-pointer"
-      onClick={() => openInTab(`/tickets/${ticket.id}`, `#${ticket.protocol} - ${ticket.title}`)}
+      className="border-b border-gray-100 last:border-0 hover:bg-grid-row-hover focus-within:bg-grid-row-hover cursor-pointer"
+      onClick={(event) => {
+        // The number link and any button handle their own click.
+        if ((event.target as HTMLElement).closest('a, button')) return;
+        openInTab(ticketPath(ticket), ticketTabTitle(ticket));
+      }}
     >
       {visibleColumns.map((col) => (
         <td key={col.id} className="px-3 py-2 text-[13px] text-gray-700">
@@ -344,14 +371,30 @@ export function TicketList({
             <thead>
               <tr className="border-b border-gray-200 bg-gray-80">
                 {visibleColumns.map((col) => (
-                  <th key={col.id} className="px-3 py-2 text-[12px] font-semibold text-gray-600">
+                  <th
+                    key={col.id}
+                    aria-sort={
+                      col.sortField && col.sortField === sort.field
+                        ? sort.dir === 'asc'
+                          ? 'ascending'
+                          : 'descending'
+                        : undefined
+                    }
+                    className="px-3 py-2 text-[12px] font-semibold text-gray-600"
+                  >
                     {col.sortField ? (
                       <button
                         type="button"
                         onClick={() => handleSortClick(col.sortField as string)}
-                        className="cursor-pointer hover:text-gray-900"
+                        className="inline-flex cursor-pointer items-center gap-1 rounded-control outline-none hover:text-gray-900 focus-visible:ring-2 focus-visible:ring-brand-500"
                       >
                         {col.label}
+                        {col.sortField === sort.field &&
+                          (sort.dir === 'asc' ? (
+                            <ArrowUp aria-hidden="true" className="h-3 w-3" />
+                          ) : (
+                            <ArrowDown aria-hidden="true" className="h-3 w-3" />
+                          ))}
                       </button>
                     ) : (
                       col.label

@@ -1,6 +1,8 @@
-import { render, screen, within } from '@testing-library/react';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, useLocation } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useAuthStore } from '../../stores/authStore';
 import type { Ticket } from '../../hooks/useTickets';
@@ -317,5 +319,143 @@ describe('TicketList (D5: Lista agrupável)', () => {
       expect(screen.getByRole('checkbox', { name: 'E-mail do solicitante' })).toBeInTheDocument();
       expect(screen.getByRole('checkbox', { name: 'Grupo de recursos' })).toBeInTheDocument();
     });
+  });
+});
+
+describe('DMTE-526: abrir a linha por teclado e nova aba, e estado da ordenação', () => {
+  // Cada navegação gera uma `key` nova, então o vetor mostra quantas vezes o app navegou.
+  const visits: string[] = [];
+  function LocationProbe() {
+    const location = useLocation();
+    visits.push(location.pathname);
+    return <div data-testid="location-probe">{location.pathname}</div>;
+  }
+  function renderWithProbe(props: Partial<Parameters<typeof TicketList>[0]> = {}) {
+    return render(
+      <MemoryRouter>
+        <TicketList tickets={[ticketA, ticketB]} isLoading={false} isError={false} {...props} />
+        <LocationProbe />
+      </MemoryRouter>,
+    );
+  }
+  const protocolLink = (protocol: string) => screen.getByRole('link', { name: protocol });
+  const headerOf = (name: string) => screen.getByRole('columnheader', { name });
+
+  beforeEach(() => {
+    localStorage.clear();
+    sessionStorage.clear();
+    visits.length = 0;
+    useAuthStore.setState({
+      token: null,
+      user: { sub: 'u1', email: 'a@x.com', role: 'ADMIN', organizationId: null } as any,
+    });
+  });
+
+  it('AC-01: the Número cell is a link to the ticket, focusable, and Enter opens it', async () => {
+    const user = userEvent.setup();
+    renderWithProbe();
+
+    const link = protocolLink('AP-2026-0001');
+    expect(link).toHaveAttribute('href', '/tickets/t1');
+    expect(protocolLink('AP-2026-0002')).toHaveAttribute('href', '/tickets/t2');
+    const tbody = screen.getAllByRole('rowgroup')[1];
+    expect(within(tbody).getAllByRole('link')).toHaveLength(2);
+
+    link.focus();
+    expect(link).toHaveFocus();
+    await user.keyboard('{Enter}');
+    expect(screen.getByTestId('location-probe')).toHaveTextContent('/tickets/t1');
+  });
+
+  it('AC-02: a plain click opens the ticket once; Ctrl, Meta, Shift and middle click are left to the browser', () => {
+    renderWithProbe();
+    const link = protocolLink('AP-2026-0001');
+    const before = visits.length;
+
+    expect(fireEvent.click(link)).toBe(false);
+    expect(screen.getByTestId('location-probe')).toHaveTextContent('/tickets/t1');
+    expect(visits.length - before).toBe(1);
+
+    visits.length = 0;
+    const other = protocolLink('AP-2026-0002');
+    for (const modifier of [{ ctrlKey: true }, { metaKey: true }, { shiftKey: true }, { button: 1 }]) {
+      expect(fireEvent.click(other, modifier)).toBe(true);
+    }
+    expect(screen.getByTestId('location-probe')).toHaveTextContent('/tickets/t1');
+    expect(visits).toHaveLength(0);
+  });
+
+  it('AC-03: clicking another cell still opens the ticket, and the group header does not', async () => {
+    const user = userEvent.setup();
+    renderWithProbe();
+    await user.click(screen.getByText('Email down'));
+    expect(screen.getByTestId('location-probe')).toHaveTextContent('/tickets/t2');
+
+    visits.length = 0;
+    await user.selectOptions(screen.getByLabelText(/agrupar por/i, { selector: 'select' }), 'organization');
+    await user.click(screen.getByRole('button', { name: /Acme/ }));
+    expect(screen.getByTestId('location-probe')).toHaveTextContent('/tickets/t2');
+    expect(visits).toHaveLength(0);
+  });
+
+  it('AC-04: only the sorted column carries aria-sort and a direction arrow, and both follow the clicks', async () => {
+    const user = userEvent.setup();
+    renderWithProbe({ sortBy: 'title', sortDir: 'desc' });
+
+    expect(headerOf('Título')).toHaveAttribute('aria-sort', 'descending');
+    const sorted = screen.getAllByRole('columnheader').filter((th) => th.hasAttribute('aria-sort'));
+    expect(sorted).toHaveLength(1);
+    expect(headerOf('Título').querySelector('svg[aria-hidden="true"]')).toHaveClass('lucide-arrow-down');
+    expect(headerOf('Número').querySelector('svg')).toBeNull();
+
+    await user.click(screen.getByRole('button', { name: 'Título' }));
+    expect(headerOf('Título')).toHaveAttribute('aria-sort', 'ascending');
+    expect(headerOf('Título').querySelector('svg')).toHaveClass('lucide-arrow-up');
+
+    await user.click(screen.getByRole('button', { name: 'Número' }));
+    expect(headerOf('Número')).toHaveAttribute('aria-sort', 'ascending');
+    expect(headerOf('Título')).not.toHaveAttribute('aria-sort');
+    expect(headerOf('Título').querySelector('svg')).toBeNull();
+  });
+
+  it('AC-04: without sortBy no header has aria-sort', () => {
+    renderWithProbe();
+    expect(screen.getAllByRole('columnheader').some((th) => th.hasAttribute('aria-sort'))).toBe(false);
+  });
+
+  it('AC-05: the row uses the grid-row-hover token and the controls show a focus ring', () => {
+    renderWithProbe();
+    const row = protocolLink('AP-2026-0001').closest('tr') as HTMLElement;
+    expect(row).toHaveClass('hover:bg-grid-row-hover', 'focus-within:bg-grid-row-hover');
+    expect(row).not.toHaveClass('hover:bg-gray-80');
+    for (const control of [protocolLink('AP-2026-0001'), screen.getByRole('button', { name: 'Título' })]) {
+      expect(control).toHaveClass('focus-visible:ring-2', 'focus-visible:ring-brand-500');
+    }
+  });
+
+  it('AC-06: the protocol link text reaches 4.5:1 over white and over grid-row-hover', () => {
+    renderWithProbe();
+    const css = readFileSync(resolve(__dirname, '../../styles.css'), 'utf8');
+    const hex = (token: string) => {
+      const match = css.match(new RegExp(`--color-${token}:\\s*#([0-9a-f]{6})`, 'i'));
+      if (!match) throw new Error('token not found: ' + token);
+      return match[1];
+    };
+    const luminance = (value: string) =>
+      [0, 2, 4]
+        .map((i) => parseInt(value.slice(i, i + 2), 16) / 255)
+        .map((c) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4))
+        .reduce((sum, c, i) => sum + c * [0.2126, 0.7152, 0.0722][i], 0);
+    const contrast = (a: string, b: string) => {
+      const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+      return (hi + 0.05) / (lo + 0.05);
+    };
+    const textToken = Array.from(protocolLink('AP-2026-0001').classList)
+      .find((name) => /^text-(brand|gray)-\d+$/.test(name))
+      ?.slice('text-'.length);
+    expect(textToken).toBeDefined();
+    const text = hex(textToken as string);
+    expect(contrast(text, 'ffffff')).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(text, hex('grid-row-hover'))).toBeGreaterThanOrEqual(4.5);
   });
 });

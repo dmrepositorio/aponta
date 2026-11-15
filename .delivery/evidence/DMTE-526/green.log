@@ -1,0 +1,39 @@
+
+ RUN  v4.1.11 /home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-526-2fa9e134363b/workdir/aponta/apps/web
+
+ ✓ |web| src/components/tickets/TicketList.test.tsx (32 tests) 2076ms
+       ✓ AC-04: offers the four new columns hidden by default and shows their values (or "—") once enabled  395ms
+
+ Test Files  1 passed (1)
+      Tests  32 passed (32)
+   Start at  20:28:44
+   Duration  4.96s (transform 1.53s, setup 111ms, import 2.18s, tests 2.08s, environment 393ms)
+
+Error: Not implemented: navigation (except hash changes)
+    at module.exports (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-526-2fa9e134363b/workdir/aponta/node_modules/.pnpm/jsdom@22.1.0_supports-color@7.2.0/node_modules/jsdom/lib/jsdom/browser/not-implemented.js:9:17)
+    at navigateFetch (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-526-2fa9e134363b/workdir/aponta/node_modules/.pnpm/jsdom@22.1.0_supports-color@7.2.0/node_modules/jsdom/lib/jsdom/living/window/navigation.js:77:3)
+    at exports.navigate (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-526-2fa9e134363b/workdir/aponta/node_modules/.pnpm/jsdom@22.1.0_supports-color@7.2.0/node_modules/jsdom/lib/jsdom/living/window/navigation.js:55:3)
+    at Timeout._onTimeout (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-526-2fa9e134363b/workdir/aponta/node_modules/.pnpm/jsdom@22.1.0_supports-color@7.2.0/node_modules/jsdom/lib/jsdom/living/nodes/HTMLHyperlinkElementUtils-impl.js:81:7)
+    at listOnTimeout (node:internal/timers:685:17)
+    at processTimers (node:internal/timers:618:7) undefined
+Error: Not implemented: navigation (except hash changes)
+    at module.exports (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-526-2fa9e134363b/workdir/aponta/node_modules/.pnpm/jsdom@22.1.0_supports-color@7.2.0/node_modules/jsdom/lib/jsdom/browser/not-implemented.js:9:17)
+    at navigateFetch (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-526-2fa9e134363b/workdir/aponta/node_modules/.pnpm/jsdom@22.1.0_supports-color@7.2.0/node_modules/jsdom/lib/jsdom/living/window/navigation.js:77:3)
+    at exports.navigate (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-526-2fa9e134363b/workdir/aponta/node_modules/.pnpm/jsdom@22.1.0_supports-color@7.2.0/node_modules/jsdom/lib/jsdom/living/window/navigation.js:55:3)
+    at Timeout._onTimeout (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-526-2fa9e134363b/workdir/aponta/node_modules/.pnpm/jsdom@22.1.0_supports-color@7.2.0/node_modules/jsdom/lib/jsdom/living/nodes/HTMLHyperlinkElementUtils-impl.js:81:7)
+    at listOnTimeout (node:internal/timers:685:17)
+    at processTimers (node:internal/timers:618:7) undefined
+Error: Not implemented: navigation (except hash changes)
+    at module.exports (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-526-2fa9e134363b/workdir/aponta/node_modules/.pnpm/jsdom@22.1.0_supports-color@7.2.0/node_modules/jsdom/lib/jsdom/browser/not-implemented.js:9:17)
+    at navigateFetch (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-526-2fa9e134363b/workdir/aponta/node_modules/.pnpm/jsdom@22.1.0_supports-color@7.2.0/node_modules/jsdom/lib/jsdom/living/window/navigation.js:77:3)
+    at exports.navigate (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-526-2fa9e134363b/workdir/aponta/node_modules/.pnpm/jsdom@22.1.0_supports-color@7.2.0/node_modules/jsdom/lib/jsdom/living/window/navigation.js:55:3)
+    at Timeout._onTimeout (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-526-2fa9e134363b/workdir/aponta/node_modules/.pnpm/jsdom@22.1.0_supports-color@7.2.0/node_modules/jsdom/lib/jsdom/living/nodes/HTMLHyperlinkElementUtils-impl.js:81:7)
+    at listOnTimeout (node:internal/timers:685:17)
+    at processTimers (node:internal/timers:618:7) undefined
+Error: Not implemented: navigation (except hash changes)
+    at module.exports (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-526-2fa9e134363b/workdir/aponta/node_modules/.pnpm/jsdom@22.1.0_supports-color@7.2.0/node_modules/jsdom/lib/jsdom/browser/not-implemented.js:9:17)
+    at navigateFetch (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-526-2fa9e134363b/workdir/aponta/node_modules/.pnpm/jsdom@22.1.0_supports-color@7.2.0/node_modules/jsdom/lib/jsdom/living/window/navigation.js:77:3)
+    at exports.navigate (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-526-2fa9e134363b/workdir/aponta/node_modules/.pnpm/jsdom@22.1.0_supports-color@7.2.0/node_modules/jsdom/lib/jsdom/living/window/navigation.js:55:3)
+    at Timeout._onTimeout (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-526-2fa9e134363b/workdir/aponta/node_modules/.pnpm/jsdom@22.1.0_supports-color@7.2.0/node_modules/jsdom/lib/jsdom/living/nodes/HTMLHyperlinkElementUtils-impl.js:81:7)
+    at listOnTimeout (node:internal/timers:685:17)
+    at processTimers (node:internal/timers:618:7) undefined
