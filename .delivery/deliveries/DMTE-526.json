@@ -1,0 +1,79 @@
+{
+  "version": 1,
+  "delivery": "DMTE-526",
+  "repository": "dmrepositorio/aponta",
+  "github_issue": 263,
+  "multica_id": "01a1dff7-60f5-70a8-9468-7b7315b0a2ba",
+  "cycle": "2026-11-09/2026-11-22",
+  "tier": 2,
+  "criteria": [
+    {
+      "id": "AC-01",
+      "description": "cada linha da lista renderiza a célula Número como `link` com o protocolo como nome e `href` = `/tickets/<id>`; o link é focável por Tab (primeiro tab stop do `tbody`) e Enter nele abre o ticket na aba interna (`openInTab`, uma única vez).",
+      "tests": [
+        "apps/web/src/components/tickets/TicketList.test.tsx: AC-01: the Número cell is a link to the ticket, focusable, and Enter opens it"
+      ]
+    },
+    {
+      "id": "AC-02",
+      "description": "clique simples no link abre o ticket na aba interna uma única vez (o `onClick` da linha não repete); Ctrl, Meta, Shift ou botão diferente de 0 no link não são interceptados (`openInTab` não é chamado e o evento não tem `defaultPrevented`), então o navegador abre nova aba pelo `href`.",
+      "tests": [
+        "apps/web/src/components/tickets/TicketList.test.tsx: AC-02: a plain click opens the ticket once; Ctrl, Meta, Shift and middle click are left to the browser"
+      ]
+    },
+    {
+      "id": "AC-03",
+      "description": "clicar em qualquer outra célula da linha continua abrindo o ticket na aba interna (comportamento atual preservado); clicar no botão de grupo (`aria-expanded`) ou no cabeçalho de grupo não abre ticket.",
+      "tests": [
+        "apps/web/src/components/tickets/TicketList.test.tsx: AC-03: clicking another cell still opens the ticket, and the group header does not"
+      ]
+    },
+    {
+      "id": "AC-04",
+      "description": "o `<th>` da coluna ordenada tem `aria-sort=\"ascending\"` ou `\"descending\"` conforme `sortBy`/`sortDir` (inicial) e conforme os cliques seguintes; nenhuma outra coluna tem `aria-sort`; a coluna ativa mostra a seta de direção (`aria-hidden`) e a troca de direção troca a seta; sem `sortBy`, nenhum `<th>` tem `aria-sort`.",
+      "tests": [
+        "apps/web/src/components/tickets/TicketList.test.tsx: AC-04: only the sorted column carries aria-sort and a direction arrow, and both follow the clicks",
+        "apps/web/src/components/tickets/TicketList.test.tsx: AC-04: without sortBy no header has aria-sort"
+      ]
+    },
+    {
+      "id": "AC-05",
+      "description": "a linha usa `hover:bg-grid-row-hover` e `focus-within:bg-grid-row-hover` e não usa `hover:bg-gray-80`; o link e o botão de ordenação têm anel de foco visível (`focus-visible:ring-2 focus-visible:ring-brand-500`).",
+      "tests": [
+        "apps/web/src/components/tickets/TicketList.test.tsx: AC-05: the row uses the grid-row-hover token and the controls show a focus ring"
+      ]
+    },
+    {
+      "id": "AC-06",
+      "description": "o texto do link do protocolo tem contraste mínimo de 4,5:1 sobre o branco e sobre `grid-row-hover` (tokens lidos de `styles.css`).",
+      "tests": [
+        "apps/web/src/components/tickets/TicketList.test.tsx: AC-06: the protocol link text reaches 4.5:1 over white and over grid-row-hover"
+      ]
+    },
+    {
+      "id": "AC-07",
+      "description": "sem mudança de API, schema ou regra; colunas, agrupamento, persistência de configuração e `onSortChange` inalterados (testes existentes de `TicketList.test.tsx` seguem verdes; o botão de ordenação mantém o nome acessível do rótulo).",
+      "tests": [
+        "git diff do PR sem apps/api; testes existentes de apps/web/src/components/tickets/TicketList.test.tsx seguem verdes"
+      ],
+      "tdd_required": false,
+      "reason": "Verificação de escopo (sem API, schema ou regra) e preservação do que já existia, coberta pelos testes anteriores do arquivo; sem comportamento novo"
+    }
+  ],
+  "spec": "docs/delivery/specs/DMTE-526.md",
+  "tdd": {
+    "mode": "required",
+    "red": ".delivery/evidence/DMTE-526/red-r2.json",
+    "green": ".delivery/evidence/DMTE-526/green.json"
+  },
+  "design_system": {
+    "applicable": true,
+    "reused": [
+      "EzSelect",
+      "EzEmptyCard",
+      "EzAlert",
+      "EzSpinner"
+    ],
+    "reason": "Nenhum componente ou token novo no DS: TicketList segue nos componentes do DS que já usava; o link do protocolo reaproveita o contrato de clique do cartão do Kanban (Link do react-router), os ícones do lucide já usados na tela e o token grid-row-hover do @theme."
+  }
+}

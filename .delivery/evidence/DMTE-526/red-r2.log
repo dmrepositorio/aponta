@@ -1,0 +1,2538 @@
+
+ RUN  v4.1.11 /home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-526-2fa9e134363b/workdir/red-base/apps/web
+
+ ❯ |web| src/components/tickets/TicketList.test.tsx (32 tests | 5 failed) 1999ms
+     ✓ shows a loading indicator when isLoading is true 60ms
+     ✓ shows an error message when isError is true 12ms
+     ✓ shows an empty-state message when there are no tickets 15ms
+     ✓ renders status and priority with the new tags 17ms
+     ✓ renders the default columns: Número, Título, Cliente, Origem, Prioridade, Status, Estágio (AC6) 27ms
+     ✓ DMTE-490 AC-05: shows the Aguardando Sankhya label for a ticket in that status 12ms
+     ✓ renders a row per ticket with its data, ungrouped by default 14ms
+     ✓ groups by the chosen field, with a collapsible group row showing a count (AC6) 91ms
+     ✓ AC-09: the group header exposes aria-expanded and flips it when toggled 82ms
+     ✓ "Nenhum" removes grouping and shows every row flat 52ms
+     ✓ toggles an optional column on via "Exibir colunas" and it persists after remount (D5 persistence) 127ms
+     ✓ shows the R1 warning when grouping with more than one page of results 38ms
+     ✓ clicking a sortable column header calls onSortChange, toggling direction on repeated clicks 62ms
+       ✓ AC-01: keeps "Agrupar por" and "Exibir colunas" next to the empty state, with no table 13ms
+       ✓ AC-02: with an empty list, the column menu lists every column and a toggle persists for the next non-empty render 115ms
+       ✓ AC-03: loading and error states still render without the controls 3ms
+       ✓ AC-04: offers the four new columns hidden by default and shows their values (or "—") once enabled  355ms
+       ✓ AC-04: a configuration saved before the new columns existed keeps them hidden 14ms
+       ✓ AC-06: without a known role the phone and extension columns are not offered 60ms
+       ✓ AC-01: the page-grouping note is not shown when the list is empty 19ms
+       ✓ AC-06: ADMIN sees the phone and extension columns in the menu 55ms
+       ✓ AC-06: AGENT_MASTER sees the phone and extension columns in the menu 52ms
+       ✓ AC-06: AGENT sees the phone and extension columns in the menu 56ms
+       ✓ AC-06: CLIENT does not get the phone and extension columns, and keeps the others 63ms
+       ✓ AC-06: CLIENT_MASTER does not get the phone and extension columns, and keeps the others 75ms
+     × AC-01: the Número cell is a link to the ticket, focusable, and Enter opens it 117ms
+     × AC-02: a plain click opens the ticket once; Ctrl, Meta, Shift and middle click are left to the browser 85ms
+     ✓ AC-03: clicking another cell still opens the ticket, and the group header does not 58ms
+     × AC-04: only the sorted column carries aria-sort and a direction arrow, and both follow the clicks 17ms
+     ✓ AC-04: without sortBy no header has aria-sort 9ms
+     × AC-05: the row uses the grid-row-hover token and the controls show a focus ring 96ms
+     × AC-06: the protocol link text reaches 4.5:1 over white and over grid-row-hover 120ms
+
+ Test Files  1 failed (1)
+      Tests  5 failed | 27 passed (32)
+   Start at  20:28:24
+   Duration  4.64s (transform 1.32s, setup 127ms, import 1.91s, tests 2.00s, environment 407ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |web| src/components/tickets/TicketList.test.tsx > DMTE-526: abrir a linha por teclado e nova aba, e estado da ordenação > AC-01: the Número cell is a link to the ticket, focusable, and Enter opens it
+TestingLibraryElementError: Unable to find an accessible element with the role "link" and name "AP-2026-0001"
+
+Here are the accessible roles:
+
+  combobox:
+
+  Name "Agrupar por":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33maria-haspopup[39m=[32m"listbox"[39m
+    [33maria-label[39m=[32m"Agrupar por"[39m
+    [33mclass[39m=[32m"flex h-full w-full items-center justify-between gap-2 bg-transparent text-left text-gray-900 outline-none pl-2 pr-2 text-[13px]"[39m
+    [33mrole[39m=[32m"combobox"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  button:
+
+  Name "Exibir colunas":
+  [36m<button[39m
+    [33mclass[39m=[32m"h-[var(--control-height-compact)] rounded-control border border-gray-200 bg-white px-3 text-[13px] font-medium text-gray-700 hover:bg-gray-90"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Número":
+  [36m<button[39m
+    [33mclass[39m=[32m"cursor-pointer hover:text-gray-900"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Título":
+  [36m<button[39m
+    [33mclass[39m=[32m"cursor-pointer hover:text-gray-900"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Prioridade":
+  [36m<button[39m
+    [33mclass[39m=[32m"cursor-pointer hover:text-gray-900"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Status":
+  [36m<button[39m
+    [33mclass[39m=[32m"cursor-pointer hover:text-gray-900"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  region:
+
+  Name "Tabela de chamados":
+  [36m<div[39m
+    [33maria-label[39m=[32m"Tabela de chamados"[39m
+    [33mclass[39m=[32m"overflow-x-auto rounded-control border border-gray-200 bg-white outline-none focus-visible:ring-2 focus-visible:ring-brand-500"[39m
+    [33mrole[39m=[32m"region"[39m
+    [33mtabindex[39m=[32m"0"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  table:
+
+  Name "":
+  [36m<table[39m
+    [33mclass[39m=[32m"w-full min-w-[720px] text-left"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  rowgroup:
+
+  Name "":
+  [36m<thead />[39m
+
+  Name "":
+  [36m<tbody />[39m
+
+  --------------------------------------------------
+  row:
+
+  Name "Número Título Cliente Origem Prioridade Status Estágio":
+  [36m<tr[39m
+    [33mclass[39m=[32m"border-b border-gray-200 bg-gray-80"[39m
+  [36m/>[39m
+
+  Name "AP-2026-0001 Printer broken Acme Web Alta Aberto Triagem":
+  [36m<tr[39m
+    [33mclass[39m=[32m"border-b border-gray-100 last:border-0 hover:bg-gray-80 cursor-pointer"[39m
+  [36m/>[39m
+
+  Name "AP-2026-0002 Email down Beta Web Média Em Andamento Triagem":
+  [36m<tr[39m
+    [33mclass[39m=[32m"border-b border-gray-100 last:border-0 hover:bg-gray-80 cursor-pointer"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  columnheader:
+
+  Name "Número":
+  [36m<th[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[12px] font-semibold text-gray-600"[39m
+  [36m/>[39m
+
+  Name "Título":
+  [36m<th[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[12px] font-semibold text-gray-600"[39m
+  [36m/>[39m
+
+  Name "Cliente":
+  [36m<th[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[12px] font-semibold text-gray-600"[39m
+  [36m/>[39m
+
+  Name "Origem":
+  [36m<th[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[12px] font-semibold text-gray-600"[39m
+  [36m/>[39m
+
+  Name "Prioridade":
+  [36m<th[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[12px] font-semibold text-gray-600"[39m
+  [36m/>[39m
+
+  Name "Status":
+  [36m<th[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[12px] font-semibold text-gray-600"[39m
+  [36m/>[39m
+
+  Name "Estágio":
+  [36m<th[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[12px] font-semibold text-gray-600"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  cell:
+
+  Name "AP-2026-0001":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+  [36m/>[39m
+
+  Name "Printer broken":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+  [36m/>[39m
+
+  Name "Acme":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+  [36m/>[39m
+
+  Name "Web":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+  [36m/>[39m
+
+  Name "Alta":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+  [36m/>[39m
+
+  Name "Aberto":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+  [36m/>[39m
+
+  Name "Triagem":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+  [36m/>[39m
+
+  Name "AP-2026-0002":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+  [36m/>[39m
+
+  Name "Email down":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+  [36m/>[39m
+
+  Name "Beta":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+  [36m/>[39m
+
+  Name "Web":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+  [36m/>[39m
+
+  Name "Média":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+  [36m/>[39m
+
+  Name "Em Andamento":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+  [36m/>[39m
+
+  Name "Triagem":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-2"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex flex-wrap items-center gap-3"[39m
+      [36m>[39m
+        [36m<label[39m
+          [33mclass[39m=[32m"text-[13px] font-medium text-gray-700"[39m
+          [33mfor[39m=[32m"ticket-list-group-by"[39m
+        [36m>[39m
+          [0mAgrupar por[0m
+        [36m</label>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex flex-col gap-1 w-auto"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"relative"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border bg-white rounded-[8px] h-11 sm:h-[32px] focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300"[39m
+            [36m>[39m
+              [36m<select[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33maria-label[39m=[32m"Agrupar por"[39m
+                [33mclass[39m=[32m"sr-only"[39m
+                [33mid[39m=[32m"ticket-list-group-by"[39m
+                [33mtabindex[39m=[32m"-1"[39m
+              [36m>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"none"[39m
+                [36m>[39m
+                  [0mNenhum[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"organization"[39m
+                [36m>[39m
+                  [0mCliente[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"stage"[39m
+                [36m>[39m
+                  [0mEstágio[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"status"[39m
+                [36m>[39m
+                  [0mStatus[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"priority"[39m
+                [36m>[39m
+                  [0mPrioridade[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"agent"[39m
+                [36m>[39m
+                  [0mResponsável[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"serviceDesk"[39m
+                [36m>[39m
+                  [0mMesa de serviço[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"requester"[39m
+                [36m>[39m
+                  [0mSolicitante[0m
+                [36m</option>[39m
+              [36m</select>[39m
+              [36m<button[39m
+                [33maria-expanded[39m=[32m"false"[39m
+                [33maria-haspopup[39m=[32m"listbox"[39m
+                [33maria-label[39m=[32m"Agrupar por"[39m
+                [33mclass[39m=[32m"flex h-full w-full items-center justify-between gap-2 bg-transparent text-left text-gray-900 outline-none pl-2 pr-2 text-[13px]"[39m
+                [33mrole[39m=[32m"combobox"[39m
+                [33mtype[39m=[32m"button"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"truncate"[39m
+                [36m>[39m
+                  [0mNenhum[0m
+                [36m</span>[39m
+                [36m<svg[39m
+                  [33maria-hidden[39m=[32m"true"[39m
+                  [33mclass[39m=[32m"lucide lucide-chevron-down shrink-0 text-gray-500 w-3.5 h-3.5"[39m
+                  [33mfill[39m=[32m"none"[39m
+                  [33mheight[39m=[32m"24"[39m
+                  [33mstroke[39m=[32m"currentColor"[39m
+                  [33mstroke-linecap[39m=[32m"round"[39m
+                  [33mstroke-linejoin[39m=[32m"round"[39m
+                  [33mstroke-width[39m=[32m"2"[39m
+                  [33mviewBox[39m=[32m"0 0 24 24"[39m
+                  [33mwidth[39m=[32m"24"[39m
+                  [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                [36m>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"m6 9 6 6 6-6"[39m
+                  [36m/>[39m
+                [36m</svg>[39m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"relative"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"h-[var(--control-height-compact)] rounded-control border border-gray-200 bg-white px-3 text-[13px] font-medium text-gray-700 hover:bg-gray-90"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [0mExibir colunas[0m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33maria-label[39m=[32m"Tabela de chamados"[39m
+        [33mclass[39m=[32m"overflow-x-auto rounded-control border border-gray-200 bg-white outline-none focus-visible:ring-2 focus-visible:ring-brand-500"[39m
+        [33mrole[39m=[32m"region"[39m
+        [33mtabindex[39m=[32m"0"[39m
+      [36m>[39m
+        [36m<table[39m
+          [33mclass[39m=[32m"w-full min-w-[720px] text-left"[39m
+        [36m>[39m
+          [36m<thead>[39m
+            [36m<tr[39m
+              [33mclass[39m=[32m"border-b border-gray-200 bg-gray-80"[39m
+            [36m>[39m
+              [36m<th[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[12px] font-semibold text-gray-600"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"cursor-pointer hover:text-gray-900"[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [0mNúmero[0m
+                [36m</button>[39m
+              [36m</th>[39m
+              [36m<th[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[12px] font-semibold text-gray-600"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"cursor-pointer hover:text-gray-900"[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [0mTítulo[0m
+                [36m</button>[39m
+              [36m</th>[39m
+              [36m<th[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[12px] font-semibold text-gray-600"[39m
+              [36m>[39m
+                [0mCliente[0m
+              [36m</th>[39m
+              [36m<th[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[12px] font-semibold text-gray-600"[39m
+              [36m>[39m
+                [0mOrigem[0m
+              [36m</th>[39m
+              [36m<th[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[12px] font-semibold text-gray-600"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"cursor-pointer hover:text-gray-900"[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [0mPrioridade[0m
+                [36m</button>[39m
+              [36m</th>[39m
+              [36m<th[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[12px] font-semibold text-gray-600"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"cursor-pointer hover:text-gray-900"[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [0mStatus[0m
+                [36m</button>[39m
+              [36m</th>[39m
+              [36m<th[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[12px] font-semibold text-gray-600"[39m
+              [36m>[39m
+                [0mEstágio[0m
+              [36m</th>[39m
+            [36m</tr>[39m
+          [36m</thead>[39m
+          [36m<tbody>[39m
+            [36m<tr[39m
+              [33mclass[39m=[32m"border-b border-gray-100 last:border-0 hover:bg-gray-80 cursor-pointer"[39m
+            [36m>[39m
+              [36m<td[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"whitespace-nowrap font-mono text-[12px]"[39m
+                [36m>[39m
+                  [0mAP-2026-0001[0m
+                [36m</span>[39m
+              [36m</td>[39m
+              [36m<td[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"block min-w-[14rem] font-medium text-gray-900"[39m
+                [36m>[39m
+                  [0mPrinter broken[0m
+                [36m</span>[39m
+              [36m</td>[39m
+              [36m<td[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+              [36m>[39m
+                [36m<span>[39m
+                  [0mAcme[0m
+                [36m</span>[39m
+              [36m</td>[39m
+              [36m<td[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+              [36m>[39m
+                [36m<span>[39m
+                  [0mWeb[0m
+                [36m</span>[39m
+              [36m</td>[39m
+              [36m<td[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"inline-flex items-center justify-center rounded-[24px] px-2.5 py-1 min-w-[32px] min-h-[24px] text-[12px] font-medium leading-none select-none transition-colors border bg-yellow-100 text-yellow-800 border-yellow-300 whitespace-nowrap"[39m
+                  [33mdata-ticket-tag[39m=[32m"priority"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"flex items-center justify-center mr-1.5 -ml-0.5"[39m
+                  [36m>[39m
+                    [36m<span[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"inline-flex items-end gap-px"[39m
+                      [33mdata-glyph[39m=[32m"bars-3"[39m
+                    [36m>[39m
+                      [36m<span[39m
+                        [33mclass[39m=[32m"w-[3px] rounded-[1px] h-1 bg-yellow-800"[39m
+                      [36m/>[39m
+                      [36m<span[39m
+                        [33mclass[39m=[32m"w-[3px] rounded-[1px] h-1.5 bg-yellow-800"[39m
+                      [36m/>[39m
+                      [36m<span[39m
+                        [33mclass[39m=[32m"w-[3px] rounded-[1px] h-2 bg-yellow-800"[39m
+                      [36m/>[39m
+                      [36m<span[39m
+                        [33mclass[39m=[32m"w-[3px] rounded-[1px] h-2.5 bg-gray-200"[39m
+                      [36m/>[39m
+                    [36m</span>[39m
+                  [36m</span>[39m
+                  [36m<span>[39m
+                    [0mAlta[0m
+                  [36m</span>[39m
+                [36m</div>[39m
+              [36m</td>[39m
+              [36m<td[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"inline-flex items-center justify-center rounded-[24px] px-2.5 py-1 min-w-[32px] min-h-[24px] text-[12px] font-medium leading-none select-none transition-colors border bg-transparent text-gray-700 whitespace-nowrap border-gray-200"[39m
+                  [33mdata-ticket-tag[39m=[32m"status"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"flex items-center justify-center mr-1.5 -ml-0.5"[39m
+                  [36m>[39m
+                    [36m<span[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"h-2 w-2 rounded-full border-2 border-petroleum-500"[39m
+                      [33mdata-glyph[39m=[32m"ring"[39m
+                    [36m/>[39m
+                  [36m</span>[39m
+                  [36m<span>[39m
+                    [0mAberto[0m
+                  [36m</span>[39m
+                [36m</div>[39m
+              [36m</td>[39m
+              [36m<td[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+              [36m>[39m
+                [36m<span>[39m
+                  [0mTriagem[0m
+                [36m</span>[39m
+              [36m</td>[39m
+            [36m</tr>[39m
+            [36m<tr[39m
+              [33mclass[39m=[32m"border-b border-gray-100 last:border-0 hover:bg-gray-80 cursor-pointer"[39m
+            [36m>[39m
+              [36m<td[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"whitespace-nowrap font-mono text-[12px]"[39m
+                [36m>[39m
+                  [0mAP-2026-0002[0m
+                [36m</span>[39m
+              [36m</td>[39m
+              [36m<td[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"block min-w-[14rem] font-medium text-gray-900"[39m
+                [36m>[39m
+                  [0mEmail down[0m
+                [36m</span>[39m
+              [36m</td>[39m
+              [36m<td[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+              [36m>[39m
+                [36m<span>[39m
+                  [0mBeta[0m
+                [36m</span>[39m
+              [36m</td>[39m
+              [36m<td[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+              [36m>[39m
+                [36m<span>[39m
+                  [0mWeb[0m
+                [36m</span>[39m
+              [36m</td>[39m
+              [36m<td[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"inline-flex items-center justify-center rounded-[24px] px-2.5 py-1 min-w-[32px] min-h-[24px] text-[12px] font-medium leading-none select-none transition-colors border bg-transparent text-gray-700 whitespace-nowrap border-gray-200"[39m
+                  [33mdata-ticket-tag[39m=[32m"priority"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"flex items-center justify-center mr-1.5 -ml-0.5"[39m
+                  [36m>[39m
+                    [36m<span[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"inline-flex items-end gap-px"[39m
+                      [33mdata-glyph[39m=[32m"bars-2"[39m
+                    [36m>[39m
+                      [36m<span[39m
+                        [33mclass[39m=[32m"w-[3px] rounded-[1px] h-1 bg-gray-400"[39m
+                      [36m/>[39m
+                      [36m<span[39m
+                        [33mclass[39m=[32m"w-[3px] rounded-[1px] h-1.5 bg-gray-400"[39m
+                      [36m/>[39m
+                      [36m<span[39m
+                        [33mclass[39m=[32m"w-[3px] rounded-[1px] h-2 bg-gray-200"[39m
+                      [36m/>[39m
+                      [36m<span[39m
+                        [33mclass[39m=[32m"w-[3px] rounded-[1px] h-2.5 bg-gray-200"[39m
+                      [36m/>[39m
+                    [36m</span>[39m
+                  [36m</span>[39m
+                  [36m<span>[39m
+                    [0mMédia[0m
+                  [36m</span>[39m
+                [36m</div>[39m
+              [36m</td>[39m
+              [36m<td[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"inline-flex items-center justify-center rounded-[24px] px-2.5 py-1 min-w-[32px] min-h-[24px] text-[12px] font-medium leading-none select-none transition-colors border bg-transparent text-gray-700 whitespace-nowrap border-gray-200"[39m
+                  [33mdata-ticket-tag[39m=[32m"status"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"flex items-center justify-center mr-1.5 -ml-0.5"[39m
+                  [36m>[39m
+                    [36m<span[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"h-2 w-2 rounded-full bg-brand-600"[39m
+                      [33mdata-glyph[39m=[32m"dot"[39m
+                    [36m/>[39m
+                  [36m</span>[39m
+                  [36m<span>[39m
+                    [0mEm Andamento[0m
+                  [36m</span>[39m
+                [36m</div>[39m
+              [36m</td>[39m
+              [36m<td[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+              [36m>[39m
+                [36m<span>[39m
+                  [0mTriagem[0m
+                [36m</span>[39m
+              [36m</td>[39m
+            [36m</tr>[39m
+          [36m</tbody>[39m
+        [36m</table>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+    [36m<div[39m
+      [33mdata-testid[39m=[32m"location-probe"[39m
+    [36m>[39m
+      [0m/[0m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ protocolLink src/components/tickets/TicketList.test.tsx:341:53
+    339|     );
+    340|   }
+    341|   const protocolLink = (protocol: string) => screen.getByRole('link', …
+       |                                                     ^
+    342|   const headerOf = (name: string) => screen.getByRole('columnheader', …
+    343|
+ ❯ src/components/tickets/TicketList.test.tsx:358:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  |web| src/components/tickets/TicketList.test.tsx > DMTE-526: abrir a linha por teclado e nova aba, e estado da ordenação > AC-02: a plain click opens the ticket once; Ctrl, Meta, Shift and middle click are left to the browser
+TestingLibraryElementError: Unable to find an accessible element with the role "link" and name "AP-2026-0001"
+
+Here are the accessible roles:
+
+  combobox:
+
+  Name "Agrupar por":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33maria-haspopup[39m=[32m"listbox"[39m
+    [33maria-label[39m=[32m"Agrupar por"[39m
+    [33mclass[39m=[32m"flex h-full w-full items-center justify-between gap-2 bg-transparent text-left text-gray-900 outline-none pl-2 pr-2 text-[13px]"[39m
+    [33mrole[39m=[32m"combobox"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  button:
+
+  Name "Exibir colunas":
+  [36m<button[39m
+    [33mclass[39m=[32m"h-[var(--control-height-compact)] rounded-control border border-gray-200 bg-white px-3 text-[13px] font-medium text-gray-700 hover:bg-gray-90"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Número":
+  [36m<button[39m
+    [33mclass[39m=[32m"cursor-pointer hover:text-gray-900"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Título":
+  [36m<button[39m
+    [33mclass[39m=[32m"cursor-pointer hover:text-gray-900"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Prioridade":
+  [36m<button[39m
+    [33mclass[39m=[32m"cursor-pointer hover:text-gray-900"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Status":
+  [36m<button[39m
+    [33mclass[39m=[32m"cursor-pointer hover:text-gray-900"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  region:
+
+  Name "Tabela de chamados":
+  [36m<div[39m
+    [33maria-label[39m=[32m"Tabela de chamados"[39m
+    [33mclass[39m=[32m"overflow-x-auto rounded-control border border-gray-200 bg-white outline-none focus-visible:ring-2 focus-visible:ring-brand-500"[39m
+    [33mrole[39m=[32m"region"[39m
+    [33mtabindex[39m=[32m"0"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  table:
+
+  Name "":
+  [36m<table[39m
+    [33mclass[39m=[32m"w-full min-w-[720px] text-left"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  rowgroup:
+
+  Name "":
+  [36m<thead />[39m
+
+  Name "":
+  [36m<tbody />[39m
+
+  --------------------------------------------------
+  row:
+
+  Name "Número Título Cliente Origem Prioridade Status Estágio":
+  [36m<tr[39m
+    [33mclass[39m=[32m"border-b border-gray-200 bg-gray-80"[39m
+  [36m/>[39m
+
+  Name "AP-2026-0001 Printer broken Acme Web Alta Aberto Triagem":
+  [36m<tr[39m
+    [33mclass[39m=[32m"border-b border-gray-100 last:border-0 hover:bg-gray-80 cursor-pointer"[39m
+  [36m/>[39m
+
+  Name "AP-2026-0002 Email down Beta Web Média Em Andamento Triagem":
+  [36m<tr[39m
+    [33mclass[39m=[32m"border-b border-gray-100 last:border-0 hover:bg-gray-80 cursor-pointer"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  columnheader:
+
+  Name "Número":
+  [36m<th[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[12px] font-semibold text-gray-600"[39m
+  [36m/>[39m
+
+  Name "Título":
+  [36m<th[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[12px] font-semibold text-gray-600"[39m
+  [36m/>[39m
+
+  Name "Cliente":
+  [36m<th[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[12px] font-semibold text-gray-600"[39m
+  [36m/>[39m
+
+  Name "Origem":
+  [36m<th[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[12px] font-semibold text-gray-600"[39m
+  [36m/>[39m
+
+  Name "Prioridade":
+  [36m<th[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[12px] font-semibold text-gray-600"[39m
+  [36m/>[39m
+
+  Name "Status":
+  [36m<th[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[12px] font-semibold text-gray-600"[39m
+  [36m/>[39m
+
+  Name "Estágio":
+  [36m<th[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[12px] font-semibold text-gray-600"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  cell:
+
+  Name "AP-2026-0001":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+  [36m/>[39m
+
+  Name "Printer broken":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+  [36m/>[39m
+
+  Name "Acme":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+  [36m/>[39m
+
+  Name "Web":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+  [36m/>[39m
+
+  Name "Alta":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+  [36m/>[39m
+
+  Name "Aberto":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+  [36m/>[39m
+
+  Name "Triagem":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+  [36m/>[39m
+
+  Name "AP-2026-0002":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+  [36m/>[39m
+
+  Name "Email down":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+  [36m/>[39m
+
+  Name "Beta":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+  [36m/>[39m
+
+  Name "Web":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+  [36m/>[39m
+
+  Name "Média":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+  [36m/>[39m
+
+  Name "Em Andamento":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+  [36m/>[39m
+
+  Name "Triagem":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-2"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex flex-wrap items-center gap-3"[39m
+      [36m>[39m
+        [36m<label[39m
+          [33mclass[39m=[32m"text-[13px] font-medium text-gray-700"[39m
+          [33mfor[39m=[32m"ticket-list-group-by"[39m
+        [36m>[39m
+          [0mAgrupar por[0m
+        [36m</label>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex flex-col gap-1 w-auto"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"relative"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border bg-white rounded-[8px] h-11 sm:h-[32px] focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300"[39m
+            [36m>[39m
+              [36m<select[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33maria-label[39m=[32m"Agrupar por"[39m
+                [33mclass[39m=[32m"sr-only"[39m
+                [33mid[39m=[32m"ticket-list-group-by"[39m
+                [33mtabindex[39m=[32m"-1"[39m
+              [36m>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"none"[39m
+                [36m>[39m
+                  [0mNenhum[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"organization"[39m
+                [36m>[39m
+                  [0mCliente[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"stage"[39m
+                [36m>[39m
+                  [0mEstágio[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"status"[39m
+                [36m>[39m
+                  [0mStatus[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"priority"[39m
+                [36m>[39m
+                  [0mPrioridade[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"agent"[39m
+                [36m>[39m
+                  [0mResponsável[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"serviceDesk"[39m
+                [36m>[39m
+                  [0mMesa de serviço[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"requester"[39m
+                [36m>[39m
+                  [0mSolicitante[0m
+                [36m</option>[39m
+              [36m</select>[39m
+              [36m<button[39m
+                [33maria-expanded[39m=[32m"false"[39m
+                [33maria-haspopup[39m=[32m"listbox"[39m
+                [33maria-label[39m=[32m"Agrupar por"[39m
+                [33mclass[39m=[32m"flex h-full w-full items-center justify-between gap-2 bg-transparent text-left text-gray-900 outline-none pl-2 pr-2 text-[13px]"[39m
+                [33mrole[39m=[32m"combobox"[39m
+                [33mtype[39m=[32m"button"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"truncate"[39m
+                [36m>[39m
+                  [0mNenhum[0m
+                [36m</span>[39m
+                [36m<svg[39m
+                  [33maria-hidden[39m=[32m"true"[39m
+                  [33mclass[39m=[32m"lucide lucide-chevron-down shrink-0 text-gray-500 w-3.5 h-3.5"[39m
+                  [33mfill[39m=[32m"none"[39m
+                  [33mheight[39m=[32m"24"[39m
+                  [33mstroke[39m=[32m"currentColor"[39m
+                  [33mstroke-linecap[39m=[32m"round"[39m
+                  [33mstroke-linejoin[39m=[32m"round"[39m
+                  [33mstroke-width[39m=[32m"2"[39m
+                  [33mviewBox[39m=[32m"0 0 24 24"[39m
+                  [33mwidth[39m=[32m"24"[39m
+                  [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                [36m>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"m6 9 6 6 6-6"[39m
+                  [36m/>[39m
+                [36m</svg>[39m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"relative"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"h-[var(--control-height-compact)] rounded-control border border-gray-200 bg-white px-3 text-[13px] font-medium text-gray-700 hover:bg-gray-90"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [0mExibir colunas[0m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33maria-label[39m=[32m"Tabela de chamados"[39m
+        [33mclass[39m=[32m"overflow-x-auto rounded-control border border-gray-200 bg-white outline-none focus-visible:ring-2 focus-visible:ring-brand-500"[39m
+        [33mrole[39m=[32m"region"[39m
+        [33mtabindex[39m=[32m"0"[39m
+      [36m>[39m
+        [36m<table[39m
+          [33mclass[39m=[32m"w-full min-w-[720px] text-left"[39m
+        [36m>[39m
+          [36m<thead>[39m
+            [36m<tr[39m
+              [33mclass[39m=[32m"border-b border-gray-200 bg-gray-80"[39m
+            [36m>[39m
+              [36m<th[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[12px] font-semibold text-gray-600"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"cursor-pointer hover:text-gray-900"[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [0mNúmero[0m
+                [36m</button>[39m
+              [36m</th>[39m
+              [36m<th[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[12px] font-semibold text-gray-600"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"cursor-pointer hover:text-gray-900"[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [0mTítulo[0m
+                [36m</button>[39m
+              [36m</th>[39m
+              [36m<th[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[12px] font-semibold text-gray-600"[39m
+              [36m>[39m
+                [0mCliente[0m
+              [36m</th>[39m
+              [36m<th[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[12px] font-semibold text-gray-600"[39m
+              [36m>[39m
+                [0mOrigem[0m
+              [36m</th>[39m
+              [36m<th[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[12px] font-semibold text-gray-600"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"cursor-pointer hover:text-gray-900"[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [0mPrioridade[0m
+                [36m</button>[39m
+              [36m</th>[39m
+              [36m<th[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[12px] font-semibold text-gray-600"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"cursor-pointer hover:text-gray-900"[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [0mStatus[0m
+                [36m</button>[39m
+              [36m</th>[39m
+              [36m<th[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[12px] font-semibold text-gray-600"[39m
+              [36m>[39m
+                [0mEstágio[0m
+              [36m</th>[39m
+            [36m</tr>[39m
+          [36m</thead>[39m
+          [36m<tbody>[39m
+            [36m<tr[39m
+              [33mclass[39m=[32m"border-b border-gray-100 last:border-0 hover:bg-gray-80 cursor-pointer"[39m
+            [36m>[39m
+              [36m<td[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"whitespace-nowrap font-mono text-[12px]"[39m
+                [36m>[39m
+                  [0mAP-2026-0001[0m
+                [36m</span>[39m
+              [36m</td>[39m
+              [36m<td[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"block min-w-[14rem] font-medium text-gray-900"[39m
+                [36m>[39m
+                  [0mPrinter broken[0m
+                [36m</span>[39m
+              [36m</td>[39m
+              [36m<td[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+              [36m>[39m
+                [36m<span>[39m
+                  [0mAcme[0m
+                [36m</span>[39m
+              [36m</td>[39m
+              [36m<td[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+              [36m>[39m
+                [36m<span>[39m
+                  [0mWeb[0m
+                [36m</span>[39m
+              [36m</td>[39m
+              [36m<td[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"inline-flex items-center justify-center rounded-[24px] px-2.5 py-1 min-w-[32px] min-h-[24px] text-[12px] font-medium leading-none select-none transition-colors border bg-yellow-100 text-yellow-800 border-yellow-300 whitespace-nowrap"[39m
+                  [33mdata-ticket-tag[39m=[32m"priority"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"flex items-center justify-center mr-1.5 -ml-0.5"[39m
+                  [36m>[39m
+                    [36m<span[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"inline-flex items-end gap-px"[39m
+                      [33mdata-glyph[39m=[32m"bars-3"[39m
+                    [36m>[39m
+                      [36m<span[39m
+                        [33mclass[39m=[32m"w-[3px] rounded-[1px] h-1 bg-yellow-800"[39m
+                      [36m/>[39m
+                      [36m<span[39m
+                        [33mclass[39m=[32m"w-[3px] rounded-[1px] h-1.5 bg-yellow-800"[39m
+                      [36m/>[39m
+                      [36m<span[39m
+                        [33mclass[39m=[32m"w-[3px] rounded-[1px] h-2 bg-yellow-800"[39m
+                      [36m/>[39m
+                      [36m<span[39m
+                        [33mclass[39m=[32m"w-[3px] rounded-[1px] h-2.5 bg-gray-200"[39m
+                      [36m/>[39m
+                    [36m</span>[39m
+                  [36m</span>[39m
+                  [36m<span>[39m
+                    [0mAlta[0m
+                  [36m</span>[39m
+                [36m</div>[39m
+              [36m</td>[39m
+              [36m<td[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"inline-flex items-center justify-center rounded-[24px] px-2.5 py-1 min-w-[32px] min-h-[24px] text-[12px] font-medium leading-none select-none transition-colors border bg-transparent text-gray-700 whitespace-nowrap border-gray-200"[39m
+                  [33mdata-ticket-tag[39m=[32m"status"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"flex items-center justify-center mr-1.5 -ml-0.5"[39m
+                  [36m>[39m
+                    [36m<span[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"h-2 w-2 rounded-full border-2 border-petroleum-500"[39m
+                      [33mdata-glyph[39m=[32m"ring"[39m
+                    [36m/>[39m
+                  [36m</span>[39m
+                  [36m<span>[39m
+                    [0mAberto[0m
+                  [36m</span>[39m
+                [36m</div>[39m
+              [36m</td>[39m
+              [36m<td[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+              [36m>[39m
+                [36m<span>[39m
+                  [0mTriagem[0m
+                [36m</span>[39m
+              [36m</td>[39m
+            [36m</tr>[39m
+            [36m<tr[39m
+              [33mclass[39m=[32m"border-b border-gray-100 last:border-0 hover:bg-gray-80 cursor-pointer"[39m
+            [36m>[39m
+              [36m<td[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"whitespace-nowrap font-mono text-[12px]"[39m
+                [36m>[39m
+                  [0mAP-2026-0002[0m
+                [36m</span>[39m
+              [36m</td>[39m
+              [36m<td[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"block min-w-[14rem] font-medium text-gray-900"[39m
+                [36m>[39m
+                  [0mEmail down[0m
+                [36m</span>[39m
+              [36m</td>[39m
+              [36m<td[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+              [36m>[39m
+                [36m<span>[39m
+                  [0mBeta[0m
+                [36m</span>[39m
+              [36m</td>[39m
+              [36m<td[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+              [36m>[39m
+                [36m<span>[39m
+                  [0mWeb[0m
+                [36m</span>[39m
+              [36m</td>[39m
+              [36m<td[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"inline-flex items-center justify-center rounded-[24px] px-2.5 py-1 min-w-[32px] min-h-[24px] text-[12px] font-medium leading-none select-none transition-colors border bg-transparent text-gray-700 whitespace-nowrap border-gray-200"[39m
+                  [33mdata-ticket-tag[39m=[32m"priority"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"flex items-center justify-center mr-1.5 -ml-0.5"[39m
+                  [36m>[39m
+                    [36m<span[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"inline-flex items-end gap-px"[39m
+                      [33mdata-glyph[39m=[32m"bars-2"[39m
+                    [36m>[39m
+                      [36m<span[39m
+                        [33mclass[39m=[32m"w-[3px] rounded-[1px] h-1 bg-gray-400"[39m
+                      [36m/>[39m
+                      [36m<span[39m
+                        [33mclass[39m=[32m"w-[3px] rounded-[1px] h-1.5 bg-gray-400"[39m
+                      [36m/>[39m
+                      [36m<span[39m
+                        [33mclass[39m=[32m"w-[3px] rounded-[1px] h-2 bg-gray-200"[39m
+                      [36m/>[39m
+                      [36m<span[39m
+                        [33mclass[39m=[32m"w-[3px] rounded-[1px] h-2.5 bg-gray-200"[39m
+                      [36m/>[39m
+                    [36m</span>[39m
+                  [36m</span>[39m
+                  [36m<span>[39m
+                    [0mMédia[0m
+                  [36m</span>[39m
+                [36m</div>[39m
+              [36m</td>[39m
+              [36m<td[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"inline-flex items-center justify-center rounded-[24px] px-2.5 py-1 min-w-[32px] min-h-[24px] text-[12px] font-medium leading-none select-none transition-colors border bg-transparent text-gray-700 whitespace-nowrap border-gray-200"[39m
+                  [33mdata-ticket-tag[39m=[32m"status"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"flex items-center justify-center mr-1.5 -ml-0.5"[39m
+                  [36m>[39m
+                    [36m<span[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"h-2 w-2 rounded-full bg-brand-600"[39m
+                      [33mdata-glyph[39m=[32m"dot"[39m
+                    [36m/>[39m
+                  [36m</span>[39m
+                  [36m<span>[39m
+                    [0mEm Andamento[0m
+                  [36m</span>[39m
+                [36m</div>[39m
+              [36m</td>[39m
+              [36m<td[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+              [36m>[39m
+                [36m<span>[39m
+                  [0mTriagem[0m
+                [36m</span>[39m
+              [36m</td>[39m
+            [36m</tr>[39m
+          [36m</tbody>[39m
+        [36m</table>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+    [36m<div[39m
+      [33mdata-testid[39m=[32m"location-probe"[39m
+    [36m>[39m
+      [0m/[0m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ protocolLink src/components/tickets/TicketList.test.tsx:341:53
+    339|     );
+    340|   }
+    341|   const protocolLink = (protocol: string) => screen.getByRole('link', …
+       |                                                     ^
+    342|   const headerOf = (name: string) => screen.getByRole('columnheader', …
+    343|
+ ❯ src/components/tickets/TicketList.test.tsx:372:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  |web| src/components/tickets/TicketList.test.tsx > DMTE-526: abrir a linha por teclado e nova aba, e estado da ordenação > AC-04: only the sorted column carries aria-sort and a direction arrow, and both follow the clicks
+Error: [2mexpect([22m[31melement[39m[2m).toHaveAttribute([22m[32m[32m"aria-sort"[32m[39m[2m, [22m[32m[32m"descending"[32m[39m[2m) // element.getAttribute("aria-sort") === "descending"[22m
+
+Expected the element to have attribute:
+[32m  aria-sort="descending"[39m
+Received:
+[31m  null[39m
+ ❯ src/components/tickets/TicketList.test.tsx:405:32
+    403|     renderWithProbe({ sortBy: 'title', sortDir: 'desc' });
+    404|
+    405|     expect(headerOf('Título')).toHaveAttribute('aria-sort', 'descendin…
+       |                                ^
+    406|     const sorted = screen.getAllByRole('columnheader').filter((th) => …
+    407|     expect(sorted).toHaveLength(1);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  |web| src/components/tickets/TicketList.test.tsx > DMTE-526: abrir a linha por teclado e nova aba, e estado da ordenação > AC-05: the row uses the grid-row-hover token and the controls show a focus ring
+TestingLibraryElementError: Unable to find an accessible element with the role "link" and name "AP-2026-0001"
+
+Here are the accessible roles:
+
+  combobox:
+
+  Name "Agrupar por":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33maria-haspopup[39m=[32m"listbox"[39m
+    [33maria-label[39m=[32m"Agrupar por"[39m
+    [33mclass[39m=[32m"flex h-full w-full items-center justify-between gap-2 bg-transparent text-left text-gray-900 outline-none pl-2 pr-2 text-[13px]"[39m
+    [33mrole[39m=[32m"combobox"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  button:
+
+  Name "Exibir colunas":
+  [36m<button[39m
+    [33mclass[39m=[32m"h-[var(--control-height-compact)] rounded-control border border-gray-200 bg-white px-3 text-[13px] font-medium text-gray-700 hover:bg-gray-90"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Número":
+  [36m<button[39m
+    [33mclass[39m=[32m"cursor-pointer hover:text-gray-900"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Título":
+  [36m<button[39m
+    [33mclass[39m=[32m"cursor-pointer hover:text-gray-900"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Prioridade":
+  [36m<button[39m
+    [33mclass[39m=[32m"cursor-pointer hover:text-gray-900"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Status":
+  [36m<button[39m
+    [33mclass[39m=[32m"cursor-pointer hover:text-gray-900"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  region:
+
+  Name "Tabela de chamados":
+  [36m<div[39m
+    [33maria-label[39m=[32m"Tabela de chamados"[39m
+    [33mclass[39m=[32m"overflow-x-auto rounded-control border border-gray-200 bg-white outline-none focus-visible:ring-2 focus-visible:ring-brand-500"[39m
+    [33mrole[39m=[32m"region"[39m
+    [33mtabindex[39m=[32m"0"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  table:
+
+  Name "":
+  [36m<table[39m
+    [33mclass[39m=[32m"w-full min-w-[720px] text-left"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  rowgroup:
+
+  Name "":
+  [36m<thead />[39m
+
+  Name "":
+  [36m<tbody />[39m
+
+  --------------------------------------------------
+  row:
+
+  Name "Número Título Cliente Origem Prioridade Status Estágio":
+  [36m<tr[39m
+    [33mclass[39m=[32m"border-b border-gray-200 bg-gray-80"[39m
+  [36m/>[39m
+
+  Name "AP-2026-0001 Printer broken Acme Web Alta Aberto Triagem":
+  [36m<tr[39m
+    [33mclass[39m=[32m"border-b border-gray-100 last:border-0 hover:bg-gray-80 cursor-pointer"[39m
+  [36m/>[39m
+
+  Name "AP-2026-0002 Email down Beta Web Média Em Andamento Triagem":
+  [36m<tr[39m
+    [33mclass[39m=[32m"border-b border-gray-100 last:border-0 hover:bg-gray-80 cursor-pointer"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  columnheader:
+
+  Name "Número":
+  [36m<th[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[12px] font-semibold text-gray-600"[39m
+  [36m/>[39m
+
+  Name "Título":
+  [36m<th[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[12px] font-semibold text-gray-600"[39m
+  [36m/>[39m
+
+  Name "Cliente":
+  [36m<th[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[12px] font-semibold text-gray-600"[39m
+  [36m/>[39m
+
+  Name "Origem":
+  [36m<th[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[12px] font-semibold text-gray-600"[39m
+  [36m/>[39m
+
+  Name "Prioridade":
+  [36m<th[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[12px] font-semibold text-gray-600"[39m
+  [36m/>[39m
+
+  Name "Status":
+  [36m<th[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[12px] font-semibold text-gray-600"[39m
+  [36m/>[39m
+
+  Name "Estágio":
+  [36m<th[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[12px] font-semibold text-gray-600"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  cell:
+
+  Name "AP-2026-0001":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+  [36m/>[39m
+
+  Name "Printer broken":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+  [36m/>[39m
+
+  Name "Acme":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+  [36m/>[39m
+
+  Name "Web":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+  [36m/>[39m
+
+  Name "Alta":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+  [36m/>[39m
+
+  Name "Aberto":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+  [36m/>[39m
+
+  Name "Triagem":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+  [36m/>[39m
+
+  Name "AP-2026-0002":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+  [36m/>[39m
+
+  Name "Email down":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+  [36m/>[39m
+
+  Name "Beta":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+  [36m/>[39m
+
+  Name "Web":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+  [36m/>[39m
+
+  Name "Média":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+  [36m/>[39m
+
+  Name "Em Andamento":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+  [36m/>[39m
+
+  Name "Triagem":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-2"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex flex-wrap items-center gap-3"[39m
+      [36m>[39m
+        [36m<label[39m
+          [33mclass[39m=[32m"text-[13px] font-medium text-gray-700"[39m
+          [33mfor[39m=[32m"ticket-list-group-by"[39m
+        [36m>[39m
+          [0mAgrupar por[0m
+        [36m</label>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex flex-col gap-1 w-auto"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"relative"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border bg-white rounded-[8px] h-11 sm:h-[32px] focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300"[39m
+            [36m>[39m
+              [36m<select[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33maria-label[39m=[32m"Agrupar por"[39m
+                [33mclass[39m=[32m"sr-only"[39m
+                [33mid[39m=[32m"ticket-list-group-by"[39m
+                [33mtabindex[39m=[32m"-1"[39m
+              [36m>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"none"[39m
+                [36m>[39m
+                  [0mNenhum[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"organization"[39m
+                [36m>[39m
+                  [0mCliente[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"stage"[39m
+                [36m>[39m
+                  [0mEstágio[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"status"[39m
+                [36m>[39m
+                  [0mStatus[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"priority"[39m
+                [36m>[39m
+                  [0mPrioridade[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"agent"[39m
+                [36m>[39m
+                  [0mResponsável[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"serviceDesk"[39m
+                [36m>[39m
+                  [0mMesa de serviço[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"requester"[39m
+                [36m>[39m
+                  [0mSolicitante[0m
+                [36m</option>[39m
+              [36m</select>[39m
+              [36m<button[39m
+                [33maria-expanded[39m=[32m"false"[39m
+                [33maria-haspopup[39m=[32m"listbox"[39m
+                [33maria-label[39m=[32m"Agrupar por"[39m
+                [33mclass[39m=[32m"flex h-full w-full items-center justify-between gap-2 bg-transparent text-left text-gray-900 outline-none pl-2 pr-2 text-[13px]"[39m
+                [33mrole[39m=[32m"combobox"[39m
+                [33mtype[39m=[32m"button"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"truncate"[39m
+                [36m>[39m
+                  [0mNenhum[0m
+                [36m</span>[39m
+                [36m<svg[39m
+                  [33maria-hidden[39m=[32m"true"[39m
+                  [33mclass[39m=[32m"lucide lucide-chevron-down shrink-0 text-gray-500 w-3.5 h-3.5"[39m
+                  [33mfill[39m=[32m"none"[39m
+                  [33mheight[39m=[32m"24"[39m
+                  [33mstroke[39m=[32m"currentColor"[39m
+                  [33mstroke-linecap[39m=[32m"round"[39m
+                  [33mstroke-linejoin[39m=[32m"round"[39m
+                  [33mstroke-width[39m=[32m"2"[39m
+                  [33mviewBox[39m=[32m"0 0 24 24"[39m
+                  [33mwidth[39m=[32m"24"[39m
+                  [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                [36m>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"m6 9 6 6 6-6"[39m
+                  [36m/>[39m
+                [36m</svg>[39m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"relative"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"h-[var(--control-height-compact)] rounded-control border border-gray-200 bg-white px-3 text-[13px] font-medium text-gray-700 hover:bg-gray-90"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [0mExibir colunas[0m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33maria-label[39m=[32m"Tabela de chamados"[39m
+        [33mclass[39m=[32m"overflow-x-auto rounded-control border border-gray-200 bg-white outline-none focus-visible:ring-2 focus-visible:ring-brand-500"[39m
+        [33mrole[39m=[32m"region"[39m
+        [33mtabindex[39m=[32m"0"[39m
+      [36m>[39m
+        [36m<table[39m
+          [33mclass[39m=[32m"w-full min-w-[720px] text-left"[39m
+        [36m>[39m
+          [36m<thead>[39m
+            [36m<tr[39m
+              [33mclass[39m=[32m"border-b border-gray-200 bg-gray-80"[39m
+            [36m>[39m
+              [36m<th[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[12px] font-semibold text-gray-600"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"cursor-pointer hover:text-gray-900"[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [0mNúmero[0m
+                [36m</button>[39m
+              [36m</th>[39m
+              [36m<th[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[12px] font-semibold text-gray-600"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"cursor-pointer hover:text-gray-900"[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [0mTítulo[0m
+                [36m</button>[39m
+              [36m</th>[39m
+              [36m<th[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[12px] font-semibold text-gray-600"[39m
+              [36m>[39m
+                [0mCliente[0m
+              [36m</th>[39m
+              [36m<th[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[12px] font-semibold text-gray-600"[39m
+              [36m>[39m
+                [0mOrigem[0m
+              [36m</th>[39m
+              [36m<th[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[12px] font-semibold text-gray-600"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"cursor-pointer hover:text-gray-900"[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [0mPrioridade[0m
+                [36m</button>[39m
+              [36m</th>[39m
+              [36m<th[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[12px] font-semibold text-gray-600"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"cursor-pointer hover:text-gray-900"[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [0mStatus[0m
+                [36m</button>[39m
+              [36m</th>[39m
+              [36m<th[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[12px] font-semibold text-gray-600"[39m
+              [36m>[39m
+                [0mEstágio[0m
+              [36m</th>[39m
+            [36m</tr>[39m
+          [36m</thead>[39m
+          [36m<tbody>[39m
+            [36m<tr[39m
+              [33mclass[39m=[32m"border-b border-gray-100 last:border-0 hover:bg-gray-80 cursor-pointer"[39m
+            [36m>[39m
+              [36m<td[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"whitespace-nowrap font-mono text-[12px]"[39m
+                [36m>[39m
+                  [0mAP-2026-0001[0m
+                [36m</span>[39m
+              [36m</td>[39m
+              [36m<td[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"block min-w-[14rem] font-medium text-gray-900"[39m
+                [36m>[39m
+                  [0mPrinter broken[0m
+                [36m</span>[39m
+              [36m</td>[39m
+              [36m<td[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+              [36m>[39m
+                [36m<span>[39m
+                  [0mAcme[0m
+                [36m</span>[39m
+              [36m</td>[39m
+              [36m<td[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+              [36m>[39m
+                [36m<span>[39m
+                  [0mWeb[0m
+                [36m</span>[39m
+              [36m</td>[39m
+              [36m<td[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"inline-flex items-center justify-center rounded-[24px] px-2.5 py-1 min-w-[32px] min-h-[24px] text-[12px] font-medium leading-none select-none transition-colors border bg-yellow-100 text-yellow-800 border-yellow-300 whitespace-nowrap"[39m
+                  [33mdata-ticket-tag[39m=[32m"priority"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"flex items-center justify-center mr-1.5 -ml-0.5"[39m
+                  [36m>[39m
+                    [36m<span[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"inline-flex items-end gap-px"[39m
+                      [33mdata-glyph[39m=[32m"bars-3"[39m
+                    [36m>[39m
+                      [36m<span[39m
+                        [33mclass[39m=[32m"w-[3px] rounded-[1px] h-1 bg-yellow-800"[39m
+                      [36m/>[39m
+                      [36m<span[39m
+                        [33mclass[39m=[32m"w-[3px] rounded-[1px] h-1.5 bg-yellow-800"[39m
+                      [36m/>[39m
+                      [36m<span[39m
+                        [33mclass[39m=[32m"w-[3px] rounded-[1px] h-2 bg-yellow-800"[39m
+                      [36m/>[39m
+                      [36m<span[39m
+                        [33mclass[39m=[32m"w-[3px] rounded-[1px] h-2.5 bg-gray-200"[39m
+                      [36m/>[39m
+                    [36m</span>[39m
+                  [36m</span>[39m
+                  [36m<span>[39m
+                    [0mAlta[0m
+                  [36m</span>[39m
+                [36m</div>[39m
+              [36m</td>[39m
+              [36m<td[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"inline-flex items-center justify-center rounded-[24px] px-2.5 py-1 min-w-[32px] min-h-[24px] text-[12px] font-medium leading-none select-none transition-colors border bg-transparent text-gray-700 whitespace-nowrap border-gray-200"[39m
+                  [33mdata-ticket-tag[39m=[32m"status"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"flex items-center justify-center mr-1.5 -ml-0.5"[39m
+                  [36m>[39m
+                    [36m<span[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"h-2 w-2 rounded-full border-2 border-petroleum-500"[39m
+                      [33mdata-glyph[39m=[32m"ring"[39m
+                    [36m/>[39m
+                  [36m</span>[39m
+                  [36m<span>[39m
+                    [0mAberto[0m
+                  [36m</span>[39m
+                [36m</div>[39m
+              [36m</td>[39m
+              [36m<td[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+              [36m>[39m
+                [36m<span>[39m
+                  [0mTriagem[0m
+                [36m</span>[39m
+              [36m</td>[39m
+            [36m</tr>[39m
+            [36m<tr[39m
+              [33mclass[39m=[32m"border-b border-gray-100 last:border-0 hover:bg-gray-80 cursor-pointer"[39m
+            [36m>[39m
+              [36m<td[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"whitespace-nowrap font-mono text-[12px]"[39m
+                [36m>[39m
+                  [0mAP-2026-0002[0m
+                [36m</span>[39m
+              [36m</td>[39m
+              [36m<td[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"block min-w-[14rem] font-medium text-gray-900"[39m
+                [36m>[39m
+                  [0mEmail down[0m
+                [36m</span>[39m
+              [36m</td>[39m
+              [36m<td[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+              [36m>[39m
+                [36m<span>[39m
+                  [0mBeta[0m
+                [36m</span>[39m
+              [36m</td>[39m
+              [36m<td[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+              [36m>[39m
+                [36m<span>[39m
+                  [0mWeb[0m
+                [36m</span>[39m
+              [36m</td>[39m
+              [36m<td[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"inline-flex items-center justify-center rounded-[24px] px-2.5 py-1 min-w-[32px] min-h-[24px] text-[12px] font-medium leading-none select-none transition-colors border bg-transparent text-gray-700 whitespace-nowrap border-gray-200"[39m
+                  [33mdata-ticket-tag[39m=[32m"priority"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"flex items-center justify-center mr-1.5 -ml-0.5"[39m
+                  [36m>[39m
+                    [36m<span[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"inline-flex items-end gap-px"[39m
+                      [33mdata-glyph[39m=[32m"bars-2"[39m
+                    [36m>[39m
+                      [36m<span[39m
+                        [33mclass[39m=[32m"w-[3px] rounded-[1px] h-1 bg-gray-400"[39m
+                      [36m/>[39m
+                      [36m<span[39m
+                        [33mclass[39m=[32m"w-[3px] rounded-[1px] h-1.5 bg-gray-400"[39m
+                      [36m/>[39m
+                      [36m<span[39m
+                        [33mclass[39m=[32m"w-[3px] rounded-[1px] h-2 bg-gray-200"[39m
+                      [36m/>[39m
+                      [36m<span[39m
+                        [33mclass[39m=[32m"w-[3px] rounded-[1px] h-2.5 bg-gray-200"[39m
+                      [36m/>[39m
+                    [36m</span>[39m
+                  [36m</span>[39m
+                  [36m<span>[39m
+                    [0mMédia[0m
+                  [36m</span>[39m
+                [36m</div>[39m
+              [36m</td>[39m
+              [36m<td[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"inline-flex items-center justify-center rounded-[24px] px-2.5 py-1 min-w-[32px] min-h-[24px] text-[12px] font-medium leading-none select-none transition-colors border bg-transparent text-gray-700 whitespace-nowrap border-gray-200"[39m
+                  [33mdata-ticket-tag[39m=[32m"status"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"flex items-center justify-center mr-1.5 -ml-0.5"[39m
+                  [36m>[39m
+                    [36m<span[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"h-2 w-2 rounded-full bg-brand-600"[39m
+                      [33mdata-glyph[39m=[32m"dot"[39m
+                    [36m/>[39m
+                  [36m</span>[39m
+                  [36m<span>[39m
+                    [0mEm Andamento[0m
+                  [36m</span>[39m
+                [36m</div>[39m
+              [36m</td>[39m
+              [36m<td[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+              [36m>[39m
+                [36m<span>[39m
+                  [0mTriagem[0m
+                [36m</span>[39m
+              [36m</td>[39m
+            [36m</tr>[39m
+          [36m</tbody>[39m
+        [36m</table>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+    [36m<div[39m
+      [33mdata-testid[39m=[32m"location-probe"[39m
+    [36m>[39m
+      [0m/[0m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ protocolLink src/components/tickets/TicketList.test.tsx:341:53
+    339|     );
+    340|   }
+    341|   const protocolLink = (protocol: string) => screen.getByRole('link', …
+       |                                                     ^
+    342|   const headerOf = (name: string) => screen.getByRole('columnheader', …
+    343|
+ ❯ src/components/tickets/TicketList.test.tsx:428:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  |web| src/components/tickets/TicketList.test.tsx > DMTE-526: abrir a linha por teclado e nova aba, e estado da ordenação > AC-06: the protocol link text reaches 4.5:1 over white and over grid-row-hover
+TestingLibraryElementError: Unable to find an accessible element with the role "link" and name "AP-2026-0001"
+
+Here are the accessible roles:
+
+  combobox:
+
+  Name "Agrupar por":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33maria-haspopup[39m=[32m"listbox"[39m
+    [33maria-label[39m=[32m"Agrupar por"[39m
+    [33mclass[39m=[32m"flex h-full w-full items-center justify-between gap-2 bg-transparent text-left text-gray-900 outline-none pl-2 pr-2 text-[13px]"[39m
+    [33mrole[39m=[32m"combobox"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  button:
+
+  Name "Exibir colunas":
+  [36m<button[39m
+    [33mclass[39m=[32m"h-[var(--control-height-compact)] rounded-control border border-gray-200 bg-white px-3 text-[13px] font-medium text-gray-700 hover:bg-gray-90"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Número":
+  [36m<button[39m
+    [33mclass[39m=[32m"cursor-pointer hover:text-gray-900"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Título":
+  [36m<button[39m
+    [33mclass[39m=[32m"cursor-pointer hover:text-gray-900"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Prioridade":
+  [36m<button[39m
+    [33mclass[39m=[32m"cursor-pointer hover:text-gray-900"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Status":
+  [36m<button[39m
+    [33mclass[39m=[32m"cursor-pointer hover:text-gray-900"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  region:
+
+  Name "Tabela de chamados":
+  [36m<div[39m
+    [33maria-label[39m=[32m"Tabela de chamados"[39m
+    [33mclass[39m=[32m"overflow-x-auto rounded-control border border-gray-200 bg-white outline-none focus-visible:ring-2 focus-visible:ring-brand-500"[39m
+    [33mrole[39m=[32m"region"[39m
+    [33mtabindex[39m=[32m"0"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  table:
+
+  Name "":
+  [36m<table[39m
+    [33mclass[39m=[32m"w-full min-w-[720px] text-left"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  rowgroup:
+
+  Name "":
+  [36m<thead />[39m
+
+  Name "":
+  [36m<tbody />[39m
+
+  --------------------------------------------------
+  row:
+
+  Name "Número Título Cliente Origem Prioridade Status Estágio":
+  [36m<tr[39m
+    [33mclass[39m=[32m"border-b border-gray-200 bg-gray-80"[39m
+  [36m/>[39m
+
+  Name "AP-2026-0001 Printer broken Acme Web Alta Aberto Triagem":
+  [36m<tr[39m
+    [33mclass[39m=[32m"border-b border-gray-100 last:border-0 hover:bg-gray-80 cursor-pointer"[39m
+  [36m/>[39m
+
+  Name "AP-2026-0002 Email down Beta Web Média Em Andamento Triagem":
+  [36m<tr[39m
+    [33mclass[39m=[32m"border-b border-gray-100 last:border-0 hover:bg-gray-80 cursor-pointer"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  columnheader:
+
+  Name "Número":
+  [36m<th[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[12px] font-semibold text-gray-600"[39m
+  [36m/>[39m
+
+  Name "Título":
+  [36m<th[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[12px] font-semibold text-gray-600"[39m
+  [36m/>[39m
+
+  Name "Cliente":
+  [36m<th[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[12px] font-semibold text-gray-600"[39m
+  [36m/>[39m
+
+  Name "Origem":
+  [36m<th[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[12px] font-semibold text-gray-600"[39m
+  [36m/>[39m
+
+  Name "Prioridade":
+  [36m<th[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[12px] font-semibold text-gray-600"[39m
+  [36m/>[39m
+
+  Name "Status":
+  [36m<th[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[12px] font-semibold text-gray-600"[39m
+  [36m/>[39m
+
+  Name "Estágio":
+  [36m<th[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[12px] font-semibold text-gray-600"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  cell:
+
+  Name "AP-2026-0001":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+  [36m/>[39m
+
+  Name "Printer broken":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+  [36m/>[39m
+
+  Name "Acme":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+  [36m/>[39m
+
+  Name "Web":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+  [36m/>[39m
+
+  Name "Alta":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+  [36m/>[39m
+
+  Name "Aberto":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+  [36m/>[39m
+
+  Name "Triagem":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+  [36m/>[39m
+
+  Name "AP-2026-0002":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+  [36m/>[39m
+
+  Name "Email down":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+  [36m/>[39m
+
+  Name "Beta":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+  [36m/>[39m
+
+  Name "Web":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+  [36m/>[39m
+
+  Name "Média":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+  [36m/>[39m
+
+  Name "Em Andamento":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+  [36m/>[39m
+
+  Name "Triagem":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-2"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex flex-wrap items-center gap-3"[39m
+      [36m>[39m
+        [36m<label[39m
+          [33mclass[39m=[32m"text-[13px] font-medium text-gray-700"[39m
+          [33mfor[39m=[32m"ticket-list-group-by"[39m
+        [36m>[39m
+          [0mAgrupar por[0m
+        [36m</label>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex flex-col gap-1 w-auto"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"relative"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border bg-white rounded-[8px] h-11 sm:h-[32px] focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300"[39m
+            [36m>[39m
+              [36m<select[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33maria-label[39m=[32m"Agrupar por"[39m
+                [33mclass[39m=[32m"sr-only"[39m
+                [33mid[39m=[32m"ticket-list-group-by"[39m
+                [33mtabindex[39m=[32m"-1"[39m
+              [36m>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"none"[39m
+                [36m>[39m
+                  [0mNenhum[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"organization"[39m
+                [36m>[39m
+                  [0mCliente[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"stage"[39m
+                [36m>[39m
+                  [0mEstágio[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"status"[39m
+                [36m>[39m
+                  [0mStatus[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"priority"[39m
+                [36m>[39m
+                  [0mPrioridade[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"agent"[39m
+                [36m>[39m
+                  [0mResponsável[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"serviceDesk"[39m
+                [36m>[39m
+                  [0mMesa de serviço[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"requester"[39m
+                [36m>[39m
+                  [0mSolicitante[0m
+                [36m</option>[39m
+              [36m</select>[39m
+              [36m<button[39m
+                [33maria-expanded[39m=[32m"false"[39m
+                [33maria-haspopup[39m=[32m"listbox"[39m
+                [33maria-label[39m=[32m"Agrupar por"[39m
+                [33mclass[39m=[32m"flex h-full w-full items-center justify-between gap-2 bg-transparent text-left text-gray-900 outline-none pl-2 pr-2 text-[13px]"[39m
+                [33mrole[39m=[32m"combobox"[39m
+                [33mtype[39m=[32m"button"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"truncate"[39m
+                [36m>[39m
+                  [0mNenhum[0m
+                [36m</span>[39m
+                [36m<svg[39m
+                  [33maria-hidden[39m=[32m"true"[39m
+                  [33mclass[39m=[32m"lucide lucide-chevron-down shrink-0 text-gray-500 w-3.5 h-3.5"[39m
+                  [33mfill[39m=[32m"none"[39m
+                  [33mheight[39m=[32m"24"[39m
+                  [33mstroke[39m=[32m"currentColor"[39m
+                  [33mstroke-linecap[39m=[32m"round"[39m
+                  [33mstroke-linejoin[39m=[32m"round"[39m
+                  [33mstroke-width[39m=[32m"2"[39m
+                  [33mviewBox[39m=[32m"0 0 24 24"[39m
+                  [33mwidth[39m=[32m"24"[39m
+                  [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                [36m>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"m6 9 6 6 6-6"[39m
+                  [36m/>[39m
+                [36m</svg>[39m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"relative"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"h-[var(--control-height-compact)] rounded-control border border-gray-200 bg-white px-3 text-[13px] font-medium text-gray-700 hover:bg-gray-90"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [0mExibir colunas[0m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33maria-label[39m=[32m"Tabela de chamados"[39m
+        [33mclass[39m=[32m"overflow-x-auto rounded-control border border-gray-200 bg-white outline-none focus-visible:ring-2 focus-visible:ring-brand-500"[39m
+        [33mrole[39m=[32m"region"[39m
+        [33mtabindex[39m=[32m"0"[39m
+      [36m>[39m
+        [36m<table[39m
+          [33mclass[39m=[32m"w-full min-w-[720px] text-left"[39m
+        [36m>[39m
+          [36m<thead>[39m
+            [36m<tr[39m
+              [33mclass[39m=[32m"border-b border-gray-200 bg-gray-80"[39m
+            [36m>[39m
+              [36m<th[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[12px] font-semibold text-gray-600"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"cursor-pointer hover:text-gray-900"[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [0mNúmero[0m
+                [36m</button>[39m
+              [36m</th>[39m
+              [36m<th[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[12px] font-semibold text-gray-600"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"cursor-pointer hover:text-gray-900"[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [0mTítulo[0m
+                [36m</button>[39m
+              [36m</th>[39m
+              [36m<th[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[12px] font-semibold text-gray-600"[39m
+              [36m>[39m
+                [0mCliente[0m
+              [36m</th>[39m
+              [36m<th[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[12px] font-semibold text-gray-600"[39m
+              [36m>[39m
+                [0mOrigem[0m
+              [36m</th>[39m
+              [36m<th[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[12px] font-semibold text-gray-600"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"cursor-pointer hover:text-gray-900"[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [0mPrioridade[0m
+                [36m</button>[39m
+              [36m</th>[39m
+              [36m<th[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[12px] font-semibold text-gray-600"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"cursor-pointer hover:text-gray-900"[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [0mStatus[0m
+                [36m</button>[39m
+              [36m</th>[39m
+              [36m<th[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[12px] font-semibold text-gray-600"[39m
+              [36m>[39m
+                [0mEstágio[0m
+              [36m</th>[39m
+            [36m</tr>[39m
+          [36m</thead>[39m
+          [36m<tbody>[39m
+            [36m<tr[39m
+              [33mclass[39m=[32m"border-b border-gray-100 last:border-0 hover:bg-gray-80 cursor-pointer"[39m
+            [36m>[39m
+              [36m<td[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"whitespace-nowrap font-mono text-[12px]"[39m
+                [36m>[39m
+                  [0mAP-2026-0001[0m
+                [36m</span>[39m
+              [36m</td>[39m
+              [36m<td[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"block min-w-[14rem] font-medium text-gray-900"[39m
+                [36m>[39m
+                  [0mPrinter broken[0m
+                [36m</span>[39m
+              [36m</td>[39m
+              [36m<td[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+              [36m>[39m
+                [36m<span>[39m
+                  [0mAcme[0m
+                [36m</span>[39m
+              [36m</td>[39m
+              [36m<td[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+              [36m>[39m
+                [36m<span>[39m
+                  [0mWeb[0m
+                [36m</span>[39m
+              [36m</td>[39m
+              [36m<td[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"inline-flex items-center justify-center rounded-[24px] px-2.5 py-1 min-w-[32px] min-h-[24px] text-[12px] font-medium leading-none select-none transition-colors border bg-yellow-100 text-yellow-800 border-yellow-300 whitespace-nowrap"[39m
+                  [33mdata-ticket-tag[39m=[32m"priority"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"flex items-center justify-center mr-1.5 -ml-0.5"[39m
+                  [36m>[39m
+                    [36m<span[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"inline-flex items-end gap-px"[39m
+                      [33mdata-glyph[39m=[32m"bars-3"[39m
+                    [36m>[39m
+                      [36m<span[39m
+                        [33mclass[39m=[32m"w-[3px] rounded-[1px] h-1 bg-yellow-800"[39m
+                      [36m/>[39m
+                      [36m<span[39m
+                        [33mclass[39m=[32m"w-[3px] rounded-[1px] h-1.5 bg-yellow-800"[39m
+                      [36m/>[39m
+                      [36m<span[39m
+                        [33mclass[39m=[32m"w-[3px] rounded-[1px] h-2 bg-yellow-800"[39m
+                      [36m/>[39m
+                      [36m<span[39m
+                        [33mclass[39m=[32m"w-[3px] rounded-[1px] h-2.5 bg-gray-200"[39m
+                      [36m/>[39m
+                    [36m</span>[39m
+                  [36m</span>[39m
+                  [36m<span>[39m
+                    [0mAlta[0m
+                  [36m</span>[39m
+                [36m</div>[39m
+              [36m</td>[39m
+              [36m<td[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"inline-flex items-center justify-center rounded-[24px] px-2.5 py-1 min-w-[32px] min-h-[24px] text-[12px] font-medium leading-none select-none transition-colors border bg-transparent text-gray-700 whitespace-nowrap border-gray-200"[39m
+                  [33mdata-ticket-tag[39m=[32m"status"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"flex items-center justify-center mr-1.5 -ml-0.5"[39m
+                  [36m>[39m
+                    [36m<span[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"h-2 w-2 rounded-full border-2 border-petroleum-500"[39m
+                      [33mdata-glyph[39m=[32m"ring"[39m
+                    [36m/>[39m
+                  [36m</span>[39m
+                  [36m<span>[39m
+                    [0mAberto[0m
+                  [36m</span>[39m
+                [36m</div>[39m
+              [36m</td>[39m
+              [36m<td[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+              [36m>[39m
+                [36m<span>[39m
+                  [0mTriagem[0m
+                [36m</span>[39m
+              [36m</td>[39m
+            [36m</tr>[39m
+            [36m<tr[39m
+              [33mclass[39m=[32m"border-b border-gray-100 last:border-0 hover:bg-gray-80 cursor-pointer"[39m
+            [36m>[39m
+              [36m<td[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"whitespace-nowrap font-mono text-[12px]"[39m
+                [36m>[39m
+                  [0mAP-2026-0002[0m
+                [36m</span>[39m
+              [36m</td>[39m
+              [36m<td[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"block min-w-[14rem] font-medium text-gray-900"[39m
+                [36m>[39m
+                  [0mEmail down[0m
+                [36m</span>[39m
+              [36m</td>[39m
+              [36m<td[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+              [36m>[39m
+                [36m<span>[39m
+                  [0mBeta[0m
+                [36m</span>[39m
+              [36m</td>[39m
+              [36m<td[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+              [36m>[39m
+                [36m<span>[39m
+                  [0mWeb[0m
+                [36m</span>[39m
+              [36m</td>[39m
+              [36m<td[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"inline-flex items-center justify-center rounded-[24px] px-2.5 py-1 min-w-[32px] min-h-[24px] text-[12px] font-medium leading-none select-none transition-colors border bg-transparent text-gray-700 whitespace-nowrap border-gray-200"[39m
+                  [33mdata-ticket-tag[39m=[32m"priority"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"flex items-center justify-center mr-1.5 -ml-0.5"[39m
+                  [36m>[39m
+                    [36m<span[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"inline-flex items-end gap-px"[39m
+                      [33mdata-glyph[39m=[32m"bars-2"[39m
+                    [36m>[39m
+                      [36m<span[39m
+                        [33mclass[39m=[32m"w-[3px] rounded-[1px] h-1 bg-gray-400"[39m
+                      [36m/>[39m
+                      [36m<span[39m
+                        [33mclass[39m=[32m"w-[3px] rounded-[1px] h-1.5 bg-gray-400"[39m
+                      [36m/>[39m
+                      [36m<span[39m
+                        [33mclass[39m=[32m"w-[3px] rounded-[1px] h-2 bg-gray-200"[39m
+                      [36m/>[39m
+                      [36m<span[39m
+                        [33mclass[39m=[32m"w-[3px] rounded-[1px] h-2.5 bg-gray-200"[39m
+                      [36m/>[39m
+                    [36m</span>[39m
+                  [36m</span>[39m
+                  [36m<span>[39m
+                    [0mMédia[0m
+                  [36m</span>[39m
+                [36m</div>[39m
+              [36m</td>[39m
+              [36m<td[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"inline-flex items-center justify-center rounded-[24px] px-2.5 py-1 min-w-[32px] min-h-[24px] text-[12px] font-medium leading-none select-none transition-colors border bg-transparent text-gray-700 whitespace-nowrap border-gray-200"[39m
+                  [33mdata-ticket-tag[39m=[32m"status"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"flex items-center justify-center mr-1.5 -ml-0.5"[39m
+                  [36m>[39m
+                    [36m<span[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"h-2 w-2 rounded-full bg-brand-600"[39m
+                      [33mdata-glyph[39m=[32m"dot"[39m
+                    [36m/>[39m
+                  [36m</span>[39m
+                  [36m<span>[39m
+                    [0mEm Andamento[0m
+                  [36m</span>[39m
+                [36m</div>[39m
+              [36m</td>[39m
+              [36m<td[39m
+                [33mclass[39m=[32m"px-3 py-2 text-[13px] text-gray-700"[39m
+              [36m>[39m
+                [36m<span>[39m
+                  [0mTriagem[0m
+                [36m</span>[39m
+              [36m</td>[39m
+            [36m</tr>[39m
+          [36m</tbody>[39m
+        [36m</table>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+    [36m<div[39m
+      [33mdata-testid[39m=[32m"location-probe"[39m
+    [36m>[39m
+      [0m/[0m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ protocolLink src/components/tickets/TicketList.test.tsx:341:53
+    339|     );
+    340|   }
+    341|   const protocolLink = (protocol: string) => screen.getByRole('link', …
+       |                                                     ^
+    342|   const headerOf = (name: string) => screen.getByRole('columnheader', …
+    343|
+ ❯ src/components/tickets/TicketList.test.tsx:453:34
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
