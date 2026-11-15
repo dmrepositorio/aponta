@@ -384,4 +384,110 @@ describe('ServiceDesksPage', () => {
     await user.click(within(savedList).getByLabelText(/excluir filtro só suporte/i));
     expect(within(drawer).queryByText('Só Suporte')).not.toBeInTheDocument();
   });
+
+  describe('DMTE-530: estado e densidade da grade', () => {
+    const org = (name: string) => ({ id: `o-${name}`, name });
+    const desks = [
+      {
+        id: 'd-1',
+        name: 'Suporte N1',
+        displayName: 'Suporte',
+        active: true,
+        acceptingNewTickets: true,
+        organizations: [org('Acme Ltda'), org('Beta Ltda'), org('Gamma Ltda')],
+        agents: [{ id: 'a1', name: 'Ana' }],
+        createdAt: '2026-09-29T10:00:00.000Z',
+      },
+      {
+        id: 'd-2',
+        name: 'Financeiro',
+        displayName: 'Fin',
+        active: false,
+        acceptingNewTickets: false,
+        organizations: [org('Delta Ltda')],
+        agents: [{ id: 'a1', name: 'Ana' }, { id: 'a2', name: 'Bia' }, { id: 'a3', name: 'Caio' }],
+        createdAt: '2026-09-29T10:00:00.000Z',
+      },
+      {
+        id: 'd-3',
+        name: 'Comercial',
+        displayName: null,
+        organizations: [],
+        agents: [],
+        createdAt: '2026-09-29T10:00:00.000Z',
+      },
+    ];
+
+    beforeEach(() => {
+      const base = vi.mocked(api.get).getMockImplementation();
+      vi.mocked(api.get).mockImplementation((url: string, ...rest: unknown[]) =>
+        url === '/service-desks'
+          ? Promise.resolve({ data: desks })
+          : (base as (u: string, ...r: unknown[]) => Promise<unknown>)(url, ...rest),
+      );
+    });
+
+    const rowOf = (name: string) => screen.getByText(name).closest('tr') as HTMLElement;
+
+    it('shows Ativa and Recebendo as tags with text and icon, defaulting to true', async () => {
+      loginAs('ADMIN');
+      renderPage();
+      await screen.findByText('Suporte N1');
+
+      expect(within(rowOf('Suporte N1')).getByText('Ativa')).toBeInTheDocument();
+      expect(within(rowOf('Suporte N1')).getByText('Recebendo')).toBeInTheDocument();
+      expect(within(rowOf('Financeiro')).getByText('Inativa')).toBeInTheDocument();
+      expect(within(rowOf('Financeiro')).getByText('Não recebe')).toBeInTheDocument();
+      expect(within(rowOf('Comercial')).getByText('Ativa')).toBeInTheDocument();
+      expect(within(rowOf('Comercial')).getByText('Recebendo')).toBeInTheDocument();
+    });
+
+    it('mutes the inactive desk row in gray-500 and keeps the name a button', async () => {
+      loginAs('ADMIN');
+      renderPage();
+      await screen.findByText('Suporte N1');
+
+      const name = screen.getByRole('button', { name: 'Financeiro' });
+      expect(name).toHaveClass('text-gray-500');
+      expect(name).not.toHaveClass('text-brand-700');
+      expect(screen.getByText('Fin')).toHaveClass('text-gray-500');
+      expect(screen.getByText('Delta Ltda')).toHaveClass('text-gray-500');
+      expect(screen.getByText('3')).toHaveClass('text-gray-500');
+
+      expect(screen.getByRole('button', { name: 'Suporte N1' })).toHaveClass('text-brand-700');
+      expect(screen.getByText('Suporte')).not.toHaveClass('text-gray-500');
+    });
+
+    it('Clientes shows the first client and a +N chip with the full list in the title', async () => {
+      loginAs('ADMIN');
+      renderPage();
+      await screen.findByText('Suporte N1');
+
+      const row = rowOf('Suporte N1');
+      expect(within(row).getByText('Acme Ltda')).toBeInTheDocument();
+      expect(within(row).queryByText('Beta Ltda')).not.toBeInTheDocument();
+      expect(within(row).getByText('+2')).toBeInTheDocument();
+      const holder = within(row).getByText('Acme Ltda').parentElement as HTMLElement;
+      expect(holder).toHaveAttribute('title', 'Acme Ltda, Beta Ltda, Gamma Ltda');
+      expect(holder).toHaveClass('whitespace-nowrap');
+      expect(within(row).getByText('Acme Ltda')).toHaveClass('truncate');
+
+      expect(within(rowOf('Financeiro')).getByText('Delta Ltda')).toBeInTheDocument();
+      expect(within(rowOf('Financeiro')).queryByText(/^\+/)).not.toBeInTheDocument();
+      // Sem cliente e sem nome de exibição: dois traços na linha.
+      expect(within(rowOf('Comercial')).getAllByText('—')).toHaveLength(2);
+    });
+
+    it('keeps the grid columns and their order unchanged', async () => {
+      loginAs('ADMIN');
+      renderPage();
+      await screen.findByText('Suporte N1');
+
+      const headers = screen
+        .getAllByRole('columnheader')
+        .map((h) => h.textContent?.trim())
+        .filter(Boolean);
+      expect(headers).toEqual(['#', 'Nome', 'Nome de exibição', 'Ativa', 'Recebendo', 'Clientes', 'Agentes']);
+    });
+  });
 });

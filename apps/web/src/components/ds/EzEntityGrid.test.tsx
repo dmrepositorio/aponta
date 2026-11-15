@@ -672,6 +672,18 @@ describe('EzEntityGrid Sankhya JS AG Grid parity features', () => {
     expect(screen.getByTestId('ez-grid-column-filter-item-Impressora não liga')).toBeInTheDocument();
   });
 
+  it('reserves room for the corner menu button in the last header', () => {
+    const { unmount } = render(<EzEntityGrid columns={columns} data={data} />);
+    const withButton = screen.getAllByRole('columnheader');
+    expect(withButton[withButton.length - 1]).toHaveClass('pr-10');
+    expect(withButton[0]).not.toHaveClass('pr-10');
+    unmount();
+
+    render(<EzEntityGrid columns={columns} data={data} showGridCornerMenu={false} />);
+    const withoutButton = screen.getAllByRole('columnheader');
+    expect(withoutButton[withoutButton.length - 1]).not.toHaveClass('pr-10');
+  });
+
   it('renders AG Grid corner menu and toggles density', async () => {
     const user = userEvent.setup();
     render(<EzEntityGrid columns={columns} data={data} density="compact" />);
