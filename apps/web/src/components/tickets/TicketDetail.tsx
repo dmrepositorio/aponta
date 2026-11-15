@@ -2,17 +2,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { useAuthStore } from '../../stores/authStore';
 import type { Ticket, TicketStatus } from '../../hooks/useTickets';
-import {
-  priorityLabels,
-  priorityTagVariants,
-  statusLabels,
-  statusTagVariants,
-} from './TicketCard';
+import { priorityLabels, statusLabels } from './TicketCard';
+import { TicketPriorityTag, TicketStatusTag } from './TicketTags';
 import { SlaBadge } from './SlaBadge';
 import { SlaProgress } from './SlaProgress';
 import { TicketChecklist } from './TicketChecklist';
 import { TicketParentChild } from './TicketParent';
-import { EzAlert, EzSelect, EzTag } from '../ds';
+import { EzAlert, EzSelect } from '../ds';
 
 /**
  * Renders an ISO 8601 UTC timestamp as a stable, timezone-independent string
@@ -132,10 +128,7 @@ export function TicketDetail({ ticket }: TicketDetailProps) {
         <div className="flex shrink-0 flex-col items-start gap-2 sm:items-end">
           <div className="flex items-center gap-2">
             {user?.role === 'CLIENT' ? (
-              <EzTag
-                label={statusLabels[ticket.status]}
-                variant={statusTagVariants[ticket.status]}
-              />
+              <TicketStatusTag status={ticket.status} />
             ) : (
               <EzSelect
                 id="ticket-status"
@@ -153,10 +146,7 @@ export function TicketDetail({ ticket }: TicketDetailProps) {
                 ))}
               </EzSelect>
             )}
-            <EzTag
-              label={priorityLabels[ticket.priority]}
-              variant={priorityTagVariants[ticket.priority]}
-            />
+            <TicketPriorityTag priority={ticket.priority} />
           </div>
 
           {(['AGENT', 'AGENT_MASTER', 'ADMIN'].includes(user?.role as string)) && (

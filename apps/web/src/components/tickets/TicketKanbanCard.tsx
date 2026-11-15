@@ -2,9 +2,9 @@ import type { MouseEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { MoreVertical } from 'lucide-react';
 import type { Ticket } from '../../hooks/useTickets';
-import { EzAvatar, EzDropdown, EzSlaChip, EzTag } from '../ds';
+import { EzAvatar, EzDropdown, EzSlaChip } from '../ds';
 import { useOpenInTab } from '../../contexts/TabsContext';
-import { statusLabels, priorityLabels, statusTagVariants, priorityTagVariants } from './TicketCard';
+import { TicketPriorityGlyph, TicketPriorityTag, TicketStatusTag } from './TicketTags';
 
 /** D6c "Exibir campos": optional card fields the Kanban's Configurações
  * popover can toggle. Título/Número are always shown (SPEC D6c/D7), so they
@@ -25,14 +25,6 @@ interface TicketKanbanCardProps {
   tagField?: 'status' | 'priority';
   visibleFields?: TicketKanbanCardVisibleFields;
 }
-
-/** DMTE-461: cor do card pela prioridade (Crítica vermelho, Alta amarelo, Média verde, Baixa azul-petróleo). */
-const priorityCardClasses: Record<Ticket['priority'], string> = {
-  CRITICAL: 'border-red-300 bg-red-100',
-  HIGH: 'border-yellow-300 bg-yellow-100',
-  MEDIUM: 'border-green-300 bg-green-100',
-  LOW: 'border-petroleum-300 bg-petroleum-100',
-};
 
 function formatCardDate(value: string | null | undefined): string | null {
   if (!value) return null;
@@ -82,7 +74,7 @@ export function TicketKanbanCard({
   };
 
   return (
-    <li className={`list-none rounded-[8px] border p-3 shadow-xs transition-shadow hover:shadow-sm ${priorityCardClasses[ticket.priority] ?? 'border-gray-200 bg-white'}`}>
+    <li className="list-none rounded-[8px] border border-gray-200 bg-white p-3 shadow-xs transition-shadow hover:shadow-sm">
       <Link
         to={path}
         onClick={handleClick}
@@ -90,8 +82,11 @@ export function TicketKanbanCard({
         className="block rounded-[8px] focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
       >
         <div className="flex items-center justify-between gap-2">
-          <span className="font-mono text-[12px] font-semibold text-brand-600">
-            #{ticket.protocol}
+          <span className="flex items-center gap-2">
+            <span className="font-mono text-[12px] font-semibold text-brand-600">
+              #{ticket.protocol}
+            </span>
+            {tagField !== 'priority' && <TicketPriorityGlyph priority={ticket.priority} />}
           </span>
           <span onClick={(e) => e.stopPropagation()}>
             <EzDropdown
@@ -118,9 +113,9 @@ export function TicketKanbanCard({
             {showClient ? ticket.requester?.organization?.name ?? '—' : ''}
           </span>
           {tagField === 'priority' ? (
-            <EzTag label={priorityLabels[ticket.priority]} variant={priorityTagVariants[ticket.priority]} />
+            <TicketPriorityTag priority={ticket.priority} />
           ) : (
-            <EzTag label={statusLabels[ticket.status]} variant={statusTagVariants[ticket.status]} />
+            <TicketStatusTag status={ticket.status} />
           )}
         </div>
 

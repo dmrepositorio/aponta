@@ -1,0 +1,353 @@
+
+ RUN  v4.1.11 /home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-525-bcf2417e922c/workdir/aponta/apps/web
+
+ ❯ |web| src/components/tickets/TicketKanbanCard.test.tsx (20 tests | 4 failed) 357ms
+     ✓ is a single link for the whole card, with the protocol highlighted and an accessible label 103ms
+     ✓ truncates a long title with line-clamp-2 and keeps the full text in the title attribute 16ms
+     ✓ shows the requester's organization (truncated) and the Status tag 6ms
+     × keeps the card white and shows the priority glyph (CRITICAL) 17ms
+     × keeps the card white and shows the priority glyph (HIGH) 16ms
+     × keeps the card white and shows the priority glyph (MEDIUM) 7ms
+     × keeps the card white and shows the priority glyph (LOW) 7ms
+     ✓ shows Prioridade as the tag instead of Status when tagField="priority" 12ms
+     ✓ shows a small avatar for the assigned agent, initials-based (no photo in the schema) 4ms
+     ✓ AC-06: shows compact SLA chips (icon + time) named by the full text, not the long pills 9ms
+       ✓ soma as pausas acumuladas aos dois prazos 7ms
+       ✓ congela o tempo enquanto o ticket está pausado (soma a pausa em curso) 6ms
+     ✓ AC-05: puts the SLA chips and the agent avatar in the same footer row 22ms
+     ✓ AC-05: leaves no empty avatar strip when there is no agent and no SLA 5ms
+     ✓ AC-05: keeps the footer when only the agent exists, with the avatar pushed to the right 4ms
+     ✓ has a menu with only "Abrir ticket" and "Abrir em nova aba interna" (no apontamento/play) 54ms
+     ✓ clicking the menu trigger does not also trigger the card link navigation 25ms
+     ✓ RODADA 2 ("Exibir campos", D6c): hides Cliente, Responsável and SLA when their field is turned off 5ms
+     ✓ RODADA 2 ("Exibir campos", D6c): shows "Data de criação"/"Data de última atualização" only when explicitly turned on 21ms
+     ✓ RODADA 2 ("Exibir campos", D6c): omits the date fields by default (back-compat with existing callers) 5ms
+ ❯ |web| src/components/tickets/TicketTags.test.tsx (8 tests | 7 failed) 360ms
+     ✓ shows the same labels as before 56ms
+     × no status tag shares its look with any priority tag 55ms
+     × gives each status family its own look and the four "aguardando" the same one 146ms
+     × keeps the pairs that used to coincide apart and only Escalonado is red 30ms
+     × draws priority as 1 to 4 bars and colors only Alta and Crítica 46ms
+     × Resolvido uses the DS green, not the brand 9ms
+     × token pairs of the tags reach 4.5:1 over the real background 6ms
+     × glyph colors reach 3:1 against the white card 5ms
+ ❯ |web| src/components/tickets/TicketList.test.tsx (25 tests | 1 failed) 4078ms
+     ✓ shows a loading indicator when isLoading is true 74ms
+     ✓ shows an error message when isError is true 22ms
+     ✓ shows an empty-state message when there are no tickets 19ms
+     × renders status and priority with the new tags 30ms
+     ✓ renders the default columns: Número, Título, Cliente, Origem, Prioridade, Status, Estágio (AC6) 36ms
+     ✓ DMTE-490 AC-05: shows the Aguardando Sankhya label for a ticket in that status 13ms
+     ✓ renders a row per ticket with its data, ungrouped by default 32ms
+     ✓ groups by the chosen field, with a collapsible group row showing a count (AC6) 158ms
+     ✓ AC-09: the group header exposes aria-expanded and flips it when toggled 155ms
+     ✓ "Nenhum" removes grouping and shows every row flat 74ms
+     ✓ toggles an optional column on via "Exibir colunas" and it persists after remount (D5 persistence) 155ms
+     ✓ shows the R1 warning when grouping with more than one page of results 100ms
+     ✓ clicking a sortable column header calls onSortChange, toggling direction on repeated clicks 224ms
+       ✓ AC-01: keeps "Agrupar por" and "Exibir colunas" next to the empty state, with no table 81ms
+       ✓ AC-02: with an empty list, the column menu lists every column and a toggle persists for the next non-empty render 274ms
+       ✓ AC-03: loading and error states still render without the controls 6ms
+       ✓ AC-04: offers the four new columns hidden by default and shows their values (or "—") once enabled  945ms
+       ✓ AC-04: a configuration saved before the new columns existed keeps them hidden 57ms
+       ✓ AC-06: without a known role the phone and extension columns are not offered 290ms
+       ✓ AC-01: the page-grouping note is not shown when the list is empty 42ms
+       ✓ AC-06: ADMIN sees the phone and extension columns in the menu 218ms
+       ✓ AC-06: AGENT_MASTER sees the phone and extension columns in the menu  546ms
+       ✓ AC-06: AGENT sees the phone and extension columns in the menu 201ms
+       ✓ AC-06: CLIENT does not get the phone and extension columns, and keeps the others 187ms
+       ✓ AC-06: CLIENT_MASTER does not get the phone and extension columns, and keeps the others 134ms
+ ❯ |web| src/components/tickets/TicketShortcuts.test.tsx (1 test | 1 failed) 95ms
+     × authorization counter is not red and reaches 4.5:1 90ms
+ ❯ |web| src/components/tickets/TicketKanban.test.tsx (49 tests | 1 failed) 6005ms
+       ✓ DMTE-458: board is a snap-scroll container and columns are fluid (no fixed 290px) 125ms
+       ✓ shows a skeleton loading state with every column label while isLoading 24ms
+       ✓ shows an error message when isError is true 58ms
+       ✓ groups tickets into their matching status column with correct counts 88ms
+       ✓ DMTE-490 AC-05: has an Aguardando Sankhya column right after Aguardando Terceiros and groups its tickets there 50ms
+       ✓ renders an empty column (count 0) when there are no tickets for that status 69ms
+       ✓ does nothing when a card is dropped outside any column (no destination) 28ms
+       ✓ does nothing when a card is dropped back in the same column 33ms
+       ✓ calls the status-update API when a card is dropped into a different column 90ms
+       ✓ rolls back the optimistic update when the status-update API call fails 80ms
+       ✓ disables drop targets and card dragging for CLIENT role users 15ms
+       ✓ does not fetch mesa stages when no mesa is selected (fetches only the Mesa dropdown list) 16ms
+       ✓ shows a collapse toggle and an "Abrir novo ticket" link on every column by default (fallback por status) 51ms
+       ✓ collapsing a status column hides its ticket list and disables it as a drop target; expanding restores it 69ms
+       ✓ DMTE-496 AC-01: a coluna recolhida tem a altura mínima da expandida e acompanha o quadro, por status e por estágio  433ms
+       ✓ does not show "Abrir novo ticket" for CLIENT role users 133ms
+       ✓ collapsing a stage column (mesa selecionada) hides its ticket list and disables it as a drop target 179ms
+       ✓ lists service desks in the Mesa dropdown and switches to stage-grouped columns on selection, without needing initialServiceDeskId  615ms
+       ✓ keeps the user's own Mesa selection even if the component re-renders with a different initialServiceDeskId 146ms
+       ✓ fetches the mesa stages via GET /service-desks/:id/stages 22ms
+       ✓ groups tickets by stage (ordered by position) instead of by status 48ms
+       ✓ puts tickets with no recognized stage into a "Sem estágio" column that never accepts a drop 43ms
+       ✓ allows dragging an unstaged ticket straight to the mesa's initial stage 186ms
+       ✓ blocks dragging an unstaged ticket to a non-initial stage 187ms
+       ✓ calls PATCH /tickets/:id/stage (not /status) when dropping into an allowed next stage 134ms
+       ✓ blocks the drop and shows an error when the destination stage is not in transitionToIds 224ms
+       ✓ does nothing when a card is dropped back in its own stage column 31ms
+       ✓ dims (disables) columns unreachable from the dragged card while dragging 53ms
+       ✓ rolls back the optimistic update and surfaces the backend message when the stage API call rejects with 400 57ms
+       ✓ shows an informational alert when the mesa has no stages configured 21ms
+       ✓ AC-04: keeps Mesa, responsáveis, Ordenar and Configurações in one toolbar row, in that order 148ms
+       × Limpar ordenação is not red 199ms
+       ✓ renders one avatar per distinct agent present in the tickets 108ms
+       ✓ clicking an avatar filters the board to that agent's tickets (toggle, multi-select) 172ms
+       ✓ opens "Ordenar", sorts cards by Título asc/desc, and "Limpar" restores the original order  554ms
+       ✓ "Configurações" lets the user group by Responsável instead of Status/Estágio 169ms
+       ✓ "Configurações" lets the user group by Prioridade 155ms
+       ✓ RODADA 2 ("Exibir campos", D6c): "Configurações" lets the user toggle optional card fields, persisted like "Agrupar por" 136ms
+       ✓ DMTE-497 AC-01: Esc fecha o painel de Ordenar e o foco volta ao botão 138ms
+       ✓ DMTE-497 AC-02: Esc fecha o painel de Configurações e o foco volta ao botão 107ms
+       ✓ DMTE-497 AC-03: clique fora fecha cada menu, clique dentro não, e o seletor de mesa também fecha 158ms
+       ✓ DMTE-497 AC-03: escolher uma opção do "Agrupar por" não fecha o painel de Configurações 99ms
+       ✓ DMTE-497 AC-04: abrir um menu fecha o outro, nos dois sentidos 177ms
+       ✓ DMTE-497 AC-05: com a lista do "Agrupar por" aberta, o primeiro Esc fecha só a lista e o segundo o painel 88ms
+       ✓ DMTE-497 AC-06: os gatilhos expõem aria-expanded e aria-controls, e têm foco visível 208ms
+       ✓ DMTE-498 AC-01: a caixa do seletor de mesa tem fundo e borda brand-500, texto e chevron gray-70 15ms
+       ✓ DMTE-498 AC-02: no hover a caixa do seletor de mesa passa a brand-700 16ms
+       ✓ DMTE-498 AC-03: um EzSelect fora do seletor de mesa segue com a caixa bg-white 24ms
+       ✓ DMTE-498 AC-04: com foco a caixa do seletor de mesa mostra o anel brand-200 do Novo Ticket 19ms
+
+ Test Files  5 failed (5)
+      Tests  14 failed | 89 passed (103)
+   Start at  13:18:03
+   Duration  32.60s (transform 71.06s, setup 787ms, import 76.99s, tests 10.89s, environment 4.70s)
+
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 14 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |web| src/components/tickets/TicketKanban.test.tsx > TicketKanban > avatares, Ordenar e Configurações (D6/T8) > Limpar ordenação is not red
+AssertionError: expected 'mt-1 w-full rounded-[6px] px-2 py-1.5…' not to match /red-/
+
+- Expected:
+/red-/
+
++ Received:
+"mt-1 w-full rounded-[6px] px-2 py-1.5 text-left text-[13px] text-red-600 hover:bg-red-100"
+
+ ❯ src/components/tickets/TicketKanban.test.tsx:915:86
+    913|       renderKanban({ tickets: ticketsWithAgents, isLoading: false, isE…
+    914|       fireEvent.click(screen.getByRole('button', { name: 'Ordenar' }));
+    915|       expect(screen.getByRole('button', { name: 'Limpar ordenação' }).…
+       |                                                                                      ^
+    916|     });
+    917|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/14]⎯
+
+ FAIL  |web| src/components/tickets/TicketKanbanCard.test.tsx > TicketKanbanCard (D7) > keeps the card white and shows the priority glyph (CRITICAL)
+Error: [2mexpect([22m[31melement[39m[2m).toHaveClass([22m[32m[32m"bg-white"[32m[39m[2m)[22m
+
+Expected the element to have class:
+[32m  bg-white[39m
+Received:
+[31m  list-none rounded-[8px] border p-3 shadow-xs transition-shadow hover:shadow-sm border-red-300 bg-red-100[39m
+ ❯ src/components/tickets/TicketKanbanCard.test.tsx:69:20
+     67|       const link = screen.getByRole('link', { name: /AP-2026-0001/ });
+     68|       const card = link.closest('li')!;
+     69|       expect(card).toHaveClass('bg-white');
+       |                    ^
+     70|       expect(card.className).not.toMatch(/bg-(red|yellow|green|petrole…
+     71|       const names = { CRITICAL: 'Crítica', HIGH: 'Alta', MEDIUM: 'Médi…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/14]⎯
+
+ FAIL  |web| src/components/tickets/TicketKanbanCard.test.tsx > TicketKanbanCard (D7) > keeps the card white and shows the priority glyph (HIGH)
+Error: [2mexpect([22m[31melement[39m[2m).toHaveClass([22m[32m[32m"bg-white"[32m[39m[2m)[22m
+
+Expected the element to have class:
+[32m  bg-white[39m
+Received:
+[31m  list-none rounded-[8px] border p-3 shadow-xs transition-shadow hover:shadow-sm border-yellow-300 bg-yellow-100[39m
+ ❯ src/components/tickets/TicketKanbanCard.test.tsx:69:20
+     67|       const link = screen.getByRole('link', { name: /AP-2026-0001/ });
+     68|       const card = link.closest('li')!;
+     69|       expect(card).toHaveClass('bg-white');
+       |                    ^
+     70|       expect(card.className).not.toMatch(/bg-(red|yellow|green|petrole…
+     71|       const names = { CRITICAL: 'Crítica', HIGH: 'Alta', MEDIUM: 'Médi…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/14]⎯
+
+ FAIL  |web| src/components/tickets/TicketKanbanCard.test.tsx > TicketKanbanCard (D7) > keeps the card white and shows the priority glyph (MEDIUM)
+Error: [2mexpect([22m[31melement[39m[2m).toHaveClass([22m[32m[32m"bg-white"[32m[39m[2m)[22m
+
+Expected the element to have class:
+[32m  bg-white[39m
+Received:
+[31m  list-none rounded-[8px] border p-3 shadow-xs transition-shadow hover:shadow-sm border-green-300 bg-green-100[39m
+ ❯ src/components/tickets/TicketKanbanCard.test.tsx:69:20
+     67|       const link = screen.getByRole('link', { name: /AP-2026-0001/ });
+     68|       const card = link.closest('li')!;
+     69|       expect(card).toHaveClass('bg-white');
+       |                    ^
+     70|       expect(card.className).not.toMatch(/bg-(red|yellow|green|petrole…
+     71|       const names = { CRITICAL: 'Crítica', HIGH: 'Alta', MEDIUM: 'Médi…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/14]⎯
+
+ FAIL  |web| src/components/tickets/TicketKanbanCard.test.tsx > TicketKanbanCard (D7) > keeps the card white and shows the priority glyph (LOW)
+Error: [2mexpect([22m[31melement[39m[2m).toHaveClass([22m[32m[32m"bg-white"[32m[39m[2m)[22m
+
+Expected the element to have class:
+[32m  bg-white[39m
+Received:
+[31m  list-none rounded-[8px] border p-3 shadow-xs transition-shadow hover:shadow-sm border-petroleum-300 bg-petroleum-100[39m
+ ❯ src/components/tickets/TicketKanbanCard.test.tsx:69:20
+     67|       const link = screen.getByRole('link', { name: /AP-2026-0001/ });
+     68|       const card = link.closest('li')!;
+     69|       expect(card).toHaveClass('bg-white');
+       |                    ^
+     70|       expect(card.className).not.toMatch(/bg-(red|yellow|green|petrole…
+     71|       const names = { CRITICAL: 'Crítica', HIGH: 'Alta', MEDIUM: 'Médi…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/14]⎯
+
+ FAIL  |web| src/components/tickets/TicketList.test.tsx > TicketList (D5: Lista agrupável) > renders status and priority with the new tags
+AssertionError: expected  to have a length of 2 but got +0
+
+- Expected
++ Received
+
+- 2
++ 0
+
+ ❯ src/components/tickets/TicketList.test.tsx:91:83
+     89|   it('renders status and priority with the new tags', () => {
+     90|     const { container } = renderList();
+     91|     expect(container.querySelectorAll('[data-ticket-tag="status"] [dat…
+       |                                                                                   ^
+     92|     expect(container.querySelectorAll('[data-ticket-tag="priority"] [d…
+     93|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/14]⎯
+
+ FAIL  |web| src/components/tickets/TicketShortcuts.test.tsx > TicketShortcuts (DMTE-525) > authorization counter is not red and reaches 4.5:1
+AssertionError: expected 'inline-flex items-center justify-cent…' not to match /red-/
+
+- Expected:
+/red-/
+
++ Received:
+"inline-flex items-center justify-center rounded-full font-medium bg-red-600 text-white min-w-[16px] h-[16px] text-[11px] px-1.5 tabular-nums"
+
+ ❯ src/components/tickets/TicketShortcuts.test.tsx:19:35
+     17|     );
+     18|     const counter = await screen.findByText('3');
+     19|     expect(counter.className).not.toMatch(/red-/);
+       |                                   ^
+     20|     const [text, background] = ticketTagTokenPairs['authorizationCount…
+     21|     expect(counter).toHaveClass(`text-${text}`, `bg-${background}`);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/14]⎯
+
+ FAIL  |web| src/components/tickets/TicketTags.test.tsx > TicketStatusTag / TicketPriorityTag (DMTE-525) > no status tag shares its look with any priority tag
+AssertionError: expected [ …(4) ] to not include 'inline-flex items-center justify-cent…'
+ ❯ src/components/tickets/TicketTags.test.tsx:76:33
+     74|     const priorityLooks = priorities.map((p) => look(priorityLook(p)));
+     75|     for (const status of statuses) {
+     76|       expect(priorityLooks).not.toContain(look(statusLook(status)));
+       |                                 ^
+     77|     }
+     78|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/14]⎯
+
+ FAIL  |web| src/components/tickets/TicketTags.test.tsx > TicketStatusTag / TicketPriorityTag (DMTE-525) > gives each status family its own look and the four "aguardando" the same one
+AssertionError: expected 1 to be 6 // Object.is equality
+
+- Expected
++ Received
+
+- 6
++ 1
+
+ ❯ src/components/tickets/TicketTags.test.tsx:86:39
+     84|       return [...looks][0];
+     85|     });
+     86|     expect(new Set(familyLooks).size).toBe(statusFamilies.length);
+       |                                       ^
+     87|   });
+     88|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/14]⎯
+
+ FAIL  |web| src/components/tickets/TicketTags.test.tsx > TicketStatusTag / TicketPriorityTag (DMTE-525) > keeps the pairs that used to coincide apart and only Escalonado is red
+AssertionError: expected 'inline-flex items-center justify-cent…' not to be 'inline-flex items-center justify-cent…' // Object.is equality
+ ❯ src/components/tickets/TicketTags.test.tsx:97:48
+     95|     ];
+     96|     for (const [priority, status] of pairs) {
+     97|       expect(look(priorityLook(priority))).not.toBe(look(statusLook(st…
+       |                                                ^
+     98|     }
+     99|     const redStatuses = statuses.filter((s) => /red-/.test(statusLook(…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/14]⎯
+
+ FAIL  |web| src/components/tickets/TicketTags.test.tsx > TicketStatusTag / TicketPriorityTag (DMTE-525) > draws priority as 1 to 4 bars and colors only Alta and Crítica
+AssertionError: expected [] to deeply equal [ 'HIGH', 'CRITICAL' ]
+
+- Expected
++ Received
+
+- [
+-   "HIGH",
+-   "CRITICAL",
+- ]
++ []
+
+ ❯ src/components/tickets/TicketTags.test.tsx:107:20
+    105|   it('draws priority as 1 to 4 bars and colors only Alta and Crítica',…
+    106|     const strong = priorities.filter((p) => /yellow-|red-/.test(priori…
+    107|     expect(strong).toEqual(['HIGH', 'CRITICAL']);
+       |                    ^
+    108|     priorities.forEach((p, index) => {
+    109|       expect(priorityLook(p).querySelector('[data-glyph]')).toHaveAttr…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/14]⎯
+
+ FAIL  |web| src/components/tickets/TicketTags.test.tsx > TicketStatusTag / TicketPriorityTag (DMTE-525) > Resolvido uses the DS green, not the brand
+AssertionError: expected '<div class="inline-flex items-center …' to match /green-/
+
+- Expected:
+/green-/
+
++ Received:
+"<div class=\"inline-flex items-center justify-center rounded-[24px] px-2.5 py-1 min-w-[32px] min-h-[24px] text-[12px] font-medium leading-none select-none transition-colors border bg-brand-100/50 text-brand-700 border-brand-200\"><span>Resolvido</span></div>"
+
+ ❯ src/components/tickets/TicketTags.test.tsx:115:22
+    113|   it('Resolvido uses the DS green, not the brand', () => {
+    114|     const resolved = statusLook('RESOLVED').outerHTML;
+    115|     expect(resolved).toMatch(/green-/);
+       |                      ^
+    116|     expect(resolved).not.toMatch(/brand-/);
+    117|     const inProgress = statusLook('IN_PROGRESS').outerHTML;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/14]⎯
+
+ FAIL  |web| src/components/tickets/TicketTags.test.tsx > TicketStatusTag / TicketPriorityTag (DMTE-525) > token pairs of the tags reach 4.5:1 over the real background
+AssertionError: expected 0 to be greater than or equal to 5
+ ❯ src/components/tickets/TicketTags.test.tsx:124:28
+    122|   it('token pairs of the tags reach 4.5:1 over the real background', (…
+    123|     const entries = Object.entries(ticketTagTokenPairs);
+    124|     expect(entries.length).toBeGreaterThanOrEqual(5);
+       |                            ^
+    125|     for (const [, [text, background]] of entries) {
+    126|       expect(contrast(text, background)).toBeGreaterThanOrEqual(4.5);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/14]⎯
+
+ FAIL  |web| src/components/tickets/TicketTags.test.tsx > TicketStatusTag / TicketPriorityTag (DMTE-525) > glyph colors reach 3:1 against the white card
+AssertionError: expected 0 to be greater than 0
+ ❯ src/components/tickets/TicketTags.test.tsx:138:38
+    136|
+    137|   it('glyph colors reach 3:1 against the white card', () => {
+    138|     expect(ticketGlyphTokens.length).toBeGreaterThan(0);
+       |                                      ^
+    139|     for (const token of ticketGlyphTokens) {
+    140|       expect(contrast(token, 'gray-70')).toBeGreaterThanOrEqual(3);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/14]⎯
+

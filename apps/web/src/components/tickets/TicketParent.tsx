@@ -4,8 +4,8 @@ import { Search, Unlink, Link2, GitFork, AlertCircle } from 'lucide-react';
 import { api } from '../../lib/api';
 import { useAuthStore } from '../../stores/authStore';
 import { Ticket } from '../../hooks/useTickets';
-import { statusLabels, statusTagVariants } from './TicketCard';
-import { EzButton, EzTag, EzTextInput } from '../ds';
+import { TicketStatusTag } from './TicketTags';
+import { EzButton, EzTextInput } from '../ds';
 
 export function TicketParentChild({ ticket }: { ticket: Ticket }) {
   const queryClient = useQueryClient();
@@ -51,10 +51,7 @@ export function TicketParentChild({ ticket }: { ticket: Ticket }) {
             >
               {ticket.parentTicket.title}
             </a>
-            <EzTag
-              label={statusLabels[ticket.parentTicket.status]}
-              variant={statusTagVariants[ticket.parentTicket.status]}
-            />
+            <TicketStatusTag status={ticket.parentTicket.status} />
           </div>
           <EzButton
             type="button"
@@ -131,10 +128,7 @@ export function TicketParentChild({ ticket }: { ticket: Ticket }) {
                           {sub.title}
                         </span>
                       </div>
-                      <EzTag
-                        label={statusLabels[sub.status]}
-                        variant={statusTagVariants[sub.status]}
-                      />
+                      <TicketStatusTag status={sub.status} />
                     </div>
                   </li>
                 ))}

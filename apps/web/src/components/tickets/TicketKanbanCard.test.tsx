@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -60,17 +60,18 @@ describe('TicketKanbanCard (D7)', () => {
     expect(screen.getByText('Aberto')).toBeInTheDocument();
   });
 
-  it.each([
-    ['CRITICAL', 'bg-red-100', 'border-red-300'],
-    ['HIGH', 'bg-yellow-100', 'border-yellow-300'],
-    ['MEDIUM', 'bg-green-100', 'border-green-300'],
-    ['LOW', 'bg-petroleum-100', 'border-petroleum-300'],
-  ] as const)('tints the card by priority %s', (priority, bg, border) => {
-    renderCard({ ...baseTicket, priority });
-    const card = screen.getByRole('link', { name: /AP-2026-0001/ }).closest('li')!;
-    expect(card).toHaveClass(bg, border);
-    expect(card).not.toHaveClass('bg-white');
-  });
+  it.each(['CRITICAL', 'HIGH', 'MEDIUM', 'LOW'] as const)(
+    'keeps the card white and shows the priority glyph (%s)',
+    (priority) => {
+      renderCard({ ...baseTicket, priority });
+      const link = screen.getByRole('link', { name: /AP-2026-0001/ });
+      const card = link.closest('li')!;
+      expect(card).toHaveClass('bg-white');
+      expect(card.className).not.toMatch(/bg-(red|yellow|green|petroleum)-\d+/);
+      const names = { CRITICAL: 'Crítica', HIGH: 'Alta', MEDIUM: 'Média', LOW: 'Baixa' };
+      expect(within(link).getByRole('img', { name: `Prioridade ${names[priority]}` })).toBeInTheDocument();
+    },
+  );
 
   it('shows Prioridade as the tag instead of Status when tagField="priority"', () => {
     render(
@@ -80,6 +81,7 @@ describe('TicketKanbanCard (D7)', () => {
     );
     expect(screen.queryByText('Aberto')).not.toBeInTheDocument();
     expect(screen.getByText('Alta')).toBeInTheDocument();
+    expect(screen.queryByRole('img', { name: 'Prioridade Alta' })).not.toBeInTheDocument();
   });
 
   it("shows a small avatar for the assigned agent, initials-based (no photo in the schema)", () => {
