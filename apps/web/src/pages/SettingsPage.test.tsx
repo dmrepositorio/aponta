@@ -1,4 +1,4 @@
-import { act, render, screen, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -259,5 +259,24 @@ describe('SettingsPage: auditoria de interface (DMTE-524)', () => {
     const column = screen.getByRole('heading', { level: 1, name: 'Configurações' }).closest('.max-w-2xl');
     expect(column).not.toBeNull();
     expect(column?.className).toContain('mx-auto');
+  });
+
+  it('falls back to Minha conta right after the first GET /auth/me failure, while retries are pending', async () => {
+    vi.mocked(api.get).mockRejectedValue(new Error('network down'));
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: 3, retryDelay: 60_000 } },
+    });
+
+    const { container } = render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter>
+          <SettingsPage />
+        </MemoryRouter>
+      </QueryClientProvider>,
+    );
+
+    await waitFor(() => expect(container.querySelector('[aria-busy="true"]')).toBeNull());
+    expect(screen.getByRole('link', { name: /minha conta/i })).toHaveAttribute('href', '/my-account');
+    expect(screen.queryByRole('link', { name: /^usuários$/i })).not.toBeInTheDocument();
   });
 });
