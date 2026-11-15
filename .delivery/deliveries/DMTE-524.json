@@ -11,7 +11,8 @@
       "id": "AC-01",
       "description": "enquanto `GET /auth/me` não responde, a página mostra um skeleton (`aria-busy`) e nenhum link; ao responder, os itens permitidos entram juntos.",
       "tests": [
-        "apps/web/src/pages/SettingsPage.test.tsx: shows a busy skeleton and no links until GET /auth/me responds"
+        "apps/web/src/pages/SettingsPage.test.tsx: shows a busy skeleton and no links until GET /auth/me responds",
+        "apps/web/src/pages/SettingsPage.test.tsx: falls back to Minha conta right after the first GET /auth/me failure, while retries are pending"
       ]
     },
     {
@@ -56,14 +57,14 @@
   "spec": "docs/delivery/specs/DMTE-524.md",
   "tdd": {
     "mode": "required",
-    "red": ".delivery/evidence/DMTE-524/red.json",
-    "green": ".delivery/evidence/DMTE-524/green.json"
+    "red": ".delivery/evidence/DMTE-524/red-r2.json",
+    "green": ".delivery/evidence/DMTE-524/green-r2.json"
   },
   "design_system": {
     "applicable": true,
     "reused": [
       "EzCardItem"
     ],
-    "reason": "Reaproveita EzCardItem e os tokens --control-height-md/--control-height-compact/--radius-control e o anel focus-visible brand-200 do DS. SettingsLink é componente local da página (não exportado pelo DS), então não há story; nenhum componente, token ou estilo do DS foi criado ou alterado."
+    "reason": "Reaproveita EzCardItem e os tokens --control-height-md/--control-height-compact/--radius-control e o anel focus-visible brand-200 do DS. SettingsLink é componente local da página (não exportado pelo DS), então não há story; nenhum componente, token ou estilo do DS foi criado ou alterado. O skeleton usa bloco animate-pulse local e não o EzSkeleton do DS: o EzSkeleton usa bg-gray-200, fora de gray-90 que o resto da página usa, e nenhuma outra tela o consome hoje; exceção registrada (revisão independente, rodada 1)."
   }
 }

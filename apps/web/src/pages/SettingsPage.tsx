@@ -44,7 +44,8 @@ function SettingsLink({ to, label, icon: Icon }: SettingsLinkProps) {
  */
 export function SettingsPage() {
   const user = useAuthStore((state) => state.user);
-  const { isLoading } = useEffectivePermissions();
+  // failureCount > 0: a primeira falha já devolve a página (só Minha conta) em vez de esperar os retries do React Query.
+  const { isLoading, failureCount } = useEffectivePermissions();
   const isAdmin = user?.role === 'ADMIN';
   const canManageUsers = useHasPermission('MANAGE_USERS');
   const canManagePermissionGroups = useHasPermission('MANAGE_PERMISSION_GROUPS');
@@ -95,7 +96,7 @@ export function SettingsPage() {
         Configurações
       </h1>
 
-      {isLoading ? (
+      {isLoading && failureCount === 0 ? (
         <EzCardItem flat className="p-0" role="status" aria-busy="true">
           <span className="sr-only">Carregando configurações</span>
           {[0, 1, 2].map((row) => (
