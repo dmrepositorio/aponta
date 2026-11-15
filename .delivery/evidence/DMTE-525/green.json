@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "phase": "green",
+  "started_at": "2026-11-15T16:26:53.554872+00:00",
+  "finished_at": "2026-11-15T16:27:18.693488+00:00",
+  "command": [
+    "pnpm",
+    "--dir",
+    "apps/web",
+    "exec",
+    "vitest",
+    "run",
+    "src/components/tickets/TicketTags.test.tsx",
+    "src/components/tickets/TicketShortcuts.test.tsx",
+    "src/components/tickets/TicketKanbanCard.test.tsx",
+    "src/components/tickets/TicketKanban.test.tsx",
+    "src/components/tickets/TicketList.test.tsx"
+  ],
+  "base_sha": "0dfd41018d4dc589d5755aee2412ea30a210e9c0",
+  "head_sha": "c2695b8f93b7aad0700eecb573366f0a35877cd4",
+  "exit_code": 0,
+  "tests": {
+    "apps/web/src/components/tickets/TicketTags.test.tsx": "c3ed7b211c9b9c3caea6b30681b184cc179966dec8047b81074aae72f3408b2d",
+    "apps/web/src/components/tickets/TicketShortcuts.test.tsx": "69940baf8d8739363da75b6928a338f0f2e38a61dc2d76296d3104af8f14bd93",
+    "apps/web/src/components/tickets/TicketKanbanCard.test.tsx": "3468fc411cd06fe5ec9bae03dff88815c41c546c881c5cda4813fbeb3475bb62",
+    "apps/web/src/components/tickets/TicketKanban.test.tsx": "aa7f16df6d3057f11b7367d4f50fb66e744be7a6491ffbd86b8c0e474ff0b965",
+    "apps/web/src/components/tickets/TicketList.test.tsx": "e43a8384fde8d7244854383c442645b7f4d4b448eda05977a8053b3ee7db7804"
+  },
+  "criteria": [
+    "AC-01",
+    "AC-02",
+    "AC-03",
+    "AC-04",
+    "AC-05",
+    "AC-06"
+  ],
+  "source_hashes": {
+    "apps/web/src/components/schedule/TicketSearchModal.tsx": "d2bea0fd47099d7e7d320c0020f0821927ff6d211d45accf079bf0d7b6c0d8f4",
+    "apps/web/src/components/tickets/TicketCard.tsx": "7736add59166271cb14813a1f72ab4224079ce9bd69fbd63a676e9996c6fb7d5",
+    "apps/web/src/components/tickets/TicketDetail.tsx": "4cd8bb1d2bf192b528a29d2b6260f2064f1c39871a11f71813647c06e28c2b72",
+    "apps/web/src/components/tickets/TicketFormMode.tsx": "fde2dfb37adc23a7611f5a28506ebe46d88b7bb8decd8bce3deeac5d3796bfdf",
+    "apps/web/src/components/tickets/TicketKanban.test.tsx": "aa7f16df6d3057f11b7367d4f50fb66e744be7a6491ffbd86b8c0e474ff0b965",
+    "apps/web/src/components/tickets/TicketKanban.tsx": "38afca4a9e304f6eecb2215146b5defc8a65516be316bc49ab912e507e340894",
+    "apps/web/src/components/tickets/TicketKanbanCard.test.tsx": "3468fc411cd06fe5ec9bae03dff88815c41c546c881c5cda4813fbeb3475bb62",
+    "apps/web/src/components/tickets/TicketKanbanCard.tsx": "a41d437664b86c02ca6388b42b1c5957d508ad6f39ea448c45c5613d3b98ab6c",
+    "apps/web/src/components/tickets/TicketList.test.tsx": "e43a8384fde8d7244854383c442645b7f4d4b448eda05977a8053b3ee7db7804",
+    "apps/web/src/components/tickets/TicketList.tsx": "a1ca50677f182d45cc930c04e9326dc05324d3e23031e2a775477fc2ee677906",
+    "apps/web/src/components/tickets/TicketParent.tsx": "11969dd87e2eea69936f37b6e98bff138c0a4de5929aa33f751214db974a6672",
+    "apps/web/src/components/tickets/TicketShortcuts.test.tsx": "69940baf8d8739363da75b6928a338f0f2e38a61dc2d76296d3104af8f14bd93",
+    "apps/web/src/components/tickets/TicketShortcuts.tsx": "a72f495d215236356d2d18ef8debe4814014a56df0c290d06c070db91c21de6c",
+    "apps/web/src/components/tickets/TicketTags.test.tsx": "c3ed7b211c9b9c3caea6b30681b184cc179966dec8047b81074aae72f3408b2d",
+    "apps/web/src/components/tickets/TicketTags.tsx": "ce95385fd50c8c71ddf41defa8adbc0f3eee07049ce6774f972a66d8711defb2"
+  },
+  "log": ".delivery/evidence/DMTE-525/green.log",
+  "log_sha256": "24db4bf17ef9ab9ce868437c823aa33c4532faca429bc67b38f61203eeafa6d9"
+}
