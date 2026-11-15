@@ -1,0 +1,84 @@
+{
+  "version": 1,
+  "delivery": "DMTE-530",
+  "repository": "dmrepositorio/aponta",
+  "github_issue": 261,
+  "multica_id": "01a1e002-8e30-7b1a-a480-13220a6ec58c",
+  "cycle": "2026-11-09/2026-11-22",
+  "tier": 2,
+  "criteria": [
+    {
+      "id": "AC-01",
+      "description": "cada mesa mostra Ativa e Recebendo como `EzTag` com texto e ícone: \"Ativa\"/\"Inativa\" e \"Recebendo\"/\"Não recebe\"; o padrão (`active`/`acceptingNewTickets` ausente) continua valendo como verdadeiro.",
+      "tests": [
+        "apps/web/src/components/ServiceDeskStateTags.test.tsx: renders text and icon for active, inactive, receiving and not receiving"
+      ]
+    },
+    {
+      "id": "AC-02",
+      "description": "o estado positivo e o negativo diferem em texto, ícone e conjunto de classes (não só em cor), e o negativo não usa `red-*` nem `green-*`.",
+      "tests": [
+        "apps/web/src/components/ServiceDeskStateTags.test.tsx: positive and negative states differ in text, icon and classes, with no red"
+      ]
+    },
+    {
+      "id": "AC-03",
+      "description": "todo par texto/fundo das tags de estado e do texto da linha inativa tem contraste mínimo de 4,5:1 (tokens lidos de `styles.css`, sobre o fundo real da célula), e os ícones têm no mínimo 3:1 contra o fundo da tag.",
+      "tests": [
+        "apps/web/src/components/ServiceDeskStateTags.test.tsx: token pairs of the state tags and the inactive row reach 4.5:1"
+      ]
+    },
+    {
+      "id": "AC-04",
+      "description": "a linha da mesa inativa usa `gray-500` no Nome, no Nome de exibição, em Clientes e em Agentes; as linhas ativas mantêm as cores atuais; o Nome continua um botão que abre o detalhe.",
+      "tests": [
+        "apps/web/src/pages/ServiceDesksPage.test.tsx: mutes the inactive desk row in gray-500 and keeps the name a button"
+      ]
+    },
+    {
+      "id": "AC-05",
+      "description": "Clientes renderiza uma linha (sem quebra: `whitespace-nowrap` + `truncate`): o primeiro nome e, com 2 ou mais clientes, o chip \"+N\" (N = total − 1); o `title` lista todos; sem clientes mostra \"—\".",
+      "tests": [
+        "apps/web/src/pages/ServiceDesksPage.test.tsx: Clientes shows the first client and a +N chip with the full list in the title"
+      ]
+    },
+    {
+      "id": "AC-06",
+      "description": "em modo compacto todas as linhas da grade têm a mesma altura (medido no navegador com a grade da auditoria: 4 mesas com 4, 1, 0 e 2 clientes) e a grade não tem barra de rolagem horizontal a 1440 px.",
+      "tests": [
+        "Medição em Chromium a 1440 px: alturas de linha iguais e sem rolagem horizontal (resultado no PR)"
+      ],
+      "tdd_required": false,
+      "reason": "Medida de layout em navegador (jsdom não calcula layout); o comportamento causador (Clientes em uma linha, larguras) é coberto por AC-05"
+    },
+    {
+      "id": "AC-07",
+      "description": "o cabeçalho da última coluna reserva espaço para o botão \"Opções da grade\" (`pr-10` quando `showGridCornerMenu`, sem a reserva quando desligado), e a 1440 px nenhum cabeçalho fica cortado nem coberto pelo botão (medido no navegador).",
+      "tests": [
+        "apps/web/src/components/ds/EzEntityGrid.test.tsx: reserves room for the corner menu button in the last header"
+      ]
+    },
+    {
+      "id": "AC-08",
+      "description": "sem mudança de API, schema ou regra; `SERVICE_DESK_FILTER_FIELDS`, os valores \"Sim\"/\"Não\" dos filtros e as colunas (ids, cabeçalhos, ordem) idênticos.",
+      "tests": [
+        "apps/web/src/pages/ServiceDesksPage.test.tsx: keeps the columns and the Sim/Não filters unchanged"
+      ]
+    }
+  ],
+  "spec": "docs/delivery/specs/DMTE-530.md",
+  "tdd": {
+    "mode": "required",
+    "red": ".delivery/evidence/DMTE-530/red.json",
+    "green": ".delivery/evidence/DMTE-530/green.json"
+  },
+  "design_system": {
+    "applicable": true,
+    "reused": [
+      "EzTag",
+      "EzBadge",
+      "EzEntityGrid"
+    ],
+    "reason": "Reaproveita EzTag (variantes green e gray, leftIcon), EzBadge (chip +N) e EzEntityGrid (último cabeçalho reserva espaço para o botão de colunas, sem prop nova); só tokens já definidos no @theme; nenhum componente ou token novo no DS."
+  }
+}
