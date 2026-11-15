@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "phase": "red",
+  "started_at": "2026-11-15T17:20:06.356556+00:00",
+  "finished_at": "2026-11-15T17:20:17.293611+00:00",
+  "command": [
+    "pnpm",
+    "--dir",
+    "apps/web",
+    "exec",
+    "vitest",
+    "run",
+    "src/components/ServiceDeskStateTags.test.tsx",
+    "src/pages/ServiceDesksPage.test.tsx",
+    "src/components/ds/EzEntityGrid.test.tsx"
+  ],
+  "base_sha": "1c5dc79e6c19fbceaade0b21ee29dd5719ee8b80",
+  "head_sha": "3e086bb471dd5975577db8851a008373bcb60b79",
+  "exit_code": 1,
+  "tests": {
+    "apps/web/src/components/ServiceDeskStateTags.test.tsx": "911870c5140cdbc562328ffa3c41879c502a966ec97b173f0bb460e3342db8f8",
+    "apps/web/src/pages/ServiceDesksPage.test.tsx": "8aa39baf32d4a3e074dba78210112a4a45677b3bb266034cf726004a658d91e1",
+    "apps/web/src/components/ds/EzEntityGrid.test.tsx": "c42a26741123c49ef023a87d0ba0d4d4d399235c92d78eb1852efe70f1cc5d66"
+  },
+  "criteria": [
+    "AC-01",
+    "AC-02",
+    "AC-03",
+    "AC-04",
+    "AC-05",
+    "AC-07",
+    "AC-08"
+  ],
+  "source_hashes": {
+    "apps/web/src/components/ServiceDeskStateTags.test.tsx": "911870c5140cdbc562328ffa3c41879c502a966ec97b173f0bb460e3342db8f8",
+    "apps/web/src/components/ServiceDeskStateTags.tsx": "eaba4881b05c4db110a8c37deab6baf615ba5e4106f4d257b62836e76c6cafb1",
+    "apps/web/src/components/ds/EzEntityGrid.test.tsx": "c42a26741123c49ef023a87d0ba0d4d4d399235c92d78eb1852efe70f1cc5d66",
+    "apps/web/src/pages/ServiceDesksPage.test.tsx": "8aa39baf32d4a3e074dba78210112a4a45677b3bb266034cf726004a658d91e1"
+  },
+  "log": ".delivery/evidence/DMTE-530/red.log",
+  "log_sha256": "4fb47ef96fad61ef9a64e7ec8a4c662f28c36b30eb5c95b51cfc56847a810e2a"
+}

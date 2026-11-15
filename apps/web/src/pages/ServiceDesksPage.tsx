@@ -12,7 +12,13 @@ import { ServiceDeskSlaEditor } from '../components/ServiceDeskSlaEditor';
 import { MesaFlagEditor } from '../components/MesaFlagEditor';
 import { MesaStagesEditor } from '../components/MesaStagesEditor';
 import {
+  ServiceDeskActiveTag,
+  ServiceDeskReceivingTag,
+  inactiveRowText,
+} from '../components/ServiceDeskStateTags';
+import {
   EzAlert,
+  EzBadge,
   EzButton,
   EzCardItem,
   EzCheck,
@@ -71,18 +77,30 @@ const serviceDeskFormSchema = z.object({
 
 type ServiceDeskFormValues = z.infer<typeof serviceDeskFormSchema>;
 
+/** Clientes da mesa: lista nova (`organizations`) ou o vínculo único legado (`organization`). */
+function deskClientNames(desk: ServiceDesk): string[] {
+  const names = desk.organizations?.map((org) => org.name) ?? [];
+  return names.length > 0 ? names : desk.organization ? [desk.organization.name] : [];
+}
+
 function serviceDeskColumns(
   onSelect: (deskId: string) => void,
 ): ColumnDef<ServiceDesk>[] {
+  // Mesa inativa: texto da linha em gray-500 (4,5:1 ou mais; gray-400 reprova).
+  const rowText = (desk: ServiceDesk) => (desk.active === false ? inactiveRowText : undefined);
   return [
     {
       accessorKey: 'name',
       header: 'Nome',
+      size: 140,
       cell: ({ row }) => (
         <button
           type="button"
           onClick={() => onSelect(row.original.id)}
-          className="text-left font-medium text-brand-700 hover:underline"
+          title={row.original.name}
+          className={`block max-w-full truncate text-left font-medium hover:underline ${
+            row.original.active === false ? inactiveRowText : 'text-brand-700'
+          }`}
         >
           {row.original.name}
         </button>
@@ -91,30 +109,59 @@ function serviceDeskColumns(
     {
       accessorKey: 'displayName',
       header: 'Nome de exibição',
-      cell: ({ row }) => row.original.displayName || '—',
+      size: 200,
+      cell: ({ row }) => (
+        <span
+          title={row.original.displayName || undefined}
+          className={`block max-w-full truncate ${rowText(row.original) ?? ''}`}
+        >
+          {row.original.displayName || '—'}
+        </span>
+      ),
     },
     {
       id: 'active',
       header: 'Ativa',
-      cell: ({ row }) => (row.original.active === false ? 'Não' : 'Sim'),
+      size: 100,
+      cell: ({ row }) => <ServiceDeskActiveTag active={row.original.active !== false} />,
     },
     {
       id: 'accepting',
       header: 'Recebendo',
-      cell: ({ row }) => (row.original.acceptingNewTickets === false ? 'Não' : 'Sim'),
+      size: 130,
+      cell: ({ row }) => <ServiceDeskReceivingTag receiving={row.original.acceptingNewTickets !== false} />,
     },
     {
       id: 'organization',
       header: 'Clientes',
-      cell: ({ row }) =>
-        row.original.organizations?.map((org) => org.name).join(', ') ||
-        row.original.organization?.name ||
-        '—',
+      size: 150,
+      cell: ({ row }) => {
+        const names = deskClientNames(row.original);
+        if (names.length === 0) {
+          return <span className={rowText(row.original)}>—</span>;
+        }
+        const all = names.join(', ');
+        return (
+          <span title={all} className="flex max-w-full items-center gap-1.5 whitespace-nowrap">
+            <span className={`truncate ${rowText(row.original) ?? ''}`}>{names[0]}</span>
+            {names.length > 1 && (
+              <EzBadge
+                size="small"
+                title={all}
+                colorClass="bg-gray-90 text-gray-700 shrink-0"
+              >{`+${names.length - 1}`}</EzBadge>
+            )}
+          </span>
+        );
+      },
     },
     {
       id: 'agents',
       header: 'Agentes',
-      cell: ({ row }) => row.original.agents?.length ?? 0,
+      size: 110,
+      cell: ({ row }) => (
+        <span className={rowText(row.original)}>{row.original.agents?.length ?? 0}</span>
+      ),
     },
   ];
 }

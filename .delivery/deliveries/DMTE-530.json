@@ -11,7 +11,8 @@
       "id": "AC-01",
       "description": "cada mesa mostra Ativa e Recebendo como `EzTag` com texto e ícone: \"Ativa\"/\"Inativa\" e \"Recebendo\"/\"Não recebe\"; o padrão (`active`/`acceptingNewTickets` ausente) continua valendo como verdadeiro.",
       "tests": [
-        "apps/web/src/components/ServiceDeskStateTags.test.tsx: renders text and icon for active, inactive, receiving and not receiving"
+        "apps/web/src/components/ServiceDeskStateTags.test.tsx: renders text and icon for active, inactive, receiving and not receiving",
+        "apps/web/src/pages/ServiceDesksPage.test.tsx: shows Ativa and Recebendo as tags with text and icon, defaulting to true"
       ]
     },
     {
@@ -62,7 +63,7 @@
       "id": "AC-08",
       "description": "sem mudança de API, schema ou regra; `SERVICE_DESK_FILTER_FIELDS`, os valores \"Sim\"/\"Não\" dos filtros e as colunas (ids, cabeçalhos, ordem) idênticos.",
       "tests": [
-        "apps/web/src/pages/ServiceDesksPage.test.tsx: keeps the columns and the Sim/Não filters unchanged"
+        "apps/web/src/pages/ServiceDesksPage.test.tsx: keeps the grid columns and their order unchanged"
       ]
     }
   ],

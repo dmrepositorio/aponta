@@ -452,7 +452,7 @@ describe('ServiceDesksPage', () => {
       expect(name).not.toHaveClass('text-brand-700');
       expect(screen.getByText('Fin')).toHaveClass('text-gray-500');
       expect(screen.getByText('Delta Ltda')).toHaveClass('text-gray-500');
-      expect(screen.getByText('3')).toHaveClass('text-gray-500');
+      expect(within(rowOf('Financeiro')).getByText('3')).toHaveClass('text-gray-500');
 
       expect(screen.getByRole('button', { name: 'Suporte N1' })).toHaveClass('text-brand-700');
       expect(screen.getByText('Suporte')).not.toHaveClass('text-gray-500');
