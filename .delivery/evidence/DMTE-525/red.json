@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "phase": "red",
+  "started_at": "2026-11-15T16:18:01.536262+00:00",
+  "finished_at": "2026-11-15T16:18:36.258469+00:00",
+  "command": [
+    "pnpm",
+    "--dir",
+    "apps/web",
+    "exec",
+    "vitest",
+    "run",
+    "src/components/tickets/TicketTags.test.tsx",
+    "src/components/tickets/TicketShortcuts.test.tsx",
+    "src/components/tickets/TicketKanbanCard.test.tsx",
+    "src/components/tickets/TicketKanban.test.tsx",
+    "src/components/tickets/TicketList.test.tsx"
+  ],
+  "base_sha": "0dfd41018d4dc589d5755aee2412ea30a210e9c0",
+  "head_sha": "32aee16c0b6168051403996f2053527389669f0a",
+  "exit_code": 1,
+  "tests": {
+    "apps/web/src/components/tickets/TicketTags.test.tsx": "c3ed7b211c9b9c3caea6b30681b184cc179966dec8047b81074aae72f3408b2d",
+    "apps/web/src/components/tickets/TicketShortcuts.test.tsx": "69940baf8d8739363da75b6928a338f0f2e38a61dc2d76296d3104af8f14bd93",
+    "apps/web/src/components/tickets/TicketKanbanCard.test.tsx": "3468fc411cd06fe5ec9bae03dff88815c41c546c881c5cda4813fbeb3475bb62",
+    "apps/web/src/components/tickets/TicketKanban.test.tsx": "aa7f16df6d3057f11b7367d4f50fb66e744be7a6491ffbd86b8c0e474ff0b965",
+    "apps/web/src/components/tickets/TicketList.test.tsx": "e43a8384fde8d7244854383c442645b7f4d4b448eda05977a8053b3ee7db7804"
+  },
+  "criteria": [
+    "AC-01",
+    "AC-02",
+    "AC-03",
+    "AC-04",
+    "AC-05",
+    "AC-06"
+  ],
+  "source_hashes": {
+    "apps/web/src/components/tickets/TicketKanban.test.tsx": "aa7f16df6d3057f11b7367d4f50fb66e744be7a6491ffbd86b8c0e474ff0b965",
+    "apps/web/src/components/tickets/TicketKanbanCard.test.tsx": "3468fc411cd06fe5ec9bae03dff88815c41c546c881c5cda4813fbeb3475bb62",
+    "apps/web/src/components/tickets/TicketList.test.tsx": "e43a8384fde8d7244854383c442645b7f4d4b448eda05977a8053b3ee7db7804",
+    "apps/web/src/components/tickets/TicketShortcuts.test.tsx": "69940baf8d8739363da75b6928a338f0f2e38a61dc2d76296d3104af8f14bd93",
+    "apps/web/src/components/tickets/TicketTags.test.tsx": "c3ed7b211c9b9c3caea6b30681b184cc179966dec8047b81074aae72f3408b2d",
+    "apps/web/src/components/tickets/TicketTags.tsx": "7d58cf6ea65f2f8a16a561b88f619f379aa0af9822f9688acd8e7de389fbf865"
+  },
+  "log": ".delivery/evidence/DMTE-525/red.log",
+  "log_sha256": "75d97ab9a7584987d9385dc6a2c7c2723eb32ffef0fc8d67e16533a1a3d6ca95"
+}

@@ -3,8 +3,8 @@ import { useQuery } from '@tanstack/react-query';
 import { Search } from 'lucide-react';
 import { api } from '../../lib/api';
 import { useTickets, Ticket } from '../../hooks/useTickets';
-import { EzModal, EzSelect, EzTextInput, EzSpinner, EzTag } from '../ds';
-import { statusLabels, statusTagVariants } from '../tickets/TicketCard';
+import { EzModal, EzSelect, EzTextInput, EzSpinner } from '../ds';
+import { TicketStatusTag } from '../tickets/TicketTags';
 
 interface PickerOption {
   id: string;
@@ -145,7 +145,7 @@ export function TicketSearchModal({
                   <span className="text-xs font-bold text-brand-600">#{t.protocol}</span>
                   <p className="text-sm text-gray-900 truncate">{t.title}</p>
                 </div>
-                <EzTag label={statusLabels[t.status]} variant={statusTagVariants[t.status]} />
+                <TicketStatusTag status={t.status} />
               </button>
             ))
           )}

@@ -1,8 +1,9 @@
 import { Fragment, useState, type ReactNode } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import type { Ticket } from '../../hooks/useTickets';
-import { EzAlert, EzEmptyCard, EzSelect, EzSpinner, EzTag } from '../ds';
-import { statusLabels, priorityLabels, statusTagVariants, priorityTagVariants } from './TicketCard';
+import { EzAlert, EzEmptyCard, EzSelect, EzSpinner } from '../ds';
+import { priorityLabels, statusLabels } from './TicketCard';
+import { TicketPriorityTag, TicketStatusTag } from './TicketTags';
 import { useUserScreenConfig } from '../../hooks/useUserScreenConfig';
 import { useOpenInTab } from '../../contexts/TabsContext';
 import { useAuthStore } from '../../stores/authStore';
@@ -67,14 +68,14 @@ const COLUMNS: ColumnDef[] = [
     label: 'Prioridade',
     sortField: 'priority',
     defaultVisible: true,
-    render: (t) => <EzTag label={priorityLabels[t.priority]} variant={priorityTagVariants[t.priority]} />,
+    render: (t) => <TicketPriorityTag priority={t.priority} />,
   },
   {
     id: 'status',
     label: 'Status',
     sortField: 'status',
     defaultVisible: true,
-    render: (t) => <EzTag label={statusLabels[t.status]} variant={statusTagVariants[t.status]} />,
+    render: (t) => <TicketStatusTag status={t.status} />,
   },
   {
     id: 'stage',

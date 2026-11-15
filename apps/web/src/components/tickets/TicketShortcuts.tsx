@@ -76,7 +76,7 @@ export function TicketShortcuts({ role, status, closedOnly, onSelect }: TicketSh
           Autorizações
           <span aria-live="polite">
             {authorizationTotal ? (
-              <EzBadge size="small" colorClass="bg-red-600 text-white" className="tabular-nums">
+              <EzBadge size="small" colorClass="bg-yellow-100 text-yellow-800" className="tabular-nums">
                 {authorizationTotal}
               </EzBadge>
             ) : null}

@@ -632,7 +632,7 @@ export function TicketKanban({
       <button
         type="button"
         onClick={() => setSortField(null)}
-        className="mt-1 w-full rounded-[6px] px-2 py-1.5 text-left text-[13px] text-red-600 hover:bg-red-100"
+        className="mt-1 w-full rounded-[6px] px-2 py-1.5 text-left text-[13px] text-gray-700 hover:bg-gray-80 hover:text-brand-700"
       >
         Limpar ordenação
       </button>

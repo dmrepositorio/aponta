@@ -8,16 +8,11 @@ import {
   Building,
 } from 'lucide-react';
 import { EzTabs } from '../ds/EzTabs';
-import { EzTag } from '../ds/EzTag';
 import { EzSelect } from '../ds/EzSelect';
 import { EzLayoutFormConfigLayout } from '../ds/EzLayoutFormConfig';
 import type { Ticket, TicketStatus, TicketPriority } from '../../hooks/useTickets';
-import {
-  statusLabels,
-  priorityLabels,
-  statusTagVariants,
-  priorityTagVariants,
-} from './TicketCard';
+import { statusLabels } from './TicketCard';
+import { TicketPriorityTag, TicketStatusTag } from './TicketTags';
 import { TicketAttachments } from './TicketAttachments';
 import { TicketChecklist } from './TicketChecklist';
 import { TicketCsat } from './TicketCsat';
@@ -85,14 +80,8 @@ export function TicketFormMode({
             <span className="font-mono text-[14px] font-bold text-brand-700">
               {ticket.protocol}
             </span>
-            <EzTag
-              label={statusLabels[status] ?? status}
-              variant={statusTagVariants[status]}
-            />
-            <EzTag
-              label={priorityLabels[priority] ?? priority}
-              variant={priorityTagVariants[priority]}
-            />
+            <TicketStatusTag status={status} />
+            <TicketPriorityTag priority={priority} />
           </div>
         </div>
 
