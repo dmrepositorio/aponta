@@ -908,6 +908,13 @@ describe('TicketKanban', () => {
       });
     });
 
+    it('Limpar ordenação is not red', () => {
+      mockApiGet();
+      renderKanban({ tickets: ticketsWithAgents, isLoading: false, isError: false });
+      fireEvent.click(screen.getByRole('button', { name: 'Ordenar' }));
+      expect(screen.getByRole('button', { name: 'Limpar ordenação' }).className).not.toMatch(/red-/);
+    });
+
     it('renders one avatar per distinct agent present in the tickets', () => {
       mockApiGet();
       renderKanban({ tickets: ticketsWithAgents, isLoading: false, isError: false });

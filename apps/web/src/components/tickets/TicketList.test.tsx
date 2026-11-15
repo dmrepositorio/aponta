@@ -86,6 +86,12 @@ describe('TicketList (D5: Lista agrupável)', () => {
     expect(screen.getByText(/nenhum chamado encontrado/i)).toBeInTheDocument();
   });
 
+  it('renders status and priority with the new tags', () => {
+    const { container } = renderList();
+    expect(container.querySelectorAll('[data-ticket-tag="status"] [data-glyph]')).toHaveLength(2);
+    expect(container.querySelectorAll('[data-ticket-tag="priority"] [data-glyph^="bars-"]')).toHaveLength(2);
+  });
+
   it('renders the default columns: Número, Título, Cliente, Origem, Prioridade, Status, Estágio (AC6)', () => {
     renderList();
     const headerRow = screen.getAllByRole('columnheader');
