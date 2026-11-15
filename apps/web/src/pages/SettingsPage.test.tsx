@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -160,5 +160,123 @@ describe('SettingsPage: tarefas agendadas (DMTE-462 T3)', () => {
     renderSettingsPage();
     await screen.findByRole('link', { name: /minha conta/i });
     expect(screen.queryByRole('link', { name: /tarefas agendadas/i })).not.toBeInTheDocument();
+  });
+});
+
+describe('SettingsPage: auditoria de interface (DMTE-524)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    useAuthStore.setState({
+      token: 'fake-token',
+      user: { sub: 'admin-1', email: 'admin@aponta.com', role: 'ADMIN' },
+    });
+  });
+
+  it('shows a busy skeleton and no links until GET /auth/me responds', async () => {
+    let respond: (value: unknown) => void = () => undefined;
+    vi.mocked(api.get).mockReturnValue(
+      new Promise((resolve) => {
+        respond = resolve;
+      }),
+    );
+
+    const { container } = renderSettingsPage();
+
+    expect(container.querySelector('[aria-busy="true"]')).not.toBeNull();
+    expect(screen.queryAllByRole('link')).toHaveLength(0);
+
+    await act(async () => {
+      respond({ data: { id: 'admin-1', isAdmin: true, permissions: [] } });
+    });
+
+    expect(await screen.findByRole('link', { name: /^usuários$/i })).toBeInTheDocument();
+    expect(container.querySelector('[aria-busy="true"]')).toBeNull();
+    expect(screen.getAllByRole('link')).toHaveLength(6);
+  });
+
+  it('keeps hover inside the rounded card and gives links a focus ring', async () => {
+    mockMe({ isAdmin: true, permissions: [] });
+    renderSettingsPage();
+
+    const link = await screen.findByRole('link', { name: /minha conta/i });
+
+    expect(link.closest('.overflow-hidden')).not.toBeNull();
+    expect(link.className).toContain('focus-visible:ring-2');
+    expect(link.className).toContain('focus-visible:ring-brand-200');
+    expect(link.className).toContain('active:bg-gray-100');
+  });
+
+  it('renders every row with the control height token', async () => {
+    mockMe({ isAdmin: true, permissions: [] });
+    const { container } = renderSettingsPage();
+
+    await screen.findByRole('link', { name: /^usuários$/i });
+
+    for (const link of screen.getAllByRole('link')) {
+      expect(link.className).toContain('min-h-[var(--control-height-md)]');
+    }
+    expect(container.querySelector('.divide-gray-90')).not.toBeNull();
+  });
+
+  it('groups the links under Conta, Usuários and Sistema, with Mesa under Sistema for an admin', async () => {
+    mockMe({ isAdmin: true, permissions: [] });
+    renderSettingsPage();
+
+    await screen.findByRole('link', { name: /^usuários$/i });
+
+    expect(
+      screen.getAllByRole('heading', { level: 2 }).map((heading) => heading.textContent),
+    ).toEqual(['Conta', 'Usuários', 'Sistema']);
+    const sistema = screen.getByRole('region', { name: 'Sistema' });
+    expect(
+      within(sistema)
+        .getAllByRole('link')
+        .map((link) => link.textContent),
+    ).toEqual(['Tarefas agendadas', 'Mesa']);
+  });
+
+  it('omits the Sistema group when the user has no system item', async () => {
+    useAuthStore.setState({
+      token: 'fake-token',
+      user: { sub: 'u-1', email: 'client@aponta.com', role: 'CLIENT' },
+    });
+    mockMe({ permissions: [] });
+    renderSettingsPage();
+
+    await screen.findByRole('link', { name: /minha conta/i });
+
+    expect(
+      screen.getAllByRole('heading', { level: 2 }).map((heading) => heading.textContent),
+    ).toEqual(['Conta']);
+  });
+
+  it('centers the content in a max-w-2xl column', async () => {
+    mockMe({ isAdmin: true, permissions: [] });
+    renderSettingsPage();
+
+    await screen.findByRole('link', { name: /minha conta/i });
+
+    const column = screen.getByRole('heading', { level: 1, name: 'Configurações' }).closest('.max-w-2xl');
+    expect(column).not.toBeNull();
+    expect(column?.className).toContain('mx-auto');
+  });
+
+  it('falls back to Minha conta right after the first GET /auth/me failure, while retries are pending', async () => {
+    vi.mocked(api.get).mockRejectedValue(new Error('network down'));
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: 3, retryDelay: 60_000 } },
+    });
+
+    const { container } = render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter>
+          <SettingsPage />
+        </MemoryRouter>
+      </QueryClientProvider>,
+    );
+
+    await waitFor(() => expect(container.querySelector('[aria-busy="true"]')).toBeNull());
+    expect(screen.getByRole('link', { name: /minha conta/i })).toHaveAttribute('href', '/my-account');
+    expect(screen.queryByRole('link', { name: /^usuários$/i })).not.toBeInTheDocument();
   });
 });
