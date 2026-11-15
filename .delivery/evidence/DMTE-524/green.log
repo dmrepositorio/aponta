@@ -1,0 +1,23 @@
+
+> nx run web:test --run src/pages/SettingsPage.test.tsx  [existing outputs match the cache, left as is]
+
+> vitest --run src/pages/SettingsPage.test.tsx
+
+
+ RUN  v4.1.11 /home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-524-101d9064bda9/workdir/aponta/apps/web
+
+ ✓ |web| src/pages/SettingsPage.test.tsx (15 tests) 1339ms
+     ✓ always shows Minha conta inside the Usuários submenu, regardless of permissions  364ms
+
+ Test Files  1 passed (1)
+      Tests  15 passed (15)
+   Start at  13:31:01
+   Duration  11.32s (transform 6.01s, setup 579ms, import 7.50s, tests 1.34s, environment 852ms)
+
+
+
+
+ NX   Successfully ran target test for project web
+
+Nx read the output from the cache instead of running the command for 1 out of 1 tasks.
+

@@ -61,6 +61,9 @@
   },
   "design_system": {
     "applicable": true,
-    "reused": []
+    "reused": [
+      "EzCardItem"
+    ],
+    "reason": "Reaproveita EzCardItem e os tokens --control-height-md/--control-height-compact/--radius-control e o anel focus-visible brand-200 do DS. SettingsLink é componente local da página (não exportado pelo DS), então não há story; nenhum componente, token ou estilo do DS foi criado ou alterado."
   }
 }

@@ -1,0 +1,141 @@
+
+> nx run web:test --run src/pages/SettingsPage.test.tsx
+
+> vitest --run src/pages/SettingsPage.test.tsx
+
+
+ RUN  v4.1.11 /home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-524-101d9064bda9/workdir/.tmp/red-wt/apps/web
+
+ ❯ |web| src/pages/SettingsPage.test.tsx (15 tests | 6 failed) 1099ms
+     ✓ always shows Minha conta inside the Usuários submenu, regardless of permissions 193ms
+     ✓ shows Usuários and Grupos de atendentes only for a user with MANAGE_USERS 119ms
+     ✓ shows Grupos de permissões only for a user with MANAGE_PERMISSION_GROUPS 68ms
+     ✓ shows every Usuários submenu item for an ADMIN even with no PermissionGroup linked 154ms
+     ✓ does not show Usuários/Grupos links for a user without MANAGE_USERS or MANAGE_PERMISSION_GROUPS 48ms
+     ✓ should render a link to Mesa only for ADMIN 59ms
+     ✓ should not render the Mesa link for a non-ADMIN user 23ms
+     ✓ AC-16: o link Tarefas agendadas aparece só com MANAGE_SCHEDULED_JOBS 75ms
+     ✓ AC-16: sem a permissão o link não aparece 49ms
+     × shows a busy skeleton and no links until GET /auth/me responds 37ms
+     × keeps hover inside the rounded card and gives links a focus ring 19ms
+     × renders every row with the control height token 84ms
+     × groups the links under Conta, Usuários and Sistema, with Mesa under Sistema for an admin 98ms
+     × omits the Sistema group when the user has no system item 32ms
+     × centers the content in a max-w-2xl column 23ms
+
+ Test Files  1 failed (1)
+      Tests  6 failed | 9 passed (15)
+   Start at  13:33:46
+   Duration  6.39s (transform 2.98s, setup 194ms, import 3.99s, tests 1.10s, environment 750ms)
+
+
+
+
+ NX   Running target test for project web failed
+
+Failed tasks:
+
+- web:test
+
+Hint: run the command with --verbose for more details.
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |web| src/pages/SettingsPage.test.tsx > SettingsPage: auditoria de interface (DMTE-524) > shows a busy skeleton and no links until GET /auth/me responds
+AssertionError: expected null not to be null
+ ❯ src/pages/SettingsPage.test.tsx:185:63
+    183|     const { container } = renderSettingsPage();
+    184|
+    185|     expect(container.querySelector('[aria-busy="true"]')).not.toBeNull…
+       |                                                               ^
+    186|     expect(screen.queryAllByRole('link')).toHaveLength(0);
+    187|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  |web| src/pages/SettingsPage.test.tsx > SettingsPage: auditoria de interface (DMTE-524) > keeps hover inside the rounded card and gives links a focus ring
+AssertionError: expected null not to be null
+ ❯ src/pages/SettingsPage.test.tsx:203:50
+    201|     const link = await screen.findByRole('link', { name: /minha conta/…
+    202|
+    203|     expect(link.closest('.overflow-hidden')).not.toBeNull();
+       |                                                  ^
+    204|     expect(link.className).toContain('focus-visible:ring-2');
+    205|     expect(link.className).toContain('focus-visible:ring-brand-200');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  |web| src/pages/SettingsPage.test.tsx > SettingsPage: auditoria de interface (DMTE-524) > renders every row with the control height token
+AssertionError: expected 'flex items-center justify-between gap…' to contain 'min-h-[var(--control-height-md)]'
+
+Expected: "min-h-[var(--control-height-md)]"
+Received: "flex items-center justify-between gap-3 px-4 py-3 text-[14px] text-gray-900 transition-colors hover:bg-gray-90"
+
+ ❯ src/pages/SettingsPage.test.tsx:216:30
+    214|
+    215|     for (const link of screen.getAllByRole('link')) {
+    216|       expect(link.className).toContain('min-h-[var(--control-height-md…
+       |                              ^
+    217|     }
+    218|     expect(container.querySelector('.divide-gray-90')).not.toBeNull();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  |web| src/pages/SettingsPage.test.tsx > SettingsPage: auditoria de interface (DMTE-524) > groups the links under Conta, Usuários and Sistema, with Mesa under Sistema for an admin
+AssertionError: expected [ 'Usuários', 'Sistema', 'Mesa' ] to deeply equal [ 'Conta', 'Usuários', 'Sistema' ]
+
+- Expected
++ Received
+
+  [
+-   "Conta",
+    "Usuários",
+    "Sistema",
++   "Mesa",
+  ]
+
+ ❯ src/pages/SettingsPage.test.tsx:229:7
+    227|     expect(
+    228|       screen.getAllByRole('heading', { level: 2 }).map((heading) => he…
+    229|     ).toEqual(['Conta', 'Usuários', 'Sistema']);
+       |       ^
+    230|     const sistema = screen.getByRole('region', { name: 'Sistema' });
+    231|     expect(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  |web| src/pages/SettingsPage.test.tsx > SettingsPage: auditoria de interface (DMTE-524) > omits the Sistema group when the user has no system item
+AssertionError: expected [ 'Usuários' ] to deeply equal [ 'Conta' ]
+
+- Expected
++ Received
+
+  [
+-   "Conta",
++   "Usuários",
+  ]
+
+ ❯ src/pages/SettingsPage.test.tsx:250:7
+    248|     expect(
+    249|       screen.getAllByRole('heading', { level: 2 }).map((heading) => he…
+    250|     ).toEqual(['Conta']);
+       |       ^
+    251|   });
+    252|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  |web| src/pages/SettingsPage.test.tsx > SettingsPage: auditoria de interface (DMTE-524) > centers the content in a max-w-2xl column
+AssertionError: expected null not to be null
+ ❯ src/pages/SettingsPage.test.tsx:260:24
+    258|
+    259|     const column = screen.getByRole('heading', { level: 1, name: 'Conf…
+    260|     expect(column).not.toBeNull();
+       |                        ^
+    261|     expect(column?.className).toContain('mx-auto');
+    262|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+Warning: command "vitest --run src/pages/SettingsPage.test.tsx" exited with non-zero status code
