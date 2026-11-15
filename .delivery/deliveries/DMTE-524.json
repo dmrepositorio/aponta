@@ -10,32 +10,47 @@
     {
       "id": "AC-01",
       "description": "enquanto `GET /auth/me` não responde, a página mostra um skeleton (`aria-busy`) e nenhum link; ao responder, os itens permitidos entram juntos.",
-      "tests": []
+      "tests": [
+        "apps/web/src/pages/SettingsPage.test.tsx: shows a busy skeleton and no links until GET /auth/me responds"
+      ]
     },
     {
       "id": "AC-02",
       "description": "o hover não vaza pelos cantos arredondados do cartão (cartão recorta o conteúdo); os links têm `focus-visible` com anel `brand-200` do DS e estado ativo.",
-      "tests": []
+      "tests": [
+        "apps/web/src/pages/SettingsPage.test.tsx: keeps hover inside the rounded card and gives links a focus ring"
+      ]
     },
     {
       "id": "AC-03",
       "description": "a linha de link é um único componente local, com altura mínima `--control-height-md` e divisor `gray-90`.",
-      "tests": []
+      "tests": [
+        "apps/web/src/pages/SettingsPage.test.tsx: renders every row with the control height token"
+      ]
     },
     {
       "id": "AC-04",
       "description": "um cartão com subtítulos Conta / Usuários / Sistema; some a seção \"Mesa\"; o link Mesa (só ADMIN) fica em Sistema; grupo sem item não aparece.",
-      "tests": []
+      "tests": [
+        "apps/web/src/pages/SettingsPage.test.tsx: groups the links under Conta, Usuários and Sistema, with Mesa under Sistema for an admin",
+        "apps/web/src/pages/SettingsPage.test.tsx: omits the Sistema group when the user has no system item"
+      ]
     },
     {
       "id": "AC-05",
       "description": "conteúdo centrado com `max-w-2xl`.",
-      "tests": []
+      "tests": [
+        "apps/web/src/pages/SettingsPage.test.tsx: centers the content in a max-w-2xl column"
+      ]
     },
     {
       "id": "AC-06",
       "description": "a visibilidade por permissão não muda e os testes existentes de `SettingsPage` seguem verdes.",
-      "tests": []
+      "tests": [
+        "apps/web/src/pages/SettingsPage.test.tsx: casos existentes de SettingsPage (visibilidade por permissão, Mesa só ADMIN, Tarefas agendadas) no mesmo arquivo"
+      ],
+      "tdd_required": false,
+      "reason": "Preservação de comportamento: os testes já existentes passam antes e depois; sem comportamento novo."
     }
   ],
   "spec": "docs/delivery/specs/DMTE-524.md",
