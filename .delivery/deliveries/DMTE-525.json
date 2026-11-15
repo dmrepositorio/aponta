@@ -1,0 +1,80 @@
+{
+  "version": 1,
+  "delivery": "DMTE-525",
+  "repository": "dmrepositorio/aponta",
+  "github_issue": 257,
+  "multica_id": "01a1dff7-5c38-78ae-a423-e3ef84d37565",
+  "cycle": "2026-11-09/2026-11-22",
+  "tier": 2,
+  "criteria": [
+    {
+      "id": "AC-01",
+      "description": "nenhum par (status, prioridade) renderiza a mesma tag: o conjunto de classes e o ícone de `TicketStatusTag` de cada status diferem dos de `TicketPriorityTag` de cada prioridade; e status de famílias diferentes têm ícone ou cor de ponto diferentes (os quatro \"aguardando\" compartilham a família).",
+      "tests": [
+        "apps/web/src/components/tickets/TicketTags.test.tsx: no status tag shares its look with any priority tag"
+      ]
+    },
+    {
+      "id": "AC-02",
+      "description": "Média/Aberto, Alta/Em Andamento, Crítica/Escalonado e Baixa/Fechado (os pares que hoje coincidem) ficam distintos, e Escalonado é o único status com texto/borda vermelhos.",
+      "tests": [
+        "apps/web/src/components/tickets/TicketTags.test.tsx: keeps the pairs that used to coincide apart and only Escalonado is red"
+      ]
+    },
+    {
+      "id": "AC-03",
+      "description": "todo par texto/fundo das tags de status e de prioridade e do contador de Autorizações tem contraste mínimo de 4,5:1 (tokens lidos de `styles.css`), inclusive sobre o fundo real do cartão (`gray-70`/branco).",
+      "tests": [
+        "apps/web/src/components/tickets/TicketTags.test.tsx: token pairs of the tags reach 4.5:1 over the real background"
+      ]
+    },
+    {
+      "id": "AC-04",
+      "description": "`TicketKanbanCard` usa `bg-white` em todas as prioridades (nenhuma classe `bg-red-100|bg-yellow-100|bg-green-100|bg-petroleum-100` no `li`), com o glifo de prioridade e o nome acessível \"Prioridade <nome>\"; chips de SLA e tag de status ficam sobre fundo branco.",
+      "tests": [
+        "apps/web/src/components/tickets/TicketKanbanCard.test.tsx: keeps the card white and shows the priority glyph"
+      ]
+    },
+    {
+      "id": "AC-05",
+      "description": "vermelho só em vencido, crítico e escalado: o contador de Autorizações não usa `red-*` e \"Limpar ordenação\" não usa `red-*`; Resolvido usa o `green` do DS e nenhum status usa `brand` e `green` como o mesmo tom.",
+      "tests": [
+        "apps/web/src/components/tickets/TicketShortcuts.test.tsx: authorization counter is not red",
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: Limpar ordenação is not red",
+        "apps/web/src/components/tickets/TicketTags.test.tsx: Resolvido uses the DS green, not the brand"
+      ]
+    },
+    {
+      "id": "AC-06",
+      "description": "Lista, Kanban, Detalhe, Formulário, Ticket pai e busca da agenda mostram a nova tag (sem `statusTagVariants`/`priorityTagVariants` no código), e `check_tickets_palette.py` continua passando.",
+      "tests": [
+        "apps/web/src/components/tickets/TicketList.test.tsx: renders status and priority with the new tags",
+        "python3 scripts/check_tickets_palette.py"
+      ]
+    },
+    {
+      "id": "AC-07",
+      "description": "sem mudança de API, schema ou regra; rótulos (`statusLabels`, `priorityLabels`) idênticos.",
+      "tests": [
+        "git diff do PR sem apps/api e sem alteração em statusLabels/priorityLabels"
+      ],
+      "tdd_required": false,
+      "reason": "Verificação de escopo do diff (sem API, schema ou regra); sem comportamento novo"
+    }
+  ],
+  "spec": "docs/delivery/specs/DMTE-525.md",
+  "tdd": {
+    "mode": "required",
+    "red": ".delivery/evidence/DMTE-525/red.json",
+    "green": ".delivery/evidence/DMTE-525/green.json"
+  },
+  "design_system": {
+    "applicable": true,
+    "reused": [
+      "EzTag",
+      "EzSlaChip",
+      "EzBadge"
+    ],
+    "reason": "Reaproveita EzTag (variantes outline, yellow e red, leftIcon), EzSlaChip e EzBadge; só tokens já definidos no @theme; nenhum componente ou token novo no DS."
+  }
+}
