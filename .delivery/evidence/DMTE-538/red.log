@@ -1,0 +1,938 @@
+
+ RUN  v4.1.11 /home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-538-34d216d4dc9d/workdir/red-wt/apps/web
+
+ ❯ |web| src/components/contracts/ContractFormSections.test.tsx (7 tests | 5 failed) 2063ms
+     × groups the fields in fieldsets with a legend each 973ms
+     × keeps the fields of each modality and the amendment date in the commercial terms 398ms
+     × puts the two switches together in one group before the identification 341ms
+     × draws every checkbox with the DS control and keeps what onSave receives 41ms
+     ✓ toggles the approval switch into what onSave receives 167ms
+     × disables every field and checkbox while saving 96ms
+     ✓ keeps the empty-desks hint and the unlinked desk warning inside the desks group 38ms
+
+ Test Files  1 failed (1)
+      Tests  5 failed | 2 passed (7)
+   Start at  16:22:51
+   Duration  8.22s (transform 3.08s, setup 353ms, import 4.36s, tests 2.06s, environment 1.01s)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |web| src/components/contracts/ContractFormSections.test.tsx > ContractForm sections > groups the fields in fieldsets with a legend each
+TestingLibraryElementError: Unable to find an accessible element with the role "group" and name "Identificação"
+
+Here are the accessible roles:
+
+  group:
+
+  Name "":
+  [36m<fieldset[39m
+    [33mclass[39m=[32m"grid grid-cols-1 gap-4 sm:grid-cols-2"[39m
+  [36m/>[39m
+
+  Name "Mesas de serviços cobertas":
+  [36m<fieldset[39m
+    [33mclass[39m=[32m"space-y-2 sm:col-span-2"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  textbox:
+
+  Name "Nome do contrato":
+  [36m<input[39m
+    [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+    [33mid[39m=[32m"contract-name"[39m
+    [33mmaxlength[39m=[32m"200"[39m
+    [33mtype[39m=[32m"text"[39m
+    [33mvalue[39m=[32m""[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  combobox:
+
+  Name "Empresa":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33maria-haspopup[39m=[32m"listbox"[39m
+    [33maria-label[39m=[32m"Empresa"[39m
+    [33mclass[39m=[32m"flex h-full w-full items-center justify-between gap-2 bg-transparent text-left text-gray-900 outline-none pl-4 pr-3 text-[14px]"[39m
+    [33mrole[39m=[32m"combobox"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Modalidade":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33maria-haspopup[39m=[32m"listbox"[39m
+    [33maria-label[39m=[32m"Modalidade"[39m
+    [33mclass[39m=[32m"flex h-full w-full items-center justify-between gap-2 bg-transparent text-left text-gray-900 outline-none pl-4 pr-3 text-[14px]"[39m
+    [33mrole[39m=[32m"combobox"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  checkbox:
+
+  Name "Contrato ativo":
+  [36m<input[39m
+    [33mchecked[39m=[32m""[39m
+    [33mtype[39m=[32m"checkbox"[39m
+  [36m/>[39m
+
+  Name "Condições comerciais aprovadas":
+  [36m<input[39m
+    [33mtype[39m=[32m"checkbox"[39m
+  [36m/>[39m
+
+  Name "Desenvolvimento":
+  [36m<input[39m
+    [33mtype[39m=[32m"checkbox"[39m
+  [36m/>[39m
+
+  Name "Suporte":
+  [36m<input[39m
+    [33mtype[39m=[32m"checkbox"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  spinbutton:
+
+  Name "Franquia mensal (horas)":
+  [36m<input[39m
+    [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+    [33mid[39m=[32m"contract-hours"[39m
+    [33mmin[39m=[32m"0"[39m
+    [33mstep[39m=[32m"0.01"[39m
+    [33mtype[39m=[32m"number"[39m
+    [33mvalue[39m=[32m""[39m
+  [36m/>[39m
+
+  Name "Valor mensal (R$)":
+  [36m<input[39m
+    [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+    [33mid[39m=[32m"contract-monthly"[39m
+    [33mmin[39m=[32m"0"[39m
+    [33mstep[39m=[32m"0.01"[39m
+    [33mtype[39m=[32m"number"[39m
+    [33mvalue[39m=[32m""[39m
+  [36m/>[39m
+
+  Name "Hora excedente (R$)":
+  [36m<input[39m
+    [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+    [33mid[39m=[32m"contract-rate"[39m
+    [33mmin[39m=[32m"0"[39m
+    [33mstep[39m=[32m"0.01"[39m
+    [33mtype[39m=[32m"number"[39m
+    [33mvalue[39m=[32m""[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  button:
+
+  Name "Cancelar":
+  [36m<button[39m
+    [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent text-brand-600 border border-gray-200 hover:bg-gray-80 hover:border-gray-90 disabled:bg-gray-80 disabled:border-gray-200 disabled:text-gray-400 h-[42px] text-sm px-4"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Salvar contrato":
+  [36m<button[39m
+    [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-brand-500 text-gray-70 border border-brand-500 hover:bg-brand-700 hover:border-brand-700 disabled:bg-gray-400 disabled:border-gray-400 disabled:text-gray-70 h-[42px] text-sm px-4"[39m
+    [33mtype[39m=[32m"submit"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<form[39m
+      [33mclass[39m=[32m"space-y-4"[39m
+      [33mnovalidate[39m=[32m""[39m
+    [36m>[39m
+      [36m<fieldset[39m
+        [33mclass[39m=[32m"grid grid-cols-1 gap-4 sm:grid-cols-2"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex flex-col w-full gap-1.5"[39m
+        [36m>[39m
+          [36m<label[39m
+            [33mclass[39m=[32m"text-[14px] font-medium leading-none mb-0.5 select-none text-gray-900"[39m
+            [33mfor[39m=[32m"contract-name"[39m
+          [36m>[39m
+            [0mNome do contrato[0m
+          [36m</label>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"[39m
+          [36m>[39m
+            [36m<input[39m
+              [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+              [33mid[39m=[32m"contract-name"[39m
+              [33mmaxlength[39m=[32m"200"[39m
+              [33mtype[39m=[32m"text"[39m
+              [33mvalue[39m=[32m""[39m
+            [36m/>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex flex-col w-full gap-1.5"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center mb-0.5 leading-none"[39m
+          [36m>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"font-medium select-none text-[14px] leading-none text-gray-900"[39m
+              [33mfor[39m=[32m"contract-organization"[39m
+            [36m>[39m
+              [0mEmpresa[0m
+            [36m</label>[39m
+            [36m<span[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"ml-1 text-red-600 text-[14px]"[39m
+            [36m>[39m
+              [0m*[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"relative"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border bg-white rounded-[12px] h-[42px] focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300"[39m
+            [36m>[39m
+              [36m<select[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"sr-only"[39m
+                [33mid[39m=[32m"contract-organization"[39m
+                [33mrequired[39m=[32m""[39m
+                [33mtabindex[39m=[32m"-1"[39m
+              [36m>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m""[39m
+                [36m>[39m
+                  [0mSelecione a empresa[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"org"[39m
+                [36m>[39m
+                  [0mEmpresa[0m
+                [36m</option>[39m
+              [36m</select>[39m
+              [36m<button[39m
+                [33maria-expanded[39m=[32m"false"[39m
+                [33maria-haspopup[39m=[32m"listbox"[39m
+                [33maria-label[39m=[32m"Empresa"[39m
+                [33mclass[39m=[32m"flex h-full w-full items-center justify-between gap-2 bg-transparent text-left text-gray-900 outline-none pl-4 pr-3 text-[14px]"[39m
+                [33mrole[39m=[32m"combobox"[39m
+                [33mtype[39m=[32m"button"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"truncate"[39m
+                [36m>[39m
+                  [0mEmpresa[0m
+                [36m</span>[39m
+                [36m<svg[39m
+                  [33maria-hidden[39m=[32m"true"[39m
+                  [33mclass[39m=[32m"lucide lucide-chevron-down shrink-0 text-gray-500 w-4 h-4"[39m
+                  [33mfill[39m=[32m"none"[39m
+                  [33mheight[39m=[32m"24"[39m
+                  [33mstroke[39m=[32m"currentColor"[39m
+                  [33mstroke-linecap[39m=[32m"round"[39m
+                  [33mstroke-linejoin[39m=[32m"round"[39m
+                  [33mstroke-width[39m=[32m"2"[39m
+                  [33mviewBox[39m=[32m"0 0 24 24"[39m
+                  [33mwidth[39m=[32m"24"[39m
+                  [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                [36m>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"m6 9 6 6 6-6"[39m
+                  [36m/>[39m
+                [36m</svg>[39m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex flex-col w-full gap-1.5"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center mb-0.5 leading-none"[39m
+          [36m>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"font-medium select-none text-[14px] leading-none text-gray-900"[39m
+              [33mfor[39m=[32m"contract-type"[39m
+            [36m>[39m
+              [0mModalidade[0m
+            [36m</label>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"relative"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border bg-white rounded-[12px] h-[42px] focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300"[39m
+            [36m>[39m
+              [36m<select[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"sr-only"[39m
+                [33mid[39m=[32m"contract-type"[39m
+                [33mtabindex[39m=[32m"-1"[39m
+              [36m>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"FIXED_PROJECT"[39m
+                [36m>[39m
+                  [0mEmpreito[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"MONTHLY_HOURS"[39m
+                [36m>[39m
+                  [0mHoras Mensais + Excedente[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"HOURLY"[39m
+                [36m>[39m
+                  [0mHoras Avulsas[0m
+                [36m</option>[39m
+              [36m</select>[39m
+              [36m<button[39m
+                [33maria-expanded[39m=[32m"false"[39m
+   ...
+ ❯ Object.getElementError ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ group src/components/contracts/ContractFormSections.test.tsx:29:40
+     27| const FIELDS_IN_EDIT_FORM = 15;
+     28|
+     29| const group = (name: string) => screen.getByRole('group', { name });
+       |                                        ^
+     30|
+     31| describe('ContractForm sections', () => {
+ ❯ src/components/contracts/ContractFormSections.test.tsx:37:29
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  |web| src/components/contracts/ContractFormSections.test.tsx > ContractForm sections > keeps the fields of each modality and the amendment date in the commercial terms
+TestingLibraryElementError: Unable to find an accessible element with the role "group" and name "Condições comerciais"
+
+Here are the accessible roles:
+
+  group:
+
+  Name "":
+  [36m<fieldset[39m
+    [33mclass[39m=[32m"grid grid-cols-1 gap-4 sm:grid-cols-2"[39m
+  [36m/>[39m
+
+  Name "Mesas de serviços cobertas":
+  [36m<fieldset[39m
+    [33mclass[39m=[32m"space-y-2 sm:col-span-2"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  textbox:
+
+  Name "Nome do contrato":
+  [36m<input[39m
+    [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+    [33mid[39m=[32m"contract-name"[39m
+    [33mmaxlength[39m=[32m"200"[39m
+    [33mtype[39m=[32m"text"[39m
+    [33mvalue[39m=[32m""[39m
+  [36m/>[39m
+
+  Name "Escopo aprovado":
+  [36m<input[39m
+    [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+    [33mid[39m=[32m"contract-scope"[39m
+    [33mtype[39m=[32m"text"[39m
+    [33mvalue[39m=[32m""[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  combobox:
+
+  Name "Empresa":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33maria-haspopup[39m=[32m"listbox"[39m
+    [33maria-label[39m=[32m"Empresa"[39m
+    [33mclass[39m=[32m"flex h-full w-full items-center justify-between gap-2 bg-transparent text-left text-gray-900 outline-none pl-4 pr-3 text-[14px]"[39m
+    [33mrole[39m=[32m"combobox"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Modalidade":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33maria-haspopup[39m=[32m"listbox"[39m
+    [33maria-label[39m=[32m"Modalidade"[39m
+    [33mclass[39m=[32m"flex h-full w-full items-center justify-between gap-2 bg-transparent text-left text-gray-900 outline-none pl-4 pr-3 text-[14px]"[39m
+    [33mrole[39m=[32m"combobox"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  checkbox:
+
+  Name "Contrato ativo":
+  [36m<input[39m
+    [33mchecked[39m=[32m""[39m
+    [33mtype[39m=[32m"checkbox"[39m
+  [36m/>[39m
+
+  Name "Condições comerciais aprovadas":
+  [36m<input[39m
+    [33mtype[39m=[32m"checkbox"[39m
+  [36m/>[39m
+
+  Name "Desenvolvimento":
+  [36m<input[39m
+    [33mtype[39m=[32m"checkbox"[39m
+  [36m/>[39m
+
+  Name "Suporte":
+  [36m<input[39m
+    [33mtype[39m=[32m"checkbox"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  spinbutton:
+
+  Name "Preço fechado (R$)":
+  [36m<input[39m
+    [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+    [33mid[39m=[32m"contract-price"[39m
+    [33mmin[39m=[32m"0"[39m
+    [33mstep[39m=[32m"0.01"[39m
+    [33mtype[39m=[32m"number"[39m
+    [33mvalue[39m=[32m""[39m
+  [36m/>[39m
+
+  Name "Estimativa total (horas)":
+  [36m<input[39m
+    [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+    [33mid[39m=[32m"contract-estimate"[39m
+    [33mmin[39m=[32m"0"[39m
+    [33mstep[39m=[32m"0.01"[39m
+    [33mtype[39m=[32m"number"[39m
+    [33mvalue[39m=[32m""[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  paragraph:
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-sm sm:col-span-2"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  button:
+
+  Name "Cancelar":
+  [36m<button[39m
+    [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent text-brand-600 border border-gray-200 hover:bg-gray-80 hover:border-gray-90 disabled:bg-gray-80 disabled:border-gray-200 disabled:text-gray-400 h-[42px] text-sm px-4"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Salvar contrato":
+  [36m<button[39m
+    [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-brand-500 text-gray-70 border border-brand-500 hover:bg-brand-700 hover:border-brand-700 disabled:bg-gray-400 disabled:border-gray-400 disabled:text-gray-70 h-[42px] text-sm px-4"[39m
+    [33mtype[39m=[32m"submit"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<form[39m
+      [33mclass[39m=[32m"space-y-4"[39m
+      [33mnovalidate[39m=[32m""[39m
+    [36m>[39m
+      [36m<fieldset[39m
+        [33mclass[39m=[32m"grid grid-cols-1 gap-4 sm:grid-cols-2"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex flex-col w-full gap-1.5"[39m
+        [36m>[39m
+          [36m<label[39m
+            [33mclass[39m=[32m"text-[14px] font-medium leading-none mb-0.5 select-none text-gray-900"[39m
+            [33mfor[39m=[32m"contract-name"[39m
+          [36m>[39m
+            [0mNome do contrato[0m
+          [36m</label>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"[39m
+          [36m>[39m
+            [36m<input[39m
+              [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+              [33mid[39m=[32m"contract-name"[39m
+              [33mmaxlength[39m=[32m"200"[39m
+              [33mtype[39m=[32m"text"[39m
+              [33mvalue[39m=[32m""[39m
+            [36m/>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex flex-col w-full gap-1.5"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center mb-0.5 leading-none"[39m
+          [36m>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"font-medium select-none text-[14px] leading-none text-gray-900"[39m
+              [33mfor[39m=[32m"contract-organization"[39m
+            [36m>[39m
+              [0mEmpresa[0m
+            [36m</label>[39m
+            [36m<span[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"ml-1 text-red-600 text-[14px]"[39m
+            [36m>[39m
+              [0m*[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"relative"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border bg-white rounded-[12px] h-[42px] focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300"[39m
+            [36m>[39m
+              [36m<select[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"sr-only"[39m
+                [33mid[39m=[32m"contract-organization"[39m
+                [33mrequired[39m=[32m""[39m
+                [33mtabindex[39m=[32m"-1"[39m
+              [36m>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m""[39m
+                [36m>[39m
+                  [0mSelecione a empresa[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"org"[39m
+                [36m>[39m
+                  [0mEmpresa[0m
+                [36m</option>[39m
+              [36m</select>[39m
+              [36m<button[39m
+                [33maria-expanded[39m=[32m"false"[39m
+                [33maria-haspopup[39m=[32m"listbox"[39m
+                [33maria-label[39m=[32m"Empresa"[39m
+                [33mclass[39m=[32m"flex h-full w-full items-center justify-between gap-2 bg-transparent text-left text-gray-900 outline-none pl-4 pr-3 text-[14px]"[39m
+                [33mrole[39m=[32m"combobox"[39m
+                [33mtype[39m=[32m"button"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"truncate"[39m
+                [36m>[39m
+                  [0mEmpresa[0m
+                [36m</span>[39m
+                [36m<svg[39m
+                  [33maria-hidden[39m=[32m"true"[39m
+                  [33mclass[39m=[32m"lucide lucide-chevron-down shrink-0 text-gray-500 w-4 h-4"[39m
+                  [33mfill[39m=[32m"none"[39m
+                  [33mheight[39m=[32m"24"[39m
+                  [33mstroke[39m=[32m"currentColor"[39m
+                  [33mstroke-linecap[39m=[32m"round"[39m
+                  [33mstroke-linejoin[39m=[32m"round"[39m
+                  [33mstroke-width[39m=[32m"2"[39m
+                  [33mviewBox[39m=[32m"0 0 24 24"[39m
+                  [33mwidth[39m=[32m"24"[39m
+                  [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                [36m>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"m6 9 6 6 6-6"[39m
+                  [36m/>[39m
+                [36m</svg>[39m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex flex-col w-full gap-1.5"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center mb-0.5 leading-none"[39m
+          [36m>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"font-medium select-none text-[14px] leading-none text-gray-900"[39m
+              [33mfor[39m=[32m"contract-type"[39m
+            [36m>[39m
+              [0mModalidade[0m
+            [36m</label>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"relative"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border bg-white rounded-[12px] h-[42px] focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300"[39m
+            [36m>[39m
+              [36m<select[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"sr-only"[39m
+                [33mid[39m=[32m"contract-type"[39m
+                [33mtabindex[39m=[32m"-1"[39m
+              [36m>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"FIXED_PROJECT"[39m
+                [36m>[39m
+                  [0mEmpreito[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"MONTHLY_HOURS"[39m
+                [36m>[39m
+                  [0mHoras Mensais + Excedente[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"HOURLY"[39m
+                [36m>[39m
+                  [0mHoras Avulsas[0m
+                [36m</option>[39m
+              [36m</select>[39m
+              [36m<button[39m
+                [33maria-expanded[39m=[32m"false"[39m
+   ...
+ ❯ Object.getElementError ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ group src/components/contracts/ContractFormSections.test.tsx:29:40
+     27| const FIELDS_IN_EDIT_FORM = 15;
+     28|
+     29| const group = (name: string) => screen.getByRole('group', { name });
+       |                                        ^
+     30|
+     31| describe('ContractForm sections', () => {
+ ❯ src/components/contracts/ContractFormSections.test.tsx:68:26
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  |web| src/components/contracts/ContractFormSections.test.tsx > ContractForm sections > puts the two switches together in one group before the identification
+TestingLibraryElementError: Unable to find an accessible element with the role "group" and name "Situação do contrato"
+
+Here are the accessible roles:
+
+  group:
+
+  Name "":
+  [36m<fieldset[39m
+    [33mclass[39m=[32m"grid grid-cols-1 gap-4 sm:grid-cols-2"[39m
+  [36m/>[39m
+
+  Name "Mesas de serviços cobertas":
+  [36m<fieldset[39m
+    [33mclass[39m=[32m"space-y-2 sm:col-span-2"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  textbox:
+
+  Name "Nome do contrato":
+  [36m<input[39m
+    [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+    [33mid[39m=[32m"contract-name"[39m
+    [33mmaxlength[39m=[32m"200"[39m
+    [33mtype[39m=[32m"text"[39m
+    [33mvalue[39m=[32m""[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  combobox:
+
+  Name "Empresa":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33maria-haspopup[39m=[32m"listbox"[39m
+    [33maria-label[39m=[32m"Empresa"[39m
+    [33mclass[39m=[32m"flex h-full w-full items-center justify-between gap-2 bg-transparent text-left text-gray-900 outline-none pl-4 pr-3 text-[14px]"[39m
+    [33mrole[39m=[32m"combobox"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Modalidade":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33maria-haspopup[39m=[32m"listbox"[39m
+    [33maria-label[39m=[32m"Modalidade"[39m
+    [33mclass[39m=[32m"flex h-full w-full items-center justify-between gap-2 bg-transparent text-left text-gray-900 outline-none pl-4 pr-3 text-[14px]"[39m
+    [33mrole[39m=[32m"combobox"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  checkbox:
+
+  Name "Contrato ativo":
+  [36m<input[39m
+    [33mchecked[39m=[32m""[39m
+    [33mtype[39m=[32m"checkbox"[39m
+  [36m/>[39m
+
+  Name "Condições comerciais aprovadas":
+  [36m<input[39m
+    [33mtype[39m=[32m"checkbox"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  paragraph:
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-sm text-gray-500"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  spinbutton:
+
+  Name "Franquia mensal (horas)":
+  [36m<input[39m
+    [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+    [33mid[39m=[32m"contract-hours"[39m
+    [33mmin[39m=[32m"0"[39m
+    [33mstep[39m=[32m"0.01"[39m
+    [33mtype[39m=[32m"number"[39m
+    [33mvalue[39m=[32m""[39m
+  [36m/>[39m
+
+  Name "Valor mensal (R$)":
+  [36m<input[39m
+    [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+    [33mid[39m=[32m"contract-monthly"[39m
+    [33mmin[39m=[32m"0"[39m
+    [33mstep[39m=[32m"0.01"[39m
+    [33mtype[39m=[32m"number"[39m
+    [33mvalue[39m=[32m""[39m
+  [36m/>[39m
+
+  Name "Hora excedente (R$)":
+  [36m<input[39m
+    [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+    [33mid[39m=[32m"contract-rate"[39m
+    [33mmin[39m=[32m"0"[39m
+    [33mstep[39m=[32m"0.01"[39m
+    [33mtype[39m=[32m"number"[39m
+    [33mvalue[39m=[32m""[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  button:
+
+  Name "Cancelar":
+  [36m<button[39m
+    [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent text-brand-600 border border-gray-200 hover:bg-gray-80 hover:border-gray-90 disabled:bg-gray-80 disabled:border-gray-200 disabled:text-gray-400 h-[42px] text-sm px-4"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Salvar contrato":
+  [36m<button[39m
+    [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-brand-500 text-gray-70 border border-brand-500 hover:bg-brand-700 hover:border-brand-700 disabled:bg-gray-400 disabled:border-gray-400 disabled:text-gray-70 h-[42px] text-sm px-4"[39m
+    [33mtype[39m=[32m"submit"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<form[39m
+      [33mclass[39m=[32m"space-y-4"[39m
+      [33mnovalidate[39m=[32m""[39m
+    [36m>[39m
+      [36m<fieldset[39m
+        [33mclass[39m=[32m"grid grid-cols-1 gap-4 sm:grid-cols-2"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex flex-col w-full gap-1.5"[39m
+        [36m>[39m
+          [36m<label[39m
+            [33mclass[39m=[32m"text-[14px] font-medium leading-none mb-0.5 select-none text-gray-900"[39m
+            [33mfor[39m=[32m"contract-name"[39m
+          [36m>[39m
+            [0mNome do contrato[0m
+          [36m</label>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"[39m
+          [36m>[39m
+            [36m<input[39m
+              [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+              [33mid[39m=[32m"contract-name"[39m
+              [33mmaxlength[39m=[32m"200"[39m
+              [33mtype[39m=[32m"text"[39m
+              [33mvalue[39m=[32m""[39m
+            [36m/>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex flex-col w-full gap-1.5"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center mb-0.5 leading-none"[39m
+          [36m>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"font-medium select-none text-[14px] leading-none text-gray-900"[39m
+              [33mfor[39m=[32m"contract-organization"[39m
+            [36m>[39m
+              [0mEmpresa[0m
+            [36m</label>[39m
+            [36m<span[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"ml-1 text-red-600 text-[14px]"[39m
+            [36m>[39m
+              [0m*[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"relative"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border bg-white rounded-[12px] h-[42px] focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300"[39m
+            [36m>[39m
+              [36m<select[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"sr-only"[39m
+                [33mid[39m=[32m"contract-organization"[39m
+                [33mrequired[39m=[32m""[39m
+                [33mtabindex[39m=[32m"-1"[39m
+              [36m>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m""[39m
+                [36m>[39m
+                  [0mSelecione a empresa[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"org"[39m
+                [36m>[39m
+                  [0mEmpresa[0m
+                [36m</option>[39m
+              [36m</select>[39m
+              [36m<button[39m
+                [33maria-expanded[39m=[32m"false"[39m
+                [33maria-haspopup[39m=[32m"listbox"[39m
+                [33maria-label[39m=[32m"Empresa"[39m
+                [33mclass[39m=[32m"flex h-full w-full items-center justify-between gap-2 bg-transparent text-left text-gray-900 outline-none pl-4 pr-3 text-[14px]"[39m
+                [33mrole[39m=[32m"combobox"[39m
+                [33mtype[39m=[32m"button"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"truncate"[39m
+                [36m>[39m
+                  [0mSelecione a empresa[0m
+                [36m</span>[39m
+                [36m<svg[39m
+                  [33maria-hidden[39m=[32m"true"[39m
+                  [33mclass[39m=[32m"lucide lucide-chevron-down shrink-0 text-gray-500 w-4 h-4"[39m
+                  [33mfill[39m=[32m"none"[39m
+                  [33mheight[39m=[32m"24"[39m
+                  [33mstroke[39m=[32m"currentColor"[39m
+                  [33mstroke-linecap[39m=[32m"round"[39m
+                  [33mstroke-linejoin[39m=[32m"round"[39m
+                  [33mstroke-width[39m=[32m"2"[39m
+                  [33mviewBox[39m=[32m"0 0 24 24"[39m
+                  [33mwidth[39m=[32m"24"[39m
+                  [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                [36m>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"m6 9 6 6 6-6"[39m
+                  [36m/>[39m
+                [36m</svg>[39m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex flex-col w-full gap-1.5"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center mb-0.5 leading-none"[39m
+          [36m>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"font-medium select-none text-[14px] leading-none text-gray-900"[39m
+              [33mfor[39m=[32m"contract-type"[39m
+            [36m>[39m
+              [0mModalidade[0m
+            [36m</label>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"relative"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border bg-white rounded-[12px] h-[42px] focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300"[39m
+            [36m>[39m
+              [36m<select[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"sr-only"[39m
+                [33mid[39m=[32m"contract-type"[39m
+                [33mtabindex[39m=[32m"-1"[39m
+              [36m>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"FIXED_PROJECT"[39m
+                [36m>[39m
+                  [0mEmpreito[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"MONTHLY_HOURS"[39m
+                [36m>[39m
+                  [0mHoras Mensais + Excedente[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"HOURLY"[39m
+                [36m>[39m
+                  [0mHoras Avulsas[0m
+                [36m</option>[39m
+              [36m</select>[39m
+              [36m<button[39m
+                [33maria-expanded[39m=[32m"fal...
+ ❯ Object.getElementError ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ group src/components/contracts/ContractFormSections.test.tsx:29:40
+     27| const FIELDS_IN_EDIT_FORM = 15;
+     28|
+     29| const group = (name: string) => screen.getByRole('group', { name });
+       |                                        ^
+     30|
+     31| describe('ContractForm sections', () => {
+ ❯ src/components/contracts/ContractFormSections.test.tsx:77:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  |web| src/components/contracts/ContractFormSections.test.tsx > ContractForm sections > draws every checkbox with the DS control and keeps what onSave receives
+Error: [2mexpect([22m[31melement[39m[2m).toHaveClass([22m[32m[32m"appearance-none checked:bg-brand-600"[32m[39m[2m)[22m
+
+Expected the element to have class:
+[32m  appearance-none checked:bg-brand-600[39m
+Received:
+[31m[39m
+ ❯ src/components/contracts/ContractFormSections.test.tsx:105:19
+    103|     expect(boxes).toHaveLength(5);
+    104|     boxes.forEach((box) => {
+    105|       expect(box).toHaveClass('appearance-none', 'checked:bg-brand-600…
+       |                   ^
+    106|     });
+    107|
+ ❯ src/components/contracts/ContractFormSections.test.tsx:104:11
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  |web| src/components/contracts/ContractFormSections.test.tsx > ContractForm sections > disables every field and checkbox while saving
+Error: [2mexpect([22m[31melement[39m[2m).toHaveClass([22m[32m[32m"cursor-not-allowed"[32m[39m[2m)[22m
+
+Expected the element to have class:
+[32m  cursor-not-allowed[39m
+Received:
+[31m  flex items-center gap-2[39m
+ ❯ src/components/contracts/ContractFormSections.test.tsx:164:36
+    162|     fields.forEach((field) => expect(field).toBeDisabled());
+    163|     screen.getAllByRole('checkbox').forEach((box) => {
+    164|       expect(box.closest('label')).toHaveClass('cursor-not-allowed');
+       |                                    ^
+    165|     });
+    166|   });
+ ❯ src/components/contracts/ContractFormSections.test.tsx:163:37
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+

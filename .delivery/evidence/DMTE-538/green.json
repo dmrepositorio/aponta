@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "phase": "green",
+  "started_at": "2026-11-16T19:23:07.742544+00:00",
+  "finished_at": "2026-11-16T19:23:18.029685+00:00",
+  "command": [
+    "pnpm",
+    "--dir",
+    "apps/web",
+    "exec",
+    "vitest",
+    "run",
+    "src/components/contracts/ContractFormSections.test.tsx"
+  ],
+  "base_sha": "a403a99679038eab443a362fb0f1760b1459a6df",
+  "head_sha": "3ccc644e2ca34e2bf83b23b0e2a722740011d516",
+  "exit_code": 0,
+  "tests": {
+    "apps/web/src/components/contracts/ContractFormSections.test.tsx": "773db39381f78d1a1eb2a17b531ea215bc0a901c285fd219e1daa1df8152110f"
+  },
+  "criteria": [
+    "AC-01",
+    "AC-02",
+    "AC-03",
+    "AC-04",
+    "AC-05"
+  ],
+  "source_hashes": {
+    "apps/web/src/components/contracts/ContractFormSections.test.tsx": "773db39381f78d1a1eb2a17b531ea215bc0a901c285fd219e1daa1df8152110f",
+    "apps/web/src/components/contracts/ContractViews.tsx": "a6ad3fcf5707d4775eab143391819bc3ae0dc85231313feb346f8750a544f115"
+  },
+  "log": ".delivery/evidence/DMTE-538/green.log",
+  "log_sha256": "96aee788538056a2a518dbdc8a724dc55a45281a4af1d95043fbec3e023917a4"
+}

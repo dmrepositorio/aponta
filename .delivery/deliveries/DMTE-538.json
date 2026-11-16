@@ -1,0 +1,81 @@
+{
+  "version": 1,
+  "delivery": "DMTE-538",
+  "repository": "dmrepositorio/aponta",
+  "github_issue": 288,
+  "multica_id": "01a1e1dc-2654-7da4-a5aa-222c7309987f",
+  "cycle": "2026-11-09/2026-11-22",
+  "tier": 2,
+  "criteria": [
+    {
+      "id": "AC-01",
+      "description": "o formulário tem os grupos \"Identificação\", \"Vigência\", \"Condições comerciais\" e \"Mesas de serviços cobertas\", cada um um `<fieldset>` com `<legend>`; Nome, Empresa e Modalidade estão em Identificação; Início, Fim e \"Data de reajuste\" em Vigência; os campos da modalidade em Condições comerciais (e \"Novas condições a partir de\" na edição); as mesas em Mesas de serviços cobertas.",
+      "tests": [
+        "apps/web/src/components/contracts/ContractFormSections.test.tsx: groups the fields in fieldsets with a legend each",
+        "apps/web/src/components/contracts/ContractFormSections.test.tsx: keeps the fields of each modality and the amendment date in the commercial terms"
+      ]
+    },
+    {
+      "id": "AC-02",
+      "description": "\"Contrato ativo\" e \"Condições comerciais aprovadas\" estão no mesmo grupo (\"Situação do contrato\"), que vem antes de Identificação na ordem do documento.",
+      "tests": [
+        "apps/web/src/components/contracts/ContractFormSections.test.tsx: puts the two switches together in one group before the identification"
+      ]
+    },
+    {
+      "id": "AC-03",
+      "description": "todo checkbox do formulário (os dois interruptores, cada mesa e a mesa não vinculada) é desenhado pelo `EzCheck` do DS (`appearance-none` e `checked:bg-brand-600`, nenhum nativo); o nome acessível de cada um continua o mesmo e marcar/desmarcar continua alterando `active`, `approved` e `serviceDeskIds` no que `onSave` recebe.",
+      "tests": [
+        "apps/web/src/components/contracts/ContractFormSections.test.tsx: draws every checkbox with the DS control and keeps what onSave receives",
+        "apps/web/src/components/contracts/ContractFormSections.test.tsx: toggles the approval switch into what onSave receives"
+      ]
+    },
+    {
+      "id": "AC-04",
+      "description": "com `pending`, todos os campos e checkboxes do formulário ficam desabilitados, nas cinco seções.",
+      "tests": [
+        "apps/web/src/components/contracts/ContractFormSections.test.tsx: disables every field and checkbox while saving"
+      ]
+    },
+    {
+      "id": "AC-05",
+      "description": "o comportamento existente continua: sem mesas na empresa, aparece o texto \"Selecione uma empresa com mesas explicitamente vinculadas…\"; mesa não vinculada continua com \"Mesa não vinculada à empresa (…) — remova para regularizar\" e some ao desmarcar. Os testes existentes (`ContractForm.test.tsx`, `CommercialContract.test.tsx`) passam sem edição.",
+      "tests": [
+        "apps/web/src/components/contracts/ContractFormSections.test.tsx: keeps the empty-desks hint and the unlinked desk warning inside the desks group",
+        "apps/web/src/components/contracts/ContractForm.test.tsx e CommercialContract.test.tsx existentes, sem edição"
+      ]
+    },
+    {
+      "id": "AC-06",
+      "description": "no navegador (Chromium, 1440 px e 390 px, dados fictícios), o formulário não tem rolagem horizontal, as seções aparecem na ordem do AC-01, nenhum campo fica sozinho em linha em 1440 px nas seções Identificação e Vigência, e um checkbox marcado tem fundo `rgb(0, 133, 97)` (token `brand-600`), não o azul do navegador.",
+      "tests": [
+        "Medição em Chromium a 1440 px e 390 px: sem rolagem horizontal, seções na ordem, checkbox marcado em rgb(0, 133, 97) (resultado no PR)"
+      ],
+      "tdd_required": false,
+      "reason": "Medida de layout e de cor renderizada em navegador (jsdom não calcula layout nem lê o CSS do Tailwind); o comportamento causador (fieldsets com legenda, EzCheck com appearance-none e checked:bg-brand-600) é coberto por AC-01 e AC-03"
+    },
+    {
+      "id": "AC-07",
+      "description": "nenhum arquivo de `apps/web/src/components/ds/`, de `apps/api` nem de `apps/web-e2e` é alterado, e o payload de `onSave` e as validações não mudam.",
+      "tests": [
+        "git diff do PR: nenhum arquivo em apps/web/src/components/ds/, apps/api nem apps/web-e2e"
+      ],
+      "tdd_required": false,
+      "reason": "Verificação de escopo por git diff, sem comportamento novo; o payload e as validações são cobertos pelos testes existentes e por AC-03 e AC-05"
+    }
+  ],
+  "spec": "docs/delivery/specs/DMTE-538.md",
+  "tdd": {
+    "mode": "required",
+    "red": ".delivery/evidence/DMTE-538/red.json",
+    "green": ".delivery/evidence/DMTE-538/green.json"
+  },
+  "design_system": {
+    "applicable": true,
+    "reused": [
+      "EzCheck"
+    ],
+    "reason": "Reaproveita o EzCheck existente (checkbox real com checked:bg-brand-600, label, labelClassName e disabled) no lugar dos checkboxes nativos; só tokens já definidos no @theme; nenhum componente, prop ou token novo no DS.",
+    "exception": "Nenhum arquivo de apps/web/src/components/ds/ muda nesta entrega, então não há story nova; Contracts.stories.tsx continua renderizando ContractForm."
+  }
+}
