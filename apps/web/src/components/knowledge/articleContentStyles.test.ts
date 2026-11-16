@@ -1,5 +1,9 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import css from '../../styles.css?raw';
+
+// O `?raw` de CSS volta vazio no vitest; lê o arquivo direto do disco.
+const css = readFileSync(resolve(import.meta.dirname, '../../styles.css'), 'utf8');
 
 function rule(selector: string): string {
   const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
