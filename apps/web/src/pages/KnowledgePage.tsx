@@ -295,14 +295,6 @@ export function KnowledgePage() {
     );
   }
 
-  if (isLoading) {
-    return (
-      <div className="p-8">
-        <EzSpinner label="Carregando artigos..." />
-      </div>
-    );
-  }
-
   return (
     <div className="p-8 flex-1 overflow-y-auto">
       <EzBreadcrumb
@@ -556,6 +548,13 @@ export function KnowledgePage() {
         </div>
       </div>
 
+      {/* DMTE-537: o carregamento fica na área da lista; o cabeçalho (busca,
+          ordenação, tags) continua montado para não perder foco nem teclas. */}
+      {isLoading && (
+        <div className="flex justify-center p-4">
+          <EzSpinner label="Carregando artigos..." />
+        </div>
+      )}
       <div
         data-testid="knowledge-articles"
         data-view-mode={viewMode}
@@ -630,7 +629,7 @@ export function KnowledgePage() {
             />
           </EzCardItem>
         ))}
-        {!articles?.length && (
+        {!isLoading && !articles?.length && (
           <EzEmptyCard title="Nenhum artigo encontrado para a busca atual." />
         )}
       </div>

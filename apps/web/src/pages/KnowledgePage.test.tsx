@@ -624,4 +624,76 @@ describe('KnowledgePage', () => {
       expect(editable).toHaveTextContent('Clique em Novo Chamado...');
     });
   });
+
+  // DMTE-537: o `return` antecipado por `isLoading` trocava a página inteira
+  // pelo spinner a cada nova queryKey, desmontando o campo de busca no meio da
+  // digitação. Estes casos usam uma API lenta (o mock imediato dos demais
+  // testes esconde o defeito).
+  describe('with a slow articles API', () => {
+    function mockSlowArticles() {
+      vi.mocked(api.get).mockImplementation((url: string) => {
+        if (url.startsWith('/articles')) {
+          return new Promise((resolve) => setTimeout(() => resolve({ data: articles }), 150));
+        }
+        if (url.startsWith('/knowledge-folders')) {
+          return Promise.resolve({ data: folders });
+        }
+        return Promise.resolve({ data: [] });
+      });
+    }
+
+    it('keeps the search field mounted, with its text and focus, while typing against a slow API', async () => {
+      loginAs('CLIENT');
+      const user = userEvent.setup({ delay: 20 });
+      renderPage();
+      await openSupportFolder(user);
+      mockSlowArticles();
+
+      const searchBox = screen.getByRole('searchbox');
+      await user.click(searchBox);
+      await user.type(searchBox, 'senha');
+
+      expect(screen.queryByRole('searchbox')).toBe(searchBox);
+      expect(searchBox).toHaveValue('senha');
+      expect(searchBox).toHaveFocus();
+    });
+
+    it('keeps the header and shows the loading state only in the list area while a folder opens', async () => {
+      loginAs('CLIENT');
+      const user = userEvent.setup();
+      renderPage();
+      await waitFor(() => {
+        expect(screen.getByText('Suporte')).toBeInTheDocument();
+      });
+      mockSlowArticles();
+      await user.click(screen.getByText('Suporte'));
+
+      expect(await screen.findByText('Carregando artigos...')).toBeInTheDocument();
+      expect(screen.queryByRole('heading', { name: 'Base de Conhecimento (FAQ)' })).toBeInTheDocument();
+      expect(screen.queryByRole('searchbox')).toBeInTheDocument();
+      expect(screen.queryByLabelText('Ordenar por', { selector: 'select' })).toBeInTheDocument();
+      expect(screen.queryByText('Como abrir um chamado')).not.toBeInTheDocument();
+      expect(screen.queryByText('Nenhum artigo encontrado para a busca atual.')).not.toBeInTheDocument();
+
+      expect(await screen.findByText('Como abrir um chamado')).toBeInTheDocument();
+      expect(screen.queryByText('Carregando artigos...')).not.toBeInTheDocument();
+    });
+
+    it('sends the full typed search to the API and lists the result of that query', async () => {
+      loginAs('CLIENT');
+      const user = userEvent.setup({ delay: 20 });
+      renderPage();
+      await openSupportFolder(user);
+      mockSlowArticles();
+
+      await user.type(screen.getByRole('searchbox'), 'senha');
+
+      await waitFor(() => {
+        const urls = vi.mocked(api.get).mock.calls.map((call) => call[0]);
+        expect(urls).toContain('/articles?search=senha&folderId=folder-1');
+      });
+      expect(await screen.findByText('Como abrir um chamado')).toBeInTheDocument();
+      expect(screen.getByRole('searchbox')).toHaveValue('senha');
+    });
+  });
 });

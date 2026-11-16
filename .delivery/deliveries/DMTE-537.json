@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "delivery": "DMTE-537",
+  "repository": "dmrepositorio/aponta",
+  "github_issue": 293,
+  "multica_id": "01a1e1ca-5ed0-718b-a8ea-3dfa04a76064",
+  "cycle": "2026-11-09/2026-11-22",
+  "tier": 2,
+  "criteria": [
+    {
+      "id": "AC-01",
+      "description": "com a API respondendo devagar, digitar \"senha\" na busca da pasta, sem pausa entre as teclas, mantém o mesmo campo no DOM, com o valor \"senha\" e o foco nele.",
+      "tests": [
+        "apps/web/src/pages/KnowledgePage.test.tsx: keeps the search field mounted, with its text and focus, while typing against a slow API"
+      ]
+    },
+    {
+      "id": "AC-02",
+      "description": "enquanto a lista carrega, o cabeçalho (breadcrumb, título, campo de busca, ordenação e alternador Lista/Grade) continua na tela e a área da lista mostra \"Carregando artigos...\" sem os cards e sem \"Nenhum artigo encontrado para a busca atual.\"; terminado o carregamento, os artigos aparecem.",
+      "tests": [
+        "apps/web/src/pages/KnowledgePage.test.tsx: keeps the header and shows the loading state only in the list area while a folder opens"
+      ]
+    },
+    {
+      "id": "AC-03",
+      "description": "a busca digitada de uma vez chega à API com o texto completo (`/articles?search=senha&folderId=folder-1`) e a lista mostra o resultado dessa consulta.",
+      "tests": [
+        "apps/web/src/pages/KnowledgePage.test.tsx: sends the full typed search to the API and lists the result of that query"
+      ]
+    },
+    {
+      "id": "AC-04",
+      "description": "o comportamento existente continua: os testes de `KnowledgePage.test.tsx` anteriores passam sem edição, e abrir uma pasta pela primeira vez mostra o carregamento na área da lista.",
+      "tests": [
+        "apps/web/src/pages/KnowledgePage.test.tsx: testes existentes, sem edição",
+        "apps/web/src/pages/KnowledgePage.test.tsx: keeps the header and shows the loading state only in the list area while a folder opens"
+      ]
+    },
+    {
+      "id": "AC-05",
+      "description": "nenhum arquivo de `apps/web/src/components/ds/`, de `apps/api` nem de `apps/web-e2e` é alterado, e os parâmetros enviados à API não mudam.",
+      "tests": [
+        "git diff do PR: nenhum arquivo em apps/web/src/components/ds/, apps/api nem apps/web-e2e"
+      ],
+      "tdd_required": false,
+      "reason": "Verificação de escopo por git diff, sem comportamento novo; os parâmetros da API são cobertos pelos testes de AC-03 e pelos existentes"
+    },
+    {
+      "id": "AC-06",
+      "description": "no navegador (Chromium, API simulada com 400 ms, \"senha\" com 120 ms entre teclas, dados fictícios), o campo termina com \"senha\" e o foco, e a lista mostra os artigos da última consulta.",
+      "tests": [
+        "Medição em Chromium (API simulada 400 ms, \"senha\" com 120 ms entre teclas): campo com \"senha\", foco no campo e lista da última consulta (resultado no PR)"
+      ],
+      "tdd_required": false,
+      "reason": "Medida de foco e de temporização em navegador real (jsdom não reproduz o foco do Chromium); o comportamento causador (campo desmontado pelo return antecipado) é coberto por AC-01 e AC-02"
+    }
+  ],
+  "spec": "docs/delivery/specs/DMTE-537.md",
+  "tdd": {
+    "mode": "required",
+    "red": ".delivery/evidence/DMTE-537/red.json",
+    "green": ".delivery/evidence/DMTE-537/green.json"
+  },
+  "design_system": {
+    "applicable": true,
+    "reused": [
+      "EzSpinner"
+    ],
+    "reason": "Reaproveita o EzSpinner existente na área da lista; nenhum componente, prop ou token novo no DS.",
+    "exception": "Nenhum arquivo de apps/web/src/components/ds/ muda nesta entrega, então não há story nova."
+  }
+}
