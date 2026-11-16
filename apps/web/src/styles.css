@@ -151,7 +151,7 @@
     font-size: 0.875rem;
     line-height: 1.5rem;
     color: var(--color-gray-700);
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
   }
   .article-content > * + * {
     margin-top: 0.75rem;
