@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "phase": "red",
+  "started_at": "2026-11-16T03:06:54.194842+00:00",
+  "finished_at": "2026-11-16T03:07:03.706179+00:00",
+  "command": [
+    "pnpm",
+    "--dir",
+    "apps/web",
+    "exec",
+    "vitest",
+    "run",
+    "src/pages/DashboardPage.test.tsx",
+    "src/components/ds/EzLineChart.test.tsx"
+  ],
+  "base_sha": "ed4b51388bbf64c10e37584b5aae95aceb866620",
+  "head_sha": "4ff3231f94d1a5506320f064be14b82c2ac4e7dc",
+  "exit_code": 1,
+  "tests": {
+    "apps/web/src/pages/DashboardPage.test.tsx": "64fbe241652795dae8679f68d4a8aaf4ec5df4e066ec6d6eb7d37d83088650c2",
+    "apps/web/src/components/ds/EzLineChart.test.tsx": "7bca8ec7b8bb15af799f9c8b08658d991cfc26561b7fe33ce49c7d83866481e9"
+  },
+  "criteria": [
+    "AC-02",
+    "AC-03",
+    "AC-04",
+    "AC-05",
+    "AC-06",
+    "AC-08",
+    "AC-09",
+    "AC-10",
+    "AC-11",
+    "AC-12",
+    "AC-13"
+  ],
+  "source_hashes": {
+    "apps/web/src/components/ds/EzLineChart.test.tsx": "7bca8ec7b8bb15af799f9c8b08658d991cfc26561b7fe33ce49c7d83866481e9",
+    "apps/web/src/components/ds/EzLineChart.tsx": "8e2df9de8819bc9e2c139ec22e0d5cfb91ddca7a724bd261576728894c4a6075",
+    "apps/web/src/components/ds/index.ts": "5e503f9eb8787f77d9fcd79bd43cb7b2286c05e8b26ba42a4b119e8d50cb78a6",
+    "apps/web/src/pages/DashboardPage.test.tsx": "64fbe241652795dae8679f68d4a8aaf4ec5df4e066ec6d6eb7d37d83088650c2",
+    "scripts/test_check_tickets_palette.py": "bbe1833c9fe86d1c56f224a8725062e04e998d34fd464f0ccfe35fb38ba05026",
+    "scripts/test_tickets_scope.py": "319683144323647a0cd3611c61a91afd1eed91b5e4518ec8ac647a104ecdbc7e"
+  },
+  "log": ".delivery/evidence/DMTE-529/red.log",
+  "log_sha256": "8dd3db6ecc45f59dce0f59fbf213d7cdd9737ab2de2926ea5a17dbe269bc8fd7"
+}

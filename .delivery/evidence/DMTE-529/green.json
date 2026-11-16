@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "phase": "green",
+  "started_at": "2026-11-16T03:25:40.281411+00:00",
+  "finished_at": "2026-11-16T03:25:45.384127+00:00",
+  "command": [
+    "pnpm",
+    "--dir",
+    "apps/web",
+    "exec",
+    "vitest",
+    "run",
+    "src/pages/DashboardPage.test.tsx",
+    "src/components/ds/EzLineChart.test.tsx"
+  ],
+  "base_sha": "ed4b51388bbf64c10e37584b5aae95aceb866620",
+  "head_sha": "5c27b6cee7a1d88484b1b160bd090191c2dcd8c1",
+  "exit_code": 0,
+  "tests": {
+    "apps/web/src/pages/DashboardPage.test.tsx": "64fbe241652795dae8679f68d4a8aaf4ec5df4e066ec6d6eb7d37d83088650c2",
+    "apps/web/src/components/ds/EzLineChart.test.tsx": "7bca8ec7b8bb15af799f9c8b08658d991cfc26561b7fe33ce49c7d83866481e9"
+  },
+  "criteria": [
+    "AC-02",
+    "AC-03",
+    "AC-04",
+    "AC-05",
+    "AC-06",
+    "AC-08",
+    "AC-09",
+    "AC-10",
+    "AC-11",
+    "AC-12",
+    "AC-13"
+  ],
+  "source_hashes": {
+    "apps/web/src/components/ds/EzLineChart.stories.tsx": "fc6d77a89fa826ee413fea5e3cd45554126767645c3ad121fc5de72d46b8fca2",
+    "apps/web/src/components/ds/EzLineChart.test.tsx": "7bca8ec7b8bb15af799f9c8b08658d991cfc26561b7fe33ce49c7d83866481e9",
+    "apps/web/src/components/ds/EzLineChart.tsx": "a19267592518f3830032804860bab6d62aad16cf23f50db5af64bffd256a806c",
+    "apps/web/src/components/ds/index.ts": "5e503f9eb8787f77d9fcd79bd43cb7b2286c05e8b26ba42a4b119e8d50cb78a6",
+    "apps/web/src/pages/DashboardPage.test.tsx": "64fbe241652795dae8679f68d4a8aaf4ec5df4e066ec6d6eb7d37d83088650c2",
+    "apps/web/src/pages/DashboardPage.tsx": "e976a5fcd99873a6b90f8f9c862b031f1719328cb3ea5beff71743f0cfbbfd97",
+    "scripts/check_tickets_palette.py": "6ab22afbe4431d985ac053750712c2a043442eae80c6cd02c5addc011e852bb7",
+    "scripts/check_tickets_proportion.py": "6a8c193977f6e0af6f17501d6b56455d9ab1c1fd7b4da46d0b9c56601979a6e2",
+    "scripts/dashboard_responsive_check.mjs": "4f3129837d466a10b8ce45bfa8c0d76d88ca6a9e6dcf2fd98fdfc56c42b2614b",
+    "scripts/test_check_tickets_palette.py": "bbe1833c9fe86d1c56f224a8725062e04e998d34fd464f0ccfe35fb38ba05026",
+    "scripts/test_tickets_scope.py": "319683144323647a0cd3611c61a91afd1eed91b5e4518ec8ac647a104ecdbc7e",
+    "scripts/tickets_scope.py": "e634bcb9a5c27247b1dbdbd976f2fb9883c38317b4f8404d3777624e59de7972"
+  },
+  "log": ".delivery/evidence/DMTE-529/green.log",
+  "log_sha256": "ebe28b0329a2652c22dce7f0ca45027d7938b94bbba1528086e10b0a3d36df02"
+}

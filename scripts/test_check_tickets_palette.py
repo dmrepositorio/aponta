@@ -1,3 +1,5 @@
+import contextlib
+import io
 import tempfile
 import unittest
 from pathlib import Path
@@ -83,6 +85,15 @@ class TicketsPaletteCheckMainTest(unittest.TestCase):
     def test_main_passes_when_tickets_files_are_clean(self):
         self.write('apps/web/src/pages/TicketDetailPage.tsx', "<div className=\"bg-gray-100\" />")
         self.assertEqual(0, main(['check_tickets_palette.py', str(self.root)]))
+
+    def test_main_checks_the_dashboard_and_names_it_in_the_messages(self):
+        self.write('apps/web/src/pages/DashboardPage.tsx', "<p className=\"text-amber-500\">x</p>")
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            code = main(['check_tickets_palette.py', str(self.root)])
+        self.assertEqual(1, code)
+        self.assertIn('DashboardPage.tsx', out.getvalue())
+        self.assertIn('Dashboard', out.getvalue().splitlines()[-1])
 
     def test_main_ignores_test_and_story_files(self):
         self.write('apps/web/src/components/tickets/TicketKanbanCard.test.tsx', "'#00B5A5'")

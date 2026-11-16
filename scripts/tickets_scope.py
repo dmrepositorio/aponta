@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
-"""Shared file scope for the aba Tickets static checks (DMTE-427 fatia 1)."""
+"""Shared file scope for the aba Tickets and Dashboard static checks (DMTE-427 fatia 1, DMTE-529)."""
 from pathlib import Path
 
 TICKETS_GLOBS = [
     'apps/web/src/pages/Ticket*.tsx',
     'apps/web/src/pages/CreateTicketPage.tsx',
     'apps/web/src/components/tickets/*.tsx',
+    'apps/web/src/pages/DashboardPage.tsx',
+    'apps/web/src/components/ds/EzLineChart.tsx',
 ]
 EXCLUDE_SUFFIXES = ('.test.tsx', '.stories.tsx')
 
