@@ -691,11 +691,11 @@ describe('ContractsPage grid (DMTE-536)', () => {
     const headers = screen.getAllByRole('columnheader');
     const width = (label: string) =>
       headers.find((header) => header.textContent?.includes(label))?.style.width;
-    expect(width('Contrato')).toBe('240px');
-    expect(width('Empresa')).toBe('180px');
-    expect(width('Modalidade')).toBe('170px');
-    expect(width('Status')).toBe('100px');
-    expect(width('Aprovação')).toBe('170px');
+    expect(width('Contrato')).toBe('220px');
+    expect(width('Empresa')).toBe('160px');
+    expect(width('Modalidade')).toBe('200px');
+    expect(width('Status')).toBe('120px');
+    expect(width('Aprovação')).toBe('200px');
     expect(width('Valor mensal')).toBe('120px');
     const total = headers.reduce((sum, header) => sum + parseInt(header.style.width, 10), 0);
     expect(total).toBeLessThanOrEqual(1100);
