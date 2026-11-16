@@ -136,6 +136,16 @@
   },
   "design_system": {
     "applicable": true,
-    "reused": []
+    "reused": [
+      "EzTag",
+      "EzAlert",
+      "EzEntityGrid",
+      "EzEntityToolbar",
+      "EzFilterDrawer",
+      "EzPageHeader",
+      "TabBar"
+    ],
+    "reason": "Reaproveita EzTag (ActiveTag, o tag de Ativo/Inativo de Contratos movido para componente neutro), EzAlert (erro de edição inline) e as páginas existentes; sem token novo no @theme. Mudanças no DS (EzFilterDrawer, EzEntityGrid, EzEntityToolbar, EzPageHeader, TabBar) descritas em docs/architecture/03-sankhya-ds-parity.md.",
+    "exception": "EzFilterDrawer não tem story hoje (a sobreposição abaixo de xl é coberta por EzFilterDrawer.test.tsx e medida em Chromium por scripts/clientes_responsive_check.mjs); EzEntityGrid e EzPageLayout (EzPageHeader) têm a story atualizada; EzEntityToolbar e TabBar não têm story no repositório."
   }
 }

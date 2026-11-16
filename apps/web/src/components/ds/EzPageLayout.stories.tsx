@@ -12,6 +12,9 @@ import { EzCardItem } from './EzCardItem';
  * grade (Modo Lista) e um formulário em tela cheia (Modo Formulário),
  * assim como no Sankhya o usuário alterna entre a Grade e a Edição de um
  * registro sem navegar para outra URL.
+ *
+ * DMTE-541: o cabeçalho é compacto (cerca de 48 px: 8 px de padding vertical, linha mínima de 32 px, 16 px
+ * dos lados abaixo de 640 px e 24 px a partir daí) para a primeira linha de dados subir na tela.
  */
 const meta: Meta<typeof EzPageHeader> = {
   title: 'DS/EzPageHeader',

@@ -597,7 +597,7 @@ export function OrganizationsPage() {
       {
         accessorKey: 'name',
         header: 'Nome',
-        size: 200,
+        size: 165,
         meta: { truncate: true },
         cell: ({ row }) => (
           <button
@@ -619,7 +619,7 @@ export function OrganizationsPage() {
           <EzTextEdit
             value={row.original.legalName || ''}
             placeholder="Razão Social"
-            className="text-xs text-gray-900"
+            className="max-w-full text-xs text-gray-900 [&>span]:truncate"
             onChange={(val) => {
               if (val !== (row.original.legalName || '')) {
                 inlinePatchMutation.mutate({ id: row.original.id, data: { legalName: val.trim() } });
@@ -631,6 +631,7 @@ export function OrganizationsPage() {
       {
         id: 'document',
         header: 'CPF / CNPJ',
+        size: 180,
         meta: { hideBelowSm: true },
         cell: ({ row }) => {
           const isCpf = row.original.documentType === 'CPF';
@@ -639,7 +640,7 @@ export function OrganizationsPage() {
             <EzTextEdit
               value={doc ? (isCpf ? formatCpf(doc) : formatCnpj(doc)) : ''}
               placeholder={isCpf ? 'CPF' : 'CNPJ'}
-              className="font-mono text-xs text-gray-700"
+              className="font-mono text-xs text-gray-700 whitespace-nowrap"
               onChange={(val) => {
                 const digits = val.replace(/\D/g, '');
                 if (digits !== (doc || '').replace(/\D/g, '')) {
@@ -656,12 +657,14 @@ export function OrganizationsPage() {
       {
         id: 'status',
         header: 'Status',
+        size: 115,
         accessorFn: (org) => (org.active === false ? 'Inativo' : 'Ativo'),
         cell: ({ row }) => <ActiveTag active={row.original.active !== false} />,
       },
       {
         id: 'clientes',
         header: 'Usuários',
+        size: 90,
         meta: { align: 'right' },
         cell: ({ row }) => <span className="text-xs text-gray-500">{row.original._count?.users || 0}</span>,
       },
@@ -1063,7 +1066,7 @@ export function OrganizationsPage() {
 
                 {/* Grid Content */}
                 <div data-testid="organizations-grid-content"
-className="flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll-x-contain min-w-0 flex flex-col">
+className="isolate flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll-x-contain min-w-0 flex flex-col">
                   {orgs?.length === 0 ? (
                     <div className="p-4">
                       <EzEmptyCard title="Nenhuma empresa cadastrada ainda." />

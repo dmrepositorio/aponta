@@ -217,7 +217,7 @@ export const EzEntityToolbar = forwardRef<HTMLDivElement, EzEntityToolbarProps>(
               <div
                 data-testid="ez-toolbar-mode-dropdown"
                 role="menu"
-                className="absolute left-0 top-full mt-1 w-52 rounded-[8px] bg-white border border-gray-200 shadow-lg py-1 z-50 text-[12px] max-sm:fixed max-sm:inset-x-3 max-sm:bottom-3 max-sm:top-auto max-sm:left-auto max-sm:right-auto max-sm:mt-0 max-sm:w-auto"
+                className="absolute left-0 top-full mt-1 w-52 rounded-[8px] bg-white border border-gray-200 shadow-lg py-1 z-50 text-[12px] max-sm:fixed max-sm:inset-x-3 max-sm:bottom-3 max-sm:top-auto max-sm:mt-0 max-sm:w-auto"
               >
                 <button
                   type="button"
@@ -422,7 +422,7 @@ export const EzEntityToolbar = forwardRef<HTMLDivElement, EzEntityToolbarProps>(
               <div
                 data-testid="ez-toolbar-actions-dropdown"
                 role="menu"
-                className="absolute right-0 top-full mt-1 w-52 rounded-[8px] bg-white border border-gray-200 shadow-lg py-1 z-50 text-[12px] max-sm:fixed max-sm:inset-x-3 max-sm:bottom-3 max-sm:top-auto max-sm:left-auto max-sm:right-auto max-sm:mt-0 max-sm:w-auto"
+                className="absolute right-0 top-full mt-1 w-52 rounded-[8px] bg-white border border-gray-200 shadow-lg py-1 z-50 text-[12px] max-sm:fixed max-sm:inset-x-3 max-sm:bottom-3 max-sm:top-auto max-sm:mt-0 max-sm:w-auto"
               >
                 {actions.length > 0 ? (
                   actions.map((act, idx) => {
