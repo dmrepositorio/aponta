@@ -7,7 +7,7 @@ export interface EzSlaChipProps {
   kind: 'response' | 'resolve';
   /** Estado calculado pelo backend (`responseSlaStatus`/`resolveSlaStatus`). */
   status: SlaStatus | null | undefined;
-  /** Prazo ISO; sem ele o chip mostra só o ícone e o estado. */
+  /** Prazo ISO; sem ele o chip mostra só o ícone e a palavra curta. */
   deadline?: string | null;
   /** Relógio injetável para testes. */
   now?: Date;
@@ -36,7 +36,7 @@ function formatRemaining(ms: number): string {
 }
 
 /**
- * Chip compacto de prazo (SLA): ícone + tempo restante (negativo = vencido),
+ * Chip compacto de prazo (SLA): ícone + palavra curta (Resp./Solução) + tempo restante (negativo = vencido),
  * cor semântica do DS e o texto completo no nome acessível e no tooltip.
  * Não renderiza nada sem estado, então pode ser usado sem condicional.
  */
@@ -45,6 +45,7 @@ export function EzSlaChip({ kind, status, deadline, now = new Date() }: EzSlaChi
 
   const { text, className } = STATE[status];
   const kindLabel = kind === 'response' ? 'Resposta' : 'Resolução';
+  const shortLabel = kind === 'response' ? 'Resp.' : 'Solução';
   const Icon = kind === 'response' ? MessageCircle : CheckCircle2;
   const remaining = deadline ? new Date(deadline).getTime() - now.getTime() : null;
   const time = remaining === null ? null : formatRemaining(remaining);
@@ -65,7 +66,8 @@ export function EzSlaChip({ kind, status, deadline, now = new Date() }: EzSlaChi
       )}
     >
       <Icon aria-hidden="true" className="h-3 w-3" />
-      {time !== null && (remaining !== null && remaining < 0 ? `-${time}` : time)}
+      {shortLabel}
+      {time !== null && ` ${remaining !== null && remaining < 0 ? `-${time}` : time}`}
     </span>
   );
 }

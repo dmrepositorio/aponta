@@ -10,6 +10,7 @@ import {
   waitFor,
   within,
 } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DragStart, DropResult } from '@hello-pangea/dnd';
@@ -1468,5 +1469,66 @@ describe('DMTE-527 ticket 1: tela de Tickets proporcional e responsiva (Kanban)'
         expect(tokens).toContain('lg:max-w-none');
       }
     });
+  });
+});
+
+describe('DMTE-528: alvos, foco e nomes dos botões do Kanban', () => {
+  const agentTickets = [
+    { ...baseTicket, id: 't1', protocol: 'AP-2026-0001', agentId: 'agent-1', agent: { id: 'agent-1', name: 'Ana Costa' } },
+    { ...baseTicket, id: 't2', protocol: 'AP-2026-0002', agentId: 'agent-2', agent: { id: 'agent-2', name: 'Bruno Dias' } },
+  ];
+
+  beforeEach(() => {
+    localStorage.clear();
+    useAuthStore.setState({ token: null, user: null });
+    capturedOnDragStart = null;
+    capturedOnDragEnd = null;
+    Object.keys(capturedDroppables).forEach((key) => delete capturedDroppables[key]);
+    Object.keys(capturedDraggables).forEach((key) => delete capturedDraggables[key]);
+    vi.mocked(api.patch).mockReset();
+    vi.mocked(api.get).mockReset();
+    vi.mocked(api.put).mockReset();
+    mockApiGet();
+  });
+
+  const expectTargetAndFocus = (button: HTMLElement) => {
+    expect(button).toHaveClass('h-8', 'w-8');
+    expect(button).toHaveClass('focus-visible:ring-2', 'focus-visible:ring-brand-500');
+  };
+
+  it('AC-02: por status, cada coluna expandida tem o botão "Recolher coluna <nome>" com alvo de 32 px e anel de foco', async () => {
+    await renderKanban({ tickets: [baseTicket], isLoading: false, isError: false });
+    expect(screen.queryAllByRole('button', { name: /^Recolher coluna / })).toHaveLength(7);
+    expectTargetAndFocus(stripButton(/^Recolher coluna Aberto$/));
+  });
+
+  it('AC-02: por estágio, o botão se chama "Recolher coluna N1" e tem o mesmo alvo e foco', async () => {
+    await renderKanban({
+      tickets: [{ ...baseTicket, stageId: 's-n1' }],
+      isLoading: false,
+      isError: false,
+      initialServiceDeskId: 'desk-1',
+    });
+    await waitFor(() => {
+      expect(screen.getByText('N1')).toBeInTheDocument();
+    });
+    expectTargetAndFocus(stripButton(/^Recolher coluna N1$/));
+  });
+
+  it('AC-02: por teclado, Enter no botão recolhe a coluna e o "Expandir coluna Aberto" aparece', async () => {
+    await renderKanban({ tickets: [baseTicket], isLoading: false, isError: false });
+    stripButton(/^Recolher coluna Aberto$/).focus();
+    await userEvent.keyboard('{Enter}');
+    expect(screen.queryByRole('button', { name: 'Recolher coluna Aberto' })).not.toBeInTheDocument();
+    stripButton(/^Expandir coluna Aberto$/);
+  });
+
+  it('AC-03: o botão de avatar do filtro tem anel de foco visível, vai para a frente ao focar e mantém nome e aria-pressed', async () => {
+    await renderKanban({ tickets: agentTickets, isLoading: false, isError: false });
+    for (const name of ['Ana Costa', 'Bruno Dias']) {
+      const button = screen.getByRole('button', { name: `Filtrar por ${name}` });
+      expect(button).toHaveAttribute('aria-pressed', 'false');
+      expect(button).toHaveClass('focus-visible:outline-none', 'focus-visible:z-10', 'focus-visible:ring-brand-600');
+    }
   });
 });

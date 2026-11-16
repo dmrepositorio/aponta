@@ -1,0 +1,90 @@
+{
+  "version": 1,
+  "delivery": "DMTE-528",
+  "repository": "dmrepositorio/aponta",
+  "github_issue": 295,
+  "multica_id": "01a1dff7-6c9d-7aa6-9ef5-55f5b876aedd",
+  "cycle": "2026-11-09/2026-11-22",
+  "tier": 2,
+  "criteria": [
+    {
+      "id": "AC-01",
+      "description": "o botão \"Mais ações\" de cada cartão tem alvo mínimo de 32×32 px (`h-8 w-8`), e continua abrindo o menu com \"Abrir ticket\" e \"Abrir em nova aba interna\".",
+      "tests": [
+        "apps/web/src/components/tickets/TicketKanbanCard.test.tsx: AC-01: o botão \"Mais ações\" tem alvo de 32 px e abre o menu com as duas opções"
+      ]
+    },
+    {
+      "id": "AC-02",
+      "description": "o botão de recolher coluna, nas colunas por estágio e nas por status, tem `aria-label` \"Recolher coluna <nome>\", alvo mínimo de 32×32 px e anel de foco visível por teclado; ativar recolhe a coluna e o botão \"Expandir coluna <nome>\" aparece.",
+      "tests": [
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-02: por status, cada coluna expandida tem o botão \"Recolher coluna <nome>\" com alvo de 32 px e anel de foco",
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-02: por estágio, o botão se chama \"Recolher coluna N1\" e tem o mesmo alvo e foco",
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-02: por teclado, Enter no botão recolhe a coluna e o \"Expandir coluna Aberto\" aparece"
+      ]
+    },
+    {
+      "id": "AC-03",
+      "description": "cada botão de avatar do filtro de responsável tem anel de foco visível por teclado (`focus-visible`), vai para a frente (`z-10`) ao receber foco, mantém `aria-pressed` e o nome \"Filtrar por <nome>\", e o alvo de 28 px.",
+      "tests": [
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-03: o botão de avatar do filtro tem anel de foco visível, vai para a frente ao focar e mantém nome e aria-pressed"
+      ]
+    },
+    {
+      "id": "AC-04",
+      "description": "o chip de SLA mostra \"Resp.\" (resposta) ou \"Solução\" (resolução) antes do tempo; sem prazo mostra só a palavra; `aria-label` e `title` continuam \"Resposta: …\" e \"Resolução: …\" como antes.",
+      "tests": [
+        "apps/web/src/components/ds/EzSlaChip.test.tsx: AC-04: writes the short word before the time (Resp. / Solução), without changing the accessible name",
+        "apps/web/src/components/ds/EzSlaChip.test.tsx: keeps only icon and state when the deadline is unknown",
+        "apps/web/src/components/tickets/TicketKanbanCard.test.tsx: AC-04: os chips do cartão trazem \"Resp.\" e \"Solução\" antes do tempo, com o nome acessível completo"
+      ]
+    },
+    {
+      "id": "AC-05",
+      "description": "o comportamento existente continua: os testes anteriores de `TicketKanban`, `TicketKanbanCard` e `EzSlaChip` passam, exceto a asserção de chip sem prazo \"só ícone\" (`textContent` vazio), que muda para a palavra curta por decisão deste AC-04.",
+      "tests": [
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: testes existentes do arquivo, sem edição",
+        "apps/web/src/components/tickets/TicketKanbanCard.test.tsx: testes existentes do arquivo, sem edição",
+        "apps/web/src/components/ds/EzSlaChip.test.tsx: testes existentes, exceto a asserção de chip sem prazo (AC-04)"
+      ],
+      "tdd_required": false,
+      "reason": "Regressão: os testes anteriores já passam e devem continuar passando; não há comportamento novo a provar com RED."
+    },
+    {
+      "id": "AC-06",
+      "description": "nenhum arquivo de `apps/api` nem de `apps/web-e2e` é alterado e nenhum token novo é criado.",
+      "tests": [
+        "git diff do PR: nenhum arquivo em apps/api nem apps/web-e2e e nenhum token novo em styles.css"
+      ],
+      "tdd_required": false,
+      "reason": "Verificação de escopo por git diff, sem comportamento novo."
+    },
+    {
+      "id": "AC-07",
+      "description": "no navegador (Chromium, 1440×900 e 390×844, dados fictícios), os alvos medidos de \"Mais ações\" e de recolher coluna são de pelo menos 24×24 px (esperado 32×32), o foco por Tab mostra anel nos três botões o cabeçalho do cartão não passa de 26 px (base de 24 px), nas duas visões (por status e por estágio com Mesa), e o chip mostra a palavra curta antes do tempo sem sair do cartão.",
+      "tests": [
+        "scripts/kanban_targets_check.mjs (node scripts/kanban_targets_check.mjs): Chromium 1440×900 e 390×844, dados fictícios; alvos de Mais ações e Recolher coluna >= 24 px (medido 32×32), foco por Tab nos três botões e chip com a palavra curta (resultado no PR)"
+      ],
+      "tdd_required": false,
+      "reason": "Medida de alvo, foco e largura em navegador real; jsdom não aplica CSS. O contrato de classes é coberto por AC-01 a AC-04."
+    }
+  ],
+  "spec": "docs/delivery/specs/DMTE-528.md",
+  "tdd": {
+    "mode": "required",
+    "red": ".delivery/evidence/DMTE-528/red.json",
+    "green": ".delivery/evidence/DMTE-528/green.json"
+  },
+  "design_system": {
+    "applicable": true,
+    "reused": [
+      "EzSlaChip",
+      "EzDropdown",
+      "EzAvatar"
+    ],
+    "reason": "Reaproveita EzDropdown (alvo por className, sem prop nova), EzAvatar e o anel focus-visible brand-500 que o Kanban já usa; EzSlaChip ganha a palavra curta antes do tempo, sem prop nem token novo.",
+    "stories": [
+      "apps/web/src/components/ds/EzSlaChip.stories.tsx"
+    ]
+  }
+}

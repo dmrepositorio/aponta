@@ -289,3 +289,20 @@ describe('TicketKanbanCard por agrupamento (DMTE-527 ticket 1)', () => {
     expect(screen.getByText('Aguardando Aprovação')).toBeInTheDocument();
   });
 });
+
+describe('DMTE-528: alvo do menu e legenda do chip de SLA no cartão', () => {
+  it('AC-01: o botão "Mais ações" tem alvo de 32 px e abre o menu com as duas opções', async () => {
+    renderCard();
+    const button = screen.getByRole('button', { name: 'Mais ações' });
+    expect(button).toHaveClass('h-8', 'w-8');
+    await userEvent.click(button);
+    expect(screen.getByRole('menuitem', { name: 'Abrir ticket' })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: 'Abrir em nova aba interna' })).toBeInTheDocument();
+  });
+
+  it('AC-04: os chips do cartão trazem "Resp." e "Solução" antes do tempo, com o nome acessível completo', () => {
+    renderCard({ ...baseTicket, responseSlaStatus: 'ON_TRACK', resolveSlaStatus: 'AT_RISK' } as Ticket);
+    expect(screen.getByLabelText(/^Resposta: /)).toHaveTextContent(/^Resp\. \S+$/);
+    expect(screen.getByLabelText(/^Resolução: /)).toHaveTextContent(/^Solução \S+$/);
+  });
+});

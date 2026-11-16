@@ -115,7 +115,7 @@ O cartão do Kanban mostrava o SLA como pílulas largas ("Resposta: Dentro do pr
 
 - Sem equivalente oficial no Sankhya: `EzTag` leva só texto e ícone fixo, sem cálculo de tempo. O chip é novo, não uma variante de `EzTag`, para não mexer em outras telas que usam `EzTag` (risco R1 da SPEC).
 - Cores: pares `green-800/green-100`, `yellow-800/yellow-100` e `red-800/red-100`, todos do DS. O teste do chip confere contraste mínimo AA (4.5:1) lendo os tokens de `styles.css`.
-- Dados: usa o estado já calculado pelo backend (`responseSlaStatus`/`resolveSlaStatus`) e os prazos que o ticket já tem. Sem prazo conhecido, mostra só ícone e estado. Nos dois prazos (resposta e resolução), o tempo soma as pausas acumuladas e a pausa em curso, na mesma regra de `getSlaStatus` (apps/api), para não contradizer o estado. Sem mudança de API.
+- Dados: usa o estado já calculado pelo backend (`responseSlaStatus`/`resolveSlaStatus`) e os prazos que o ticket já tem. Sem prazo conhecido, mostra só o ícone e a palavra curta (DMTE-528). Nos dois prazos (resposta e resolução), o tempo soma as pausas acumuladas e a pausa em curso, na mesma regra de `getSlaStatus` (apps/api), para não contradizer o estado. Sem mudança de API.
 - `SlaBadge` continua no detalhe do ticket e passa a delegar ao chip quando o detalhe for tratado (fatia 5).
 - Story: `EzSlaChip.stories.tsx`. Testes: `EzSlaChip.test.tsx`.
 - Coluna do Kanban com 290px (antes 320px, `w-80`).
@@ -219,3 +219,11 @@ Um token novo e uma opção de componente no DS; o resto reaproveita o que exist
 - **Cartão do Kanban:** agrupado por Status não mostra a tag de status (a coluna já diz) e o SLA sobe para a linha dela; nos outros agrupamentos a tag continua.
 - **Colunas finais recolhidas** (Resolvido, Fechado e estágios `isFinal`) para quem nunca mexeu, com **faixas fixas na borda direita** a partir de `lg` (`position: sticky`, `scroll-padding` no quadro). O quadro usa `scroll-snap-type: proximity` e desliga o encaixe (`snap-none`) enquanto há um cartão sendo arrastado: com o encaixe ligado, a rolagem automática do arrastar voltava ao ponto de encaixe e o cartão não chegava à borda (medido em Chromium). A pesquisa de mercado está em `docs/research/kanban-quadro-largo-e-mobile.md`; nenhum produto pesquisado fixa faixas assim.
 - **Preferências de tela no servidor** (ADR 0002): `useUserScreenConfig` lê e grava em `/me/screen-preferences/:screen` e importa uma vez o que o usuário tinha no `localStorage`.
+
+## Kanban de Tickets: alvos, foco e legenda do SLA (DMTE-528)
+
+Nenhum token, prop ou componente novo no DS; o resto reaproveita o que existe.
+
+- **Alvos de 32 px** (WCAG 2.5.8) em "Mais ações" do cartão (`EzDropdown` por `className`) e em "Recolher coluna", com margem negativa para o cabeçalho manter a altura. O botão de recolher ganha `aria-label` "Recolher coluna <nome>" e o anel `focus-visible:ring-brand-500` que o botão de expandir já usa.
+- **Avatares do filtro de responsável:** anel `focus-visible:ring-brand-600` e `z-10` ao focar, para o avatar focado não ficar coberto pelo vizinho; alvo de 28 px mantido.
+- **`EzSlaChip`:** escreve "Resp." (resposta) ou "Solução" (resolução) antes do tempo, e só a palavra quando não há prazo. `aria-label` e `title` seguem com o texto completo.
