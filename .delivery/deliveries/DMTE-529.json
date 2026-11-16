@@ -1,0 +1,136 @@
+{
+  "version": 1,
+  "delivery": "DMTE-529",
+  "repository": "dmrepositorio/aponta",
+  "github_issue": 266,
+  "multica_id": "01a1dfff-6e72-7a70-b5db-646187d9fbc4",
+  "cycle": "2026-11-09/2026-11-22",
+  "tier": 2,
+  "criteria": [
+    {
+      "id": "AC-01",
+      "description": "`scripts/check_tickets_palette.py` e `scripts/check_tickets_proportion.py` passam cobrindo `DashboardPage.tsx` e `EzLineChart.tsx`; a Dashboard não tem hex literal nem classe de paleta fora do DS; o escopo novo tem teste Python.",
+      "tests": [
+        "scripts/test_check_tickets_palette.py (escopo da Dashboard e do EzLineChart)"
+      ]
+    },
+    {
+      "id": "AC-02",
+      "description": "os KPIs usam o mapeamento de D3 (texto `red-600` em Vencidos, `yellow-800` em Não atendidos e \"Hoje\", `green-600` em Em andamento, `gray-500` em Pausados, \"Todos\", \"Amanhã\" e \"Depois\", `brand-600` em Todos e Meus do resumo); o ícone de alerta só existe em \"Vencidos\" e em \"Hoje\".",
+      "tests": [
+        "apps/web/src/pages/DashboardPage.test.tsx: mapeamento de papéis de cor e ícones dos KPIs"
+      ]
+    },
+    {
+      "id": "AC-03",
+      "description": "nenhum texto de KPI, rótulo ou legenda usa token com contraste abaixo de 4,5:1 sobre o fundo do card (tabela de tokens permitidos conferida em teste).",
+      "tests": [
+        "apps/web/src/pages/DashboardPage.test.tsx: tokens de texto permitidos com contraste mínimo de 4,5:1"
+      ]
+    },
+    {
+      "id": "AC-04",
+      "description": "o pizza mostra no máximo 6 fatias mais \"Outros\"; a legenda lista todas as linhas, com número e percentual; fatia abaixo de 4% não tem número dentro; nenhuma linha da legenda é cortada pela altura do contêiner.",
+      "tests": [
+        "apps/web/src/pages/DashboardPage.test.tsx: pizza com no máximo 6 fatias mais Outros e legenda completa"
+      ]
+    },
+    {
+      "id": "AC-05",
+      "description": "`EzLineChart` existe no DS, exportado pelo barrel, com story e pelo menos três testes: eixo Y com 0, valor médio e máximo; tooltip abre por hover, por foco de teclado e por toque; o último ponto parcial é marcado e não desenha segmento de queda.",
+      "tests": [
+        "apps/web/src/components/ds/EzLineChart.test.tsx: eixo Y, tooltip por hover, foco e toque, ponto parcial de hoje"
+      ]
+    },
+    {
+      "id": "AC-06",
+      "description": "a função de rótulos do eixo X devolve no máximo 4 índices para largura de `< sm` e 7 para `>= sm`, inclui sempre o último ponto e nunca devolve dois índices vizinhos que se sobreponham.",
+      "tests": [
+        "apps/web/src/components/ds/EzLineChart.test.tsx: função de rótulos do eixo X por largura"
+      ]
+    },
+    {
+      "id": "AC-07",
+      "description": "em 390, 768, 1024 e 1440 px, toda a Dashboard (as quatro abas) fica sem rolagem horizontal da página e sem texto cortado fora de contêiner com rolagem declarada; alvos de toque de links e botões do conteúdo têm pelo menos 44 px de altura abaixo de `lg`; rótulos de data nunca se sobrepõem. Verificação em Chromium com medição automática de `scrollWidth` e captura por largura, com toque sintetizado para o tooltip.",
+      "tests": [
+        "scripts/dashboard_responsive_check (Playwright em Chromium, 390/768/1024/1440 px; evidência técnica anexada no pai Multica)"
+      ],
+      "tdd_required": false,
+      "reason": "Medição de layout e toque em Chromium; jsdom não calcula layout nem toque"
+    },
+    {
+      "id": "AC-08",
+      "description": "a faixa de KPIs mostra Vencidos em destaque no topo e linkado para `/tickets?overdue=true`; os dois cards de prazo viram um com tabela 2×4; os blocos antigos não existem mais.",
+      "tests": [
+        "apps/web/src/pages/DashboardPage.test.tsx: faixa de KPIs e card único de prazos"
+      ]
+    },
+    {
+      "id": "AC-09",
+      "description": "a aba Tickets tem \"Tickets nos últimos 30 dias\" e \"Últimas notificações\"; a aba Horas tem só \"Minhas horas apontadas\"; nenhum bloco aparece em duas abas.",
+      "tests": [
+        "apps/web/src/pages/DashboardPage.test.tsx: blocos por aba sem repetição"
+      ]
+    },
+    {
+      "id": "AC-10",
+      "description": "os totais de horas têm 13 px, ficam alinhados pela linha de base dos valores e quebram de linha em 390 px sem cortar.",
+      "tests": [
+        "apps/web/src/pages/DashboardPage.test.tsx: totais de horas com 13 px e quebra de linha"
+      ]
+    },
+    {
+      "id": "AC-11",
+      "description": "KPIs de prazo e de \"sem resposta\" não têm hover nem cursor de clique; KPIs que são links têm `focus-visible` com anel `brand` igual ao do botão \"Ações\".",
+      "tests": [
+        "apps/web/src/pages/DashboardPage.test.tsx: KPIs somente leitura e anel de foco dos links"
+      ]
+    },
+    {
+      "id": "AC-12",
+      "description": "as tabelas de Chats não mostram ícone de ordenação; \"Modo TV\" é `<button disabled aria-disabled=\"true\">` com o texto \"Em breve\" visível; \"Ações > Novo Ticket\" navega sem recarregar a página (sem `window.location`).",
+      "tests": [
+        "apps/web/src/pages/DashboardPage.test.tsx: tabelas de Chats sem ordenação, Modo TV desabilitado, Ações sem recarregar"
+      ]
+    },
+    {
+      "id": "AC-13",
+      "description": "os status de atendente em Chats aparecem como Online, Ocupado, Ausente e Offline.",
+      "tests": [
+        "apps/web/src/pages/DashboardPage.test.tsx: status de atendente em português"
+      ]
+    },
+    {
+      "id": "AC-14",
+      "description": "nenhum arquivo de `apps/api` muda e não há migração.",
+      "tests": [
+        "git diff --stat do PR sem apps/api e sem prisma/migrations"
+      ],
+      "tdd_required": false,
+      "reason": "Verificação de escopo do diff (sem apps/api nem migração); sem comportamento de produto"
+    },
+    {
+      "id": "AC-15",
+      "description": "ADR 0001 recebe adendo estendendo a regra à Dashboard; `docs/architecture/03-sankhya-ds-parity.md` registra o `EzLineChart` entre os componentes criados.",
+      "tests": [
+        "docs/adr/0001-paleta-unica-brand-na-aba-tickets.md e docs/architecture/03-sankhya-ds-parity.md (leitura do diff)"
+      ],
+      "tdd_required": false,
+      "reason": "Documentação (adendo ao ADR 0001 e doc de paridade do DS); sem comportamento de produto"
+    }
+  ],
+  "spec": "docs/delivery/specs/DMTE-529.md",
+  "tdd": {
+    "mode": "required",
+    "red": ".delivery/evidence/DMTE-529/red.json",
+    "green": ".delivery/evidence/DMTE-529/green.json"
+  },
+  "design_system": {
+    "applicable": true,
+    "reused": [
+      "EzTabs",
+      "EzActionsButton",
+      "EzSpinner"
+    ]
+  }
+}
