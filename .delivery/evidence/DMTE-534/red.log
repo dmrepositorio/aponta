@@ -1,71 +1,71 @@
 
- RUN  v4.1.11 /home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-534-924bb02c2d4f/workdir/aponta/apps/web
+ RUN  v4.1.11 /home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-534-924bb02c2d4f/workdir/red-wt/apps/web
 
- ❯ |web| src/components/knowledge/articleContentStyles.test.ts (5 tests | 5 failed) 54ms
-     × restores list markers, including nested lists 17ms
-     × gives headings a hierarchy below the card title 20ms
-     × styles blockquote and links 5ms
-     × keeps tables and images inside the card 7ms
+ ❯ |web| src/components/knowledge/articleContentStyles.test.ts (5 tests | 5 failed) 24ms
+     × restores list markers, including nested lists 13ms
+     × gives headings a hierarchy below the card title 3ms
+     × styles blockquote and links 1ms
+     × keeps tables and images inside the card 2ms
      × styles inline code and code blocks 1ms
- ❯ |web| src/components/knowledge/articleExcerpt.test.ts (6 tests | 5 failed) 22ms
-     × returns only the text, without markup 11ms
+ ❯ |web| src/components/knowledge/articleExcerpt.test.ts (6 tests | 5 failed) 15ms
+     × returns only the text, without markup 8ms
      × separates adjacent blocks with a space so words do not glue together 1ms
      × collapses whitespace 1ms
      × cuts at a word boundary within the limit and adds an ellipsis 1ms
      × does not add an ellipsis when the text fits 1ms
-     ✓ returns an empty string for empty or markup-only html 1ms
- ❯ |web| src/components/knowledge/KnowledgeArticleAttachments.test.tsx (9 tests | 1 failed) 501ms
-     ✓ shows the attachment count in the section title 62ms
-     ✓ shows zero in the title and an empty message when an author has no attachments 25ms
-     × renders nothing when there are no attachments and the user cannot manage them 19ms
-     ✓ lists attachments with a download link for everyone, regardless of canManage 77ms
-     ✓ does not show upload or remove controls when canManage is false 7ms
-     ✓ shows upload and remove controls when canManage is true 39ms
-     ✓ uploads a file and invalidates the articles query on success 120ms
-     ✓ shows an error mentioning the 25MB limit when upload fails 96ms
-     ✓ deletes an attachment and invalidates the articles query on success 52ms
- ❯ |web| src/pages/KnowledgePage.test.tsx (36 tests | 14 failed) 10423ms
-     ✓ shows the folders grid first, not the article list 109ms
-     ✓ opens a folder and lists only its articles, filtered by folderId 262ms
-     ✓ shows a breadcrumb back to the folders grid once inside a folder 128ms
-     ✓ does not show the new-article form or edit/delete buttons to a CLIENT 101ms
-     ✓ shows the Interno badge only for a PRIVATE article (visibility-based, not the old isPublic) 53ms
-     ✓ defaults a new article to "Público" and hides the Compartilhar button  380ms
-     ✓ shows the Compartilhar button once "Privado" is selected, and opens the sharing dialog  391ms
-     ✓ shows the new-article form to an AGENT and creates a PUBLIC article inside the open folder  1069ms
-     ✓ selects an agent group and a client in the share dialog, and sends them (plus auto-share) in the create payload  1335ms
-     ✓ allows an AGENT to update an existing article, pre-populating the access type and sharing lists  699ms
-     ✓ allows filtering by search keyword and tag inside a folder 118ms
-     ✓ allows selecting more than one tag at once (OR filter) 133ms
-     ✓ shows the author and last-updated date on each article 40ms
-     ✓ sends the chosen sort order to the API 57ms
-     ✓ toggles between list and grid view modes 96ms
-     ✓ paginates articles beyond the first page 106ms
-     ✓ allows deleting an article 115ms
-     × renders article content as real HTML, not escaped text 129ms
-     × shows the attachment count only for articles that have attachments, and the links once expanded 57ms
-     × never shows attachment upload controls to a CLIENT, not even when the card is expanded 137ms
-     × keeps upload and remove out of the cards and manages attachments inside the edit form 49ms
-     × shows no attachment manager in the new-article form 145ms
-     ✓ loads the edit form with EzRichText pre-filled with the existing article content 135ms
-       ✓ keeps the search field mounted, with its text and focus, while typing against a slow API  388ms
-       ✓ keeps the header and shows the loading state only in the list area while a folder opens 188ms
-       ✓ sends the full typed search to the API and lists the result of that query  450ms
-       × collapses the card to title, meta, a plain-text excerpt, five tags and the attachment count 48ms
-       × expands and collapses the card, revealing the full body, every tag and the attachments 46ms
-       ✓ offers no expand button when nothing is hidden 48ms
-       × keeps the title on its own line, with the tag, meta and actions outside its row 63ms
-       × puts the active tag filters in their own row, apart from the search and the new-article button 43ms
-       × tells an empty folder apart from a search, offering to create the first article to authors 1037ms
-       × shows readers an empty folder without a create action 1029ms
-       × offers "Limpar busca e filtros" when a search finds nothing, and clearing resets search and tags but keeps the sort 150ms
-       × also offers to clear when only a tag filter finds nothing 43ms
-       × shows a retryable error, not the empty message, when the query fails 1036ms
+     ✓ returns an empty string for empty or markup-only html 0ms
+ ❯ |web| src/components/knowledge/KnowledgeArticleAttachments.test.tsx (9 tests | 1 failed) 529ms
+     ✓ shows the attachment count in the section title 48ms
+     ✓ shows zero in the title and an empty message when an author has no attachments 33ms
+     × renders nothing when there are no attachments and the user cannot manage them 12ms
+     ✓ lists attachments with a download link for everyone, regardless of canManage 74ms
+     ✓ does not show upload or remove controls when canManage is false 6ms
+     ✓ shows upload and remove controls when canManage is true 57ms
+     ✓ uploads a file and invalidates the articles query on success 106ms
+     ✓ shows an error mentioning the 25MB limit when upload fails 109ms
+     ✓ deletes an attachment and invalidates the articles query on success 71ms
+ ❯ |web| src/pages/KnowledgePage.test.tsx (36 tests | 14 failed) 10499ms
+     ✓ shows the folders grid first, not the article list 112ms
+     ✓ opens a folder and lists only its articles, filtered by folderId 171ms
+     ✓ shows a breadcrumb back to the folders grid once inside a folder 132ms
+     ✓ does not show the new-article form or edit/delete buttons to a CLIENT 151ms
+     ✓ shows the Interno badge only for a PRIVATE article (visibility-based, not the old isPublic) 111ms
+     ✓ defaults a new article to "Público" and hides the Compartilhar button  424ms
+     ✓ shows the Compartilhar button once "Privado" is selected, and opens the sharing dialog  624ms
+     ✓ shows the new-article form to an AGENT and creates a PUBLIC article inside the open folder  1246ms
+     ✓ selects an agent group and a client in the share dialog, and sends them (plus auto-share) in the create payload  1171ms
+     ✓ allows an AGENT to update an existing article, pre-populating the access type and sharing lists  652ms
+     ✓ allows filtering by search keyword and tag inside a folder 124ms
+     ✓ allows selecting more than one tag at once (OR filter) 127ms
+     ✓ shows the author and last-updated date on each article 43ms
+     ✓ sends the chosen sort order to the API 49ms
+     ✓ toggles between list and grid view modes 79ms
+     ✓ paginates articles beyond the first page 77ms
+     ✓ allows deleting an article 93ms
+     × renders article content as real HTML, not escaped text 89ms
+     × shows the attachment count only for articles that have attachments, and the links once expanded 39ms
+     × never shows attachment upload controls to a CLIENT, not even when the card is expanded 124ms
+     × keeps upload and remove out of the cards and manages attachments inside the edit form 45ms
+     × shows no attachment manager in the new-article form 156ms
+     ✓ loads the edit form with EzRichText pre-filled with the existing article content 120ms
+       ✓ keeps the search field mounted, with its text and focus, while typing against a slow API  365ms
+       ✓ keeps the header and shows the loading state only in the list area while a folder opens 183ms
+       ✓ sends the full typed search to the API and lists the result of that query  443ms
+       × collapses the card to title, meta, a plain-text excerpt, five tags and the attachment count 52ms
+       × expands and collapses the card, revealing the full body, every tag and the attachments 41ms
+       ✓ offers no expand button when nothing is hidden 38ms
+       × keeps the title on its own line, with the tag, meta and actions outside its row 59ms
+       × puts the active tag filters in their own row, apart from the search and the new-article button 46ms
+       × tells an empty folder apart from a search, offering to create the first article to authors 1036ms
+       × shows readers an empty folder without a create action 1028ms
+       × offers "Limpar busca e filtros" when a search finds nothing, and clearing resets search and tags but keeps the sort 167ms
+       × also offers to clear when only a tag filter finds nothing 40ms
+       × shows a retryable error, not the empty message, when the query fails 1033ms
 
  Test Files  4 failed (4)
       Tests  25 failed | 31 passed (56)
-   Start at  19:49:00
-   Duration  15.29s (transform 4.12s, setup 703ms, import 6.56s, tests 11.00s, environment 4.32s)
+   Start at  19:51:35
+   Duration  14.34s (transform 3.64s, setup 595ms, import 5.85s, tests 11.07s, environment 2.49s)
 
 stderr | src/pages/KnowledgePage.test.tsx > KnowledgePage > defaults a new article to "Público" and hides the Compartilhar button
 [tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues.
@@ -3400,13 +3400,13 @@ AssertionError: expected '' to contain 'list-style-type: disc'
 
 - list-style-type: disc
 
- ❯ src/components/knowledge/articleContentStyles.test.ts:14:41
-     12| describe('.article-content styles', () => {
-     13|   it('restores list markers, including nested lists', () => {
-     14|     expect(rule('.article-content ul')).toContain('list-style-type: di…
+ ❯ src/components/knowledge/articleContentStyles.test.ts:18:41
+     16| describe('.article-content styles', () => {
+     17|   it('restores list markers, including nested lists', () => {
+     18|     expect(rule('.article-content ul')).toContain('list-style-type: di…
        |                                         ^
-     15|     expect(rule('.article-content ol')).toContain('list-style-type: de…
-     16|     expect(rule('.article-content ul ul')).toContain('list-style-type:…
+     19|     expect(rule('.article-content ol')).toContain('list-style-type: de…
+     20|     expect(rule('.article-content ul ul')).toContain('list-style-type:…
 
 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/25]⎯
 
@@ -3419,13 +3419,13 @@ AssertionError: expected '' to match /font-size: 1rem/
 + Received:
 ""
 
- ❯ src/components/knowledge/articleContentStyles.test.ts:21:41
-     19|
-     20|   it('gives headings a hierarchy below the card title', () => {
-     21|     expect(rule('.article-content h1')).toMatch(/font-size: 1rem/);
+ ❯ src/components/knowledge/articleContentStyles.test.ts:25:41
+     23|
+     24|   it('gives headings a hierarchy below the card title', () => {
+     25|     expect(rule('.article-content h1')).toMatch(/font-size: 1rem/);
        |                                         ^
-     22|     expect(rule('.article-content h2')).toMatch(/font-weight: 600/);
-     23|     expect(rule('.article-content h3')).toMatch(/font-size: 0\.875rem/…
+     26|     expect(rule('.article-content h2')).toMatch(/font-weight: 600/);
+     27|     expect(rule('.article-content h3')).toMatch(/font-size: 0\.875rem/…
 
 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/25]⎯
 
@@ -3437,13 +3437,13 @@ AssertionError: expected '' to contain 'border-left'
 
 - border-left
 
- ❯ src/components/knowledge/articleContentStyles.test.ts:27:49
-     25|
-     26|   it('styles blockquote and links', () => {
-     27|     expect(rule('.article-content blockquote')).toContain('border-left…
+ ❯ src/components/knowledge/articleContentStyles.test.ts:31:49
+     29|
+     30|   it('styles blockquote and links', () => {
+     31|     expect(rule('.article-content blockquote')).toContain('border-left…
        |                                                 ^
-     28|     expect(rule('.article-content a')).toContain('text-decoration: und…
-     29|   });
+     32|     expect(rule('.article-content a')).toContain('text-decoration: und…
+     33|   });
 
 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/25]⎯
 
@@ -3455,13 +3455,13 @@ AssertionError: expected '' to contain 'overflow-x: auto'
 
 - overflow-x: auto
 
- ❯ src/components/knowledge/articleContentStyles.test.ts:32:44
-     30|
-     31|   it('keeps tables and images inside the card', () => {
-     32|     expect(rule('.article-content table')).toContain('overflow-x: auto…
+ ❯ src/components/knowledge/articleContentStyles.test.ts:36:44
+     34|
+     35|   it('keeps tables and images inside the card', () => {
+     36|     expect(rule('.article-content table')).toContain('overflow-x: auto…
        |                                            ^
-     33|     expect(rule('.article-content table')).toContain('max-width: 100%'…
-     34|     expect(rule('.article-content img')).toContain('max-width: 100%');
+     37|     expect(rule('.article-content table')).toContain('max-width: 100%'…
+     38|     expect(rule('.article-content img')).toContain('max-width: 100%');
 
 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/25]⎯
 
@@ -3473,13 +3473,13 @@ AssertionError: expected '' to contain 'background-color'
 
 - background-color
 
- ❯ src/components/knowledge/articleContentStyles.test.ts:39:43
-     37|
-     38|   it('styles inline code and code blocks', () => {
-     39|     expect(rule('.article-content code')).toContain('background-color'…
+ ❯ src/components/knowledge/articleContentStyles.test.ts:43:43
+     41|
+     42|   it('styles inline code and code blocks', () => {
+     43|     expect(rule('.article-content code')).toContain('background-color'…
        |                                           ^
-     40|     expect(rule('.article-content pre')).toContain('overflow-x: auto');
-     41|   });
+     44|     expect(rule('.article-content pre')).toContain('overflow-x: auto');
+     45|   });
 
 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/25]⎯
 
