@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "delivery": "DMTE-528",
+  "repository": "dmrepositorio/aponta",
+  "github_issue": 295,
+  "multica_id": "01a1dff7-6c9d-7aa6-9ef5-55f5b876aedd",
+  "cycle": "2026-11-09/2026-11-22",
+  "tier": 2,
+  "criteria": [
+    {
+      "id": "AC-01",
+      "description": "o botão \"Mais ações\" de cada cartão tem alvo mínimo de 32×32 px (`h-8 w-8`), e continua abrindo o menu com \"Abrir ticket\" e \"Abrir em nova aba interna\".",
+      "tests": []
+    },
+    {
+      "id": "AC-02",
+      "description": "o botão de recolher coluna, nas colunas por estágio e nas por status, tem `aria-label` \"Recolher coluna <nome>\", alvo mínimo de 32×32 px e anel de foco visível por teclado; ativar recolhe a coluna e o botão \"Expandir coluna <nome>\" aparece.",
+      "tests": []
+    },
+    {
+      "id": "AC-03",
+      "description": "cada botão de avatar do filtro de responsável tem anel de foco visível por teclado (`focus-visible`), vai para a frente (`z-10`) ao receber foco, mantém `aria-pressed` e o nome \"Filtrar por <nome>\", e o alvo de 28 px.",
+      "tests": []
+    },
+    {
+      "id": "AC-04",
+      "description": "o chip de SLA mostra \"Resp.\" (resposta) ou \"Solução\" (resolução) antes do tempo; sem prazo mostra só a palavra; `aria-label` e `title` continuam \"Resposta: …\" e \"Resolução: …\" como antes.",
+      "tests": []
+    },
+    {
+      "id": "AC-05",
+      "description": "o comportamento existente continua: os testes anteriores de `TicketKanban`, `TicketKanbanCard` e `EzSlaChip` passam, exceto a asserção de chip sem prazo \"só ícone\" (`textContent` vazio), que muda para a palavra curta por decisão deste AC-04.",
+      "tests": []
+    },
+    {
+      "id": "AC-06",
+      "description": "nenhum arquivo de `apps/api` nem de `apps/web-e2e` é alterado e nenhum token novo é criado.",
+      "tests": [],
+      "tdd_required": false
+    },
+    {
+      "id": "AC-07",
+      "description": "no navegador (Chromium, 1440×900 e 390×844, dados fictícios), os alvos medidos de \"Mais ações\" e de recolher coluna são de pelo menos 24×24 px (esperado 32×32), o foco por Tab mostra anel nos três botões e o chip mostra a palavra curta antes do tempo sem estourar o cartão.",
+      "tests": [],
+      "tdd_required": false
+    }
+  ],
+  "spec": "docs/delivery/specs/DMTE-528.md",
+  "tdd": {
+    "mode": "required",
+    "red": ".delivery/evidence/DMTE-528/red.json",
+    "green": ".delivery/evidence/DMTE-528/green.json"
+  },
+  "design_system": {
+    "applicable": true,
+    "reused": [
+      "EzSlaChip",
+      "EzDropdown",
+      "EzAvatar"
+    ],
+    "reason": "Reaproveita EzDropdown (alvo por className, sem prop nova), EzAvatar e o anel focus-visible brand-500 que o Kanban já usa; EzSlaChip ganha a palavra curta antes do tempo, sem prop nem token novo.",
+    "stories": [
+      "apps/web/src/components/ds/EzSlaChip.stories.tsx"
+    ]
+  }
+}
