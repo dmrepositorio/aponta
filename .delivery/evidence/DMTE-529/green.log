@@ -1,0 +1,11 @@
+
+ RUN  v4.1.11 /home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-529-dbf1c3f5e691/workdir/aponta/apps/web
+
+ ✓ |web| src/components/ds/EzLineChart.test.tsx (11 tests) 320ms
+ ✓ |web| src/pages/DashboardPage.test.tsx (29 tests) 1633ms
+
+ Test Files  2 passed (2)
+      Tests  40 passed (40)
+   Start at  00:25:41
+   Duration  4.06s (transform 1.23s, setup 224ms, import 1.98s, tests 1.95s, environment 937ms)
+
