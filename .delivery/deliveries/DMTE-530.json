@@ -33,7 +33,8 @@
       "id": "AC-04",
       "description": "a linha da mesa inativa usa `gray-500` no Nome, no Nome de exibição, em Clientes e em Agentes; as linhas ativas mantêm as cores atuais; o Nome continua um botão que abre o detalhe.",
       "tests": [
-        "apps/web/src/pages/ServiceDesksPage.test.tsx: mutes the inactive desk row in gray-500 and keeps the name a button"
+        "apps/web/src/pages/ServiceDesksPage.test.tsx: mutes the inactive desk row in gray-500 and keeps the name a button",
+        "apps/web/src/pages/ServiceDesksPage.test.tsx: mutes the +N chip on an inactive desk with 2 or more clients and keeps its tone on an active one"
       ]
     },
     {
@@ -70,8 +71,8 @@
   "spec": "docs/delivery/specs/DMTE-530.md",
   "tdd": {
     "mode": "required",
-    "red": ".delivery/evidence/DMTE-530/red.json",
-    "green": ".delivery/evidence/DMTE-530/green.json"
+    "red": ".delivery/evidence/DMTE-530/red-r2.json",
+    "green": ".delivery/evidence/DMTE-530/green-r2.json"
   },
   "design_system": {
     "applicable": true,

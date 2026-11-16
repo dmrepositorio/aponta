@@ -148,7 +148,7 @@ function serviceDeskColumns(
               <EzBadge
                 size="small"
                 title={all}
-                colorClass="bg-gray-90 text-gray-700 shrink-0"
+                colorClass={`bg-gray-90 shrink-0 ${rowText(row.original) || 'text-gray-700'}`}
               >{`+${names.length - 1}`}</EzBadge>
             )}
           </span>
