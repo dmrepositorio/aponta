@@ -10,47 +10,117 @@
     {
       "id": "AC-01",
       "description": "`styles.css` define `--control-height-toolbar: 36px` sem alterar `--control-height-md` (42 px) nem `--control-height-compact` (32 px); a partir de `sm`, título/busca/\"Busca avançada\", Lista/Kanban, Mesa, Ordenar e Configurações usam o token de 36 px, e atalhos, \"Exibir colunas\" e \"Agrupar por\" usam 32 px; abaixo de `sm`, esses controles têm `min-h-11` (44 px).",
-      "tests": []
+      "tests": [
+        "apps/web/src/components/ds/EzDesignTokens.test.tsx: AC-01: styles.css defines --control-height-toolbar as 36px",
+        "apps/web/src/components/ds/EzDesignTokens.test.tsx: AC-01: --control-height-md stays 42px and --control-height-compact stays 32px",
+        "apps/web/src/components/ds/EzDesignTokens.test.tsx: AC-01: the scale comment registers the toolbar exception with this SPEC as source",
+        "apps/web/src/components/tickets/TicketsHeader.test.tsx: AC-01: busca, Busca avançada e Lista/Kanban usam o token de 36 px a partir de sm e 44 px abaixo",
+        "apps/web/src/components/tickets/TicketsHeader.test.tsx: AC-01: nenhum controle do cabeçalho segue no token de 42 px",
+        "apps/web/src/components/tickets/TicketsHeader.test.tsx: AC-01: o título \"Tickets\" usa o token de 36 px a partir de sm",
+        "apps/web/src/components/tickets/TicketShortcuts.test.tsx: AC-01: os atalhos usam 32 px a partir de sm e no mínimo 44 px abaixo",
+        "apps/web/src/components/tickets/TicketList.test.tsx: AC-01: \"Exibir colunas\" usa 32 px a partir de sm e no mínimo 44 px abaixo",
+        "apps/web/src/components/tickets/TicketList.test.tsx: AC-01: \"Agrupar por\" usa o controle compacto (32 px a partir de sm, 44 px abaixo)",
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-01: Mesa usa 36 px a partir de sm e no mínimo 44 px abaixo",
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-01: Ordenar e Configurações usam 36 px a partir de sm e no mínimo 44 px abaixo",
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-01: \"Agrupar por\" (Configurações) usa 32 px a partir de sm e no mínimo 44 px abaixo"
+      ]
     },
     {
       "id": "AC-02",
       "description": "`EzSegmented` aceita `size` (`default` mantém 42 px; `toolbar` 36 px a partir de `sm` e 44 px abaixo), a story cobre os dois tamanhos e os outros usos do componente seguem em 42 px.",
-      "tests": []
+      "tests": [
+        "apps/web/src/components/ds/EzSegmented.test.tsx: AC-02: size=\"toolbar\" is 36 px from sm and at least 44 px below it, and no longer uses the 42 px token",
+        "apps/web/src/components/ds/EzSegmented.test.tsx: AC-02: the default size keeps the 42 px token, without the toolbar height",
+        "apps/web/src/components/ds/EzSegmented.test.tsx: AC-02: an explicit size=\"default\" is the same 42 px as no size",
+        "apps/web/src/components/ds/EzSegmented.test.tsx: AC-02: size=\"toolbar\" keeps the accessible group, aria-pressed and the click contract",
+        "apps/web/src/components/ds/EzSegmented.test.tsx: AC-02: the story file covers the default and the toolbar size"
+      ]
     },
     {
       "id": "AC-03",
       "description": "o cabeçalho quebra em linhas inteiras sem cortar controle: abaixo de 640 px busca e \"Busca avançada\" em largura total e, no Kanban, a Mesa em largura total e Ordenar e Configurações lado a lado; de 640 a 1023 px a busca em largura total embaixo do título.",
-      "tests": []
+      "tests": [
+        "apps/web/src/components/tickets/TicketsHeader.test.tsx: AC-03: a busca ocupa a largura total abaixo de lg e de 640 a 1023 px (nenhum sm:w-* diferente de full)",
+        "apps/web/src/components/tickets/TicketsHeader.test.tsx: AC-03: abaixo de 640 px \"Busca avançada\" ocupa a largura total e volta ao tamanho natural a partir de sm",
+        "apps/web/src/components/tickets/TicketsHeader.test.tsx: AC-03: abaixo de 640 px busca e \"Busca avançada\" ficam uma por linha (o pai quebra ou empilha)",
+        "apps/web/src/components/tickets/TicketsHeader.test.tsx: AC-03: título e Lista/Kanban continuam juntos na primeira linha",
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-03: abaixo de 640 px a Mesa ocupa a largura total (w-full, sem max-w-xs fixo)",
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-03: Ordenar e Configurações ficam lado a lado, num par separado da Mesa"
+      ]
     },
     {
       "id": "AC-04",
       "description": "o seletor de Mesa do Kanban tem fundo branco, borda `brand-500` e texto `brand-700` (contraste mínimo de 4,5:1 sobre o branco, tokens lidos de `styles.css`), hover e foco visíveis, e não usa `bg-brand-500`; nenhum outro controle da barra é preenchido.",
-      "tests": []
+      "tests": [
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-04: a Mesa não usa bg-brand-500 (nem fundo cheio da marca em repouso)",
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-04: a Mesa tem fundo branco e borda brand-500",
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-04: texto e seta da Mesa em brand-700, com contraste mínimo de 4,5:1 sobre o branco (tokens de styles.css)",
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-04: hover com fundo claro da marca e foco visível",
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-04: nenhum outro controle da barra é preenchido (Ordenar, Configurações)"
+      ]
     },
     {
       "id": "AC-05",
       "description": "com agrupamento por Status, o cartão não renderiza `TicketStatusTag`, o chip de SLA ocupa a linha da tag à direita do cliente e o rodapé só traz o responsável; sem SLA a linha tem só o cliente; com agrupamento por Estágio, Responsável ou Prioridade o cartão mantém a tag de status.",
-      "tests": []
+      "tests": [
+        "apps/web/src/components/tickets/TicketKanbanCard.test.tsx: AC-05: agrupado por Status, o cartão não renderiza a tag de status",
+        "apps/web/src/components/tickets/TicketKanbanCard.test.tsx: AC-05: agrupado por Status, o chip de SLA fica na linha do cliente, à direita dele",
+        "apps/web/src/components/tickets/TicketKanbanCard.test.tsx: AC-05: agrupado por Status, o rodapé só traz o responsável",
+        "apps/web/src/components/tickets/TicketKanbanCard.test.tsx: AC-05: agrupado por Status e sem SLA, a linha tem só o cliente",
+        "apps/web/src/components/tickets/TicketKanbanCard.test.tsx: AC-05: agrupado por Status, sem SLA e sem responsável, não sobra rodapé vazio",
+        "apps/web/src/components/tickets/TicketKanbanCard.test.tsx: AC-05: agrupado por stage, o cartão mantém a tag de status e o SLA no rodapé",
+        "apps/web/src/components/tickets/TicketKanbanCard.test.tsx: AC-05: agrupado por agent, o cartão mantém a tag de status e o SLA no rodapé",
+        "apps/web/src/components/tickets/TicketKanbanCard.test.tsx: AC-05: agrupado por priority, o cartão mantém a tag de status e o SLA no rodapé",
+        "apps/web/src/components/tickets/TicketKanbanCard.test.tsx: AC-05: sem agrupamento informado, o cartão mantém a tag de status (padrão de quem não passa groupBy)",
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-05: sem Mesa (agrupamento efetivo Status) nenhum cartão do quadro mostra a tag de status",
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-05: com Mesa e Agrupar por Status escolhido, o cartão também fica sem a tag de status",
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-05: agrupado por Estágio (Mesa selecionada) o cartão mantém a tag de status",
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-05: agrupado por agent o cartão mantém a tag de status",
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-05: agrupado por priority o cartão mantém a tag de status"
+      ]
     },
     {
       "id": "AC-06",
       "description": "a tag de status e a de prioridade não quebram em duas linhas (`whitespace-nowrap`), nos cartões e na Lista, sem renomear nenhum status.",
-      "tests": []
+      "tests": [
+        "apps/web/src/components/tickets/TicketList.test.tsx: AC-06: as tags de status e de prioridade da Lista não quebram em duas linhas (whitespace-nowrap)",
+        "apps/web/src/components/tickets/TicketList.test.tsx: AC-06: a Lista segue com os nomes completos dos status, sem renomear",
+        "apps/web/src/components/tickets/TicketKanbanCard.test.tsx: AC-06: as tags de status e de prioridade do cartão não quebram em duas linhas (whitespace-nowrap)",
+        "apps/web/src/components/tickets/TicketKanbanCard.test.tsx: AC-06: nenhum status é renomeado no cartão (Aguardando Aprovação por extenso)"
+      ]
     },
     {
       "id": "AC-07",
       "description": "por status, Resolvido e Fechado abrem recolhidos; com Mesa selecionada, abrem recolhidos os estágios com `isFinal`; um clique no botão de expandir (com nome acessível que contém o rótulo da coluna) expande, e outro recolhe; a coluna recolhida não aceita soltar cartão; as demais colunas abrem expandidas.",
-      "tests": []
+      "tests": [
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-07: por status, Resolvido e Fechado abrem recolhidos, com botão de nome acessível que contém o rótulo",
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-07: por status, as outras sete colunas abrem expandidas e aceitando soltar",
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-07: a coluna recolhida (Resolvido e Fechado) não aceita soltar cartão",
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-07: um clique no botão expande a coluna e outro recolhe",
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-07: a escolha do usuário prevalece: Resolvido expandido segue expandido ao reordenar o quadro",
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-07: com Mesa selecionada, abrem recolhidos só os estágios com isFinal",
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-07: com Mesa selecionada, um clique expande o estágio final e outro recolhe"
+      ]
     },
     {
       "id": "AC-08",
       "description": "a partir de `lg`, as faixas recolhidas ficam fixas na borda direita do quadro, o quadro usa `scroll-snap-type: proximity` e `scroll-padding` para as faixas, e abaixo de `lg` as faixas ficam no fim do quadro sem fixar, com colunas de 80vw (máximo 320 px); se o teste de arrastar um cartão até a borda a 1440 px falhar, vale o plano B do item 7 e a troca é registrada no PR.",
-      "tests": []
+      "tests": [
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-08: o quadro usa scroll-snap proximity (não mandatory) e scroll-padding para as faixas",
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-08: a partir de lg as faixas recolhidas ficam fixas na borda direita (sticky e inset direito)",
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-08: abaixo de lg as faixas não fixam (sticky só com o prefixo lg:)",
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-08: com Mesa selecionada, a faixa do estágio final também fixa a partir de lg",
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-08: as colunas expandidas não fixam e seguem com 80vw (máximo 320 px) abaixo de lg"
+      ]
     },
     {
       "id": "AC-09",
       "description": "medido em Chromium a 1440×900, 1024×768 e 390×844 com dados sintéticos (evidência técnica, não gate): alturas dos controles, ausência de quebra das tags, largura do quadro contra a área visível, faixas visíveis na borda a 1440 px e alvos de 44 px a 390 px.",
-      "tests": []
+      "tests": [
+        "Medição em Chromium (Playwright) a 1440×900, 1024×768 e 390×844 com dados sintéticos por scripts/tickets_responsive_check.mjs, com o teste de arrastar até a borda (resultado e anexos no pai Multica e no PR)"
+      ],
+      "tdd_required": false,
+      "reason": "Medição de layout em navegador real: jsdom não calcula layout nem faz arrastar de verdade. O contrato por classe de breakpoint e por token está nos testes dos ACs 01 a 08; aqui a evidência é técnica, não gate, e o aceite visual é do Alfredo."
     },
     {
       "id": "AC-10",
@@ -101,6 +171,13 @@
   },
   "design_system": {
     "applicable": true,
-    "reused": []
+    "reused": [
+      "EzSegmented",
+      "EzSelect",
+      "EzTag",
+      "EzAvatar",
+      "EzSlaChip"
+    ],
+    "reason": "Reaproveita os componentes do DS da aba Tickets e os tokens do @theme; único token novo é --control-height-toolbar (36 px), exceção registrada na escala de altura de styles.css com esta SPEC e o Q1 como fonte, sem alterar --control-height-md (42 px) nem --control-height-compact (32 px). EzSegmented ganha a opção size (default mantém 42 px; toolbar 36 px a partir de sm e 44 px abaixo), com story e teste. O seletor de Mesa passa a usar o contorno do EzSelect em brand-500/brand-700 sem variante nova no DS."
   }
 }

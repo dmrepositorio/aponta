@@ -24,6 +24,8 @@ interface TicketKanbanCardProps {
   /** D6 Configurações "Tag": Status (padrão) ou Prioridade. */
   tagField?: 'status' | 'priority';
   visibleFields?: TicketKanbanCardVisibleFields;
+  /** Agrupamento efetivo do quadro; por `status` o cartão não repete a tag de status. */
+  groupBy?: 'stage' | 'status' | 'agent' | 'priority';
 }
 
 function formatCardDate(value: string | null | undefined): string | null {

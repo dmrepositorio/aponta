@@ -7,6 +7,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useAuthStore } from '../../stores/authStore';
 import type { Ticket } from '../../hooks/useTickets';
 import { TicketList } from './TicketList';
+import { heightContractProblems } from '../../test-utils/controlHeight';
 
 const ticketA: Ticket = {
   id: 't1',
@@ -457,5 +458,44 @@ describe('DMTE-526: abrir a linha por teclado e nova aba, e estado da ordenaçã
     const text = hex(textToken as string);
     expect(contrast(text, 'ffffff')).toBeGreaterThanOrEqual(4.5);
     expect(contrast(text, hex('grid-row-hover'))).toBeGreaterThanOrEqual(4.5);
+  });
+});
+
+describe('DMTE-527 ticket 1: Lista com altura por faixa e tags sem quebra', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    useAuthStore.setState({
+      token: null,
+      user: { sub: 'u1', email: 'a@x.com', role: 'ADMIN', organizationId: null } as any,
+    });
+  });
+
+  it('AC-01: "Exibir colunas" usa 32 px a partir de sm e no mínimo 44 px abaixo', () => {
+    renderList();
+    expect(heightContractProblems(screen.getByRole('button', { name: 'Exibir colunas' }).className, 'compact')).toEqual([]);
+  });
+
+  it('AC-01: "Agrupar por" usa o controle compacto (32 px a partir de sm, 44 px abaixo)', () => {
+    renderList();
+    const box = screen.getByRole('combobox', { name: 'Agrupar por' }).parentElement as HTMLElement;
+    expect(heightContractProblems(box.className, 'compact')).toEqual([]);
+  });
+
+  it('AC-06: as tags de status e de prioridade da Lista não quebram em duas linhas (whitespace-nowrap)', () => {
+    const { container } = renderList();
+    const tags = container.querySelectorAll('[data-ticket-tag]');
+    expect(tags.length).toBe(4);
+    tags.forEach((tag) => expect(tag).toHaveClass('whitespace-nowrap'));
+  });
+
+  it('AC-06: a Lista segue com os nomes completos dos status, sem renomear', () => {
+    renderList({
+      tickets: [
+        { ...ticketA, status: 'PENDING_APPROVAL' },
+        { ...ticketB, status: 'PENDING_SANKHYA' },
+      ],
+    });
+    expect(screen.getByText('Aguardando Aprovação')).toBeInTheDocument();
+    expect(screen.getByText('Aguardando Sankhya')).toBeInTheDocument();
   });
 });

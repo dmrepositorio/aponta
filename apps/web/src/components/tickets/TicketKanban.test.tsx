@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {
   act,
@@ -17,6 +19,7 @@ import { useAuthStore } from '../../stores/authStore';
 import { api } from '../../lib/api';
 import { EzSelect } from '../ds/EzSelect';
 import { TicketKanban } from './TicketKanban';
+import { classTokens, classesUpTo, heightContractProblems } from '../../test-utils/controlHeight';
 
 vi.mock('../../lib/api', () => ({
   api: {
@@ -1185,6 +1188,325 @@ describe('TicketKanban', () => {
           `${BOX}:focus-within:ring-offset-2`,
         ]),
       );
+    });
+  });
+});
+
+describe('DMTE-527 ticket 1: tela de Tickets proporcional e responsiva (Kanban)', () => {
+  const openTicket: Ticket = { ...baseTicket, id: 't1', protocol: 'AP-2026-0001', title: 'Aberto um' };
+  const resolvedTicket: Ticket = {
+    ...baseTicket,
+    id: 't2',
+    protocol: 'AP-2026-0002',
+    title: 'Resolvido um',
+    status: 'RESOLVED',
+  };
+  const closedTicket: Ticket = {
+    ...baseTicket,
+    id: 't3',
+    protocol: 'AP-2026-0003',
+    title: 'Fechado um',
+    status: 'CLOSED',
+  };
+  const finalStageTicket: Ticket = {
+    ...baseTicket,
+    id: 't4',
+    protocol: 'AP-2026-0004',
+    title: 'Aguardando um',
+    stageId: 's-aguardando-cliente',
+  };
+  const statusTickets = [openTicket, resolvedTicket, closedTicket];
+  const stageTickets = [{ ...baseTicket, stageId: 's-n1' }, finalStageTicket];
+
+  const css = readFileSync(resolve(__dirname, '../../styles.css'), 'utf8');
+  const hex = (token: string) => {
+    const match = css.match(new RegExp(`--color-${token}:\\s*#([0-9a-f]{6})`, 'i'));
+    if (!match) throw new Error('token not found: ' + token);
+    return match[1];
+  };
+  const luminance = (value: string) =>
+    [0, 2, 4]
+      .map((i) => parseInt(value.slice(i, i + 2), 16) / 255)
+      .map((c) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4))
+      .reduce((sum, c, i) => sum + c * [0.2126, 0.7152, 0.0722][i], 0);
+  const contrast = (a: string, b: string) => {
+    const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+    return (hi + 0.05) / (lo + 0.05);
+  };
+
+  const mesaCombobox = () => screen.getByRole('combobox', { name: 'Mesa' });
+  const sortButton = () => screen.getByRole('button', { name: 'Ordenar' });
+  const configButton = () => screen.getByRole('button', { name: 'Configurações' });
+  /** Linha da barra: o primeiro ancestral do seletor de Mesa que também traz o Ordenar. */
+  const toolbarRow = () => {
+    let node: Element | null = mesaCombobox();
+    while (node && !node.contains(sortButton())) node = node.parentElement;
+    return node as Element;
+  };
+  /** O item da Mesa na linha: o ancestral do seletor cujo pai é a linha. */
+  const mesaItem = () => {
+    let node: Element = mesaCombobox();
+    while (node.parentElement && node.parentElement !== toolbarRow()) node = node.parentElement;
+    return node;
+  };
+  const mesaClasses = () => classesUpTo(mesaCombobox(), toolbarRow());
+  const board = () => screen.getByTestId('kanban-board');
+  /** O botão da faixa recolhida, pelo nome acessível que contém o rótulo da coluna. */
+  const stripButton = (name: RegExp) => {
+    const button = screen.queryByRole('button', { name });
+    expect(button).toBeInTheDocument();
+    return button as HTMLElement;
+  };
+  const stripClasses = (name: RegExp) => classesUpTo(stripButton(name), board());
+
+  beforeEach(() => {
+    localStorage.clear();
+    useAuthStore.setState({ token: null, user: null });
+    capturedOnDragStart = null;
+    capturedOnDragEnd = null;
+    Object.keys(capturedDroppables).forEach((key) => delete capturedDroppables[key]);
+    Object.keys(capturedDraggables).forEach((key) => delete capturedDraggables[key]);
+    vi.mocked(api.patch).mockReset();
+    vi.mocked(api.get).mockReset();
+    mockApiGet();
+  });
+
+  describe('AC-01: altura por faixa na barra do Kanban', () => {
+    beforeEach(() => {
+      renderKanban({ tickets: statusTickets, isLoading: false, isError: false });
+    });
+
+    it('AC-01: Mesa usa 36 px a partir de sm e no mínimo 44 px abaixo', () => {
+      expect(heightContractProblems(mesaClasses(), 'toolbar')).toEqual([]);
+    });
+
+    it('AC-01: Ordenar e Configurações usam 36 px a partir de sm e no mínimo 44 px abaixo', () => {
+      expect(heightContractProblems(sortButton().className, 'toolbar')).toEqual([]);
+      expect(heightContractProblems(configButton().className, 'toolbar')).toEqual([]);
+    });
+
+    it('AC-01: "Agrupar por" (Configurações) usa 32 px a partir de sm e no mínimo 44 px abaixo', () => {
+      fireEvent.click(configButton());
+      const box = screen.getByRole('combobox', { name: 'Agrupar por' }).parentElement as HTMLElement;
+      expect(heightContractProblems(box.className, 'compact')).toEqual([]);
+    });
+  });
+
+  describe('AC-03: a barra do Kanban quebra em linhas inteiras', () => {
+    beforeEach(() => {
+      renderKanban({ tickets: statusTickets, isLoading: false, isError: false });
+    });
+
+    it('AC-03: abaixo de 640 px a Mesa ocupa a largura total (w-full, sem max-w-xs fixo)', () => {
+      const tokens = classTokens(mesaItem().className);
+      expect(tokens).toContain('w-full');
+      expect(tokens).not.toContain('max-w-xs');
+    });
+
+    it('AC-03: Ordenar e Configurações ficam lado a lado, num par separado da Mesa', () => {
+      const pair = sortButton().parentElement?.parentElement as HTMLElement;
+      expect(pair).toBe(configButton().parentElement?.parentElement);
+      expect(pair).not.toBe(toolbarRow());
+      expect(pair.contains(mesaCombobox())).toBe(false);
+    });
+  });
+
+  describe('AC-04: seletor de Mesa em contorno', () => {
+    beforeEach(() => {
+      renderKanban({ tickets: statusTickets, isLoading: false, isError: false });
+    });
+
+    it('AC-04: a Mesa não usa bg-brand-500 (nem fundo cheio da marca em repouso)', () => {
+      const solid = classTokens(mesaClasses()).filter((token) => /(^|:)bg-brand-(500|600|700)$/.test(token) && !token.includes('hover:'));
+      expect(solid).toEqual([]);
+    });
+
+    it('AC-04: a Mesa tem fundo branco e borda brand-500', () => {
+      expect(mesaCombobox().parentElement?.className).toContain('bg-white');
+      const tokens = classTokens(mesaClasses());
+      expect(tokens.some((token) => token.endsWith('border-brand-500') && !token.includes('hover:'))).toBe(true);
+    });
+
+    it('AC-04: texto e seta da Mesa em brand-700, com contraste mínimo de 4,5:1 sobre o branco (tokens de styles.css)', () => {
+      const tokens = classTokens(mesaClasses());
+      expect(tokens.some((token) => token.endsWith('text-brand-700') && !token.includes('hover:'))).toBe(true);
+      expect(tokens.filter((token) => token.endsWith('text-gray-70'))).toEqual([]);
+      expect(contrast(hex('brand-700'), 'ffffff')).toBeGreaterThanOrEqual(4.5);
+    });
+
+    it('AC-04: hover com fundo claro da marca e foco visível', () => {
+      const tokens = classTokens(mesaClasses());
+      expect(tokens.some((token) => /hover:bg-brand-(50|100)(\/\d+)?$/.test(token))).toBe(true);
+      expect(tokens.some((token) => /focus-within:ring|focus-visible:ring/.test(token))).toBe(true);
+    });
+
+    it('AC-04: nenhum outro controle da barra é preenchido (Ordenar, Configurações)', () => {
+      for (const control of [sortButton(), configButton()]) {
+        expect(control).toHaveClass('bg-white');
+        expect(control.className).not.toMatch(/(^|\s)bg-brand-(500|600|700)/);
+      }
+    });
+  });
+
+  describe('AC-05: cartão sem a tag de status quando agrupado por Status', () => {
+    const statusTags = (container: HTMLElement) => container.querySelectorAll('[data-ticket-tag="status"]');
+
+    it('AC-05: sem Mesa (agrupamento efetivo Status) nenhum cartão do quadro mostra a tag de status', () => {
+      const { container } = renderKanban({ tickets: statusTickets, isLoading: false, isError: false });
+      expect(screen.getByText(/AP-2026-0001/)).toBeInTheDocument();
+      expect(statusTags(container)).toHaveLength(0);
+    });
+
+    it('AC-05: com Mesa e Agrupar por Status escolhido, o cartão também fica sem a tag de status', async () => {
+      const { container } = renderKanban({
+        tickets: stageTickets,
+        isLoading: false,
+        isError: false,
+        initialServiceDeskId: 'desk-1',
+      });
+      await waitFor(() => expect(screen.getByText('N1')).toBeInTheDocument());
+      fireEvent.click(configButton());
+      fireEvent.change(screen.getByLabelText(/agrupar por/i, { selector: 'select' }), { target: { value: 'status' } });
+      expect(screen.getByRole('heading', { name: 'Aberto' })).toBeInTheDocument();
+      expect(statusTags(container)).toHaveLength(0);
+    });
+
+    it('AC-05: agrupado por Estágio (Mesa selecionada) o cartão mantém a tag de status', async () => {
+      const { container } = renderKanban({
+        tickets: [stageTickets[0]],
+        isLoading: false,
+        isError: false,
+        initialServiceDeskId: 'desk-1',
+      });
+      await waitFor(() => expect(screen.getByText('N1')).toBeInTheDocument());
+      expect(statusTags(container)).toHaveLength(1);
+    });
+
+    it.each(['agent', 'priority'] as const)('AC-05: agrupado por %s o cartão mantém a tag de status', (groupBy) => {
+      const { container } = renderKanban({ tickets: [openTicket], isLoading: false, isError: false });
+      fireEvent.click(configButton());
+      fireEvent.change(screen.getByLabelText(/agrupar por/i, { selector: 'select' }), { target: { value: groupBy } });
+      expect(statusTags(container)).toHaveLength(1);
+    });
+  });
+
+  describe('AC-07: colunas finais abrem recolhidas', () => {
+    it('AC-07: por status, Resolvido e Fechado abrem recolhidos, com botão de nome acessível que contém o rótulo', () => {
+      renderKanban({ tickets: statusTickets, isLoading: false, isError: false });
+      expect(screen.queryByRole('button', { name: /Resolvido/ })).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /Fechado/ })).toBeInTheDocument();
+      expect(screen.queryByText(/AP-2026-0002/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/AP-2026-0003/)).not.toBeInTheDocument();
+    });
+
+    it('AC-07: por status, as outras sete colunas abrem expandidas e aceitando soltar', () => {
+      renderKanban({ tickets: statusTickets, isLoading: false, isError: false });
+      expect(screen.getAllByTestId('kanban-column')).toHaveLength(7);
+      expect(screen.getByText(/AP-2026-0001/)).toBeInTheDocument();
+      expect(capturedDroppables['OPEN'].isDropDisabled).toBe(false);
+      expect(capturedDroppables['PENDING_SANKHYA'].isDropDisabled).toBe(false);
+    });
+
+    it('AC-07: a coluna recolhida (Resolvido e Fechado) não aceita soltar cartão', () => {
+      renderKanban({ tickets: statusTickets, isLoading: false, isError: false });
+      expect(capturedDroppables['RESOLVED'].isDropDisabled).toBe(true);
+      expect(capturedDroppables['CLOSED'].isDropDisabled).toBe(true);
+    });
+
+    it('AC-07: um clique no botão expande a coluna e outro recolhe', () => {
+      renderKanban({ tickets: statusTickets, isLoading: false, isError: false });
+
+      fireEvent.click(stripButton(/Resolvido/));
+      expect(screen.getByText(/AP-2026-0002/)).toBeInTheDocument();
+      expect(capturedDroppables['RESOLVED'].isDropDisabled).toBe(false);
+      expect(screen.getAllByTestId('kanban-column')).toHaveLength(8);
+
+      fireEvent.click(screen.getByTestId('collapse-column-RESOLVED'));
+      expect(screen.queryByText(/AP-2026-0002/)).not.toBeInTheDocument();
+      expect(capturedDroppables['RESOLVED'].isDropDisabled).toBe(true);
+      stripButton(/Resolvido/);
+    });
+
+    it('AC-07: a escolha do usuário prevalece: Resolvido expandido segue expandido ao reordenar o quadro', () => {
+      renderKanban({ tickets: statusTickets, isLoading: false, isError: false });
+      fireEvent.click(stripButton(/Resolvido/));
+      fireEvent.click(sortButton());
+      fireEvent.click(screen.getByRole('button', { name: 'Título' }));
+      expect(screen.getByText(/AP-2026-0002/)).toBeInTheDocument();
+      stripButton(/Fechado/);
+    });
+
+    it('AC-07: com Mesa selecionada, abrem recolhidos só os estágios com isFinal', async () => {
+      renderKanban({ tickets: stageTickets, isLoading: false, isError: false, initialServiceDeskId: 'desk-1' });
+      await waitFor(() => expect(screen.getByText('N1')).toBeInTheDocument());
+
+      expect(screen.queryByRole('button', { name: /Aguardando Cliente/ })).toBeInTheDocument();
+      expect(screen.queryByText(/AP-2026-0004/)).not.toBeInTheDocument();
+      expect(capturedDroppables['s-aguardando-cliente'].isDropDisabled).toBe(true);
+
+      expect(screen.getByTestId('collapse-column-s-n1')).toBeInTheDocument();
+      expect(screen.getByTestId('collapse-column-s-n2')).toBeInTheDocument();
+      expect(capturedDroppables['s-n2'].isDropDisabled).toBe(false);
+    });
+
+    it('AC-07: com Mesa selecionada, um clique expande o estágio final e outro recolhe', async () => {
+      renderKanban({ tickets: stageTickets, isLoading: false, isError: false, initialServiceDeskId: 'desk-1' });
+      await waitFor(() => expect(screen.getByText('N1')).toBeInTheDocument());
+
+      fireEvent.click(stripButton(/Aguardando Cliente/));
+      expect(screen.getByText(/AP-2026-0004/)).toBeInTheDocument();
+      fireEvent.click(screen.getByTestId('collapse-column-s-aguardando-cliente'));
+      expect(screen.queryByText(/AP-2026-0004/)).not.toBeInTheDocument();
+      expect(capturedDroppables['s-aguardando-cliente'].isDropDisabled).toBe(true);
+    });
+  });
+
+  describe('AC-08: faixas fixas, encaixe e colunas de 80vw', () => {
+    it('AC-08: o quadro usa scroll-snap proximity (não mandatory) e scroll-padding para as faixas', () => {
+      renderKanban({ tickets: statusTickets, isLoading: false, isError: false });
+      const tokens = classTokens(board().className);
+      expect(tokens).toContain('snap-x');
+      expect(tokens).toContain('snap-proximity');
+      expect(tokens).not.toContain('snap-mandatory');
+      expect(tokens).not.toContain('lg:snap-none');
+      expect(tokens.some((token) => /(^|:)scroll-p[rxlt]?-/.test(token))).toBe(true);
+    });
+
+    it('AC-08: a partir de lg as faixas recolhidas ficam fixas na borda direita (sticky e inset direito)', () => {
+      renderKanban({ tickets: statusTickets, isLoading: false, isError: false });
+      for (const name of [/Resolvido/, /Fechado/]) {
+        const tokens = classTokens(stripClasses(name));
+        expect(tokens).toContain('lg:sticky');
+        expect(tokens.some((token) => /^lg:right-/.test(token))).toBe(true);
+      }
+    });
+
+    it('AC-08: abaixo de lg as faixas não fixam (sticky só com o prefixo lg:)', () => {
+      renderKanban({ tickets: statusTickets, isLoading: false, isError: false });
+      for (const name of [/Resolvido/, /Fechado/]) {
+        const tokens = classTokens(stripClasses(name));
+        expect(tokens.filter((token) => /(^|:)sticky$/.test(token) && !token.startsWith('lg:'))).toEqual([]);
+        expect(tokens).toContain('lg:sticky');
+      }
+    });
+
+    it('AC-08: com Mesa selecionada, a faixa do estágio final também fixa a partir de lg', async () => {
+      renderKanban({ tickets: stageTickets, isLoading: false, isError: false, initialServiceDeskId: 'desk-1' });
+      await waitFor(() => expect(screen.getByText('N1')).toBeInTheDocument());
+      const tokens = classTokens(stripClasses(/Aguardando Cliente/));
+      expect(tokens).toContain('lg:sticky');
+      expect(tokens.some((token) => /^lg:right-/.test(token))).toBe(true);
+    });
+
+    it('AC-08: as colunas expandidas não fixam e seguem com 80vw (máximo 320 px) abaixo de lg', () => {
+      renderKanban({ tickets: statusTickets, isLoading: false, isError: false });
+      for (const column of screen.getAllByTestId('kanban-column')) {
+        const tokens = classTokens(column.className);
+        expect(tokens.filter((token) => token.includes('sticky'))).toEqual([]);
+        expect(tokens).toContain('w-[80vw]');
+        expect(tokens).toContain('max-w-[320px]');
+        expect(tokens).toContain('lg:max-w-none');
+      }
     });
   });
 });

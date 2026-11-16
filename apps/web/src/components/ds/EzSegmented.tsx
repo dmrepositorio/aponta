@@ -13,6 +13,8 @@ export interface EzSegmentedProps<T extends string> {
   /** Nome acessível do grupo (ex.: "Visualização"). */
   'aria-label': string;
   className?: string;
+  /** `default` (42 px) ou `toolbar` (36 px a partir de `sm`, 44 px abaixo). */
+  size?: 'default' | 'toolbar';
 }
 
 /**
