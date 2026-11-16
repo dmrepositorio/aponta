@@ -315,7 +315,7 @@ export function KnowledgePage() {
           {!user && <p className="text-sm text-gray-500">Exibindo apenas artigos públicos</p>}
         </div>
 
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center">
           <EzTextInput
             ref={searchRef}
             type="search"
@@ -326,7 +326,7 @@ export function KnowledgePage() {
             className="w-full md:w-[280px]"
           />
           {canAuthor && !isFormOpen && (
-            <EzButton type="button" onClick={openNewForm} size="small" className="shrink-0 self-start">
+            <EzButton type="button" onClick={openNewForm} size="small" className="shrink-0 self-start md:self-auto">
               + Novo artigo
             </EzButton>
           )}
