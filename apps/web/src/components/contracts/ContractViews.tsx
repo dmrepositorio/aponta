@@ -12,6 +12,7 @@ import { ContractApprovalTag, approvalLabel } from './ContractStateTags';
 import {
   EzAlert,
   EzButton,
+  EzCheck,
   EzComboBox,
   EzEmptyCard,
   EzEntityGrid,
@@ -63,6 +64,8 @@ export const contractApproval = (c: Contract) =>
 // Larguras (px) das colunas de texto. A tabela da grade usa layout automático: sem um teto em px o texto
 // longo estica a coluna além do `size`. O teto é o `size` menos o padding horizontal da célula (32 px).
 const COLUMN_SIZE = { contract: 180, organization: 166, modality: 188 } as const;
+const sectionClass = 'grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2';
+const legendClass = 'mb-3 p-0 text-sm font-semibold text-gray-900';
 const textMaxWidth = (size: number) => ({ maxWidth: size - 32 });
 
 function TruncatedText({ value, size }: { value: string; size: number }) {
@@ -537,107 +540,220 @@ export function ContractForm({
       {(validation || error) && (
         <EzAlert variant="error">{validation || error}</EzAlert>
       )}
-      <fieldset
-        disabled={pending}
-        className="grid grid-cols-1 gap-4 sm:grid-cols-2"
-      >
-        <EzTextInput
-          id="contract-name"
-          label="Nome do contrato"
-          maxLength={200}
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-        <EzComboBox
-          id="contract-organization"
-          label="Empresa"
-          required
-          value={organizationId}
-          onChange={(e) => {
-            setOrganizationId(e.target.value);
-            setServiceDeskIds([]);
-          }}
-          disabled={organizationsLoading || organizationsError}
-        >
-          <option value="">
-            {organizationsLoading
-              ? 'Carregando empresas...'
-              : 'Selecione a empresa'}
-          </option>
-          {c?.organization &&
-            !organizations.some((o) => o.id === c.organizationId) && (
-              <option value={c.organizationId}>{c.organization.name}</option>
-            )}
-          {organizations.map((o) => (
-            <option key={o.id} value={o.id}>
-              {o.name}
-            </option>
-          ))}
-        </EzComboBox>
-        <EzComboBox
-          id="contract-type"
-          label="Modalidade"
-          value={type}
-          onChange={(e) => setType(e.target.value)}
-        >
-          {c && isLegacy(c) && (
-            <option value={c.type}>
-              {modality(c)} — regularização pendente
-            </option>
-          )}
-          {Object.entries(commercialModalities).map(([value, label]) => (
-            <option key={value} value={value}>
-              {label}
-            </option>
-          ))}
-        </EzComboBox>
-        <label className="flex items-center gap-2">
-          <input
-            type="checkbox"
+      <fieldset disabled={pending} className="min-w-0 space-y-6">
+        <fieldset className="flex min-w-0 flex-wrap gap-x-6 gap-y-2">
+          <legend className="sr-only">Situação do contrato</legend>
+          <EzCheck
+            id="contract-active"
+            label="Contrato ativo"
             checked={active}
             onChange={(e) => setActive(e.target.checked)}
+            disabled={pending}
           />
-          Contrato ativo
-        </label>
-        <label className="flex items-center gap-2">
-          <input
-            type="checkbox"
+          <EzCheck
+            id="contract-approved"
+            label="Condições comerciais aprovadas"
             checked={approved}
             onChange={(event) => setApproved(event.target.checked)}
+            disabled={pending}
           />
-          Condições comerciais aprovadas
-        </label>
-        <fieldset className="space-y-2 sm:col-span-2">
-          <legend className="font-medium">Mesas de serviços cobertas</legend>
-          {serviceDeskIds
-            .filter((id) => !desks.some((desk) => desk.id === id))
-            .map((id) => (
-              <label
-                key={id}
-                className="flex items-center gap-2 text-amber-700"
-              >
-                <input
-                  type="checkbox"
+        </fieldset>
+        <fieldset className={`${sectionClass} lg:grid-cols-3`}>
+          <legend className={legendClass}>Identificação</legend>
+          <EzTextInput
+            id="contract-name"
+            label="Nome do contrato"
+            maxLength={200}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+          <EzComboBox
+            id="contract-organization"
+            label="Empresa"
+            required
+            value={organizationId}
+            onChange={(e) => {
+              setOrganizationId(e.target.value);
+              setServiceDeskIds([]);
+            }}
+            disabled={organizationsLoading || organizationsError}
+          >
+            <option value="">
+              {organizationsLoading
+                ? 'Carregando empresas...'
+                : 'Selecione a empresa'}
+            </option>
+            {c?.organization &&
+              !organizations.some((o) => o.id === c.organizationId) && (
+                <option value={c.organizationId}>{c.organization.name}</option>
+              )}
+            {organizations.map((o) => (
+              <option key={o.id} value={o.id}>
+                {o.name}
+              </option>
+            ))}
+          </EzComboBox>
+          <EzComboBox
+            id="contract-type"
+            label="Modalidade"
+            value={type}
+            onChange={(e) => setType(e.target.value)}
+          >
+            {c && isLegacy(c) && (
+              <option value={c.type}>
+                {modality(c)} — regularização pendente
+              </option>
+            )}
+            {Object.entries(commercialModalities).map(([value, label]) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </EzComboBox>
+        </fieldset>
+        <fieldset className={`${sectionClass} lg:grid-cols-3`}>
+          <legend className={legendClass}>Vigência</legend>
+          <EzTextInput
+            id="contract-start"
+            label="Início da vigência"
+            type="date"
+            value={startsAt}
+            onChange={(e) => setStartsAt(e.target.value)}
+          />
+          <EzTextInput
+            id="contract-end"
+            label="Fim da vigência"
+            message="Inclui todo o dia selecionado, no horário de Brasília."
+            type="date"
+            value={endsAt}
+            onChange={(e) => setEndsAt(e.target.value)}
+          />
+          <EzTextInput
+            id="contract-adjustment"
+            label="Data de reajuste"
+            type="date"
+            value={adjustmentDate}
+            onChange={(e) => setAdjustmentDate(e.target.value)}
+          />
+        </fieldset>
+        <fieldset className={sectionClass}>
+          <legend className={legendClass}>Condições comerciais</legend>
+          {['HOURS_LIMIT', 'MONTHLY_HOURS'].includes(type) && (
+            <EzTextInput
+              id="contract-hours"
+              label="Franquia mensal (horas)"
+              type="number"
+              min="0"
+              step="0.01"
+              value={hours}
+              onChange={(e) => setHours(e.target.value)}
+            />
+          )}
+          {type === 'FIXED_PROJECT' && (
+            <>
+              <EzTextInput
+                id="contract-scope"
+                label="Escopo aprovado"
+                value={scope}
+                onChange={(event) => setScope(event.target.value)}
+              />
+              <EzTextInput
+                id="contract-price"
+                label="Preço fechado (R$)"
+                type="number"
+                min="0"
+                step="0.01"
+                value={price}
+                onChange={(event) => setPrice(event.target.value)}
+              />
+              <EzTextInput
+                id="contract-estimate"
+                label="Estimativa total (horas)"
+                type="number"
+                min="0"
+                step="0.01"
+                value={estimate}
+                onChange={(event) => setEstimate(event.target.value)}
+              />
+              <p className="text-sm sm:col-span-2">
+                A estimativa é global ao projeto. Horas adicionais aumentam o
+                custo sem gerar cobrança automática.
+              </p>
+            </>
+          )}
+          {type === 'HOURLY' && (
+            <EzTextInput
+              id="contract-hourly"
+              label="Hora avulsa (R$)"
+              type="number"
+              min="0"
+              step="0.01"
+              value={hourly}
+              onChange={(event) => setHourly(event.target.value)}
+            />
+          )}
+          {['HOURS_LIMIT', 'FIXED_COVERAGE', 'MONTHLY_HOURS'].includes(type) && (
+            <>
+              <EzTextInput
+                id="contract-monthly"
+                label="Valor mensal (R$)"
+                type="number"
+                min="0"
+                step="0.01"
+                value={monthly}
+                onChange={(e) => setMonthly(e.target.value)}
+              />
+              <EzTextInput
+                id="contract-rate"
+                label="Hora excedente (R$)"
+                type="number"
+                min="0"
+                step="0.01"
+                value={rate}
+                onChange={(e) => setRate(e.target.value)}
+                message="Tarifa explícita obrigatória para aprovação. Zero é uma tarifa válida."
+              />
+            </>
+          )}
+          {c && (
+            <EzTextInput
+              id="contract-effective"
+              label="Novas condições a partir de"
+              type="date"
+              value={effectiveDay}
+              onChange={(event) => setEffectiveDay(event.target.value)}
+              message="Informe a vigência de um aditivo. Apontamentos anteriores não são recalculados."
+            />
+          )}
+        </fieldset>
+        <fieldset className="min-w-0">
+          <legend className={legendClass}>Mesas de serviços cobertas</legend>
+          <div className="flex flex-wrap gap-x-6 gap-y-2">
+            {serviceDeskIds
+              .filter((id) => !desks.some((desk) => desk.id === id))
+              .map((id) => (
+                <EzCheck
+                  key={id}
+                  id={`contract-desk-${id}`}
+                  label={`Mesa não vinculada à empresa (${
+                    c?.serviceDesks?.find((desk) => desk.id === id)?.name || id
+                  }) — remova para regularizar`}
+                  labelClassName="text-amber-700"
                   checked
                   onChange={() =>
                     setServiceDeskIds(
                       serviceDeskIds.filter((selected) => selected !== id),
                     )
                   }
+                  disabled={pending}
                 />
-                Mesa não vinculada à empresa (
-                {c?.serviceDesks?.find((desk) => desk.id === id)?.name || id}) —
-                remova para regularizar
-              </label>
-            ))}
-          {desks.length ? (
-            desks.map((desk) => (
-              <label
-                key={desk.id}
-                className="mr-4 inline-flex items-center gap-2"
-              >
-                <input
-                  type="checkbox"
+              ))}
+            {desks.length ? (
+              desks.map((desk) => (
+                <EzCheck
+                  key={desk.id}
+                  id={`contract-desk-${desk.id}`}
+                  label={desk.name}
                   checked={serviceDeskIds.includes(desk.id)}
                   onChange={(event) =>
                     setServiceDeskIds(
@@ -646,126 +762,17 @@ export function ContractForm({
                         : serviceDeskIds.filter((id) => id !== desk.id),
                     )
                   }
+                  disabled={pending}
                 />
-                {desk.name}
-              </label>
-            ))
-          ) : (
-            <p className="text-sm text-gray-500">
-              Selecione uma empresa com mesas explicitamente vinculadas. Sem
-              esse vínculo, novos lançamentos ficam bloqueados.
-            </p>
-          )}
+              ))
+            ) : (
+              <p className="text-sm text-gray-500">
+                Selecione uma empresa com mesas explicitamente vinculadas. Sem
+                esse vínculo, novos lançamentos ficam bloqueados.
+              </p>
+            )}
+          </div>
         </fieldset>
-        <EzTextInput
-          id="contract-start"
-          label="Início da vigência"
-          type="date"
-          value={startsAt}
-          onChange={(e) => setStartsAt(e.target.value)}
-        />
-        <EzTextInput
-          id="contract-end"
-          label="Fim da vigência"
-          message="Inclui todo o dia selecionado, no horário de Brasília."
-          type="date"
-          value={endsAt}
-          onChange={(e) => setEndsAt(e.target.value)}
-        />
-        {['HOURS_LIMIT', 'MONTHLY_HOURS'].includes(type) && (
-          <EzTextInput
-            id="contract-hours"
-            label="Franquia mensal (horas)"
-            type="number"
-            min="0"
-            step="0.01"
-            value={hours}
-            onChange={(e) => setHours(e.target.value)}
-          />
-        )}
-        {type === 'FIXED_PROJECT' && (
-          <>
-            <EzTextInput
-              id="contract-scope"
-              label="Escopo aprovado"
-              value={scope}
-              onChange={(event) => setScope(event.target.value)}
-            />
-            <EzTextInput
-              id="contract-price"
-              label="Preço fechado (R$)"
-              type="number"
-              min="0"
-              step="0.01"
-              value={price}
-              onChange={(event) => setPrice(event.target.value)}
-            />
-            <EzTextInput
-              id="contract-estimate"
-              label="Estimativa total (horas)"
-              type="number"
-              min="0"
-              step="0.01"
-              value={estimate}
-              onChange={(event) => setEstimate(event.target.value)}
-            />
-            <p className="text-sm sm:col-span-2">
-              A estimativa é global ao projeto. Horas adicionais aumentam o
-              custo sem gerar cobrança automática.
-            </p>
-          </>
-        )}
-        {type === 'HOURLY' && (
-          <EzTextInput
-            id="contract-hourly"
-            label="Hora avulsa (R$)"
-            type="number"
-            min="0"
-            step="0.01"
-            value={hourly}
-            onChange={(event) => setHourly(event.target.value)}
-          />
-        )}
-        {['HOURS_LIMIT', 'FIXED_COVERAGE', 'MONTHLY_HOURS'].includes(type) && (
-          <>
-            <EzTextInput
-              id="contract-monthly"
-              label="Valor mensal (R$)"
-              type="number"
-              min="0"
-              step="0.01"
-              value={monthly}
-              onChange={(e) => setMonthly(e.target.value)}
-            />
-            <EzTextInput
-              id="contract-rate"
-              label="Hora excedente (R$)"
-              type="number"
-              min="0"
-              step="0.01"
-              value={rate}
-              onChange={(e) => setRate(e.target.value)}
-              message="Tarifa explícita obrigatória para aprovação. Zero é uma tarifa válida."
-            />
-          </>
-        )}
-        {c && (
-          <EzTextInput
-            id="contract-effective"
-            label="Novas condições a partir de"
-            type="date"
-            value={effectiveDay}
-            onChange={(event) => setEffectiveDay(event.target.value)}
-            message="Informe a vigência de um aditivo. Apontamentos anteriores não são recalculados."
-          />
-        )}
-        <EzTextInput
-          id="contract-adjustment"
-          label="Data de reajuste"
-          type="date"
-          value={adjustmentDate}
-          onChange={(e) => setAdjustmentDate(e.target.value)}
-        />
       </fieldset>
       {organizationsError && (
         <EzAlert variant="error">

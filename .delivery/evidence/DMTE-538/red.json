@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "phase": "red",
+  "started_at": "2026-11-16T19:12:25.341130+00:00",
+  "finished_at": "2026-11-16T19:12:31.342526+00:00",
+  "command": [
+    "pnpm",
+    "--dir",
+    "apps/web",
+    "exec",
+    "vitest",
+    "run",
+    "src/components/contracts/ContractFormSections.test.tsx"
+  ],
+  "base_sha": "a403a99679038eab443a362fb0f1760b1459a6df",
+  "head_sha": "a6084b8e04b901d9a69a74cf9d1bed1338b62e4f",
+  "exit_code": 1,
+  "tests": {
+    "apps/web/src/components/contracts/ContractFormSections.test.tsx": "48c0a7124353992b7b553d899b1dae3af82e0a7836face0609d7d6669612a858"
+  },
+  "criteria": [
+    "AC-01",
+    "AC-02",
+    "AC-03",
+    "AC-04",
+    "AC-05"
+  ],
+  "source_hashes": {
+    "apps/web/src/components/contracts/ContractFormSections.test.tsx": "48c0a7124353992b7b553d899b1dae3af82e0a7836face0609d7d6669612a858"
+  },
+  "log": ".delivery/evidence/DMTE-538/red.log",
+  "log_sha256": "7aab7ad70000df311bd7f541acf8496c358429c8157ae3baf8b7ee4f23f0cf21"
+}
