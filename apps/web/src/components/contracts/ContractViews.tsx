@@ -65,7 +65,8 @@ export const contractApproval = (c: Contract) =>
 // longo estica a coluna além do `size`. O teto é o `size` menos o padding horizontal da célula (32 px).
 const COLUMN_SIZE = { contract: 180, organization: 166, modality: 188 } as const;
 const sectionClass = 'grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2';
-const legendClass = 'mb-3 p-0 text-sm font-semibold text-gray-900';
+const wideSectionClass = `${sectionClass} lg:grid-cols-3`;
+const legendClass = 'mb-3 text-sm font-semibold text-gray-900';
 const textMaxWidth = (size: number) => ({ maxWidth: size - 32 });
 
 function TruncatedText({ value, size }: { value: string; size: number }) {
@@ -558,7 +559,7 @@ export function ContractForm({
             disabled={pending}
           />
         </fieldset>
-        <fieldset className={`${sectionClass} lg:grid-cols-3`}>
+        <fieldset className={wideSectionClass}>
           <legend className={legendClass}>Identificação</legend>
           <EzTextInput
             id="contract-name"
@@ -611,7 +612,7 @@ export function ContractForm({
             ))}
           </EzComboBox>
         </fieldset>
-        <fieldset className={`${sectionClass} lg:grid-cols-3`}>
+        <fieldset className={wideSectionClass}>
           <legend className={legendClass}>Vigência</legend>
           <EzTextInput
             id="contract-start"

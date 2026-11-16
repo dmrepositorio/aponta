@@ -1,18 +1,19 @@
 
  RUN  v4.1.11 /home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-538-34d216d4dc9d/workdir/red-wt/apps/web
 
- ❯ |web| src/components/contracts/ContractFormSections.test.tsx (6 tests | 5 failed) 863ms
-     × groups the fields in fieldsets with a legend each 454ms
-     × keeps the fields of each modality and the amendment date in the commercial terms 195ms
-     × puts the two switches together in one group before the identification 120ms
-     × draws every checkbox with the DS control and keeps what onSave receives 32ms
-     × disables every field and checkbox while saving 29ms
-     ✓ keeps the empty-desks hint and the unlinked desk warning inside the desks group 28ms
+ ❯ |web| src/components/contracts/ContractFormSections.test.tsx (7 tests | 5 failed) 2063ms
+     × groups the fields in fieldsets with a legend each 973ms
+     × keeps the fields of each modality and the amendment date in the commercial terms 398ms
+     × puts the two switches together in one group before the identification 341ms
+     × draws every checkbox with the DS control and keeps what onSave receives 41ms
+     ✓ toggles the approval switch into what onSave receives 167ms
+     × disables every field and checkbox while saving 96ms
+     ✓ keeps the empty-desks hint and the unlinked desk warning inside the desks group 38ms
 
  Test Files  1 failed (1)
-      Tests  5 failed | 1 passed (6)
-   Start at  16:12:26
-   Duration  4.58s (transform 2.15s, setup 131ms, import 2.87s, tests 863ms, environment 498ms)
+      Tests  5 failed | 2 passed (7)
+   Start at  16:22:51
+   Duration  8.22s (transform 3.08s, setup 353ms, import 4.36s, tests 2.06s, environment 1.01s)
 
 
 ⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
@@ -299,14 +300,14 @@ Ignored nodes: comments, script, style
  ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
  ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
  ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
- ❯ group src/components/contracts/ContractFormSections.test.tsx:26:40
-     24|   );
-     25|
-     26| const group = (name: string) => screen.getByRole('group', { name });
+ ❯ group src/components/contracts/ContractFormSections.test.tsx:29:40
+     27| const FIELDS_IN_EDIT_FORM = 15;
+     28|
+     29| const group = (name: string) => screen.getByRole('group', { name });
        |                                        ^
-     27|
-     28| describe('ContractForm sections', () => {
- ❯ src/components/contracts/ContractFormSections.test.tsx:34:29
+     30|
+     31| describe('ContractForm sections', () => {
+ ❯ src/components/contracts/ContractFormSections.test.tsx:37:29
 
 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
 
@@ -598,14 +599,14 @@ Ignored nodes: comments, script, style
  ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
  ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
  ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
- ❯ group src/components/contracts/ContractFormSections.test.tsx:26:40
-     24|   );
-     25|
-     26| const group = (name: string) => screen.getByRole('group', { name });
+ ❯ group src/components/contracts/ContractFormSections.test.tsx:29:40
+     27| const FIELDS_IN_EDIT_FORM = 15;
+     28|
+     29| const group = (name: string) => screen.getByRole('group', { name });
        |                                        ^
-     27|
-     28| describe('ContractForm sections', () => {
- ❯ src/components/contracts/ContractFormSections.test.tsx:65:26
+     30|
+     31| describe('ContractForm sections', () => {
+ ❯ src/components/contracts/ContractFormSections.test.tsx:68:26
 
 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
 
@@ -888,14 +889,14 @@ Ignored nodes: comments, script, style
  ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
  ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
  ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
- ❯ group src/components/contracts/ContractFormSections.test.tsx:26:40
-     24|   );
-     25|
-     26| const group = (name: string) => screen.getByRole('group', { name });
+ ❯ group src/components/contracts/ContractFormSections.test.tsx:29:40
+     27| const FIELDS_IN_EDIT_FORM = 15;
+     28|
+     29| const group = (name: string) => screen.getByRole('group', { name });
        |                                        ^
-     27|
-     28| describe('ContractForm sections', () => {
- ❯ src/components/contracts/ContractFormSections.test.tsx:74:20
+     30|
+     31| describe('ContractForm sections', () => {
+ ❯ src/components/contracts/ContractFormSections.test.tsx:77:20
 
 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
 
@@ -906,14 +907,14 @@ Expected the element to have class:
 [32m  appearance-none checked:bg-brand-600[39m
 Received:
 [31m[39m
- ❯ src/components/contracts/ContractFormSections.test.tsx:102:19
-    100|     expect(boxes).toHaveLength(5);
-    101|     boxes.forEach((box) => {
-    102|       expect(box).toHaveClass('appearance-none', 'checked:bg-brand-600…
+ ❯ src/components/contracts/ContractFormSections.test.tsx:105:19
+    103|     expect(boxes).toHaveLength(5);
+    104|     boxes.forEach((box) => {
+    105|       expect(box).toHaveClass('appearance-none', 'checked:bg-brand-600…
        |                   ^
-    103|     });
-    104|
- ❯ src/components/contracts/ContractFormSections.test.tsx:101:11
+    106|     });
+    107|
+ ❯ src/components/contracts/ContractFormSections.test.tsx:104:11
 
 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
 
@@ -924,14 +925,14 @@ Expected the element to have class:
 [32m  cursor-not-allowed[39m
 Received:
 [31m  flex items-center gap-2[39m
- ❯ src/components/contracts/ContractFormSections.test.tsx:133:36
-    131|     fields.forEach((field) => expect(field).toBeDisabled());
-    132|     screen.getAllByRole('checkbox').forEach((box) => {
-    133|       expect(box.closest('label')).toHaveClass('cursor-not-allowed');
+ ❯ src/components/contracts/ContractFormSections.test.tsx:164:36
+    162|     fields.forEach((field) => expect(field).toBeDisabled());
+    163|     screen.getAllByRole('checkbox').forEach((box) => {
+    164|       expect(box.closest('label')).toHaveClass('cursor-not-allowed');
        |                                    ^
-    134|     });
-    135|   });
- ❯ src/components/contracts/ContractFormSections.test.tsx:132:37
+    165|     });
+    166|   });
+ ❯ src/components/contracts/ContractFormSections.test.tsx:163:37
 
 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
 

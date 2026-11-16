@@ -23,6 +23,9 @@ const renderForm = (props: Partial<Parameters<typeof ContractForm>[0]> = {}) =>
     />,
   );
 
+// Nome, Empresa, Modalidade, 3 datas, 3 valores da modalidade, Novas condições e 5 checkboxes.
+const FIELDS_IN_EDIT_FORM = 15;
+
 const group = (name: string) => screen.getByRole('group', { name });
 
 describe('ContractForm sections', () => {
@@ -115,6 +118,31 @@ describe('ContractForm sections', () => {
     );
   });
 
+  it('toggles the approval switch into what onSave receives', () => {
+    const onSave = vi.fn();
+    renderForm({
+      onSave,
+      contract: {
+        id: 'c1',
+        organizationId: 'org',
+        type: 'HOURLY',
+        active: true,
+        hourlyRateCents: 5000,
+        startsAt: '2026-10-15T03:00:00.000Z',
+        serviceDeskIds: ['desk-a'],
+        createdAt: '2026-01-01',
+      },
+    });
+    const approved = screen.getByRole('checkbox', { name: 'Condições comerciais aprovadas' });
+    expect(approved).not.toBeChecked();
+    fireEvent.click(approved);
+    expect(approved).toBeChecked();
+    fireEvent.click(screen.getByRole('button', { name: 'Salvar contrato' }));
+    expect(onSave).toHaveBeenCalledWith(
+      expect.objectContaining({ approved: true, active: true, serviceDeskIds: ['desk-a'] }),
+    );
+  });
+
   it('disables every field and checkbox while saving', () => {
     const { container } = renderForm({
       pending: true,
@@ -123,11 +151,14 @@ describe('ContractForm sections', () => {
         organizationId: 'org',
         type: 'MONTHLY_HOURS',
         active: true,
+        serviceDeskIds: ['gone'],
+        serviceDesks: [{ id: 'gone', name: 'Mesa antiga' }],
         createdAt: '2026-01-01',
       },
     });
     const fields = container.querySelectorAll('input, select');
-    expect(fields.length).toBeGreaterThanOrEqual(10);
+    expect(fields).toHaveLength(FIELDS_IN_EDIT_FORM);
+    expect(screen.getAllByRole('checkbox')).toHaveLength(5);
     fields.forEach((field) => expect(field).toBeDisabled());
     screen.getAllByRole('checkbox').forEach((box) => {
       expect(box.closest('label')).toHaveClass('cursor-not-allowed');

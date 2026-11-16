@@ -1,10 +1,11 @@
 
  RUN  v4.1.11 /home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-538-34d216d4dc9d/workdir/aponta/apps/web
 
- ✓ |web| src/components/contracts/ContractFormSections.test.tsx (6 tests) 584ms
+ ✓ |web| src/components/contracts/ContractFormSections.test.tsx (7 tests) 1332ms
+     ✓ groups the fields in fieldsets with a legend each  574ms
 
  Test Files  1 passed (1)
-      Tests  6 passed (6)
-   Start at  16:12:44
-   Duration  3.74s (transform 1.83s, setup 96ms, import 2.41s, tests 584ms, environment 430ms)
+      Tests  7 passed (7)
+   Start at  16:23:09
+   Duration  7.93s (transform 3.75s, setup 188ms, import 4.83s, tests 1.33s, environment 1.15s)
 

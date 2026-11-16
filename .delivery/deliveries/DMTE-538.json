@@ -26,7 +26,8 @@
       "id": "AC-03",
       "description": "todo checkbox do formulário (os dois interruptores, cada mesa e a mesa não vinculada) é desenhado pelo `EzCheck` do DS (`appearance-none` e `checked:bg-brand-600`, nenhum nativo); o nome acessível de cada um continua o mesmo e marcar/desmarcar continua alterando `active`, `approved` e `serviceDeskIds` no que `onSave` recebe.",
       "tests": [
-        "apps/web/src/components/contracts/ContractFormSections.test.tsx: draws every checkbox with the DS control and keeps what onSave receives"
+        "apps/web/src/components/contracts/ContractFormSections.test.tsx: draws every checkbox with the DS control and keeps what onSave receives",
+        "apps/web/src/components/contracts/ContractFormSections.test.tsx: toggles the approval switch into what onSave receives"
       ]
     },
     {
