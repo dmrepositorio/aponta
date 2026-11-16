@@ -1,0 +1,106 @@
+{
+  "version": 1,
+  "delivery": "DMTE-527",
+  "repository": "dmrepositorio/aponta",
+  "github_issue": 284,
+  "multica_id": "01a1dff7-6816-7a31-975b-9f1208c7af7d",
+  "cycle": "2026-11-09/2026-11-22",
+  "tier": 2,
+  "criteria": [
+    {
+      "id": "AC-01",
+      "description": "`styles.css` define `--control-height-toolbar: 36px` sem alterar `--control-height-md` (42 px) nem `--control-height-compact` (32 px); a partir de `sm`, título/busca/\"Busca avançada\", Lista/Kanban, Mesa, Ordenar e Configurações usam o token de 36 px, e atalhos, \"Exibir colunas\" e \"Agrupar por\" usam 32 px; abaixo de `sm`, esses controles têm `min-h-11` (44 px).",
+      "tests": []
+    },
+    {
+      "id": "AC-02",
+      "description": "`EzSegmented` aceita `size` (`default` mantém 42 px; `toolbar` 36 px a partir de `sm` e 44 px abaixo), a story cobre os dois tamanhos e os outros usos do componente seguem em 42 px.",
+      "tests": []
+    },
+    {
+      "id": "AC-03",
+      "description": "o cabeçalho quebra em linhas inteiras sem cortar controle: abaixo de 640 px busca e \"Busca avançada\" em largura total e, no Kanban, a Mesa em largura total e Ordenar e Configurações lado a lado; de 640 a 1023 px a busca em largura total embaixo do título.",
+      "tests": []
+    },
+    {
+      "id": "AC-04",
+      "description": "o seletor de Mesa do Kanban tem fundo branco, borda `brand-500` e texto `brand-700` (contraste mínimo de 4,5:1 sobre o branco, tokens lidos de `styles.css`), hover e foco visíveis, e não usa `bg-brand-500`; nenhum outro controle da barra é preenchido.",
+      "tests": []
+    },
+    {
+      "id": "AC-05",
+      "description": "com agrupamento por Status, o cartão não renderiza `TicketStatusTag`, o chip de SLA ocupa a linha da tag à direita do cliente e o rodapé só traz o responsável; sem SLA a linha tem só o cliente; com agrupamento por Estágio, Responsável ou Prioridade o cartão mantém a tag de status.",
+      "tests": []
+    },
+    {
+      "id": "AC-06",
+      "description": "a tag de status e a de prioridade não quebram em duas linhas (`whitespace-nowrap`), nos cartões e na Lista, sem renomear nenhum status.",
+      "tests": []
+    },
+    {
+      "id": "AC-07",
+      "description": "por status, Resolvido e Fechado abrem recolhidos; com Mesa selecionada, abrem recolhidos os estágios com `isFinal`; um clique no botão de expandir (com nome acessível que contém o rótulo da coluna) expande, e outro recolhe; a coluna recolhida não aceita soltar cartão; as demais colunas abrem expandidas.",
+      "tests": []
+    },
+    {
+      "id": "AC-08",
+      "description": "a partir de `lg`, as faixas recolhidas ficam fixas na borda direita do quadro, o quadro usa `scroll-snap-type: proximity` e `scroll-padding` para as faixas, e abaixo de `lg` as faixas ficam no fim do quadro sem fixar, com colunas de 80vw (máximo 320 px); se o teste de arrastar um cartão até a borda a 1440 px falhar, vale o plano B do item 7 e a troca é registrada no PR.",
+      "tests": []
+    },
+    {
+      "id": "AC-09",
+      "description": "medido em Chromium a 1440×900, 1024×768 e 390×844 com dados sintéticos (evidência técnica, não gate): alturas dos controles, ausência de quebra das tags, largura do quadro contra a área visível, faixas visíveis na borda a 1440 px e alvos de 44 px a 390 px.",
+      "tests": []
+    },
+    {
+      "id": "AC-10",
+      "description": "a migração cria `UserScreenPreference` (único por `userId` e `screen`, `onDelete: Cascade`), é aditiva, aplica em banco isolado e não altera tabela existente.",
+      "tests": []
+    },
+    {
+      "id": "AC-11",
+      "description": "`GET` e `PUT` de `/me/screen-preferences/:screen` exigem autenticação (sem token, 401), usam só o id do token, aceitam apenas as cinco telas (outra devolve 404 e não grava) e `GET` sem linha devolve preferência vazia.",
+      "tests": []
+    },
+    {
+      "id": "AC-12",
+      "description": "o servidor valida o formato (limites do item 11) e devolve 400 para campo desconhecido, tipo errado, mais de 100 entradas em `collapsed`, id com mais de 64 caracteres ou corpo acima de 64 KB; um corpo válido é gravado e relido igual.",
+      "tests": []
+    },
+    {
+      "id": "AC-13",
+      "description": "um usuário não lê nem grava a preferência de outro: duas contas gravam a mesma tela e cada uma lê só a sua; nenhuma rota aceita id de usuário.",
+      "tests": []
+    },
+    {
+      "id": "AC-14",
+      "description": "`useUserScreenConfig` mantém a assinatura para as cinco telas, lê do servidor antes de a tela desenhar, grava cada mudança no servidor com espera de 400 ms e deixa de usar o `localStorage` depois da importação; os testes existentes das cinco telas seguem verdes.",
+      "tests": []
+    },
+    {
+      "id": "AC-15",
+      "description": "sem linha no servidor e com configuração no `localStorage` do usuário, a primeira leitura envia a configuração ao servidor, usa-a e apaga a chave só depois da gravação confirmada; conteúdo inválido no `localStorage` é descartado e a tela usa os padrões.",
+      "tests": []
+    },
+    {
+      "id": "AC-16",
+      "description": "se a leitura ou a gravação falhar, a tela abre e funciona com os padrões e as escolhas em memória, sem alerta bloqueante, e a próxima mudança tenta gravar de novo.",
+      "tests": []
+    },
+    {
+      "id": "AC-17",
+      "description": "o recolhimento de cada coluna do Kanban é salvo e relido por usuário no mapa `collapsed`; coluna sem entrada usa o padrão do AC-07; id de estágio inexistente é ignorado; o recolhimento de um usuário não afeta o de outro.",
+      "tests": []
+    }
+  ],
+  "spec": "docs/delivery/specs/DMTE-527.md",
+  "tdd": {
+    "mode": "required",
+    "red": ".delivery/evidence/DMTE-527/red.json",
+    "green": ".delivery/evidence/DMTE-527/green.json"
+  },
+  "design_system": {
+    "applicable": true,
+    "reused": []
+  }
+}

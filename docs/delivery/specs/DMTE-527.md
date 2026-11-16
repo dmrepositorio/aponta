@@ -1,0 +1,100 @@
+# Tickets: proporção e densidade de Lista e Kanban, e preferências de tela no servidor
+
+Identidade: DMTE-527, issue dmrepositorio/aponta#284, Tier 2, ciclo 2026-11-09/2026-11-22, pai Multica `01a1dff7-6816-7a31-975b-9f1208c7af7d`. Origem: auditoria DMTE-517 (item 4), aprovada por Alfredo, que pediu corrigir na ordem sugerida (itens 1 e 2, depois 3, 4 e 5). Itens 1 a 3 integrados nas DMTE-525 (#259) e DMTE-526 (#264). Decisões humanas: comentários do fio da DMTE-527 (Q1 a Q15, rodadas 1 a 4); pesquisa de mercado em `docs/research/kanban-quadro-largo-e-mobile.md`. ADR: `docs/adr/0002-preferencias-de-tela-no-servidor.md`.
+
+## Problem Statement
+
+Quem opera a tela de Tickets de um notebook de 1440 px encontra uma barra com controles de três alturas (42, 32 e 30 px), um seletor de Mesa que é o único elemento preenchido e compete com o botão principal, e um Kanban de 9 colunas que mede 2108 px contra 1152 px visíveis, de modo que Resolvido e Fechado ficam fora da tela e só três cartões cabem por coluna. Em modo status, cada cartão repete na tag o nome da coluna onde já está. No celular, os mesmos controles têm altura de mouse. E as escolhas de apresentação de cada usuário (agrupar por, campos visíveis, colunas recolhidas) vivem no navegador: quem troca de computador começa do zero.
+
+## Solution
+
+Uma escala de altura por faixa de tela, sem esticar com a largura: 36 px na barra e 32 px nos filtros a partir de 640 px, e 44 px (alvo de toque) abaixo disso. A Mesa vira um seletor em contorno, com texto na cor da marca. No modo status, o cartão deixa de repetir o status e usa essa linha para o SLA. Resolvido, Fechado e os estágios finais abrem recolhidos; a faixa recolhida fica fixa na borda direita do quadro (a partir de `lg`) para nenhuma coluna sumir sem aviso. O recolhimento e as demais preferências de tela passam a ser guardados no servidor, por usuário, e o usuário os leva para qualquer navegador.
+
+## User Stories
+
+1. Como atendente num notebook de 1440 px, quero a barra da tela de Tickets com uma altura só para os controles, para ler a barra como um bloco e não como peças de tamanhos diferentes.
+2. Como atendente, quero o botão "Novo Ticket" como único elemento preenchido da barra, para achar a ação principal sem competir com o seletor de Mesa.
+3. Como atendente, quero que o seletor de Mesa tenha contorno e texto na cor da marca, para ver que é um filtro e reconhecer que ele pertence à identidade do Aponta.
+4. Como atendente no Kanban por status, quero que o cartão não repita o status que a coluna já diz, para ver o SLA e o cliente numa linha só e caber mais cartões por coluna.
+5. Como atendente, quero Resolvido e Fechado recolhidos ao abrir o Kanban, para ver as colunas em que ainda há trabalho sem rolar o quadro.
+6. Como atendente, quero as faixas recolhidas sempre visíveis na borda direita, com nome e contagem, para saber que existem e abrir uma com um clique.
+7. Como atendente com uma Mesa selecionada, quero que os estágios finais da mesa abram recolhidos do mesmo jeito, para que a regra valha nos dois agrupamentos.
+8. Como atendente, quero que a minha escolha de recolher ou expandir cada coluna fique guardada para mim, para não repetir o clique a cada recarga.
+9. Como atendente que usa dois computadores, quero que o meu "Agrupar por", os campos visíveis e as colunas recolhidas me acompanhem, para trabalhar do mesmo jeito em qualquer navegador.
+10. Como atendente, quero que a preferência de um colega nunca mude a minha tela, para cada usuário manter o seu estilo.
+11. Como atendente com preferências que já tinha no navegador, quero que elas sejam aproveitadas na primeira vez, para não perder o que configurei.
+12. Como atendente no celular (390 px), quero controles de 44 px e busca em largura total, para tocar sem errar.
+13. Como atendente no celular, quero deslizar entre colunas de 80% da largura vendo a borda da próxima, para saber que há mais colunas.
+14. Como atendente de tablet (1024 px), quero a barra na mesma linha quando couber e quebrando em linhas inteiras quando não couber, para não ter controle cortado.
+15. Como atendente, quero que as tags de status e prioridade não quebrem em duas linhas, para as linhas da Lista e os cartões terem altura estável.
+16. Como atendente que usa só teclado, quero foco visível e nomes acessíveis nos controles que mudam de tamanho e na faixa recolhida, para operar sem mouse.
+17. Como administrador, quero que a preferência de tela seja só do dono, validada no servidor, para nenhum usuário ler ou gravar a de outro.
+18. Como administrador, quero que uma falha ao ler ou gravar a preferência nunca trave a tela, para o atendimento continuar com os padrões.
+
+## Implementation Decisions
+
+Duas partes, dois tickets, um PR (decisão Q13): o ticket 1 entrega a tela proporcional e responsiva com o recolhimento ainda em memória; o ticket 2, bloqueado pelo 1, entrega as preferências de tela no servidor e liga o recolhimento a elas. Sem Carbon nem Next.js; identidade preservada (verde Ocean, cartões de 8 a 16 px, tags em pílula); DS e tokens existentes.
+
+### Ticket 1: tela de Tickets proporcional e responsiva
+
+1. **Escala de altura por faixa (Q1, Q9).** Token novo de barra de ferramentas (`--control-height-toolbar`, 36 px) só para a aba Tickets; `--control-height-md` (42 px) e `--control-height-compact` (32 px) não mudam e continuam valendo nas outras telas. A partir de `sm` (640 px): título, busca, "Busca avançada", Lista/Kanban, Mesa, Ordenar e Configurações usam 36 px; atalhos da Lista, "Exibir colunas" e "Agrupar por" usam 32 px. Abaixo de `sm`: todos esses controles têm no mínimo 44 px (`min-h-11`, como o `EzSelect` compacto e as toolbars da DMTE-541). As alturas só mudam nessas duas faixas, nunca em passo contínuo. O comentário de `styles.css` que fecha 42 e 32 px como únicos valores e chama 36 px de placeholder passa a registrar a exceção da barra de Tickets, com esta SPEC e o Q1 como fonte; a checagem estática `scripts/check_tickets_proportion.py` passa a aceitar 36 px apenas pelo token.
+2. **`EzSegmented` com tamanho.** O componente do DS (Lista/Kanban) fixa a altura em `--control-height-md`. Ganha a opção `size` (`default`, que mantém 42 px, e `toolbar`, 36 px a partir de `sm` e 44 px abaixo), com story e teste. Nenhum outro uso muda.
+3. **Cabeçalho e barra em telas estreitas (Q9).** De 640 a 1023 px: título e Lista/Kanban em cima, busca em largura total embaixo. Abaixo de 640 px: título e Lista/Kanban na primeira linha; busca e "Busca avançada" em largura total, uma por linha; no Kanban, Mesa em largura total, Ordenar e Configurações lado a lado, avatares quebrando de linha. A partir de 1024 px a barra fica numa linha quando couber e quebra em linhas inteiras quando não couber.
+4. **Mesa em contorno (Q2).** Borda `brand-500`, texto e seta `brand-700`, fundo branco; hover com fundo claro da marca; foco com o anel do EzSelect. Desfaz a cor cheia da DMTE-498. A tela não tem outro elemento preenchido na barra.
+5. **Cartão em modo status (Q5).** Quando o agrupamento efetivo é Status, o cartão não renderiza a tag de status; o chip de SLA sobe para a linha da tag, à direita do nome do cliente, e o rodapé fica só com o responsável. Sem SLA, a linha tem só o cliente. Em Estágio, Responsável e Prioridade o cartão continua com a tag de status. A tag de status e a de prioridade mantêm `whitespace-nowrap`; não há rótulos curtos (Q4), e os nomes completos seguem iguais em filtros, relatórios e Lista.
+6. **Colunas finais recolhidas por padrão (Q3, Q8).** Por status, Resolvido e Fechado; com Mesa selecionada, os estágios com `isFinal`. Valem para quem ainda não escolheu nada; a escolha explícita do usuário prevalece. No ticket 1 o estado é em memória (reinicia ao recarregar). Coluna recolhida continua sem aceitar soltar cartão, e o botão de expandir tem nome acessível com o rótulo da coluna.
+7. **Faixas fixas e encaixe (Q7).** A partir de `lg`, as faixas recolhidas ficam fixas na borda direita do quadro (`position: sticky`, inset direito), com contagem e nome; o quadro usa `scroll-snap-type: proximity` (no lugar de `mandatory`) e `scroll-padding` para a coluna encaixada não ficar sob as faixas. Abaixo de `lg` as faixas ficam no fim do quadro, sem fixar, e as colunas continuam com 80vw (máximo 320 px), vendo a borda da próxima. **Plano B**, aprovado no Q7: se o teste de arrastar um cartão até a borda a 1440 px falhar com as faixas fixas, as faixas ficam no fim do quadro, sem fixar, com sombra na borda direita avisando que há mais colunas; a troca é registrada no PR sem nova rodada. Nenhum produto pesquisado fixa faixas assim: é decisão própria, e o teste real é a trava.
+8. **Fora do escopo do ticket 1.** Três "Tickets" na tela (Q6); rótulos curtos (Q4); alternativa sem arrastar para mover cartão (lacuna conhecida, WCAG 2.5.7); lista em cartões no celular (a tabela continua rolando na horizontal); API.
+
+### Ticket 2: preferências de tela no servidor
+
+9. **Tabela nova aditiva `UserScreenPreference`** (ADR 0002): uma linha por usuário e por tela, com `userId`, `screen`, `data` (JSON) e `updatedAt`, único por (`userId`, `screen`), `onDelete: Cascade` com o `User`. Migração em SQL sem backfill; padrão das notificações.
+10. **Rotas autenticadas** `GET /me/screen-preferences/:screen` e `PUT /me/screen-preferences/:screen`, protegidas por `JwtAuthGuard`, que agem sempre com o id do usuário do token, nunca com id da URL ou do corpo. Telas aceitas: `organizations`, `contracts`, `service-desks`, `tickets-list`, `tickets-kanban`; outra tela devolve 404 e não grava. `GET` sem linha devolve preferência vazia. O `PUT` substitui o `data` do usuário naquela tela (vale a última gravação).
+11. **Formato validado no servidor** (Q14: todas as preferências do hook entram): `grid.columnVisibility` (mapa de id para booleano, até 200), `grid.density` (`compact` ou `comfortable`), `grid.columnOrder` (até 200 ids), `form.layout`, `viewMode`, `savedFilters` (até 50, `name` até 120 caracteres), `groupBy` (até 64) e `collapsed` (mapa de id da coluna para booleano, até 100, ids de até 64 caracteres). Corpo total até 64 KB. Campo desconhecido ou valor de tipo errado devolve 400.
+12. **`useUserScreenConfig` lê e grava no servidor** e mantém a mesma assinatura para as cinco telas. A tela espera a leitura antes de desenhar (esqueleto, que o Kanban e a Lista já têm). Cada mudança aparece na hora e é gravada em seguida (`PUT`, junta cliques em 400 ms). Se a leitura ou a gravação falhar, a tela segue com os padrões e com as escolhas em memória, sem alerta bloqueante, e a próxima mudança tenta gravar de novo.
+13. **Importação única do navegador.** Se o servidor não tem linha daquela tela para o usuário e o `localStorage` tem a chave `aponta_screen_config_<userId>_<tela>`, o hook envia esse conteúdo ao servidor e passa a usá-lo; depois da gravação confirmada a chave é apagada, e o `localStorage` não é mais lido nem escrito pelo hook. Conteúdo inválido no `localStorage` é descartado (padrões).
+14. **Recolhimento no servidor (Q12b).** O mapa `collapsed` da tela `tickets-kanban` guarda só o que o usuário mexeu; coluna sem entrada usa o padrão do item 6; id de estágio que não existe mais é ignorado na leitura.
+15. **Sem feature flag:** sem efeito externo. Sem dado de cliente nem sensível. Escopo de dados é só o do próprio usuário (sem organização/tenant cruzado).
+
+## Acceptance criteria
+
+Ticket 1 (tela):
+
+- AC-01: `styles.css` define `--control-height-toolbar: 36px` sem alterar `--control-height-md` (42 px) nem `--control-height-compact` (32 px); a partir de `sm`, título/busca/"Busca avançada", Lista/Kanban, Mesa, Ordenar e Configurações usam o token de 36 px, e atalhos, "Exibir colunas" e "Agrupar por" usam 32 px; abaixo de `sm`, esses controles têm `min-h-11` (44 px).
+- AC-02: `EzSegmented` aceita `size` (`default` mantém 42 px; `toolbar` 36 px a partir de `sm` e 44 px abaixo), a story cobre os dois tamanhos e os outros usos do componente seguem em 42 px.
+- AC-03: o cabeçalho quebra em linhas inteiras sem cortar controle: abaixo de 640 px busca e "Busca avançada" em largura total e, no Kanban, a Mesa em largura total e Ordenar e Configurações lado a lado; de 640 a 1023 px a busca em largura total embaixo do título.
+- AC-04: o seletor de Mesa do Kanban tem fundo branco, borda `brand-500` e texto `brand-700` (contraste mínimo de 4,5:1 sobre o branco, tokens lidos de `styles.css`), hover e foco visíveis, e não usa `bg-brand-500`; nenhum outro controle da barra é preenchido.
+- AC-05: com agrupamento por Status, o cartão não renderiza `TicketStatusTag`, o chip de SLA ocupa a linha da tag à direita do cliente e o rodapé só traz o responsável; sem SLA a linha tem só o cliente; com agrupamento por Estágio, Responsável ou Prioridade o cartão mantém a tag de status.
+- AC-06: a tag de status e a de prioridade não quebram em duas linhas (`whitespace-nowrap`), nos cartões e na Lista, sem renomear nenhum status.
+- AC-07: por status, Resolvido e Fechado abrem recolhidos; com Mesa selecionada, abrem recolhidos os estágios com `isFinal`; um clique no botão de expandir (com nome acessível que contém o rótulo da coluna) expande, e outro recolhe; a coluna recolhida não aceita soltar cartão; as demais colunas abrem expandidas.
+- AC-08: a partir de `lg`, as faixas recolhidas ficam fixas na borda direita do quadro, o quadro usa `scroll-snap-type: proximity` e `scroll-padding` para as faixas, e abaixo de `lg` as faixas ficam no fim do quadro sem fixar, com colunas de 80vw (máximo 320 px); se o teste de arrastar um cartão até a borda a 1440 px falhar, vale o plano B do item 7 e a troca é registrada no PR.
+- AC-09: medido em Chromium a 1440×900, 1024×768 e 390×844 com dados sintéticos (evidência técnica, não gate): alturas dos controles, ausência de quebra das tags, largura do quadro contra a área visível, faixas visíveis na borda a 1440 px e alvos de 44 px a 390 px.
+
+Ticket 2 (preferências no servidor):
+
+- AC-10: a migração cria `UserScreenPreference` (único por `userId` e `screen`, `onDelete: Cascade`), é aditiva, aplica em banco isolado e não altera tabela existente.
+- AC-11: `GET` e `PUT` de `/me/screen-preferences/:screen` exigem autenticação (sem token, 401), usam só o id do token, aceitam apenas as cinco telas (outra devolve 404 e não grava) e `GET` sem linha devolve preferência vazia.
+- AC-12: o servidor valida o formato (limites do item 11) e devolve 400 para campo desconhecido, tipo errado, mais de 100 entradas em `collapsed`, id com mais de 64 caracteres ou corpo acima de 64 KB; um corpo válido é gravado e relido igual.
+- AC-13: um usuário não lê nem grava a preferência de outro: duas contas gravam a mesma tela e cada uma lê só a sua; nenhuma rota aceita id de usuário.
+- AC-14: `useUserScreenConfig` mantém a assinatura para as cinco telas, lê do servidor antes de a tela desenhar, grava cada mudança no servidor com espera de 400 ms e deixa de usar o `localStorage` depois da importação; os testes existentes das cinco telas seguem verdes.
+- AC-15: sem linha no servidor e com configuração no `localStorage` do usuário, a primeira leitura envia a configuração ao servidor, usa-a e apaga a chave só depois da gravação confirmada; conteúdo inválido no `localStorage` é descartado e a tela usa os padrões.
+- AC-16: se a leitura ou a gravação falhar, a tela abre e funciona com os padrões e as escolhas em memória, sem alerta bloqueante, e a próxima mudança tenta gravar de novo.
+- AC-17: o recolhimento de cada coluna do Kanban é salvo e relido por usuário no mapa `collapsed`; coluna sem entrada usa o padrão do AC-07; id de estágio inexistente é ignorado; o recolhimento de um usuário não afeta o de outro.
+
+## Testing Decisions
+
+- **O que é um bom teste:** observa comportamento externo (o que a tela e a API devolvem), não detalhe de implementação. Alturas reais e quebra de linha não se medem em jsdom: o contrato de classes e tokens é testado em componente e as medidas vão como evidência técnica do navegador.
+- **Seams (confirmadas no Q10 e no Q15):** (1) teste de componente com vitest e Testing Library em `TicketsHeader`, `TicketList`, `TicketKanban`, `TicketKanbanCard`, `EzSegmented` e no hook `useUserScreenConfig`; (2) teste de service e de controller em jest na API, como `notifications.service.spec.ts` e `notifications.controller.spec.ts`; (3) medição renderizada em Chromium a 1440, 1024 e 390 px por script, como os `scripts/*_responsive_check.mjs` da DMTE-529, DMTE-531 e DMTE-541, anexada ao PR.
+- **Ticket 1:** AC-01 a AC-08 em testes de componente (classes e tokens, sticky, ausência de `bg-brand-500`, tag ausente em modo status e presente nos outros, estado recolhido inicial e clique, drop desativado, nome acessível, contraste pelos tokens de `styles.css` como em `TicketTags.test.tsx`); AC-09 pelo script de medição novo `scripts/tickets_responsive_check.mjs`, com o teste de arrastar até a borda. `scripts/check_tickets_proportion.py` e seu teste atualizados para o token de 36 px, e `scripts/check_tickets_palette.py` segue passando.
+- **Ticket 2:** AC-10 a AC-13 em jest (service, controller, validação, isolamento entre dois usuários, tela fora da lista, corpo inválido) mais a migração aplicada em banco isolado por `scripts/e2e_isolated.sh`; AC-14 a AC-17 em teste de componente e de hook (leitura antes de desenhar, gravação com espera, importação do `localStorage`, falha de rede sem quebrar a tela, recolhimento por usuário).
+- **Arte anterior:** `TicketKanban.test.tsx` (recolher coluna, DMTE-496), `TicketList.test.tsx`, `TicketsHeader.test.tsx`, `EzSegmented.test.tsx`, `notifications.*.spec.ts`.
+
+## Out of Scope
+
+Três "Tickets" na tela (Q6); rótulos curtos de status (Q4); alternativa ao arrastar para mover cartão (lacuna conhecida, WCAG 2.5.7); lista em cartões no celular; ordem das colunas de status; qualquer mudança de regra de negócio, de SLA ou de permissão; preferências de telas que não usam `useUserScreenConfig`; sincronização em tempo real entre abas (vale a última gravação).
+
+## Further Notes
+
+- **Riscos.** (a) Faixa fixa com arrastar-e-soltar e rolagem: sem documentação oficial que cubra a combinação (pesquisa), por isso o teste real e o plano B. (b) Migração em produção: tabela nova e aditiva, sem backfill, sem bloqueio de tabela existente; o CD valida em staging antes da produção. (c) Importação do `localStorage`: se a gravação falhar a chave fica e a importação tenta de novo na próxima leitura. (d) Dois computadores abertos ao mesmo tempo: vale a última gravação, risco aceito. (e) `check_tickets_proportion.py` hoje só aceita 32 e 42 px por `h-[Npx]`; o token de 36 px passa por ele e a escala D6 é atualizada no comentário de `styles.css`. (f) A SPEC amplia o Q11 (um ticket) para dois tickets por decisão do Q13.
+- **Fatos do código** (base `a403a99`): `TicketKanban.tsx` com `statusColumns` (9), `KANBAN_COLUMN_CLASS` (`lg:min-w-[220px] lg:flex-1`), `CollapsedColumn` (faixa de 48 px), `collapsedColumnIds` (vazio); `TicketKanbanCard.tsx` com `tagField` padrão `'status'`; `useUserScreenConfig` no `localStorage`; `TicketStage.isFinal` no schema. Medidas renderizadas (altura dos controles, 2108 px do quadro, quebra de tag) vêm da auditoria DMTE-517 e serão refeitas pelo AC-09.
+- **Aceite visual** é do Alfredo; capturas e medições são evidência técnica.
