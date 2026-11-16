@@ -136,13 +136,14 @@ describe('EzEntityToolbar on phones (DMTE-541 AC-12)', () => {
     />
   );
 
-  it('scrolls in a single row below 640 px and wraps from 640 px up', () => {
+  it('scrolls the buttons in a single row below 640 px and wraps from 640 px up', () => {
     render(fullToolbar);
-    const bar = screen.getByTestId('ez-entity-toolbar');
-    expect(bar).toHaveClass('max-sm:flex-nowrap', 'max-sm:overflow-x-auto');
-    for (const group of Array.from(bar.children)) {
+    const [row] = Array.from(screen.getByTestId('ez-entity-toolbar').children);
+    expect(row).toHaveClass('max-sm:overflow-x-auto');
+    for (const group of Array.from(row.children)) {
       expect(group).toHaveClass('shrink-0');
     }
+    expect(screen.getByTestId('ez-toolbar-filter-panel-button').parentElement).toHaveClass('max-sm:flex-nowrap');
   });
 
   it('gives every toolbar button a 44 px minimum size below 640 px and keeps the current size from there', () => {
@@ -165,5 +166,48 @@ describe('EzEntityToolbar on phones (DMTE-541 AC-12)', () => {
     expect(screen.getByTestId('ez-toolbar-actions-dropdown')).toHaveClass('max-sm:fixed', 'max-sm:inset-x-3', 'max-sm:bottom-3');
     await user.click(screen.getByTestId('ez-toolbar-mode-menu-button'));
     expect(screen.getByTestId('ez-toolbar-mode-dropdown')).toHaveClass('max-sm:fixed', 'max-sm:inset-x-3', 'max-sm:bottom-3');
+  });
+});
+
+describe('EzEntityToolbar record count on phones (DMTE-531 AC-01, AC-02)', () => {
+  const renderBar = (recordCountText?: string) =>
+    render(
+      <EzEntityToolbar
+        viewMode="GRID"
+        onToggleViewMode={vi.fn()}
+        onToggleFilter={vi.fn()}
+        onInsert={vi.fn()}
+        onOpenScreenConfig={vi.fn()}
+        recordCountText={recordCountText}
+      />,
+    );
+
+  it('puts the count in its own row, outside the row that scrolls', () => {
+    renderBar('1 - 4 de 4');
+    const bar = screen.getByTestId('ez-entity-toolbar');
+    const count = screen.getByTestId('ez-toolbar-record-count');
+    const [row] = Array.from(bar.children);
+
+    expect(count.parentElement).toBe(bar);
+    expect(row).toContainElement(screen.getByTestId('ez-toolbar-filter-panel-button'));
+    expect(row).not.toContainElement(count);
+    expect(count).toHaveClass('max-sm:self-end');
+    for (let node: HTMLElement | null = count; node && node !== bar.parentElement; node = node.parentElement) {
+      expect(node.className).not.toContain('overflow-x-auto');
+    }
+  });
+
+  it('stacks the rows below 640 px and keeps one row from 640 px up', () => {
+    renderBar('1 - 4 de 4');
+    const bar = screen.getByTestId('ez-entity-toolbar');
+    expect(bar).toHaveClass('max-sm:flex-col');
+    expect(bar.children[0]).toHaveClass('sm:contents');
+    expect(screen.getByTestId('ez-toolbar-record-count')).toHaveClass('sm:border-l', 'sm:-ml-1.5');
+  });
+
+  it('renders no count row when there is no count text', () => {
+    renderBar();
+    expect(screen.queryByTestId('ez-toolbar-record-count')).not.toBeInTheDocument();
+    expect(screen.getByTestId('ez-entity-toolbar').children).toHaveLength(1);
   });
 });

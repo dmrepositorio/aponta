@@ -1,0 +1,89 @@
+{
+  "version": 1,
+  "delivery": "DMTE-531",
+  "repository": "dmrepositorio/aponta",
+  "github_issue": 282,
+  "multica_id": "01a1e002-9828-735f-bb7a-2803fe5d86fa",
+  "cycle": "2026-11-09/2026-11-22",
+  "tier": 2,
+  "criteria": [
+    {
+      "id": "AC-01",
+      "description": "abaixo de 640 px o contador do `EzEntityToolbar` fica numa linha própria, fora do elemento que rola (nenhum ancestral do contador até a raiz da toolbar tem `overflow-x-auto`), com `max-sm` para a linha própria; a linha de botões continua rolável e sem quebra (`max-sm:overflow-x-auto` na linha; `max-sm:flex-nowrap` no grupo da esquerda).",
+      "tests": [
+        "apps/web/src/components/ds/EzEntityToolbar.test.tsx: puts the count in its own row, outside the row that scrolls",
+        "apps/web/src/components/ds/EzEntityToolbar.test.tsx: scrolls the buttons in a single row below 640 px and wraps from 640 px up",
+        "apps/web/src/components/ds/EzEntityToolbar.test.tsx: stacks the rows below 640 px and keeps one row from 640 px up"
+      ]
+    },
+    {
+      "id": "AC-02",
+      "description": "a partir de 640 px a toolbar é igual à atual: o contador segue à direita dos botões da direita, com a borda esquerda; sem prop nova; ids de teste, rótulos e ordem de foco dos botões iguais.",
+      "tests": [
+        "apps/web/src/components/ds/EzEntityToolbar.test.tsx: stacks the rows below 640 px and keeps one row from 640 px up",
+        "apps/web/src/components/ds/EzEntityToolbar.test.tsx: renders no count row when there is no count text",
+        "apps/web/src/components/ds/EzEntityToolbar.test.tsx: renders all left and right buttons according to specification"
+      ]
+    },
+    {
+      "id": "AC-03",
+      "description": "em Chromium a 390 px, na lista da Mesa, no formulário da Mesa, em Contratos e em Clientes, a toolbar ocupa no máximo 2 linhas e o contador aparece inteiro dentro da janela.",
+      "tests": [
+        "scripts/mesa_responsive_check.mjs: Chromium a 390 px, toolbar de Mesa (lista e formulário), Contratos e Clientes em no máximo 2 linhas, contador inteiro"
+      ],
+      "tdd_required": false,
+      "reason": "Medida de layout em navegador (jsdom não calcula layout); o comportamento causador (contador fora da linha que rola) é coberto por AC-01 e AC-02"
+    },
+    {
+      "id": "AC-04",
+      "description": "em Chromium a 1440, 1024, 768 e 640 px, os retângulos dos elementos com `data-testid` da toolbar de Mesa, Contratos e Clientes (lista e formulário) são idênticos aos da base `c786183` (`--compare` do script contra `.delivery/evidence/DMTE-531/layout-base.json`).",
+      "tests": [
+        "scripts/mesa_responsive_check.mjs: Chromium a 1440, 1024, 768 e 640 px, retângulos da toolbar iguais à base c786183 (--compare contra .delivery/evidence/DMTE-531/layout-base.json)"
+      ],
+      "tdd_required": false,
+      "reason": "Medida de layout em navegador (jsdom não calcula layout); o comportamento causador (contador fora da linha que rola) é coberto por AC-01 e AC-02"
+    },
+    {
+      "id": "AC-05",
+      "description": "na Mesa, as abas não têm `flex-wrap` nem `overflow-visible`; em Chromium a 390 px as 12 abas ocupam uma linha com rolagem horizontal e a aba ativa fica dentro da área visível; o primeiro campo do formulário começa dentro da primeira tela (abaixo de 844 px) e a página não ganha rolagem horizontal nos três tamanhos.",
+      "tests": [
+        "apps/web/src/pages/ServiceDesksPage.test.tsx: DMTE-531 AC-05, AC-06: the desk tabs scroll in one row instead of wrapping, with the same 12 tabs in the same order",
+        "scripts/mesa_responsive_check.mjs: Chromium a 390 px, abas em 1 linha com rolagem, formulário na primeira tela, sem rolagem horizontal da página"
+      ]
+    },
+    {
+      "id": "AC-06",
+      "description": "`EzTabs.tsx` não é alterado; sem mudança de API, schema, regra, rótulos ou ordem das abas.",
+      "tests": [
+        "apps/web/src/pages/ServiceDesksPage.test.tsx: DMTE-531 AC-05, AC-06: the desk tabs scroll in one row instead of wrapping, with the same 12 tabs in the same order"
+      ]
+    },
+    {
+      "id": "AC-07",
+      "description": "o DS documenta a mudança em `docs/architecture/03-sankhya-ds-parity.md` e o `EzEntityToolbar` ganha story (hoje não tem) com o contador; o caso estreito se vê reduzindo a janela (o Storybook do projeto não tem addon de viewport).",
+      "tests": [
+        "apps/web/src/components/ds/EzEntityToolbar.stories.tsx: story Default (build do Storybook)",
+        "docs/architecture/03-sankhya-ds-parity.md: registro da mudança do EzEntityToolbar"
+      ],
+      "tdd_required": false,
+      "reason": "Documentação e story do DS: sem comportamento novo; a story é conferida pelo build do Storybook no CI"
+    }
+  ],
+  "spec": "docs/delivery/specs/DMTE-531.md",
+  "tdd": {
+    "mode": "required",
+    "red": ".delivery/evidence/DMTE-531/red.json",
+    "green": ".delivery/evidence/DMTE-531/green-r3.json"
+  },
+  "design_system": {
+    "applicable": true,
+    "reused": [
+      "EzEntityToolbar",
+      "EzTabs"
+    ],
+    "reason": "Reaproveita EzEntityToolbar (contador em linha própria abaixo de sm, sem prop nova) e EzTabs pills (rolagem que o componente já tem, sem alterá-lo); só tokens já definidos; nenhum componente ou token novo no DS.",
+    "stories": [
+      "apps/web/src/components/ds/EzEntityToolbar.stories.tsx"
+    ]
+  }
+}

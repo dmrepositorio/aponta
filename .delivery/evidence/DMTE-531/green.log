@@ -1,0 +1,16 @@
+
+ RUN  v4.1.11 /home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-531-f644da207a23/workdir/aponta/apps/web
+
+ ✓ |web| src/components/ds/EzEntityToolbar.test.tsx (10 tests) 666ms
+ ✓ |web| src/pages/ServiceDesksPage.test.tsx (21 tests) 4624ms
+     ✓ should open the create form only after clicking Incluir, and create a new service desk  346ms
+     ✓ should link a service desk to a client and save its SLA overrides  507ms
+     ✓ filters the grid by search text and status (Sankhya filter drawer)  582ms
+     ✓ filters dynamically by any column using the rule builder (Sankhya Filtros parity)  632ms
+     ✓ saves, applies, and deletes a saved filter from the drawer (Sankhya saved filters parity)  479ms
+
+ Test Files  2 passed (2)
+      Tests  31 passed (31)
+   Start at  09:22:22
+   Duration  10.43s (transform 4.35s, setup 190ms, import 5.76s, tests 5.29s, environment 1.09s)
+
