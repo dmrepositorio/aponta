@@ -23,6 +23,10 @@ const agents = [
   { id: 'a1', name: 'Ana Silva' },
   { id: 'a2', name: 'Bruno Costa' },
 ];
+const stages = [
+  { id: 's-n1', name: 'N1', position: 1, isInitial: true, isFinal: false, transitionToIds: ['s-n2'] },
+  { id: 's-n2', name: 'N2', position: 2, isInitial: false, isFinal: false, transitionToIds: ['s-n1'] },
+];
 const inHours = (hours) => new Date(Date.now() + hours * 3600_000).toISOString();
 const tickets = Array.from({ length: 8 }, (_, i) => ({
   id: `t${i}`,
@@ -36,6 +40,7 @@ const tickets = Array.from({ length: 8 }, (_, i) => ({
   agentId: agents[i % 2].id,
   agent: agents[i % 2],
   serviceDeskId: 'sd0',
+  stageId: i % 2 === 0 ? 's-n1' : 's-n2',
   responseDeadline: inHours(i % 3 === 0 ? -1 : 2),
   resolveDeadline: inHours(30),
   responseSlaStatus: i % 3 === 0 ? 'BREACHED' : 'ON_TRACK',
@@ -53,6 +58,7 @@ function respond(url) {
   const p = new URL(url).pathname.replace(/^\/api/, '');
   if (p === '/tickets') return { data: tickets, meta: { total: tickets.length, page: 1, limit: 100, totalPages: 1 } };
   if (p === '/service-desks') return [{ id: 'sd0', name: 'Suporte N1' }];
+  if (p === '/service-desks/sd0/stages') return stages;
   return /s$/.test(p) ? [] : {};
 }
 
@@ -117,8 +123,10 @@ async function run(baseUrl) {
       }, fakeJwt());
       const page = await context.newPage();
       await page.route('**/api/**', (route) => route.fulfill({ contentType: 'application/json', body: JSON.stringify(respond(route.request().url())) }));
-      await page.goto(`${baseUrl}/tickets?view=kanban`);
+      for (const [view, query] of [['por status', ''], ['por estágio (Mesa)', '&serviceDeskId=sd0']]) {
+      await page.goto(`${baseUrl}/tickets?view=kanban${query}`);
       await page.getByTestId('kanban-board').waitFor();
+      await page.getByRole('button', { name: /^Recolher coluna / }).first().waitFor();
 
       const more = page.getByRole('button', { name: 'Mais ações' }).first();
       const collapse = page.getByRole('button', { name: /^Recolher coluna / }).first();
@@ -132,17 +140,26 @@ async function run(baseUrl) {
         if (focus.after === null) problems.push(`${name}: Tab não chegou ao botão`);
         else if (focus.after === focus.before) problems.push(`${name}: sem mudança visível no foco (boxShadow ${focus.after})`);
       }
+      // o cabeçalho do cartão (protocolo + menu) não pode crescer com o alvo de 32 px (base medida: 24 px; com o alvo, 25 px)
+      const headerHeight = await more.evaluate((el) => el.closest('.justify-between').getBoundingClientRect().height);
+      if (headerHeight > 26) problems.push(`cabeçalho do cartão com ${Math.round(headerHeight)} px (base 24, tolerância de 2 px)`);
       const chips = await page.locator('[aria-label^="Resposta:"], [aria-label^="Resolução:"]').evaluateAll((els) =>
-        els.map((el) => ({ text: el.textContent.trim(), overflow: el.closest('[data-testid]')?.scrollWidth > el.closest('[data-testid]')?.clientWidth })),
+        els.map((el) => {
+          const card = el.closest('[data-rfd-draggable-id]')?.getBoundingClientRect();
+          const chip = el.getBoundingClientRect();
+          return { text: el.textContent.trim(), overflow: !card || chip.right > card.right + 0.5 };
+        }),
       );
       const bad = chips.filter((chip) => !/^(Resp\.|Solução)/.test(chip.text));
       if (chips.length === 0) problems.push('nenhum chip de SLA na tela');
+      if (chips.some((chip) => chip.overflow)) problems.push(`${chips.filter((chip) => chip.overflow).length} chip(s) estourando o cartão`);
       if (bad.length > 0) problems.push(`${bad.length} chip(s) sem a palavra curta: ${bad.slice(0, 2).map((c) => c.text).join(' | ')}`);
       console.log(`     chips: ${chips.length}, exemplo "${chips[0]?.text}"`);
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
       if (overflow > 0) problems.push(`rolagem horizontal da página: +${overflow} px`);
-      await page.screenshot({ path: path.join(outDir, `kanban-${width}.png`) });
-      check(`Kanban ${width} px: alvos, foco e chips`, problems);
+      await page.screenshot({ path: path.join(outDir, `kanban-${view.startsWith('por status') ? 'status' : 'estagio'}-${width}.png`) });
+      check(`Kanban ${view} ${width} px: alvos, foco e chips`, problems);
+      }
       await context.close();
     }
   } finally {

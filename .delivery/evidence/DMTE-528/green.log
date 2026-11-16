@@ -1,14 +1,14 @@
 
  RUN  v4.1.11 /home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-528-29490cc8e35d/workdir/aponta/apps/web
 
- ✓ |web| src/components/ds/EzSlaChip.test.tsx (7 tests) 168ms
- ✓ |web| src/components/tickets/TicketKanbanCard.test.tsx (33 tests) 670ms
- ✓ |web| src/components/tickets/TicketKanban.test.tsx (76 tests) 5491ms
+ ✓ |web| src/components/ds/EzSlaChip.test.tsx (7 tests) 150ms
+ ✓ |web| src/components/tickets/TicketKanbanCard.test.tsx (33 tests) 748ms
+ ✓ |web| src/components/tickets/TicketKanban.test.tsx (76 tests) 5808ms
 
  Test Files  3 passed (3)
       Tests  116 passed (116)
-   Start at  19:10:25
-   Duration  9.15s (transform 3.50s, setup 642ms, import 6.12s, tests 6.33s, environment 1.61s)
+   Start at  19:14:07
+   Duration  9.95s (transform 3.61s, setup 503ms, import 6.16s, tests 6.71s, environment 2.60s)
 
 stderr | src/components/tickets/TicketKanban.test.tsx > TicketKanban > fallback por status (nenhuma mesa selecionada) > shows a skeleton loading state with every column label while isLoading
 An update to TicketKanban inside a test was not wrapped in act(...).

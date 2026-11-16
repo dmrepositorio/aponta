@@ -52,7 +52,7 @@ const FINAL_STATUSES: TicketStatus[] = ['RESOLVED', 'CLOSED'];
 const STRIP_STEP_PX = 64;
 const stripRight = (collapsedIds: string[], id: string) =>
   (collapsedIds.length - 1 - collapsedIds.indexOf(id)) * STRIP_STEP_PX;
-/** Alvo de 32 px (WCAG 2.5.8) com margem negativa para o cabeçalho da coluna manter a altura. */
+/** Alvo de 32 px (WCAG 2.5.8) com margem negativa (vertical e à esquerda) para o cabeçalho da coluna manter a altura e o ícone no mesmo lugar. */
 const collapseButtonClass =
   '-my-1.5 -ml-1.5 flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-gray-400 hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500';
 const boardStyle = (collapsedIds: string[]) =>

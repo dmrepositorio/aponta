@@ -13,8 +13,8 @@ Base `a3866b3`:
 
 ## Decisões (proposta do planejamento dentro do pedido aprovado na auditoria)
 
-1. **Menu "Mais ações": alvo de 32×32 px** (`h-8 w-8`), margem negativa (`-my-1.5 -mr-1.5`) para o cabeçalho do cartão não crescer. Densidade da DMTE-527 preservada; o foco já é do `EzDropdown` (`focus-visible:ring-2`).
-2. **Recolher coluna: alvo de 32×32 px**, `aria-label="Recolher coluna <nome>"` (mesma forma do "Expandir coluna <nome>"), `focus-visible:ring-2 focus-visible:ring-brand-500` como no botão de expandir, ícone de 14 px mantido. Margem negativa para a linha do cabeçalho manter a altura.
+1. **Menu "Mais ações": alvo de 32×32 px** (`h-8 w-8`), margem negativa (`-my-1.5 -mr-1.5`) para o cabeçalho do cartão não crescer (medido: 24 px antes, 25 px depois). Densidade da DMTE-527 preservada; o foco já é do `EzDropdown` (`focus-visible:ring-2`).
+2. **Recolher coluna: alvo de 32×32 px**, `aria-label="Recolher coluna <nome>"` (mesma forma do "Expandir coluna <nome>"), `focus-visible:ring-2 focus-visible:ring-brand-500` como no botão de expandir, ícone de 14 px mantido. Margem negativa vertical e à esquerda (`-my-1.5 -ml-1.5`): a vertical mantém a altura da linha do cabeçalho; a esquerda mantém o ícone no lugar de antes (o ícone de 14 px fica centrado no alvo de 32 px).
 3. **Avatares do filtro: foco visível e sem sobreposição quando focado.** `focus-visible:z-10 focus-visible:outline-none focus-visible:ring-brand-600` sobre o `ring-2` existente (o anel muda de branco para a cor da marca e o avatar vai para a frente). Alvo de 28 px mantido. Quando o avatar está selecionado, o anel `brand-500` atual continua.
 4. **Chip de SLA: palavra curta antes do tempo.** "Resp." para resposta e "Solução" para resolução (as palavras do pedido da auditoria): `Resp. 17h18`, `Solução -1h00`. Sem prazo, só a palavra. `aria-label` e `title` mantêm o texto completo de hoje; o ícone fica, `aria-hidden`. Não altera props nem tokens de cor.
 5. Sem mudança de API, schema, tokens, tamanho do cartão além do que o chip ganha em largura (as duas pílulas já quebram linha com `flex-wrap`), nem de outro componente do DS.
@@ -27,7 +27,7 @@ Base `a3866b3`:
 - AC-04: o chip de SLA mostra "Resp." (resposta) ou "Solução" (resolução) antes do tempo; sem prazo mostra só a palavra; `aria-label` e `title` continuam "Resposta: …" e "Resolução: …" como antes.
 - AC-05: o comportamento existente continua: os testes anteriores de `TicketKanban`, `TicketKanbanCard` e `EzSlaChip` passam, exceto a asserção de chip sem prazo "só ícone" (`textContent` vazio), que muda para a palavra curta por decisão deste AC-04.
 - AC-06: nenhum arquivo de `apps/api` nem de `apps/web-e2e` é alterado e nenhum token novo é criado.
-- AC-07: no navegador (Chromium, 1440×900 e 390×844, dados fictícios), os alvos medidos de "Mais ações" e de recolher coluna são de pelo menos 24×24 px (esperado 32×32), o foco por Tab mostra anel nos três botões e o chip mostra a palavra curta antes do tempo sem estourar o cartão.
+- AC-07: no navegador (Chromium, 1440×900 e 390×844, dados fictícios), os alvos medidos de "Mais ações" e de recolher coluna são de pelo menos 24×24 px (esperado 32×32), o foco por Tab mostra anel nos três botões o cabeçalho do cartão não passa de 26 px (base de 24 px), nas duas visões (por status e por estágio com Mesa), e o chip mostra a palavra curta antes do tempo sem sair do cartão.
 
 ## Testes (seam: componentes renderizados com Testing Library; vitest; o padrão dos arquivos existentes)
 
