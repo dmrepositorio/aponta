@@ -20,7 +20,8 @@
       "tests": [
         "apps/web/src/pages/OrganizationsPage.test.tsx: AC-02: Razão Social stays editable by click, and a failed PATCH shows the reason and the cell keeps the previous value",
         "apps/web/src/pages/OrganizationsPage.test.tsx: AC-02: a failed PATCH without a message from the API still shows a visible error",
-        "apps/web/src/pages/OrganizationsPage.test.tsx: AC-02: a successful PATCH shows no notice"
+        "apps/web/src/pages/OrganizationsPage.test.tsx: AC-02: a successful PATCH shows no notice",
+        "apps/web/src/components/ds/EzEntityGrid.test.tsx: AC-02: typing a space in an editable cell does not toggle the row selection or lose the space"
       ]
     },
     {
@@ -130,8 +131,8 @@
   "spec": "docs/delivery/specs/DMTE-541.md",
   "tdd": {
     "mode": "required",
-    "red": ".delivery/evidence/DMTE-541/red.json",
-    "green": ".delivery/evidence/DMTE-541/green.json"
+    "red": ".delivery/evidence/DMTE-541/red-r2.json",
+    "green": ".delivery/evidence/DMTE-541/green-r2.json"
   },
   "design_system": {
     "applicable": true,

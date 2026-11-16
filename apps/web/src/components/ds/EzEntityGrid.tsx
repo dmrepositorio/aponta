@@ -25,6 +25,7 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   GroupingState,
+  RowData,
   RowSelectionState,
   SortingState,
   VisibilityState,
@@ -56,6 +57,18 @@ import { EzGridWrapper } from './EzGrid';
 import { EzSelect } from './EzSelect';
 import { EzTaskbar, EzTaskbarButton } from './EzTaskbar';
 import { EzFilterBar, FilterDef } from './EzFilterBar';
+
+declare module '@tanstack/react-table' {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  interface ColumnMeta<TData extends RowData, TValue> {
+    /** One line with ellipsis; the full text goes in `title`. The column `size` is its maximum width. */
+    truncate?: boolean;
+    /** Right-aligns header and cells, with tabular numerals (counts, amounts). */
+    align?: 'right';
+    /** Hidden below 640 px. */
+    hideBelowSm?: boolean;
+  }
+}
 
 /**
  * Generic, server-agnostic data grid built by composing the existing DS
@@ -419,7 +432,7 @@ function EzColumnFilterPopover({
           checked={isAllVisibleSelected}
           onChange={toggleSelectAll}
           data-testid="ez-grid-column-filter-select-all"
-          className="w-3.5 h-3.5 rounded border-gray-300 text-brand-600 focus:ring-brand-500 cursor-pointer"
+          className="w-3.5 h-3.5 rounded border-gray-300 text-brand-600 accent-brand-600 focus:ring-brand-500 cursor-pointer"
         />
         <label htmlFor={`filter-select-all-${columnTitle}`} className="cursor-pointer font-medium">
           (Selecionar tudo)
@@ -441,7 +454,7 @@ function EzColumnFilterPopover({
                   checked={selected.has(item.value)}
                   onChange={() => toggleItem(item.value)}
                   data-testid={`ez-grid-column-filter-item-${item.value}`}
-                  className="w-3.5 h-3.5 rounded border-gray-300 text-brand-600 focus:ring-brand-500 cursor-pointer"
+                  className="w-3.5 h-3.5 rounded border-gray-300 text-brand-600 accent-brand-600 focus:ring-brand-500 cursor-pointer"
                 />
                 <span className="truncate text-gray-700" title={item.value}>
                   {item.value}
@@ -1080,7 +1093,7 @@ function EzGridColumnConfigModal({
                     checked={c.isVisible}
                     onChange={() => onToggleColumn(c.id)}
                     data-testid={`ez-grid-config-toggle-${c.id}`}
-                    className="w-3.5 h-3.5 rounded border-gray-300 text-brand-600 focus:ring-brand-500 cursor-pointer"
+                    className="w-3.5 h-3.5 rounded border-gray-300 text-brand-600 accent-brand-600 focus:ring-brand-500 cursor-pointer"
                   />
                   <span className="text-[12px] text-gray-800 font-medium">{c.label}</span>
                 </div>
@@ -1138,6 +1151,7 @@ function EzEntityGridInner<T>(
     showRowNumbers = false,
     enableColumnGrouping = true,
     rowNumberLabel = '#',
+    compactBelowSm = false,
     onSelectionChange,
     onRowDoubleClick,
     pageSize,
@@ -1264,6 +1278,7 @@ function EzEntityGridInner<T>(
     if (showRowNumbers) {
       leadingCols.push({
         id: '__rowNumber__',
+        meta: compactBelowSm ? { hideBelowSm: true } : undefined,
         enableSorting: false,
         enableResizing: false,
         size: 56,
@@ -1285,6 +1300,7 @@ function EzEntityGridInner<T>(
     if (selectable) {
       leadingCols.push({
         id: 'select',
+        meta: compactBelowSm ? { hideBelowSm: true } : undefined,
         enableSorting: false,
         enableResizing: false,
         size: 44,
@@ -1296,7 +1312,7 @@ function EzEntityGridInner<T>(
             aria-label="Selecionar todas as linhas"
             checked={table.getIsAllRowsSelected()}
             onChange={table.getToggleAllRowsSelectedHandler()}
-            className="w-4 h-4 rounded border-gray-300 text-brand-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-200"
+            className="w-4 h-4 rounded border-gray-300 text-brand-600 accent-brand-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-200"
           />
         ),
         cell: ({ row }) => (
@@ -1305,13 +1321,13 @@ function EzEntityGridInner<T>(
             aria-label="Selecionar linha"
             checked={row.getIsSelected()}
             onChange={row.getToggleSelectedHandler()}
-            className="w-4 h-4 rounded border-gray-300 text-brand-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-200"
+            className="w-4 h-4 rounded border-gray-300 text-brand-600 accent-brand-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-200"
           />
         ),
       });
     }
     return [...leadingCols, ...columns];
-  }, [columns, selectable, showRowNumbers, rowNumberLabel]);
+  }, [columns, selectable, showRowNumbers, rowNumberLabel, compactBelowSm]);
 
   const table = useReactTable<T>({
     data,
@@ -1637,6 +1653,8 @@ function EzEntityGridInner<T>(
   // Keyboard navigation handler
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTableSectionElement>) => {
     if (!enableKeyboardNavigation) return;
+    // Quem digita numa célula editável não navega nem seleciona linha (o espaço digitado se perdia).
+    if ((e.target as HTMLElement).closest('input, textarea, select')) return;
     const rows = table.getRowModel().rows;
     if (rows.length === 0) return;
 
@@ -1743,6 +1761,8 @@ function EzEntityGridInner<T>(
                       currentDensity === 'compact' ? 'py-1.5' : 'py-3',
                       !isLast && 'border-r border-gray-100',
                       isLast && showGridCornerMenu && 'pr-10',
+                      header.column.columnDef.meta?.hideBelowSm && 'hidden sm:table-cell',
+                      header.column.columnDef.meta?.align === 'right' && 'text-right',
                       canSort && 'cursor-pointer',
                       isDraggable && 'cursor-grab active:cursor-grabbing',
                       dragOverColId === header.column.id && 'border-l-2 border-l-brand-600 bg-brand-50/50',
@@ -1768,7 +1788,12 @@ function EzEntityGridInner<T>(
                     )}
 
                     <div className="flex items-center justify-between gap-1.5 w-full">
-                      <span className="inline-flex items-center gap-1 truncate">
+                      <span
+                        className={cn(
+                          'inline-flex items-center gap-1 truncate',
+                          header.column.columnDef.meta?.align === 'right' && 'flex-1 justify-end'
+                        )}
+                      >
                         {flexRender(header.column.columnDef.header, header.getContext())}
                         {canSort && (
                           <SortIcon
@@ -1936,19 +1961,25 @@ function EzEntityGridInner<T>(
                   ].map((cell, cellIndex, allCells) => {
                     const pinned = cell.column.getIsPinned();
                     const isLastCell = cellIndex === allCells.length - 1;
+                    const meta = cell.column.columnDef.meta;
                     return (
                       <td
                         key={cell.id}
                         data-pinned={pinned || undefined}
+                        title={meta?.truncate ? String(cell.getValue() ?? '') : undefined}
                         style={{
                           ...pinnedStyle(cell.column.id, pinned),
                           width: cell.column.getSize(),
                           minWidth: cell.column.getSize(),
+                          maxWidth: meta?.truncate ? cell.column.getSize() : undefined,
                         }}
                         className={cn(
                           'px-4 text-[13px] text-gray-900',
                           currentDensity === 'compact' ? 'py-1' : 'py-3',
                           !isLastCell && 'border-r border-gray-100',
+                          meta?.truncate && 'truncate',
+                          meta?.align === 'right' && 'text-right tabular-nums',
+                          meta?.hideBelowSm && 'hidden sm:table-cell',
                           pinned && 'sticky z-10',
                           pinned &&
                             (isSelected

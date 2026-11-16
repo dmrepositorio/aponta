@@ -397,7 +397,7 @@ export function ContractsPage() {
         )}
 
         {mode === 'list' && (
-        <div className="flex flex-1 overflow-hidden min-h-[420px]">
+        <div className="relative flex flex-1 overflow-hidden min-h-[420px]">
           <EzFilterDrawer
             isOpen={isFilterPanelOpen}
             onClose={() => setIsFilterPanelOpen(false)}

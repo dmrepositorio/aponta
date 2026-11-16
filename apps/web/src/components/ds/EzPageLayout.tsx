@@ -27,14 +27,14 @@ export const EzPageHeader = forwardRef<HTMLDivElement, EzPageHeaderProps>(
       <div
         ref={ref}
         className={cn(
-          'flex flex-col w-full bg-white border-b border-gray-200 px-6 py-4 gap-3',
+          'flex flex-col w-full bg-white border-b border-gray-200 px-4 py-2 sm:px-6 gap-3',
           className
         )}
         {...props}
       >
         {breadcrumbs && <div>{breadcrumbs}</div>}
         
-        <div className="flex items-center justify-between min-h-[40px]">
+        <div className="flex items-center justify-between min-h-[32px]">
           <div className="flex items-center gap-3">
             {showBackButton && (
               <button

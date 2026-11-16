@@ -138,13 +138,13 @@ export const EzEntityToolbar = forwardRef<HTMLDivElement, EzEntityToolbarProps>(
         ref={ref}
         data-testid="ez-entity-toolbar"
         className={cn(
-          'flex items-center justify-between gap-3 px-3 py-1.5 bg-white border-b border-gray-200 select-none min-h-[44px]',
+          'flex items-center justify-between gap-3 px-3 py-1.5 bg-white border-b border-gray-200 select-none min-h-[44px] max-sm:flex-nowrap max-sm:overflow-x-auto',
           className
         )}
         {...props}
       >
         {/* ================= LEFT GROUP ================= */}
-        <div className="flex items-center gap-1 flex-wrap">
+        <div className="flex items-center gap-1 flex-wrap max-sm:flex-nowrap shrink-0 sm:shrink">
           {/* 1. Painel de Filtros */}
           {onToggleFilter && (
             <button
@@ -154,6 +154,7 @@ export const EzEntityToolbar = forwardRef<HTMLDivElement, EzEntityToolbarProps>(
               title="Painel de filtros"
               onClick={onToggleFilter}
               className={cn(
+                'max-sm:min-h-11 max-sm:min-w-11',
                 'inline-flex items-center justify-center h-[32px] px-2.5 rounded-[6px] text-[12px] font-medium transition-colors border cursor-pointer',
                 isFilterOpen
                   ? 'bg-brand-50 text-brand-700 border-brand-200 shadow-2xs'
@@ -178,6 +179,7 @@ export const EzEntityToolbar = forwardRef<HTMLDivElement, EzEntityToolbarProps>(
               title={viewMode === 'GRID' ? 'Ver formulário do registro' : 'Ver grade de registros'}
               onClick={() => onToggleViewMode(viewMode === 'GRID' ? 'FORM' : 'GRID')}
               className={cn(
+                'max-sm:min-h-11 max-sm:min-w-11',
                 'inline-flex items-center gap-1.5 px-2.5 h-[30px] rounded-l-[5px] text-[12px] font-medium transition-colors cursor-pointer',
                 viewMode === 'GRID'
                   ? 'text-brand-700 bg-brand-50/50 hover:bg-brand-50'
@@ -205,7 +207,7 @@ export const EzEntityToolbar = forwardRef<HTMLDivElement, EzEntityToolbarProps>(
               title="Opções do modo de visualização"
               aria-expanded={isModeMenuOpen}
               onClick={() => setIsModeMenuOpen((prev) => !prev)}
-              className="inline-flex items-center justify-center w-6 h-[30px] border-l border-gray-200 rounded-r-[5px] text-gray-500 hover:text-gray-900 hover:bg-gray-50 transition-colors cursor-pointer"
+              className="inline-flex items-center justify-center w-6 h-[30px] border-l border-gray-200 rounded-r-[5px] text-gray-500 hover:text-gray-900 hover:bg-gray-50 transition-colors cursor-pointer max-sm:min-h-11 max-sm:min-w-11"
             >
               <ChevronDown className="w-3.5 h-3.5" />
             </button>
@@ -215,7 +217,7 @@ export const EzEntityToolbar = forwardRef<HTMLDivElement, EzEntityToolbarProps>(
               <div
                 data-testid="ez-toolbar-mode-dropdown"
                 role="menu"
-                className="absolute left-0 top-full mt-1 w-52 rounded-[8px] bg-white border border-gray-200 shadow-lg py-1 z-50 text-[12px]"
+                className="absolute left-0 top-full mt-1 w-52 rounded-[8px] bg-white border border-gray-200 shadow-lg py-1 z-50 text-[12px] max-sm:fixed max-sm:inset-x-3 max-sm:bottom-3 max-sm:top-auto max-sm:left-auto max-sm:right-auto max-sm:mt-0 max-sm:w-auto"
               >
                 <button
                   type="button"
@@ -300,7 +302,7 @@ export const EzEntityToolbar = forwardRef<HTMLDivElement, EzEntityToolbarProps>(
               aria-label={insertAriaLabel ?? 'Incluir'}
               title={insertTooltip ?? 'Incluir (Novo registro)'}
               onClick={onInsert}
-              className="inline-flex items-center justify-center h-[32px] w-[32px] rounded-[6px] text-gray-600 hover:text-brand-600 hover:bg-brand-50 border border-gray-200 transition-colors cursor-pointer"
+              className="inline-flex items-center justify-center h-[32px] w-[32px] rounded-[6px] text-gray-600 hover:text-brand-600 hover:bg-brand-50 border border-gray-200 transition-colors cursor-pointer max-sm:min-h-11 max-sm:min-w-11"
             >
               <Plus className="w-4 h-4" />
             </button>
@@ -316,6 +318,7 @@ export const EzEntityToolbar = forwardRef<HTMLDivElement, EzEntityToolbarProps>(
               disabled={!hasPrevious}
               onClick={onPrevious}
               className={cn(
+                'max-sm:min-h-11 max-sm:min-w-11',
                 'inline-flex items-center justify-center h-[30px] w-[30px] rounded-l-[5px] text-gray-600 hover:bg-gray-50 transition-colors',
                 !hasPrevious && 'opacity-40 cursor-not-allowed hover:bg-white'
               )}
@@ -331,6 +334,7 @@ export const EzEntityToolbar = forwardRef<HTMLDivElement, EzEntityToolbarProps>(
               disabled={!hasNext}
               onClick={onNext}
               className={cn(
+                'max-sm:min-h-11 max-sm:min-w-11',
                 'inline-flex items-center justify-center h-[30px] w-[30px] rounded-r-[5px] text-gray-600 hover:bg-gray-50 transition-colors',
                 !hasNext && 'opacity-40 cursor-not-allowed hover:bg-white'
               )}
@@ -349,6 +353,7 @@ export const EzEntityToolbar = forwardRef<HTMLDivElement, EzEntityToolbarProps>(
               disabled={!hasSelection}
               onClick={onDelete}
               className={cn(
+                'max-sm:min-h-11 max-sm:min-w-11',
                 'inline-flex items-center justify-center h-[32px] w-[32px] rounded-[6px] border transition-colors',
                 hasSelection
                   ? 'border-red-200 text-red-600 hover:bg-red-50 cursor-pointer'
@@ -369,6 +374,7 @@ export const EzEntityToolbar = forwardRef<HTMLDivElement, EzEntityToolbarProps>(
               disabled={!hasSelection}
               onClick={onClone}
               className={cn(
+                'max-sm:min-h-11 max-sm:min-w-11',
                 'inline-flex items-center justify-center h-[32px] w-[32px] rounded-[6px] border transition-colors',
                 hasSelection
                   ? 'border-gray-200 text-gray-700 hover:bg-gray-50 cursor-pointer'
@@ -387,7 +393,7 @@ export const EzEntityToolbar = forwardRef<HTMLDivElement, EzEntityToolbarProps>(
               aria-label="Recarregar"
               title="Recarregar dados"
               onClick={onRefresh}
-              className="inline-flex items-center justify-center h-[32px] w-[32px] rounded-[6px] text-gray-600 hover:text-gray-900 hover:bg-gray-50 border border-gray-200 transition-colors cursor-pointer"
+              className="inline-flex items-center justify-center h-[32px] w-[32px] rounded-[6px] text-gray-600 hover:text-gray-900 hover:bg-gray-50 border border-gray-200 transition-colors cursor-pointer max-sm:min-h-11 max-sm:min-w-11"
             >
               <RefreshCw className="w-3.5 h-3.5" />
             </button>
@@ -395,7 +401,7 @@ export const EzEntityToolbar = forwardRef<HTMLDivElement, EzEntityToolbarProps>(
         </div>
 
         {/* ================= RIGHT GROUP ================= */}
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 shrink-0 sm:shrink">
           {/* 8. Botão Ações (menu dropdown) */}
           <div className="relative inline-block" ref={actionsMenuRef}>
             <button
@@ -405,7 +411,7 @@ export const EzEntityToolbar = forwardRef<HTMLDivElement, EzEntityToolbarProps>(
               title="Ações do registro"
               aria-expanded={isActionsMenuOpen}
               onClick={() => setIsActionsMenuOpen((prev) => !prev)}
-              className="inline-flex items-center gap-1.5 h-[32px] px-2.5 rounded-[6px] text-[12px] font-medium text-gray-700 hover:text-gray-900 bg-white hover:bg-gray-50 border border-gray-200 transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 h-[32px] px-2.5 rounded-[6px] text-[12px] font-medium text-gray-700 hover:text-gray-900 bg-white hover:bg-gray-50 border border-gray-200 transition-colors cursor-pointer max-sm:min-h-11 max-sm:min-w-11"
             >
               <Zap className="w-3.5 h-3.5 text-amber-500" />
               <span>Ações</span>
@@ -416,7 +422,7 @@ export const EzEntityToolbar = forwardRef<HTMLDivElement, EzEntityToolbarProps>(
               <div
                 data-testid="ez-toolbar-actions-dropdown"
                 role="menu"
-                className="absolute right-0 top-full mt-1 w-52 rounded-[8px] bg-white border border-gray-200 shadow-lg py-1 z-50 text-[12px]"
+                className="absolute right-0 top-full mt-1 w-52 rounded-[8px] bg-white border border-gray-200 shadow-lg py-1 z-50 text-[12px] max-sm:fixed max-sm:inset-x-3 max-sm:bottom-3 max-sm:top-auto max-sm:left-auto max-sm:right-auto max-sm:mt-0 max-sm:w-auto"
               >
                 {actions.length > 0 ? (
                   actions.map((act, idx) => {
@@ -454,7 +460,7 @@ export const EzEntityToolbar = forwardRef<HTMLDivElement, EzEntityToolbarProps>(
               aria-label="Anexos"
               title="Anexos do registro"
               onClick={onOpenAttachments}
-              className="relative inline-flex items-center justify-center h-[32px] w-[32px] rounded-[6px] text-gray-600 hover:text-gray-900 hover:bg-gray-50 border border-gray-200 transition-colors cursor-pointer"
+              className="relative inline-flex items-center justify-center h-[32px] w-[32px] rounded-[6px] text-gray-600 hover:text-gray-900 hover:bg-gray-50 border border-gray-200 transition-colors cursor-pointer max-sm:min-h-11 max-sm:min-w-11"
             >
               <Paperclip className="w-3.5 h-3.5" />
               {typeof attachmentCount === 'number' && attachmentCount > 0 && (
@@ -473,7 +479,7 @@ export const EzEntityToolbar = forwardRef<HTMLDivElement, EzEntityToolbarProps>(
               aria-label="Configuração da tela"
               title="Personalizar colunas e layout da tela (por usuário)"
               onClick={onOpenScreenConfig}
-              className="inline-flex items-center justify-center h-[32px] w-[32px] rounded-[6px] text-gray-600 hover:text-gray-900 hover:bg-gray-50 border border-gray-200 transition-colors cursor-pointer"
+              className="inline-flex items-center justify-center h-[32px] w-[32px] rounded-[6px] text-gray-600 hover:text-gray-900 hover:bg-gray-50 border border-gray-200 transition-colors cursor-pointer max-sm:min-h-11 max-sm:min-w-11"
             >
               <Settings className="w-3.5 h-3.5" />
             </button>

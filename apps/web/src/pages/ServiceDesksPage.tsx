@@ -731,7 +731,7 @@ export function ServiceDesksPage() {
           )}
 
           {mode === 'list' && (
-            <div className="flex flex-1 overflow-hidden min-h-[420px]">
+            <div className="relative flex flex-1 overflow-hidden min-h-[420px]">
               {/* Painel lateral de Filtros (Sankhya parity), mesmo padrão de OrganizationsPage.tsx */}
               <EzFilterDrawer
                 isOpen={isFilterPanelOpen}
