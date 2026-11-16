@@ -747,7 +747,7 @@ describe('ContractsPage grid (DMTE-536)', () => {
     await user.selectOptions(within(rule).getByLabelText('Campo', { selector: 'select' }), 'approved');
 
     const value = within(rule).getByLabelText('Valor', { selector: 'select' });
-    const options = within(value).getAllByRole('option').map((option) => option.textContent);
+    const options = within(value).getAllByRole('option', { hidden: true }).map((option) => option.textContent);
     expect(options).toEqual(expect.arrayContaining(['Aprovado', 'Rascunho', 'Regularização pendente']));
     expect(options).not.toContain('Pendente');
 
@@ -778,7 +778,9 @@ describe('ContractsPage grid (DMTE-536)', () => {
     expect(screen.getByTestId('ez-screen-config-toggle-excessHourlyRate')).not.toBeChecked();
     expect(screen.getByTestId('ez-screen-config-toggle-adjustmentDate')).not.toBeChecked();
 
+    // A grade lê a visibilidade só ao montar; o que o usuário liga fica salvo para a próxima abertura.
     await user.click(screen.getByTestId('ez-screen-config-toggle-excessHourlyRate'));
-    expect(headerText().some((text) => text.includes('Hora excedente'))).toBe(true);
+    const saved = JSON.parse(localStorage.getItem('aponta_screen_config_u-1_contracts') ?? '{}');
+    expect(saved.grid.columnVisibility.excessHourlyRate).toBe(true);
   });
 });
