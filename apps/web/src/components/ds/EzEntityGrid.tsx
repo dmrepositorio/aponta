@@ -1737,6 +1737,7 @@ function EzEntityGridInner<T>(
                       'relative px-4 text-[13px] font-semibold text-gray-700 select-none bg-gray-80 transition-colors',
                       currentDensity === 'compact' ? 'py-1.5' : 'py-3',
                       !isLast && 'border-r border-gray-100',
+                      isLast && showGridCornerMenu && 'pr-10',
                       canSort && 'cursor-pointer',
                       isDraggable && 'cursor-grab active:cursor-grabbing',
                       dragOverColId === header.column.id && 'border-l-2 border-l-brand-600 bg-brand-50/50',
