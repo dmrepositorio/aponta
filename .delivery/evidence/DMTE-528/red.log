@@ -1,0 +1,522 @@
+
+ RUN  v4.1.11 /home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-528-29490cc8e35d/workdir/aponta/apps/web
+
+ ❯ |web| src/components/ds/EzSlaChip.test.tsx (7 tests | 2 failed) 169ms
+     ✓ renders nothing when there is no SLA status 26ms
+     ✓ shows the remaining time and a full accessible name/tooltip when on track 65ms
+     ✓ shows a negative time for a breached deadline 18ms
+     ✓ shows minutes when less than one hour is left 15ms
+     × keeps only icon and state when the deadline is unknown 28ms
+     × AC-04: writes the short word before the time (Resp. / Solução), without changing the accessible name 11ms
+     ✓ uses token pairs with at least AA contrast (4.5:1) for text over background 1ms
+ ❯ |web| src/components/tickets/TicketKanbanCard.test.tsx (33 tests | 2 failed) 753ms
+     ✓ is a single link for the whole card, with the protocol highlighted and an accessible label 117ms
+     ✓ truncates a long title with line-clamp-2 and keeps the full text in the title attribute 14ms
+     ✓ shows the requester's organization (truncated) and the Status tag 13ms
+     ✓ keeps the card white and shows the priority glyph (CRITICAL) 35ms
+     ✓ keeps the card white and shows the priority glyph (HIGH) 13ms
+     ✓ keeps the card white and shows the priority glyph (MEDIUM) 10ms
+     ✓ keeps the card white and shows the priority glyph (LOW) 12ms
+     ✓ shows Prioridade as the tag instead of Status when tagField="priority" 15ms
+     ✓ shows a small avatar for the assigned agent, initials-based (no photo in the schema) 13ms
+     ✓ AC-06: shows compact SLA chips (icon + time) named by the full text, not the long pills 20ms
+       ✓ soma as pausas acumuladas aos dois prazos 17ms
+       ✓ congela o tempo enquanto o ticket está pausado (soma a pausa em curso) 9ms
+     ✓ AC-05: puts the SLA chips and the agent avatar in the same footer row 12ms
+     ✓ AC-05: leaves no empty avatar strip when there is no agent and no SLA 7ms
+     ✓ AC-05: keeps the footer when only the agent exists, with the avatar pushed to the right 9ms
+     ✓ has a menu with only "Abrir ticket" and "Abrir em nova aba interna" (no apontamento/play) 184ms
+     ✓ clicking the menu trigger does not also trigger the card link navigation 84ms
+     ✓ RODADA 2 ("Exibir campos", D6c): hides Cliente, Responsável and SLA when their field is turned off 12ms
+     ✓ RODADA 2 ("Exibir campos", D6c): shows "Data de criação"/"Data de última atualização" only when explicitly turned on 35ms
+     ✓ RODADA 2 ("Exibir campos", D6c): omits the date fields by default (back-compat with existing callers) 13ms
+     ✓ AC-05: agrupado por Status, o cartão não renderiza a tag de status 11ms
+     ✓ AC-05: agrupado por Status, o chip de SLA fica na linha do cliente, à direita dele 7ms
+     ✓ AC-05: agrupado por Status, o rodapé só traz o responsável 7ms
+     ✓ AC-05: agrupado por Status e sem SLA, a linha tem só o cliente 6ms
+     ✓ AC-05: agrupado por Status, sem SLA e sem responsável, não sobra rodapé vazio 3ms
+     ✓ AC-05: agrupado por stage, o cartão mantém a tag de status e o SLA no rodapé 13ms
+     ✓ AC-05: agrupado por agent, o cartão mantém a tag de status e o SLA no rodapé 6ms
+     ✓ AC-05: agrupado por priority, o cartão mantém a tag de status e o SLA no rodapé 7ms
+     ✓ AC-05: sem agrupamento informado, o cartão mantém a tag de status (padrão de quem não passa groupBy) 5ms
+     ✓ AC-06: as tags de status e de prioridade do cartão não quebram em duas linhas (whitespace-nowrap) 8ms
+     ✓ AC-06: nenhum status é renomeado no cartão (Aguardando Aprovação por extenso) 8ms
+     × AC-01: o botão "Mais ações" tem alvo de 32 px e abre o menu com as duas opções 19ms
+     × AC-04: os chips do cartão trazem "Resp." e "Solução" antes do tempo, com o nome acessível completo 7ms
+ ❯ |web| src/components/tickets/TicketKanban.test.tsx (76 tests | 4 failed) 6736ms
+       ✓ DMTE-458: board is a snap-scroll container and columns are fluid (no fixed 290px) 155ms
+       ✓ shows a skeleton loading state with every column label while isLoading 30ms
+       ✓ shows an error message when isError is true 52ms
+       ✓ groups tickets into their matching status column with correct counts 275ms
+       ✓ DMTE-490 AC-05: has an Aguardando Sankhya column right after Aguardando Terceiros and groups its tickets there 143ms
+       ✓ renders an empty column (count 0) when there are no tickets for that status 78ms
+       ✓ does nothing when a card is dropped outside any column (no destination) 53ms
+       ✓ does nothing when a card is dropped back in the same column 38ms
+       ✓ calls the status-update API when a card is dropped into a different column 112ms
+       ✓ rolls back the optimistic update when the status-update API call fails 103ms
+       ✓ disables drop targets and card dragging for CLIENT role users 37ms
+       ✓ does not fetch mesa stages when no mesa is selected (fetches only the Mesa dropdown list) 44ms
+       ✓ shows a collapse toggle and an "Abrir novo ticket" link on every expanded column (fallback por status; Resolvido e Fechado abrem recolhidos, DMTE-527 AC-07) 48ms
+       ✓ collapsing a status column hides its ticket list and disables it as a drop target; expanding restores it 114ms
+       ✓ DMTE-496 AC-01: a coluna recolhida tem a altura mínima da expandida e acompanha o quadro, por status e por estágio 150ms
+       ✓ does not show "Abrir novo ticket" for CLIENT role users 24ms
+       ✓ collapsing a stage column (mesa selecionada) hides its ticket list and disables it as a drop target 34ms
+       ✓ lists service desks in the Mesa dropdown and switches to stage-grouped columns on selection, without needing initialServiceDeskId 67ms
+       ✓ keeps the user's own Mesa selection even if the component re-renders with a different initialServiceDeskId 41ms
+       ✓ fetches the mesa stages via GET /service-desks/:id/stages 17ms
+       ✓ groups tickets by stage (ordered by position) instead of by status 47ms
+       ✓ puts tickets with no recognized stage into a "Sem estágio" column that never accepts a drop 43ms
+       ✓ allows dragging an unstaged ticket straight to the mesa's initial stage 80ms
+       ✓ blocks dragging an unstaged ticket to a non-initial stage 48ms
+       ✓ calls PATCH /tickets/:id/stage (not /status) when dropping into an allowed next stage 92ms
+       ✓ blocks the drop and shows an error when the destination stage is not in transitionToIds 85ms
+       ✓ does nothing when a card is dropped back in its own stage column 48ms
+       ✓ dims (disables) columns unreachable from the dragged card while dragging 47ms
+       ✓ rolls back the optimistic update and surfaces the backend message when the stage API call rejects with 400 67ms
+       ✓ shows an informational alert when the mesa has no stages configured 31ms
+       ✓ AC-04: keeps Mesa, responsáveis, Ordenar and Configurações in one toolbar row, in that order 96ms
+       ✓ Limpar ordenação is not red 136ms
+       ✓ renders one avatar per distinct agent present in the tickets 96ms
+       ✓ clicking an avatar filters the board to that agent's tickets (toggle, multi-select) 113ms
+       ✓ opens "Ordenar", sorts cards by Título asc/desc, and "Limpar" restores the original order 286ms
+       ✓ "Configurações" lets the user group by Responsável instead of Status/Estágio 145ms
+       ✓ "Configurações" lets the user group by Prioridade 87ms
+       ✓ RODADA 2 ("Exibir campos", D6c): "Configurações" lets the user toggle optional card fields, persisted like "Agrupar por" 139ms
+       ✓ DMTE-497 AC-01: Esc fecha o painel de Ordenar e o foco volta ao botão 159ms
+       ✓ DMTE-497 AC-02: Esc fecha o painel de Configurações e o foco volta ao botão 104ms
+       ✓ DMTE-497 AC-03: clique fora fecha cada menu, clique dentro não, e o seletor de mesa também fecha 171ms
+       ✓ DMTE-497 AC-03: escolher uma opção do "Agrupar por" não fecha o painel de Configurações 86ms
+       ✓ DMTE-497 AC-04: abrir um menu fecha o outro, nos dois sentidos 197ms
+       ✓ DMTE-497 AC-05: com a lista do "Agrupar por" aberta, o primeiro Esc fecha só a lista e o segundo o painel 87ms
+       ✓ DMTE-497 AC-06: os gatilhos expõem aria-expanded e aria-controls, e têm foco visível 256ms
+       ✓ AC-01: Mesa usa 36 px a partir de sm e no mínimo 44 px abaixo 97ms
+       ✓ AC-01: Ordenar e Configurações usam 36 px a partir de sm e no mínimo 44 px abaixo 62ms
+       ✓ AC-01: "Agrupar por" (Configurações) usa 32 px a partir de sm e no mínimo 44 px abaixo 110ms
+       ✓ AC-03: abaixo de 640 px a Mesa ocupa a largura total (w-full, sem max-w-xs fixo) 298ms
+       ✓ AC-03: Ordenar e Configurações ficam lado a lado, num par separado da Mesa 82ms
+       ✓ AC-04: a Mesa não usa bg-brand-500 (nem fundo cheio da marca em repouso) 81ms
+       ✓ AC-04: a Mesa tem fundo branco e borda brand-500 99ms
+       ✓ AC-04: texto e seta da Mesa em brand-700, com contraste mínimo de 4,5:1 sobre o branco (tokens de styles.css) 81ms
+       ✓ AC-04: hover com fundo claro da marca e foco visível 88ms
+       ✓ AC-04: nenhum outro controle da barra é preenchido (Ordenar, Configurações) 60ms
+       ✓ AC-05: sem Mesa (agrupamento efetivo Status) nenhum cartão do quadro mostra a tag de status 32ms
+       ✓ AC-05: com Mesa e Agrupar por Status escolhido, o cartão também fica sem a tag de status 84ms
+       ✓ AC-05: agrupado por Estágio (Mesa selecionada) o cartão mantém a tag de status 37ms
+       ✓ AC-05: agrupado por agent o cartão mantém a tag de status 117ms
+       ✓ AC-05: agrupado por priority o cartão mantém a tag de status 64ms
+       ✓ AC-07: por status, Resolvido e Fechado abrem recolhidos, com botão de nome acessível que contém o rótulo 62ms
+       ✓ AC-07: por status, as outras sete colunas abrem expandidas e aceitando soltar 43ms
+       ✓ AC-07: a coluna recolhida (Resolvido e Fechado) não aceita soltar cartão 34ms
+       ✓ AC-07: um clique no botão expande a coluna e outro recolhe 93ms
+       ✓ AC-07: a escolha do usuário prevalece: Resolvido expandido segue expandido ao reordenar o quadro 136ms
+       ✓ AC-07: com Mesa selecionada, abrem recolhidos só os estágios com isFinal 35ms
+       ✓ AC-07: com Mesa selecionada, um clique expande o estágio final e outro recolhe 47ms
+       ✓ AC-08: o quadro usa scroll-snap proximity (não mandatory) e scroll-padding para as faixas 25ms
+       ✓ AC-08: a partir de lg as faixas recolhidas ficam fixas na borda direita (sticky e inset direito) 56ms
+       ✓ AC-08: abaixo de lg as faixas não fixam (sticky só com o prefixo lg:) 68ms
+       ✓ AC-08: com Mesa selecionada, a faixa do estágio final também fixa a partir de lg 50ms
+       ✓ AC-08: as colunas expandidas não fixam e seguem com 80vw (máximo 320 px) abaixo de lg 39ms
+     × AC-02: por status, cada coluna expandida tem o botão "Recolher coluna <nome>" com alvo de 32 px e anel de foco 63ms
+     × AC-02: por estágio, o botão se chama "Recolher coluna N1" e tem o mesmo alvo e foco 51ms
+     × AC-02: por teclado, Enter no botão recolhe a coluna e o "Expandir coluna Aberto" aparece 98ms
+     × AC-03: o botão de avatar do filtro tem anel de foco visível, vai para a frente ao focar e mantém nome e aria-pressed 74ms
+
+ Test Files  3 failed (3)
+      Tests  8 failed | 108 passed (116)
+   Start at  19:02:29
+   Duration  10.71s (transform 3.47s, setup 374ms, import 6.17s, tests 7.66s, environment 2.10s)
+
+stderr | src/components/tickets/TicketKanban.test.tsx > TicketKanban > fallback por status (nenhuma mesa selecionada) > shows a skeleton loading state with every column label while isLoading
+An update to TicketKanban inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/components/tickets/TicketKanban.test.tsx > TicketKanban > fallback por status (nenhuma mesa selecionada) > shows an error message when isError is true
+An update to TicketKanban inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/components/tickets/TicketKanban.test.tsx > TicketKanban > colapsar colunas e abrir novo ticket (TiFlux parity) > DMTE-496 AC-01: a coluna recolhida tem a altura mínima da expandida e acompanha o quadro, por status e por estágio
+An update to TicketKanban inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/components/tickets/TicketKanban.test.tsx > TicketKanban > colapsar colunas e abrir novo ticket (TiFlux parity) > collapsing a stage column (mesa selecionada) hides its ticket list and disables it as a drop target
+An update to TicketKanban inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/components/tickets/TicketKanban.test.tsx > TicketKanban > agrupamento por estágio (mesa selecionada) > fetches the mesa stages via GET /service-desks/:id/stages
+An update to TicketKanban inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/components/tickets/TicketKanban.test.tsx > TicketKanban > agrupamento por estágio (mesa selecionada) > groups tickets by stage (ordered by position) instead of by status
+An update to TicketKanban inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/components/tickets/TicketKanban.test.tsx > TicketKanban > agrupamento por estágio (mesa selecionada) > puts tickets with no recognized stage into a "Sem estágio" column that never accepts a drop
+An update to TicketKanban inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/components/tickets/TicketKanban.test.tsx > TicketKanban > agrupamento por estágio (mesa selecionada) > allows dragging an unstaged ticket straight to the mesa's initial stage
+An update to TicketKanban inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/components/tickets/TicketKanban.test.tsx > TicketKanban > agrupamento por estágio (mesa selecionada) > blocks dragging an unstaged ticket to a non-initial stage
+An update to TicketKanban inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/components/tickets/TicketKanban.test.tsx > TicketKanban > agrupamento por estágio (mesa selecionada) > calls PATCH /tickets/:id/stage (not /status) when dropping into an allowed next stage
+An update to TicketKanban inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/components/tickets/TicketKanban.test.tsx > TicketKanban > agrupamento por estágio (mesa selecionada) > blocks the drop and shows an error when the destination stage is not in transitionToIds
+An update to TicketKanban inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/components/tickets/TicketKanban.test.tsx > TicketKanban > agrupamento por estágio (mesa selecionada) > does nothing when a card is dropped back in its own stage column
+An update to TicketKanban inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/components/tickets/TicketKanban.test.tsx > TicketKanban > agrupamento por estágio (mesa selecionada) > dims (disables) columns unreachable from the dragged card while dragging
+An update to TicketKanban inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/components/tickets/TicketKanban.test.tsx > TicketKanban > agrupamento por estágio (mesa selecionada) > rolls back the optimistic update and surfaces the backend message when the stage API call rejects with 400
+An update to TicketKanban inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/components/tickets/TicketKanban.test.tsx > TicketKanban > agrupamento por estágio (mesa selecionada) > shows an informational alert when the mesa has no stages configured
+An update to TicketKanban inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/components/tickets/TicketKanban.test.tsx > DMTE-527 ticket 1: tela de Tickets proporcional e responsiva (Kanban) > AC-05: cartão sem a tag de status quando agrupado por Status > AC-05: com Mesa e Agrupar por Status escolhido, o cartão também fica sem a tag de status
+An update to TicketKanban inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/components/tickets/TicketKanban.test.tsx > DMTE-527 ticket 1: tela de Tickets proporcional e responsiva (Kanban) > AC-05: cartão sem a tag de status quando agrupado por Status > AC-05: agrupado por Estágio (Mesa selecionada) o cartão mantém a tag de status
+An update to TicketKanban inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/components/tickets/TicketKanban.test.tsx > DMTE-527 ticket 1: tela de Tickets proporcional e responsiva (Kanban) > AC-07: colunas finais abrem recolhidas > AC-07: com Mesa selecionada, abrem recolhidos só os estágios com isFinal
+An update to TicketKanban inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/components/tickets/TicketKanban.test.tsx > DMTE-527 ticket 1: tela de Tickets proporcional e responsiva (Kanban) > AC-07: colunas finais abrem recolhidas > AC-07: com Mesa selecionada, um clique expande o estágio final e outro recolhe
+An update to TicketKanban inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/components/tickets/TicketKanban.test.tsx > DMTE-527 ticket 1: tela de Tickets proporcional e responsiva (Kanban) > AC-08: faixas fixas, encaixe e colunas de 80vw > AC-08: com Mesa selecionada, a faixa do estágio final também fixa a partir de lg
+An update to TicketKanban inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/components/tickets/TicketKanban.test.tsx > DMTE-528: alvos, foco e nomes dos botões do Kanban > AC-02: por estágio, o botão se chama "Recolher coluna N1" e tem o mesmo alvo e foco
+An update to TicketKanban inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 8 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |web| src/components/tickets/TicketKanban.test.tsx > DMTE-528: alvos, foco e nomes dos botões do Kanban > AC-02: por status, cada coluna expandida tem o botão "Recolher coluna <nome>" com alvo de 32 px e anel de foco
+AssertionError: expected [] to have a length of 7 but got +0
+
+- Expected
++ Received
+
+- 7
++ 0
+
+ ❯ src/components/tickets/TicketKanban.test.tsx:1501:76
+    1499|   it('AC-02: por status, cada coluna expandida tem o botão "Recolher c…
+    1500|     await renderKanban({ tickets: [baseTicket], isLoading: false, isEr…
+    1501|     expect(screen.queryAllByRole('button', { name: /^Recolher coluna /…
+       |                                                                            ^
+    1502|     expectTargetAndFocus(stripButton(/^Recolher coluna Aberto$/));
+    1503|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/8]⎯
+
+ FAIL  |web| src/components/tickets/TicketKanban.test.tsx > DMTE-528: alvos, foco e nomes dos botões do Kanban > AC-02: por estágio, o botão se chama "Recolher coluna N1" e tem o mesmo alvo e foco
+Error: [2mexpect([22m[31mreceived[39m[2m).toBeInTheDocument()[22m
+
+[31mreceived[39m value must be an HTMLElement or an SVGElement.
+Received has type:  Null
+Received has value: [31mnull[39m
+ ❯ stripButton src/components/tickets/TicketKanban.test.tsx:197:18
+    195| const stripButton = (name: RegExp) => {
+    196|   const button = screen.queryByRole('button', { name });
+    197|   expect(button).toBeInTheDocument();
+       |                  ^
+    198|   return button as HTMLElement;
+    199| };
+ ❯ src/components/tickets/TicketKanban.test.tsx:1515:26
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/8]⎯
+
+ FAIL  |web| src/components/tickets/TicketKanban.test.tsx > DMTE-528: alvos, foco e nomes dos botões do Kanban > AC-02: por teclado, Enter no botão recolhe a coluna e o "Expandir coluna Aberto" aparece
+Error: [2mexpect([22m[31mreceived[39m[2m).toBeInTheDocument()[22m
+
+[31mreceived[39m value must be an HTMLElement or an SVGElement.
+Received has type:  Null
+Received has value: [31mnull[39m
+ ❯ stripButton src/components/tickets/TicketKanban.test.tsx:197:18
+    195| const stripButton = (name: RegExp) => {
+    196|   const button = screen.queryByRole('button', { name });
+    197|   expect(button).toBeInTheDocument();
+       |                  ^
+    198|   return button as HTMLElement;
+    199| };
+ ❯ src/components/tickets/TicketKanban.test.tsx:1520:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/8]⎯
+
+ FAIL  |web| src/components/tickets/TicketKanban.test.tsx > DMTE-528: alvos, foco e nomes dos botões do Kanban > AC-03: o botão de avatar do filtro tem anel de foco visível, vai para a frente ao focar e mantém nome e aria-pressed
+Error: [2mexpect([22m[31melement[39m[2m).toHaveClass([22m[32m[32m"focus-visible:outline-none focus-visible:z-10 focus-visible:ring-brand-600"[32m[39m[2m)[22m
+
+Expected the element to have class:
+[32m  focus-visible:outline-none focus-visible:z-10 focus-visible:ring-brand-600[39m
+Received:
+[31m  rounded-full ring-2 ring-white transition-transform hover:z-10 hover:scale-110[39m
+ ❯ src/components/tickets/TicketKanban.test.tsx:1531:22
+    1529|       const button = screen.getByRole('button', { name: `Filtrar por $…
+    1530|       expect(button).toHaveAttribute('aria-pressed', 'false');
+    1531|       expect(button).toHaveClass('focus-visible:outline-none', 'focus-…
+       |                      ^
+    1532|     }
+    1533|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/8]⎯
+
+ FAIL  |web| src/components/tickets/TicketKanbanCard.test.tsx > DMTE-528: alvo do menu e legenda do chip de SLA no cartão > AC-01: o botão "Mais ações" tem alvo de 32 px e abre o menu com as duas opções
+Error: [2mexpect([22m[31melement[39m[2m).toHaveClass([22m[32m[32m"h-8 w-8"[32m[39m[2m)[22m
+
+Expected the element to have class:
+[32m  h-8 w-8[39m
+Received:
+[31m  inline-flex items-center justify-center transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-200 rounded-[12px][39m
+ ❯ src/components/tickets/TicketKanbanCard.test.tsx:297:20
+    295|     renderCard();
+    296|     const button = screen.getByRole('button', { name: 'Mais ações' });
+    297|     expect(button).toHaveClass('h-8', 'w-8');
+       |                    ^
+    298|     await userEvent.click(button);
+    299|     expect(screen.getByRole('menuitem', { name: 'Abrir ticket' })).toB…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/8]⎯
+
+ FAIL  |web| src/components/tickets/TicketKanbanCard.test.tsx > DMTE-528: alvo do menu e legenda do chip de SLA no cartão > AC-04: os chips do cartão trazem "Resp." e "Solução" antes do tempo, com o nome acessível completo
+Error: [2mexpect([22m[31melement[39m[2m).toHaveTextContent()[22m
+
+Expected element to have text content:
+[32m  /^Resp\. \S+$/[39m
+Received:
+[31m  -319d[39m
+ ❯ src/components/tickets/TicketKanbanCard.test.tsx:305:50
+    303|   it('AC-04: os chips do cartão trazem "Resp." e "Solução" antes do te…
+    304|     renderCard({ ...baseTicket, responseSlaStatus: 'ON_TRACK', resolve…
+    305|     expect(screen.getByLabelText(/^Resposta: /)).toHaveTextContent(/^R…
+       |                                                  ^
+    306|     expect(screen.getByLabelText(/^Resolução: /)).toHaveTextContent(/^…
+    307|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/8]⎯
+
+ FAIL  |web| src/components/ds/EzSlaChip.test.tsx > EzSlaChip (AC-06) > keeps only icon and state when the deadline is unknown
+AssertionError: expected '' to be 'Solução' // Object.is equality
+
+- Expected
++ Received
+
+- Solução
+
+ ❯ src/components/ds/EzSlaChip.test.tsx:39:30
+     37|     render(<EzSlaChip kind="resolve" status="ON_TRACK" now={NOW} />);
+     38|     const chip = screen.getByLabelText('Resolução: dentro do prazo');
+     39|     expect(chip.textContent).toBe('Solução');
+       |                              ^
+     40|   });
+     41|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/8]⎯
+
+ FAIL  |web| src/components/ds/EzSlaChip.test.tsx > EzSlaChip (AC-06) > AC-04: writes the short word before the time (Resp. / Solução), without changing the accessible name
+Error: [2mexpect([22m[31melement[39m[2m).toHaveTextContent()[22m
+
+Expected element to have text content:
+[32m  /^Resp\. 17h18$/[39m
+Received:
+[31m  17h18[39m
+ ❯ src/components/ds/EzSlaChip.test.tsx:44:80
+     42|   it('AC-04: writes the short word before the time (Resp. / Solução), …
+     43|     const { rerender } = render(<EzSlaChip kind="response" status="ON_…
+     44|     expect(screen.getByLabelText('Resposta: dentro do prazo, vence em …
+       |                                                                                ^
+     45|     rerender(<EzSlaChip kind="resolve" status="BREACHED" deadline={at(…
+     46|     expect(screen.getByLabelText('Resolução: vencido há 1h00')).toHave…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/8]⎯
+
