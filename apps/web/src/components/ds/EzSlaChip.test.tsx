@@ -36,7 +36,14 @@ describe('EzSlaChip (AC-06)', () => {
   it('keeps only icon and state when the deadline is unknown', () => {
     render(<EzSlaChip kind="resolve" status="ON_TRACK" now={NOW} />);
     const chip = screen.getByLabelText('Resolução: dentro do prazo');
-    expect(chip.textContent).toBe('');
+    expect(chip.textContent).toBe('Solução');
+  });
+
+  it('AC-04: writes the short word before the time (Resp. / Solução), without changing the accessible name', () => {
+    const { rerender } = render(<EzSlaChip kind="response" status="ON_TRACK" deadline={at(17 * H + 18 * 60000)} now={NOW} />);
+    expect(screen.getByLabelText('Resposta: dentro do prazo, vence em 17h18')).toHaveTextContent(/^Resp\. 17h18$/);
+    rerender(<EzSlaChip kind="resolve" status="BREACHED" deadline={at(-H)} now={NOW} />);
+    expect(screen.getByLabelText('Resolução: vencido há 1h00')).toHaveTextContent(/^Solução -1h00$/);
   });
 
   it('uses token pairs with at least AA contrast (4.5:1) for text over background', () => {
