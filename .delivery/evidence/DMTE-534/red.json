@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "phase": "red",
+  "started_at": "2026-11-16T22:48:59.292562+00:00",
+  "finished_at": "2026-11-16T22:49:16.351536+00:00",
+  "command": [
+    "pnpm",
+    "--dir",
+    "apps/web",
+    "exec",
+    "vitest",
+    "run",
+    "src/pages/KnowledgePage.test.tsx",
+    "src/components/knowledge/KnowledgeArticleAttachments.test.tsx",
+    "src/components/knowledge/articleExcerpt.test.ts",
+    "src/components/knowledge/articleContentStyles.test.ts"
+  ],
+  "base_sha": "ca24983d9270307547ae68f3035a6f95af1a92f2",
+  "head_sha": "71b4db022164293cd8c0b316cf748bd427ac6425",
+  "exit_code": 1,
+  "tests": {
+    "apps/web/src/pages/KnowledgePage.test.tsx": "f7dd00a41a4cf2ad405801d82634e98384fa952999912e7efd3c112af20219af",
+    "apps/web/src/components/knowledge/KnowledgeArticleAttachments.test.tsx": "1e6ec04605900591e1c0a57507b041e686e712a11732bda64b2427fe66a960a9",
+    "apps/web/src/components/knowledge/articleExcerpt.test.ts": "4e85cba0738e362cdef2fc2b2b0c14549bb8752f4d2b063fc28542398cd4319f",
+    "apps/web/src/components/knowledge/articleContentStyles.test.ts": "d9e0bac3e76020e69ba12eef516bc5304fe42c666ac0788d706dc4a3d1aeed5b"
+  },
+  "criteria": [
+    "AC-01",
+    "AC-02",
+    "AC-03",
+    "AC-04",
+    "AC-05",
+    "AC-06",
+    "AC-07",
+    "AC-08",
+    "AC-09"
+  ],
+  "source_hashes": {
+    "apps/web/src/components/knowledge/KnowledgeArticleAttachments.test.tsx": "1e6ec04605900591e1c0a57507b041e686e712a11732bda64b2427fe66a960a9",
+    "apps/web/src/components/knowledge/articleContentStyles.test.ts": "d9e0bac3e76020e69ba12eef516bc5304fe42c666ac0788d706dc4a3d1aeed5b",
+    "apps/web/src/components/knowledge/articleExcerpt.test.ts": "4e85cba0738e362cdef2fc2b2b0c14549bb8752f4d2b063fc28542398cd4319f",
+    "apps/web/src/components/knowledge/articleExcerpt.ts": "dde47e27c94da431abaa7597a42644e06c06f4c920f0910c23303ff737d7830d",
+    "apps/web/src/pages/KnowledgePage.test.tsx": "f7dd00a41a4cf2ad405801d82634e98384fa952999912e7efd3c112af20219af"
+  },
+  "log": ".delivery/evidence/DMTE-534/red.log",
+  "log_sha256": "c248592e00bc0207df2f626db33e488c4a4125f66dc5495bca2f0792e01b168a"
+}
