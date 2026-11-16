@@ -1,8 +1,8 @@
 {
   "version": 1,
   "phase": "green",
-  "started_at": "2026-11-16T22:03:57.657059+00:00",
-  "finished_at": "2026-11-16T22:04:13.516021+00:00",
+  "started_at": "2026-11-16T22:10:24.445033+00:00",
+  "finished_at": "2026-11-16T22:10:35.022820+00:00",
   "command": [
     "pnpm",
     "--dir",
@@ -15,7 +15,7 @@
     "src/components/tickets/TicketKanbanCard.test.tsx"
   ],
   "base_sha": "a3866b3ba89ae457d0d23164a1c13e1d8115b6e9",
-  "head_sha": "9ba59176a5b98ef7da7a0f3e5e1e9df0083da9e3",
+  "head_sha": "bb6ba1b1e84ca5f16595dea4284c7336abc78999",
   "exit_code": 0,
   "tests": {
     "apps/web/src/components/ds/EzSlaChip.test.tsx": "81595569790add4320b53b22154307c10caacfc7c62d4fa2b79e7436cb8351a2",
@@ -35,8 +35,9 @@
     "apps/web/src/components/tickets/TicketKanban.test.tsx": "9dab221239e4d5cbe9c29056e959195cc57eb50ea5881ae13b9d7eae15f479a7",
     "apps/web/src/components/tickets/TicketKanban.tsx": "49e81b6aece3298a78145fd4f75d153ab876e59360ee5c615f64b2b10809eadc",
     "apps/web/src/components/tickets/TicketKanbanCard.test.tsx": "0268dc485722c00357cd960aff2a559a1b511e76e155036d298e5f6beb553673",
-    "apps/web/src/components/tickets/TicketKanbanCard.tsx": "9a0d45018d93ab68818e7904d081b38005c333626b084656aaafc6d27a0edcad"
+    "apps/web/src/components/tickets/TicketKanbanCard.tsx": "9a0d45018d93ab68818e7904d081b38005c333626b084656aaafc6d27a0edcad",
+    "scripts/kanban_targets_check.mjs": "7cf3bbb5705aa5ed50e5dc58188de638dda504afb11383a4b78b6ceb9aa7b057"
   },
   "log": ".delivery/evidence/DMTE-528/green.log",
-  "log_sha256": "99d21c3d29dc5d216c6f541c9758dd8b90fe5a7dc7cbcaabf64175868beb158e"
+  "log_sha256": "ef05d631cf39d9c4e1340a133d38a411adc732bc0b9b203922b370c3fadbfa95"
 }
