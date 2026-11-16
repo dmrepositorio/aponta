@@ -10,6 +10,7 @@ import { OrganizationsPage } from './OrganizationsPage';
 vi.mock('../lib/api', () => ({
   api: {
     get: vi.fn(),
+    put: vi.fn(),
     post: vi.fn(),
     patch: vi.fn(),
     delete: vi.fn(),
@@ -61,8 +62,12 @@ const orgDetail = {
   ],
 };
 
-function mockApiGet() {
+const PREF_URL = '/me/screen-preferences/organizations';
+
+/** `screenPreference` é o que o servidor devolve em GET /me/screen-preferences/organizations ({} = sem linha). */
+function mockApiGet(screenPreference: Record<string, unknown> = {}) {
   vi.mocked(api.get).mockImplementation((url: string) => {
+    if (url === PREF_URL) return Promise.resolve({ data: screenPreference });
     if (url === '/organizations') return Promise.resolve({ data: orgs });
     if (url === '/users') return Promise.resolve({ data: users });
     if (url === '/service-desks') return Promise.resolve({ data: serviceDesks });
@@ -108,9 +113,6 @@ describe('OrganizationsPage', { timeout: 15000 }, () => {
     vi.clearAllMocks();
     mockApiGet();
     useAuthStore.setState({ token: null, user: null });
-    // A couple of tests below exercise useUserScreenConfig's localStorage
-    // persistence; keep each test's screen-config state isolated so test
-    // order never matters.
     localStorage.clear();
   });
 
@@ -130,7 +132,8 @@ describe('OrganizationsPage', { timeout: 15000 }, () => {
     expect(
       screen.getByText(/somente administradores podem gerenciar empresas/i),
     ).toBeInTheDocument();
-    expect(api.get).not.toHaveBeenCalled();
+    // Só a preferência de tela do próprio usuário é lida (DMTE-527 T2); nenhum dado de empresa.
+    expect(vi.mocked(api.get).mock.calls.every(([url]) => url === PREF_URL)).toBe(true);
   });
 
   it('shows the list view by default with a mode toggle (Tiflux/Sankhya-parity, issue #57)', async () => {
@@ -878,7 +881,7 @@ describe('OrganizationsPage', { timeout: 15000 }, () => {
     confirmSpy.mockRestore();
   });
 
-  it('persists column visibility toggles to the per-user screen config (localStorage)', async () => {
+  it('persists column visibility toggles to the per-user screen config (server, DMTE-527 T2)', async () => {
     loginAs('ADMIN');
     const user = userEvent.setup();
     renderPage();
@@ -892,8 +895,15 @@ describe('OrganizationsPage', { timeout: 15000 }, () => {
     await user.click(within(modal).getByTestId('ez-screen-config-toggle-stateRegistration'));
 
     expect(within(modal).getByTestId('ez-screen-config-toggle-stateRegistration')).toBeChecked();
-    const persisted = JSON.parse(localStorage.getItem('aponta_screen_config_u-1_organizations') ?? '{}');
-    expect(persisted.grid.columnVisibility.stateRegistration).toBe(true);
+    await waitFor(() =>
+      expect(api.put).toHaveBeenCalledWith(
+        PREF_URL,
+        expect.objectContaining({
+          grid: expect.objectContaining({ columnVisibility: expect.objectContaining({ stateRegistration: true }) }),
+        }),
+      ),
+    );
+    expect(localStorage.getItem('aponta_screen_config_u-1_organizations')).toBeNull();
   });
 
   it('edits the optional grid columns (IE, IM, Pasta, Perfil, Saúde) once made visible via screen config', async () => {
@@ -903,27 +913,24 @@ describe('OrganizationsPage', { timeout: 15000 }, () => {
 
     // Simulate a returning user who already revealed these optional
     // columns via the screen configurator in a previous session — the
-    // toggle persists to localStorage (useUserScreenConfig) and is read
-    // back as EzEntityGrid's *initial* column visibility on mount (see the
+    // preference lives on the server (useUserScreenConfig, DMTE-527 T2) and is
+    // read back as EzEntityGrid's *initial* column visibility on mount (see the
     // dedicated persistence test above for the toggle-write side).
-    localStorage.setItem(
-      'aponta_screen_config_u-1_organizations',
-      JSON.stringify({
-        grid: {
-          columnVisibility: {
-            stateRegistration: true,
-            municipalRegistration: true,
-            workFolder: true,
-            serviceType: true,
-            healthStatus: true,
-          },
-          density: 'compact',
+    mockApiGet({
+      grid: {
+        columnVisibility: {
+          stateRegistration: true,
+          municipalRegistration: true,
+          workFolder: true,
+          serviceType: true,
+          healthStatus: true,
         },
-        form: { layout: 'CASCADE' },
-        viewMode: 'GRID',
-        savedFilters: [],
-      }),
-    );
+        density: 'compact',
+      },
+      form: { layout: 'CASCADE' },
+      viewMode: 'GRID',
+      savedFilters: [],
+    });
 
     renderPage();
     await waitFor(() => {
