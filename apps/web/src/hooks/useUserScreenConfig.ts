@@ -20,6 +20,8 @@ export interface UserScreenConfig {
   savedFilters: SavedFilter[];
   /** Generic "Agrupar por" preference (e.g. Lista de Tickets, D5) — an opaque key the caller defines. */
   groupBy: string;
+  /** DMTE-527 T2: colunas recolhidas do Kanban (id da coluna -> recolhida); só o que o usuário mexeu. */
+  collapsed: Record<string, boolean>;
 }
 
 const DEFAULT_CONFIG: UserScreenConfig = {
@@ -34,6 +36,7 @@ const DEFAULT_CONFIG: UserScreenConfig = {
   viewMode: 'GRID',
   savedFilters: [],
   groupBy: '',
+  collapsed: {},
 };
 
 function getStorageKey(userId: string | null | undefined, screenId: string): string {
@@ -65,6 +68,7 @@ export function useUserScreenConfig(
     viewMode: initialDefaults?.viewMode ?? DEFAULT_CONFIG.viewMode,
     savedFilters: initialDefaults?.savedFilters ?? DEFAULT_CONFIG.savedFilters,
     groupBy: initialDefaults?.groupBy ?? DEFAULT_CONFIG.groupBy,
+    collapsed: initialDefaults?.collapsed ?? DEFAULT_CONFIG.collapsed,
   };
 
   const loadConfig = useCallback((): UserScreenConfig => {
@@ -84,6 +88,7 @@ export function useUserScreenConfig(
         viewMode: parsed.viewMode ?? resolvedDefaults.viewMode,
         savedFilters: Array.isArray(parsed.savedFilters) ? parsed.savedFilters : resolvedDefaults.savedFilters,
         groupBy: parsed.groupBy ?? resolvedDefaults.groupBy,
+        collapsed: resolvedDefaults.collapsed,
       };
     } catch {
       return resolvedDefaults;
@@ -264,8 +269,14 @@ export function useUserScreenConfig(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, screenId]);
 
+  /** DMTE-527 T2 (stub neutro): grava o recolhimento de uma coluna do Kanban; ainda sem efeito. */
+  const setColumnCollapsed = useCallback((_columnId: string, _collapsed: boolean) => undefined, []);
+
   return {
     config,
+    /** DMTE-527 T2 (stub neutro): verdadeiro enquanto lê a preferência do servidor; ainda sempre falso. */
+    isLoading: false,
+    setColumnCollapsed,
     setColumnVisibility,
     setColumnOrder,
     setDensity,

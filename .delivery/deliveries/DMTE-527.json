@@ -125,42 +125,137 @@
     {
       "id": "AC-10",
       "description": "a migração cria `UserScreenPreference` (único por `userId` e `screen`, `onDelete: Cascade`), é aditiva, aplica em banco isolado e não altera tabela existente.",
-      "tests": []
+      "tests": [
+        "apps/api/src/user-screen-preferences/user-screen-preferences.migration.spec.ts: AC-10: existe exatamente uma migração que cria a tabela \"UserScreenPreference\"",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.migration.spec.ts: AC-10: a tabela tem userId, screen, data (JSONB) e updatedAt",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.migration.spec.ts: AC-10: é único por (userId, screen)",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.migration.spec.ts: AC-10: a chave estrangeira para \"User\" é ON DELETE CASCADE",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.migration.spec.ts: AC-10: é aditiva: só cria a tabela nova (sem DROP, sem backfill, sem ALTER em outra tabela)",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.migration.spec.ts: AC-10: o schema.prisma tem o model com @@unique([userId, screen]) e onDelete: Cascade"
+      ]
     },
     {
       "id": "AC-11",
       "description": "`GET` e `PUT` de `/me/screen-preferences/:screen` exigem autenticação (sem token, 401), usam só o id do token, aceitam apenas as cinco telas (outra devolve 404 e não grava) e `GET` sem linha devolve preferência vazia.",
-      "tests": []
+      "tests": [
+        "apps/api/src/user-screen-preferences/user-screen-preferences.service.spec.ts: AC-11: GET sem linha devolve preferência vazia, buscando pela chave (userId, screen) do dono",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.service.spec.ts: AC-11: o PUT substitui o data inteiro daquela tela (vale a última gravação)",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.controller.spec.ts: AC-11: a rota fica atrás do JwtAuthGuard e só recebe o parâmetro :screen",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-11: sem token, GET e PUT respondem 401 e não tocam o banco",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-11: token inválido responde 401",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-11: GET sem linha devolve 200 com preferência vazia (JSON {})",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-11: a tela organizations é aceita no PUT e relida no GET",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-11: a tela contracts é aceita no PUT e relida no GET",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-11: a tela service-desks é aceita no PUT e relida no GET",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-11: a tela tickets-list é aceita no PUT e relida no GET",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-11: a tela tickets-kanban é aceita no PUT e relida no GET",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-11: a tela dashboard devolve 404 e não grava",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-11: a tela tickets devolve 404 e não grava",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-11: a tela ORGANIZATIONS devolve 404 e não grava",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-11: a tela users devolve 404 e não grava"
+      ]
     },
     {
       "id": "AC-12",
       "description": "o servidor valida o formato (limites do item 11) e devolve 400 para campo desconhecido, tipo errado, mais de 100 entradas em `collapsed`, id com mais de 64 caracteres ou corpo acima de 64 KB; um corpo válido é gravado e relido igual.",
-      "tests": []
+      "tests": [
+        "apps/api/src/user-screen-preferences/user-screen-preferences.service.spec.ts: AC-12: o que o PUT grava, o GET relê igual",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-12: um corpo válido é gravado (200) e relido igual",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-12: o PUT substitui o corpo anterior (vale a última gravação)",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-12: aceita os limites exatos (collapsed com 100 entradas, ids de 64 caracteres, 200 colunas, 50 filtros)",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-12: 400 e nada gravado para campo desconhecido na raiz",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-12: 400 e nada gravado para campo desconhecido dentro de grid",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-12: 400 e nada gravado para id de usuário no corpo",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-12: 400 e nada gravado para corpo que não é objeto (lista)",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-12: 400 e nada gravado para groupBy com tipo errado",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-12: 400 e nada gravado para groupBy com mais de 64 caracteres",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-12: 400 e nada gravado para density fora de compact/comfortable",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-12: 400 e nada gravado para columnVisibility com valor que não é booleano",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-12: 400 e nada gravado para columnVisibility com mais de 200 entradas",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-12: 400 e nada gravado para columnOrder com mais de 200 ids",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-12: 400 e nada gravado para form.layout desconhecido",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-12: 400 e nada gravado para viewMode desconhecido",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-12: 400 e nada gravado para savedFilters com mais de 50 itens",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-12: 400 e nada gravado para savedFilter com name acima de 120 caracteres",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-12: 400 e nada gravado para collapsed com valor que não é booleano",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-12: 400 e nada gravado para collapsed com mais de 100 entradas",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-12: 400 e nada gravado para collapsed com id de mais de 64 caracteres",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-12: 400 e nada gravado para collapsed que não é mapa (lista)",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-12: corpo acima de 64 KB (e abaixo do limite padrão do Express) devolve 400 e não grava",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-12: corpo perto de 64 KB, mas dentro do limite, é aceito"
+      ]
     },
     {
       "id": "AC-13",
       "description": "um usuário não lê nem grava a preferência de outro: duas contas gravam a mesma tela e cada uma lê só a sua; nenhuma rota aceita id de usuário.",
-      "tests": []
+      "tests": [
+        "apps/api/src/user-screen-preferences/user-screen-preferences.service.spec.ts: AC-13: dois usuários gravam a mesma tela e cada um lê só a sua",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.service.spec.ts: AC-13: o mesmo usuário em telas diferentes tem preferências separadas",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.controller.spec.ts: AC-13: sempre age com o id do usuário do token (req.user.id), nunca com id vindo da requisição",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.controller.spec.ts: AC-13: devolve o que o service devolve",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-13: duas contas gravam a mesma tela e cada uma lê só a sua",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-13: nenhuma rota aceita id de usuário (na URL ou no corpo); só a rota por tela funciona, com o id do token"
+      ]
     },
     {
       "id": "AC-14",
       "description": "`useUserScreenConfig` mantém a assinatura para as cinco telas, lê do servidor antes de a tela desenhar, grava cada mudança no servidor com espera de 400 ms e deixa de usar o `localStorage` depois da importação; os testes existentes das cinco telas seguem verdes.",
-      "tests": []
+      "tests": [
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-14: mantém a assinatura e lê GET /me/screen-preferences/organizations",
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-14: mantém a assinatura e lê GET /me/screen-preferences/contracts",
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-14: mantém a assinatura e lê GET /me/screen-preferences/service-desks",
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-14: mantém a assinatura e lê GET /me/screen-preferences/tickets-list",
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-14: mantém a assinatura e lê GET /me/screen-preferences/tickets-kanban",
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-14: lê do servidor antes de entregar a configuração (isLoading até a resposta)",
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-14: o que o servidor não tem fica com os padrões do chamador",
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-14: grava cada mudança no servidor (PUT) só depois de 400 ms de espera",
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-14: junta cliques seguidos em uma só gravação, com o último estado",
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-14: a mudança gravada é relida igual numa nova montagem do hook",
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-14: com a preferência no servidor, o localStorage não é lido nem escrito",
+        "apps/web/src/components/tickets/TicketKanban.preferences.test.tsx: AC-14: com a leitura pendente mostra o esqueleto (sem colunas); depois da resposta desenha o quadro",
+        "apps/web/src/components/tickets/TicketKanban.preferences.test.tsx: AC-14: o recolhimento não passa pelo localStorage: grava no servidor e não deixa chave no navegador"
+      ]
     },
     {
       "id": "AC-15",
       "description": "sem linha no servidor e com configuração no `localStorage` do usuário, a primeira leitura envia a configuração ao servidor, usa-a e apaga a chave só depois da gravação confirmada; conteúdo inválido no `localStorage` é descartado e a tela usa os padrões.",
-      "tests": []
+      "tests": [
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-15: sem linha no servidor e com chave no navegador, envia ao servidor e usa a configuração",
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-15: apaga a chave só depois da gravação confirmada, e o navegador deixa de ser usado",
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-15: se a gravação da importação falhar, a chave fica no navegador (nova tentativa na próxima leitura)",
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-15: importa só a chave do próprio usuário e da própria tela",
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-15: conteúdo inválido no navegador é descartado (texto que não é JSON): padrões e nada enviado",
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-15: conteúdo inválido no navegador é descartado (JSON que não é objeto): padrões e nada enviado",
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-15: conteúdo inválido no navegador é descartado (groupBy com tipo errado): padrões e nada enviado",
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-15: conteúdo inválido no navegador é descartado (campo desconhecido): padrões e nada enviado"
+      ]
     },
     {
       "id": "AC-16",
       "description": "se a leitura ou a gravação falhar, a tela abre e funciona com os padrões e as escolhas em memória, sem alerta bloqueante, e a próxima mudança tenta gravar de novo.",
-      "tests": []
+      "tests": [
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-16: se a leitura falhar, usa os padrões, sai do carregamento e não alerta",
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-16: depois de uma leitura que falhou, a mudança fica em memória e tenta gravar",
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-16: se a gravação falhar, a escolha continua em memória, sem alerta, e a próxima mudança grava de novo",
+        "apps/web/src/components/tickets/TicketKanban.preferences.test.tsx: AC-16: se a leitura falhar, o quadro abre com os padrões, sem alerta, e a escolha fica em memória",
+        "apps/web/src/components/tickets/TicketKanban.preferences.test.tsx: AC-16: se a gravação falhar, a escolha continua, sem alerta, e a próxima mudança tenta gravar de novo"
+      ]
     },
     {
       "id": "AC-17",
       "description": "o recolhimento de cada coluna do Kanban é salvo e relido por usuário no mapa `collapsed`; coluna sem entrada usa o padrão do AC-07; id de estágio inexistente é ignorado; o recolhimento de um usuário não afeta o de outro.",
-      "tests": []
+      "tests": [
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-17: lê o mapa collapsed do servidor e não inventa entrada para as demais colunas",
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-17: setColumnCollapsed grava só o que o usuário mexeu, em 400 ms",
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-17: o recolhimento de um usuário não afeta o de outro",
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-17: ao trocar de usuário no mesmo hook, lê a preferência do novo usuário",
+        "apps/web/src/components/tickets/TicketKanban.preferences.test.tsx: AC-17: o mapa do servidor vence o padrão; coluna sem entrada usa o padrão (Resolvido e Fechado recolhidos)",
+        "apps/web/src/components/tickets/TicketKanban.preferences.test.tsx: AC-17: expandir Resolvido e recolher Aberto grava só o que o usuário mexeu, com espera de 400 ms",
+        "apps/web/src/components/tickets/TicketKanban.preferences.test.tsx: AC-17: o recolhimento gravado é relido igual ao abrir o Kanban de novo",
+        "apps/web/src/components/tickets/TicketKanban.preferences.test.tsx: AC-17: com Mesa selecionada, o mapa vale por estágio e o id de estágio inexistente é ignorado",
+        "apps/web/src/components/tickets/TicketKanban.preferences.test.tsx: AC-17: com Mesa selecionada e sem entrada no mapa, o estágio final abre recolhido (padrão do AC-07)",
+        "apps/web/src/components/tickets/TicketKanban.preferences.test.tsx: AC-17: o recolhimento de um usuário não afeta o de outro"
+      ]
     }
   ],
   "spec": "docs/delivery/specs/DMTE-527.md",
