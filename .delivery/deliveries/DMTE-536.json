@@ -1,0 +1,95 @@
+{
+  "version": 1,
+  "delivery": "DMTE-536",
+  "repository": "dmrepositorio/aponta",
+  "github_issue": 265,
+  "multica_id": "01a1e1c8-cd23-7bb3-8b11-4ea6b448b80f",
+  "cycle": "2026-11-09/2026-11-22",
+  "tier": 2,
+  "criteria": [
+    {
+      "id": "AC-01",
+      "description": "o nome de cada contrato na grade é um botão com o nome acessível `Ver detalhes <nome>` que abre o detalhe; a coluna \"Ações\" não existe; o duplo clique numa linha abre o detalhe do contrato da linha.",
+      "tests": [
+        "apps/web/src/pages/ContractsPage.test.tsx: opens the detail from the contract name button and has no Ações column",
+        "apps/web/src/pages/ContractsPage.test.tsx: opens the detail of the row on double click"
+      ]
+    },
+    {
+      "id": "AC-02",
+      "description": "Contrato, Empresa e Modalidade renderizam em uma linha (`truncate`, sem quebra) com `title` do texto inteiro; cada coluna tem largura fixa (Contrato 180, Empresa 166, Modalidade 188, Situação 300, Valor mensal 156, Hora excedente 130, Reajuste 120) e a soma das colunas visíveis por padrão, com o checkbox de 55 px, não passa de 1076 px.",
+      "tests": [
+        "apps/web/src/pages/ContractsPage.test.tsx: keeps Contrato and Empresa on one line with the full text in the title, and fixed column widths"
+      ]
+    },
+    {
+      "id": "AC-03",
+      "description": "a coluna \"Situação\" mostra duas `EzTag` com texto e ícone: Ativo/Inativo e Aprovado/Rascunho/Regularização pendente; o estado positivo e o negativo diferem em texto, ícone e conjunto de classes (não só em cor); nenhum usa `red-*`; Rascunho e Regularização pendente diferem em texto e ícone.",
+      "tests": [
+        "apps/web/src/components/contracts/ContractStateTags.test.tsx: shows Ativo and Inativo with text and an icon, differing in icon and classes, without red",
+        "apps/web/src/components/contracts/ContractStateTags.test.tsx: shows each approval state with its own text and icon, none of them red",
+        "apps/web/src/components/contracts/ContractStateTags.test.tsx: keeps Rascunho and Regularização pendente in the same warning family but apart by text and icon",
+        "apps/web/src/pages/ContractsPage.test.tsx: shows Ativo/Inativo and the approval state as tags with text and icon in one Situação column"
+      ]
+    },
+    {
+      "id": "AC-04",
+      "description": "`approvalLabel` é a única fonte do texto de aprovação: a grade, a linha \"Aprovação\" do detalhe e as opções e o valor do filtro \"Aprovação\" usam \"Aprovado\", \"Rascunho\" e \"Regularização pendente\" (não existe mais \"Pendente\" para aprovação), e o filtro por \"Rascunho\" e por \"Regularização pendente\" devolve os contratos certos.",
+      "tests": [
+        "apps/web/src/components/contracts/ContractStateTags.test.tsx: uses one vocabulary: legacy wins, then approved, else draft",
+        "apps/web/src/pages/ContractsPage.test.tsx: uses the same approval words in the detail",
+        "apps/web/src/pages/ContractsPage.test.tsx: filters by the same approval words, including Rascunho and Regularização pendente"
+      ]
+    },
+    {
+      "id": "AC-05",
+      "description": "todo par texto/fundo das tags de estado tem contraste mínimo de 4,5:1 (tokens lidos de `styles.css`) e os ícones têm no mínimo 3:1 contra o fundo da tag.",
+      "tests": [
+        "apps/web/src/components/contracts/ContractStateTags.test.tsx: declares a token pair for every state",
+        "apps/web/src/components/contracts/ContractStateTags.test.tsx: declares the same tokens the rendered tags really use",
+        "apps/web/src/components/contracts/ContractStateTags.test.tsx: reaches 4.5:1 for every text/background pair (icons inherit the text color, so they reach it too)",
+        "apps/web/src/components/contracts/ContractStateTags.test.tsx: lets icons inherit the text color (no own text-* class)"
+      ]
+    },
+    {
+      "id": "AC-06",
+      "description": "\"Hora excedente\" e \"Reajuste\" começam ocultas na configuração padrão da tela e continuam na lista de colunas da configuração de tela; \"Situação\" aparece nessa lista.",
+      "tests": [
+        "apps/web/src/pages/ContractsPage.test.tsx: starts with Hora excedente and Reajuste hidden but still configurable"
+      ]
+    },
+    {
+      "id": "AC-07",
+      "description": "a 1440 px, no navegador, a grade padrão não tem rolagem horizontal, todas as linhas têm a mesma altura e o botão do nome fica dentro da área visível (medido em Chromium com a massa da auditoria).",
+      "tests": [
+        "Medição em Chromium a 1440 px: sem rolagem horizontal, linhas de altura igual e botão do nome visível (resultado no PR)"
+      ],
+      "tdd_required": false,
+      "reason": "Medida de layout em navegador (jsdom não calcula layout); o comportamento causador (uma linha por célula, larguras fixas, colunas ocultas) é coberto por AC-02 e AC-06"
+    },
+    {
+      "id": "AC-08",
+      "description": "sem mudança de API, schema ou regra, e nenhum arquivo de `apps/web/src/components/ds/` alterado.",
+      "tests": [
+        "git diff do PR: nenhum arquivo em apps/web/src/components/ds/ nem em apps/api"
+      ],
+      "tdd_required": false,
+      "reason": "Restrição de escopo, verificada no diff do PR; não é comportamento"
+    }
+  ],
+  "spec": "docs/delivery/specs/DMTE-536.md",
+  "tdd": {
+    "mode": "required",
+    "red": ".delivery/evidence/DMTE-536/red.json",
+    "green": ".delivery/evidence/DMTE-536/green.json"
+  },
+  "design_system": {
+    "applicable": true,
+    "reused": [
+      "EzTag",
+      "EzEntityGrid"
+    ],
+    "reason": "Reaproveita EzTag (variantes green, yellow e gray, leftIcon) e EzEntityGrid (size por coluna e onRowDoubleClick, props que já existem); só tokens já definidos no @theme; nenhum componente, prop ou token novo no DS.",
+    "exception": "Nenhum arquivo de apps/web/src/components/ds/ muda nesta entrega, então não há story nova; ContractStateTags é componente de domínio em components/contracts."
+  }
+}
