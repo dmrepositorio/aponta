@@ -31,7 +31,7 @@ import {
 // changes this relative order. Items not yet implemented (Chats #45, Agenda
 // #46) are kept in their fixed position but rendered disabled with an "Em
 // breve" badge, so the final order is already correct once they ship.
-const NAV_ITEMS = [
+export const NAV_ITEMS = [
   { to: '/dashboard', label: 'Dashboard', icon: <LayoutDashboard /> },
   { to: '/', label: 'Tickets', icon: <Ticket /> },
   { to: '/chats', label: 'Chats', icon: <MessageSquare />, disabled: true },

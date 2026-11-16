@@ -4,7 +4,6 @@ import type { ReactElement } from 'react';
 import { render, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import {
-  ContractActiveTag,
   ContractApprovalTag,
   approvalLabel,
   contractStateTokenPairs,
@@ -37,16 +36,6 @@ describe('approvalLabel', () => {
 });
 
 describe('contract state tags', () => {
-  it('shows Ativo and Inativo with text and an icon, differing in icon and classes, without red', () => {
-    const on = look(<ContractActiveTag active />, 'Ativo');
-    const off = look(<ContractActiveTag active={false} />, 'Inativo');
-    expect(on.glyph).not.toBeNull();
-    expect(off.glyph).not.toBeNull();
-    expect(on.glyph).not.toBe(off.glyph);
-    expect(on.className).not.toBe(off.className);
-    expect(`${on.className} ${off.className}`).not.toMatch(/red-/);
-  });
-
   it('shows each approval state with its own text and icon, none of them red', () => {
     const looks = states.map((state) => look(<ContractApprovalTag state={state} />, state));
     for (const item of looks) {
@@ -68,7 +57,6 @@ describe('contract state tags', () => {
     for (const state of states) {
       expect(look(<ContractApprovalTag state={state} />, state).iconClass).not.toMatch(/text-/);
     }
-    expect(look(<ContractActiveTag active />, 'Ativo').iconClass).not.toMatch(/text-/);
   });
 });
 
@@ -91,14 +79,12 @@ const contrast = (a: string, b: string) => {
 describe('contract state tag colors', () => {
   it('declares a token pair for every state', () => {
     expect(Object.keys(contractStateTokenPairs).sort()).toEqual(
-      ['active', 'approved', 'draft', 'inactive', 'legacy'].sort(),
+      ['approved', 'draft', 'legacy'].sort(),
     );
   });
 
   it('declares the same tokens the rendered tags really use', () => {
     const rendered: Record<string, string> = {
-      active: look(<ContractActiveTag active />, 'Ativo').className,
-      inactive: look(<ContractActiveTag active={false} />, 'Inativo').className,
       approved: look(<ContractApprovalTag state="Aprovado" />, 'Aprovado').className,
       draft: look(<ContractApprovalTag state="Rascunho" />, 'Rascunho').className,
       legacy: look(<ContractApprovalTag state="Regularização pendente" />, 'Regularização pendente').className,

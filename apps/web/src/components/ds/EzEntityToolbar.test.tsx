@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { EzEntityToolbar } from './EzEntityToolbar';
 
@@ -114,5 +114,56 @@ describe('EzEntityToolbar (Sankhya ERP Parity)', () => {
 
     await user.click(item);
     expect(actionClick).toHaveBeenCalled();
+  });
+});
+
+describe('EzEntityToolbar on phones (DMTE-541 AC-12)', () => {
+  const fullToolbar = (
+    <EzEntityToolbar
+      viewMode="GRID"
+      onToggleViewMode={vi.fn()}
+      onToggleFilter={vi.fn()}
+      onInsert={vi.fn()}
+      onPrevious={vi.fn()}
+      onNext={vi.fn()}
+      onDelete={vi.fn()}
+      onClone={vi.fn()}
+      onRefresh={vi.fn()}
+      onOpenAttachments={vi.fn()}
+      onOpenScreenConfig={vi.fn()}
+      actions={[{ label: 'Exportar', onClick: vi.fn() }]}
+      recordCountText="1 - 10 de 50"
+    />
+  );
+
+  it('scrolls in a single row below 640 px and wraps from 640 px up', () => {
+    render(fullToolbar);
+    const bar = screen.getByTestId('ez-entity-toolbar');
+    expect(bar).toHaveClass('max-sm:flex-nowrap', 'max-sm:overflow-x-auto');
+    for (const group of Array.from(bar.children)) {
+      expect(group).toHaveClass('shrink-0');
+    }
+  });
+
+  it('gives every toolbar button a 44 px minimum size below 640 px and keeps the current size from there', () => {
+    render(fullToolbar);
+    const buttons = within(screen.getByTestId('ez-entity-toolbar')).getAllByRole('button');
+    expect(buttons.length).toBeGreaterThan(8);
+    for (const button of buttons) {
+      expect(button, button.getAttribute('data-testid') ?? button.textContent ?? '').toHaveClass(
+        'max-sm:min-h-11',
+        'max-sm:min-w-11',
+      );
+    }
+  });
+
+  it('opens its menus as a bottom sheet below 640 px so the scrolling row does not clip them', async () => {
+    const user = userEvent.setup();
+    render(fullToolbar);
+
+    await user.click(screen.getByTestId('ez-toolbar-actions-button'));
+    expect(screen.getByTestId('ez-toolbar-actions-dropdown')).toHaveClass('max-sm:fixed', 'max-sm:inset-x-3', 'max-sm:bottom-3');
+    await user.click(screen.getByTestId('ez-toolbar-mode-menu-button'));
+    expect(screen.getByTestId('ez-toolbar-mode-dropdown')).toHaveClass('max-sm:fixed', 'max-sm:inset-x-3', 'max-sm:bottom-3');
   });
 });

@@ -374,3 +374,23 @@ export const CadastroDeParceirosSankhya: Story = {
 
 
 
+
+/**
+ * DMTE-541: `meta.truncate` deixa a coluna em uma linha com reticências (texto inteiro no `title`; o `size` da
+ * coluna é a largura máxima), `meta.align: 'right'` alinha cabeçalho e células à direita com números tabulares, e
+ * `compactBelowSm` esconde "#" e a seleção abaixo de 640 px. As três opções são desligadas por padrão.
+ */
+export const LinhaUnicaColunaNumericaECompacto: Story = {
+  args: {
+    columns: [
+      { accessorKey: 'id', header: 'Chamado', size: 100 },
+      { accessorKey: 'title', header: 'Título', size: 180, meta: { truncate: true } },
+      { accessorKey: 'client', header: 'Cliente', meta: { hideBelowSm: true } },
+      { accessorKey: 'amount', header: 'Valor (R$)', size: 110, meta: { align: 'right' } },
+    ],
+    data: tickets,
+    selectable: true,
+    showRowNumbers: true,
+    compactBelowSm: true,
+  },
+};

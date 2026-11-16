@@ -516,4 +516,16 @@ describe('ServiceDesksPage', () => {
       expect(headers).toEqual(['#', 'Nome', 'Nome de exibição', 'Ativa', 'Recebendo', 'Clientes', 'Agentes']);
     });
   });
+
+  it('DMTE-541 AC-08: the filter panel sits in a positioned container so it can overlay the grid below xl', async () => {
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    renderPage();
+    await screen.findByText('Suporte N1');
+
+    await user.click(screen.getByTestId('ez-toolbar-filter-panel-button'));
+    const drawer = screen.getByTestId('ez-filter-drawer');
+    expect(drawer.parentElement).toHaveClass('relative');
+    expect(drawer).toHaveClass('absolute', 'xl:relative');
+  });
 });

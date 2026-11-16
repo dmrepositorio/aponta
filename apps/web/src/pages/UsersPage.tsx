@@ -12,6 +12,7 @@ import {
   EzTag,
   EzTextInput,
 } from '../components/ds';
+import { ActiveTag } from '../components/ActiveTag';
 import { useUsersList, useUser, useSetUserActive, UserListItem } from '../hooks/useUsers';
 
 const PAGE_SIZE = 20;
@@ -25,20 +26,6 @@ const ROLE_LABELS: Record<string, string> = {
 };
 
 type DetailTab = 'profile' | 'security';
-
-function StatusBadge({ active }: { active: boolean }) {
-  return (
-    <span
-      className={
-        active
-          ? 'inline-flex items-center rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700'
-          : 'inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600'
-      }
-    >
-      {active ? 'Ativo' : 'Inativo'}
-    </span>
-  );
-}
 
 function UserDetail({ userId, onBack }: { userId: string; onBack: () => void }) {
   const { data: user, isLoading } = useUser(userId);
@@ -57,7 +44,7 @@ function UserDetail({ userId, onBack }: { userId: string; onBack: () => void }) 
     <div className="space-y-5 p-5">
       <div className="flex items-center justify-between">
         <h2 className="text-[18px] font-semibold text-gray-900">{user.name}</h2>
-        <StatusBadge active={user.active} />
+        <ActiveTag active={user.active} />
       </div>
 
       <EzTabs
@@ -240,7 +227,7 @@ export function UsersPage() {
                       {ROLE_LABELS[u.role] ?? u.role}
                     </td>
                     <td className="px-4 py-3">
-                      <StatusBadge active={u.active} />
+                      <ActiveTag active={u.active} />
                     </td>
                   </tr>
                 ))}

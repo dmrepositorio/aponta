@@ -731,7 +731,7 @@ export function ServiceDesksPage() {
           )}
 
           {mode === 'list' && (
-            <div className="flex flex-1 overflow-hidden min-h-[420px]">
+            <div className="relative flex flex-1 overflow-hidden min-h-[420px]">
               {/* Painel lateral de Filtros (Sankhya parity), mesmo padrão de OrganizationsPage.tsx */}
               <EzFilterDrawer
                 isOpen={isFilterPanelOpen}
@@ -801,7 +801,7 @@ export function ServiceDesksPage() {
 
               {/* Grid Content */}
               <div data-testid="service-desks-grid-content"
-className="flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll-x-contain min-w-0 flex flex-col">
+className="isolate flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll-x-contain min-w-0 flex flex-col">
                 {filteredDesks.length === 0 ? (
                   <div className="p-4">
                     <EzEmptyCard title="Nenhuma mesa cadastrada ainda." />

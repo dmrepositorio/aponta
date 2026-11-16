@@ -96,3 +96,41 @@ describe('EzFilterDrawer', () => {
     expect(onSaveCurrentFilter).toHaveBeenCalledWith('Novo Filtro');
   });
 });
+
+describe('EzFilterDrawer responsive placement (DMTE-541 AC-08)', () => {
+  it('is an overlay below xl (positioned, layered, shadowed) and a side panel from xl up', () => {
+    render(
+      <EzFilterDrawer isOpen={true} onClose={vi.fn()}>
+        <div>Conteúdo</div>
+      </EzFilterDrawer>
+    );
+    const drawer = screen.getByTestId('ez-filter-drawer');
+    expect(drawer).toHaveClass('absolute', 'inset-y-0', 'left-0', 'z-20', 'shadow-xl');
+    expect(drawer).toHaveClass('xl:relative', 'xl:z-auto', 'xl:shadow-none');
+    expect(drawer).toHaveClass('max-w-[85%]');
+  });
+
+  it('closes with Escape and with the close button', async () => {
+    const user = userEvent.setup();
+    const onClose = vi.fn();
+    render(
+      <EzFilterDrawer isOpen={true} onClose={onClose}>
+        <div>Conteúdo</div>
+      </EzFilterDrawer>
+    );
+
+    await user.keyboard('{Escape}');
+    expect(onClose).toHaveBeenCalledTimes(1);
+    await user.click(screen.getByTestId('ez-filter-drawer-close'));
+    expect(onClose).toHaveBeenCalledTimes(2);
+  });
+
+  it('respects reduced motion for its entrance animation', () => {
+    render(
+      <EzFilterDrawer isOpen={true} onClose={vi.fn()}>
+        <div>Conteúdo</div>
+      </EzFilterDrawer>
+    );
+    expect(screen.getByTestId('ez-filter-drawer')).toHaveClass('motion-reduce:animate-none');
+  });
+});

@@ -64,7 +64,9 @@ export function EzFilterDrawer({
       data-testid="ez-filter-drawer"
       aria-label="Painel de filtros"
       className={cn(
-        'w-72 shrink-0 bg-white border-r border-gray-200 flex flex-col h-full animate-in slide-in-from-left duration-200',
+        'w-72 shrink-0 bg-white border-r border-gray-200 flex flex-col h-full animate-in slide-in-from-left duration-200 motion-reduce:animate-none',
+        // Abaixo de xl vira sobreposição sobre a grade (o contêiner da página é `relative`); de xl em diante fica ao lado.
+        'absolute inset-y-0 left-0 z-20 max-w-[85%] shadow-xl xl:relative xl:z-auto xl:max-w-none xl:shadow-none',
         className
       )}
     >

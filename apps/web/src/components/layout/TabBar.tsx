@@ -1,7 +1,8 @@
 import { X } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useTabs } from '../../contexts/TabsContext';
+import { useTabs, type AppTab } from '../../contexts/TabsContext';
 import { cn } from '../ds/utils';
+import { NAV_ITEMS } from './Sidebar';
 
 /**
  * Workspace tab strip (TiFlux parity): shows every internally-opened tab
@@ -15,6 +16,13 @@ export function TabBar() {
   const canClose = tabs.length > 1;
   const location = useLocation();
   const navigate = useNavigate();
+  // Rota fora das abas: mostra uma aba ativa transitória (título do menu lateral), fora do sessionStorage e sem fechar.
+  const transientTitle = tabs.some((tab) => tab.path === location.pathname)
+    ? undefined
+    : NAV_ITEMS.find((item) => item.to === location.pathname)?.label;
+  const shownTabs: Array<AppTab & { transient?: boolean }> = transientTitle
+    ? [...tabs, { id: location.pathname, path: location.pathname, title: transientTitle, transient: true }]
+    : tabs;
 
   return (
     <div
@@ -22,7 +30,7 @@ export function TabBar() {
       aria-label="Abas abertas"
       className="flex items-center gap-1 overflow-x-auto border-b border-gray-200 bg-white px-3 pt-2"
     >
-      {tabs.map((tab) => {
+      {shownTabs.map((tab) => {
         const isActive = location.pathname === tab.path;
         return (
           <div
@@ -46,7 +54,7 @@ export function TabBar() {
             <span className="truncate" id={`tab-title-${tab.id}`}>
               {tab.title}
             </span>
-            {canClose && (
+            {canClose && !tab.transient && (
               <button
                 type="button"
                 // A generic, constant accessible NAME keeps this button from

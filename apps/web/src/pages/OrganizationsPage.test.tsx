@@ -143,7 +143,7 @@ describe('OrganizationsPage', { timeout: 15000 }, () => {
 
     expect(screen.getByRole('columnheader', { name: 'Nome' })).toBeInTheDocument();
     expect(screen.getByRole('columnheader', { name: 'Status' })).toBeInTheDocument();
-    expect(screen.getByRole('columnheader', { name: 'Clientes' })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: 'Usuários' })).toBeInTheDocument();
 
     const [rowA, rowB] = screen.getAllByRole('row').slice(1);
     expect(within(rowA).getByText('Empresa A')).toBeInTheDocument();
@@ -159,7 +159,8 @@ describe('OrganizationsPage', { timeout: 15000 }, () => {
     expect(screen.getByTestId('ez-toolbar-mode-toggle-button')).toBeInTheDocument();
     expect(screen.queryByTestId('ez-toolbar-insert-button')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /novo cliente/i })).not.toBeInTheDocument();
-    expect(screen.getByRole('columnheader', { name: 'Código' })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: '#' })).toBeInTheDocument();
+    expect(screen.queryByRole('columnheader', { name: 'Código' })).not.toBeInTheDocument();
   });
 
   it('switches to the full-page form via Ações > Cadastrar manualmente and validates it', async () => {
@@ -405,13 +406,14 @@ describe('OrganizationsPage', { timeout: 15000 }, () => {
     });
   });
 
-  it('defaults to the Usuários tab, lists only CLIENT/CLIENT_MASTER users and allows linking', async () => {
+  it('lists only CLIENT/CLIENT_MASTER users in the Usuários tab and allows linking', async () => {
     vi.mocked(api.patch).mockResolvedValue({ data: {} });
     loginAs('ADMIN');
     const user = userEvent.setup();
     renderPage();
 
     await openDetail(user);
+    await user.click(screen.getByRole('tab', { name: 'Usuários' }));
 
     await waitFor(() => {
       expect(screen.getByText('Cliente Um')).toBeInTheDocument();
@@ -432,7 +434,7 @@ describe('OrganizationsPage', { timeout: 15000 }, () => {
     });
   });
 
-  it('updates organization name and legal name on blur in Usuários tab', async () => {
+  it('updates organization name and legal name on blur in Geral tab', async () => {
     vi.mocked(api.patch).mockResolvedValue({ data: orgDetail });
     loginAs('ADMIN');
     const user = userEvent.setup();
@@ -478,7 +480,7 @@ describe('OrganizationsPage', { timeout: 15000 }, () => {
     });
   });
 
-  it('adds a new contact from the Usuários tab', async () => {
+  it('adds a new contact from the Geral tab', async () => {
     vi.mocked(api.post).mockResolvedValue({ data: { id: 'contact-2', name: 'New Contact' } });
     loginAs('ADMIN');
     const user = userEvent.setup();
@@ -500,7 +502,7 @@ describe('OrganizationsPage', { timeout: 15000 }, () => {
     });
   });
 
-  it('saves serviceType/healthStatus from the Usuários tab (Perfil do Cliente, issue #56)', async () => {
+  it('saves serviceType/healthStatus from the Geral tab (Perfil do Cliente, issue #56)', async () => {
     vi.mocked(api.patch).mockResolvedValue({ data: orgDetail });
     loginAs('ADMIN');
     const user = userEvent.setup();
@@ -650,11 +652,8 @@ describe('OrganizationsPage', { timeout: 15000 }, () => {
       expect(screen.getByText('Empresa A')).toBeInTheDocument();
     });
 
-    // 1. Inline edit: toggle status directly from the grid cell
-    const statusButtons = screen.getAllByTitle(/alternar status/i);
-    expect(statusButtons.length).toBeGreaterThan(0);
-    await user.click(statusButtons[0]);
-    expect(api.patch).toHaveBeenCalledWith('/organizations/org-1', { active: false });
+    // 1. O status na grade é só de leitura (DMTE-541 AC-03): sem botão para alternar
+    expect(screen.queryByTitle(/alternar status/i)).not.toBeInTheDocument();
 
     // 2. Toolbar action: Cadastrar por CNPJ
     await user.click(screen.getByTestId('ez-toolbar-actions-button'));
@@ -984,7 +983,7 @@ describe('OrganizationsPage', { timeout: 15000 }, () => {
     const rule = within(drawer).getByTestId('ez-dynamic-filter-rule');
     const fieldOptions = within(within(rule).getByLabelText('Campo', { selector: 'select' })).getAllByRole('option', { hidden: true }).map((o) => o.textContent);
     expect(fieldOptions).toEqual(
-      expect.arrayContaining(['Nome', 'Razão Social', 'CPF / CNPJ', 'Status', 'Clientes', 'Inscrição Estadual', 'Perfil', 'Saúde']),
+      expect.arrayContaining(['Nome', 'Razão Social', 'CPF / CNPJ', 'Status', 'Usuários', 'Inscrição Estadual', 'Perfil', 'Saúde']),
     );
 
     await user.type(within(rule).getByLabelText('Valor'), 'Empresa B');
@@ -1010,3 +1009,248 @@ describe('OrganizationsPage', { timeout: 15000 }, () => {
     void user;
   });
 });
+
+describe('OrganizationsPage DMTE-541', { timeout: 15000 }, () => {
+  const longName = 'Associação Beneficente dos Moradores e Amigos do Bairro Jardim das Acácias Ltda';
+  const richOrgs = [
+    { id: 'org-1', name: 'Empresa A', legalName: 'Empresa A Ltda', cnpj: '19131243000197', documentType: 'CNPJ', active: true, _count: { users: 7 } },
+    { id: 'org-2', name: 'Empresa B', legalName: 'Empresa B ME', cpf: '12345678901', documentType: 'CPF', active: false, _count: { users: 3 } },
+    { id: 'org-3', name: longName, legalName: longName, cnpj: '11222333000181', documentType: 'CNPJ', active: true, _count: { users: 0 } },
+  ];
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(api.get).mockImplementation((url: string) => {
+      if (url === '/organizations') return Promise.resolve({ data: richOrgs });
+      if (url === '/users') return Promise.resolve({ data: users });
+      if (url === '/service-desks') return Promise.resolve({ data: serviceDesks });
+      if (url === '/organizations/org-1') return Promise.resolve({ data: { ...orgDetail, cpf: '12345678901', documentType: 'CPF' } });
+      if (url === '/organizations/org-2') return Promise.resolve({ data: { ...orgDetail, id: 'org-2', name: 'Empresa B', legalName: 'Empresa B ME' } });
+      return Promise.reject(new Error(`Unexpected GET ${url}`));
+    });
+    useAuthStore.setState({ token: null, user: null });
+    localStorage.clear();
+  });
+
+  const rowOf = async (name: string) => {
+    const [cell] = await screen.findAllByText(name);
+    return cell.closest('tr') as HTMLElement;
+  };
+
+  it('AC-01: the name is a button that opens the registration by click and by Enter, with no edit input and no external-link icon', async () => {
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    const { container } = renderPage();
+
+    const nameButton = await screen.findByRole('button', { name: 'Abrir cadastro de Empresa A' });
+    expect(container.querySelector('.lucide-external-link')).toBeNull();
+    expect(screen.queryByTitle('Abrir cadastro (modo formulário)')).not.toBeInTheDocument();
+
+    await user.click(nameButton);
+    expect(await screen.findByText('Dados do Parceiro / Cliente')).toBeInTheDocument();
+    expect(screen.queryByPlaceholderText('Nome')).not.toBeInTheDocument();
+    expect(api.patch).not.toHaveBeenCalled();
+
+    // volta para a lista e abre pelo teclado
+    await user.click(screen.getByTestId('ez-toolbar-mode-toggle-button'));
+    const again = await screen.findByRole('button', { name: 'Abrir cadastro de Empresa B' });
+    again.focus();
+    await user.keyboard('{Enter}');
+    expect(await screen.findByText('Dados do Parceiro / Cliente')).toBeInTheDocument();
+  });
+
+  it('AC-02: Razão Social stays editable by click, and a failed PATCH shows the reason and the cell keeps the previous value', async () => {
+    vi.mocked(api.patch).mockRejectedValue({ response: { data: { message: 'Razão Social já cadastrada para outro cliente' } } });
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(await screen.findByRole('button', { name: 'Empresa A Ltda' }));
+    const input = screen.getByDisplayValue('Empresa A Ltda');
+    await user.clear(input);
+    await user.type(input, 'Outra Razão{Enter}');
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Razão Social já cadastrada para outro cliente');
+    expect(api.patch).toHaveBeenCalledWith('/organizations/org-1', { legalName: 'Outra Razão' });
+    expect(screen.getByRole('button', { name: 'Empresa A Ltda' })).toBeInTheDocument();
+    expect(screen.queryByText('Outra Razão')).not.toBeInTheDocument();
+
+    await user.click(within(screen.getByRole('alert')).getByRole('button'));
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it('AC-02: a failed PATCH without a message from the API still shows a visible error', async () => {
+    vi.mocked(api.patch).mockRejectedValue(new Error('Network Error'));
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(await screen.findByRole('button', { name: 'Empresa B ME' }));
+    await user.type(screen.getByDisplayValue('Empresa B ME'), ' X{Enter}');
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(/não foi possível salvar/i);
+  });
+
+  it('AC-02: a successful PATCH shows no notice', async () => {
+    vi.mocked(api.patch).mockResolvedValue({ data: {} });
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(await screen.findByRole('button', { name: 'Empresa A Ltda' }));
+    const input = screen.getByDisplayValue('Empresa A Ltda');
+    await user.clear(input);
+    await user.type(input, 'Empresa A Nova{Enter}');
+
+    await waitFor(() => {
+      expect(api.patch).toHaveBeenCalledWith('/organizations/org-1', { legalName: 'Empresa A Nova' });
+    });
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it('AC-03: the status is read-only text with an icon, no raw emerald, and clicking it does not save', async () => {
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    const { container } = renderPage();
+
+    const rowA = await rowOf('Empresa A');
+    const rowB = await rowOf('Empresa B');
+    expect(within(rowA).queryByRole('button', { name: 'Ativo' })).not.toBeInTheDocument();
+    expect(within(rowB).queryByRole('button', { name: 'Inativo' })).not.toBeInTheDocument();
+    expect(within(rowA).getByText('Ativo').closest('div')?.querySelector('[data-glyph]')).not.toBeNull();
+    expect(within(rowB).getByText('Inativo').closest('div')?.querySelector('[data-glyph]')).not.toBeNull();
+    expect(container.innerHTML).not.toMatch(/emerald-/);
+
+    await user.click(within(rowA).getByText('Ativo'));
+    expect(api.patch).not.toHaveBeenCalled();
+  });
+
+  it('AC-04: the count column is "Usuários", right-aligned with tabular numbers, and the row numbering is "#"', async () => {
+    loginAs('ADMIN');
+    renderPage();
+
+    const rowA = await rowOf('Empresa A');
+    expect(screen.getByRole('columnheader', { name: 'Usuários' })).toHaveClass('text-right');
+    expect(screen.getByRole('columnheader', { name: '#' })).toBeInTheDocument();
+    expect(screen.queryByRole('columnheader', { name: 'Código' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('columnheader', { name: 'Clientes' })).not.toBeInTheDocument();
+    const count = within(rowA).getByText('7').closest('td') as HTMLElement;
+    expect(count).toHaveClass('text-right', 'tabular-nums');
+  });
+
+  it('AC-05: the CPF shows masked in the grid and in the registration summary, and the CNPJ stays masked', async () => {
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    renderPage();
+
+    const rowB = await rowOf('Empresa B');
+    expect(within(rowB).getByRole('button', { name: '123.456.789-01' })).toBeInTheDocument();
+    expect(within(await rowOf('Empresa A')).getByRole('button', { name: '19.131.243/0001-97' })).toBeInTheDocument();
+
+    await user.click(within(await rowOf('Empresa A')).getByRole('button', { name: 'Abrir cadastro de Empresa A' }));
+    expect(await screen.findByText('123.456.789-01')).toBeInTheDocument();
+  });
+
+  it('AC-06: Nome and Razão Social are one line with ellipsis and the full text in title; other columns are not truncated', async () => {
+    loginAs('ADMIN');
+    renderPage();
+
+    const row = await rowOf(longName);
+    const nameCell = within(row).getByRole('button', { name: `Abrir cadastro de ${longName}` }).closest('td') as HTMLElement;
+    expect(nameCell).toHaveClass('truncate');
+    expect(nameCell).toHaveAttribute('title', longName);
+    const legalCell = within(row).getByRole('button', { name: longName }).closest('td') as HTMLElement;
+    expect(legalCell).toHaveClass('truncate');
+    expect(legalCell).toHaveAttribute('title', longName);
+    const statusCell = within(row).getByText('Ativo').closest('td') as HTMLElement;
+    expect(statusCell).not.toHaveClass('truncate');
+  });
+
+  it('AC-08: the filter panel sits in a positioned container so it can overlay the grid below xl', async () => {
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    renderPage();
+
+    await screen.findByText('Empresa A');
+    await user.click(screen.getByTestId('ez-toolbar-filter-panel-button'));
+    const drawer = screen.getByTestId('ez-filter-drawer');
+    expect(drawer.parentElement).toHaveClass('relative');
+    expect(drawer).toHaveClass('absolute', 'xl:relative');
+  });
+
+  it('AC-11: the registration has the tabs Geral, Usuários, Recursos, Relacionamentos and Faturamento, with Geral open', async () => {
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(await screen.findByRole('button', { name: 'Abrir cadastro de Empresa A' }));
+    await screen.findByText('Dados do Parceiro / Cliente');
+
+    expect(screen.getAllByRole('tab').map((t) => t.textContent)).toEqual([
+      'Geral',
+      'Usuários',
+      'Recursos',
+      'Relacionamentos',
+      'Faturamento',
+    ]);
+    expect(screen.getByRole('tab', { name: 'Geral' })).toHaveAttribute('aria-selected', 'true');
+  });
+
+  it('AC-11: Geral shows Razão Social, Nome Fantasia, Perfil, Endereços and Contatos, and not the linked users', async () => {
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(await screen.findByRole('button', { name: 'Abrir cadastro de Empresa A' }));
+    await screen.findByText('Dados do Parceiro / Cliente');
+
+    expect(await screen.findByLabelText(/razão social/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/nome fantasia/i)).toBeInTheDocument();
+    for (const heading of ['Perfil do Cliente', 'Endereços', 'Contatos']) {
+      expect(screen.getByRole('heading', { name: heading })).toBeInTheDocument();
+    }
+    expect(screen.queryByText('Usuários vinculados')).not.toBeInTheDocument();
+    expect(screen.queryByText('Cliente Um')).not.toBeInTheDocument();
+  });
+
+  it('AC-11: Usuários shows only the linked users with Adicionar/Remover, and none of the Geral content', async () => {
+    vi.mocked(api.patch).mockResolvedValue({ data: {} });
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(await screen.findByRole('button', { name: 'Abrir cadastro de Empresa A' }));
+    await screen.findByText('Dados do Parceiro / Cliente');
+    await user.click(screen.getByRole('tab', { name: 'Usuários' }));
+
+    expect(await screen.findByText('Cliente Um')).toBeInTheDocument();
+    expect(screen.getByText('Cliente Dois')).toBeInTheDocument();
+    expect(screen.queryByText('Agente')).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Usuários vinculados' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Perfil do Cliente' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Endereços' })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Remover' }));
+    await waitFor(() => {
+      expect(api.patch).toHaveBeenCalledWith('/users/u-1', { organizationId: null });
+    });
+  });
+
+  it('AC-12: below 640 px the grid hides # and the selection plus Razão Social and CPF/CNPJ, keeping Nome and Status', async () => {
+    loginAs('ADMIN');
+    renderPage();
+
+    const rowA = await rowOf('Empresa A');
+    const hiddenHeaders = ['#', 'Razão Social', 'CPF / CNPJ'];
+    for (const name of hiddenHeaders) {
+      expect(screen.getByRole('columnheader', { name })).toHaveClass('hidden', 'sm:table-cell');
+    }
+    for (const name of ['Nome', 'Status', 'Usuários']) {
+      expect(screen.getByRole('columnheader', { name })).not.toHaveClass('hidden');
+    }
+    expect(within(rowA).getByRole('checkbox', { name: 'Selecionar linha' }).closest('td')).toHaveClass('hidden', 'sm:table-cell');
+    expect(within(rowA).getByRole('button', { name: 'Empresa A Ltda' }).closest('td')).toHaveClass('hidden', 'sm:table-cell');
+    expect(within(rowA).getByText('Ativo').closest('td')).not.toHaveClass('hidden');
+  });
+});
+

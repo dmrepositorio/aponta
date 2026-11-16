@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { api } from '../lib/api';
 import { useAuthStore } from '../stores/authStore';
 import { useState, useMemo, useRef } from 'react';
-import { Search, Trash2, CreditCard, Plus, ExternalLink, RefreshCw, FilePlus } from 'lucide-react';
+import { Search, Trash2, CreditCard, Plus, RefreshCw, FilePlus } from 'lucide-react';
 import type { ColumnDef } from '@tanstack/react-table';
 import {
   EzAlert,
@@ -30,7 +30,8 @@ import {
 } from '../components/ds';
 import { applyDynamicFilters } from '../components/ds/EzDynamicFilter';
 import type { EzDynamicFilterField, EzDynamicFilterRule } from '../components/ds/EzDynamicFilter';
-import { cn } from '../components/ds/utils';
+import { ActiveTag } from '../components/ActiveTag';
+import { formatCnpj, formatCpf } from '../lib/documents';
 import { useUserScreenConfig } from '../hooks/useUserScreenConfig';
 
 interface OrganizationAddress {
@@ -184,7 +185,7 @@ const ORG_FILTER_FIELDS: EzDynamicFilterField[] = [
     ],
     getValue: (o: Organization) => (o.active === false ? 'Inativo' : 'Ativo'),
   },
-  { id: 'clientes', label: 'Clientes', type: 'number', getValue: (o: Organization) => o._count?.users ?? 0 },
+  { id: 'clientes', label: 'Usuários', type: 'number', getValue: (o: Organization) => o._count?.users ?? 0 },
   { id: 'stateRegistration', label: 'Inscrição Estadual', getValue: (o: Organization) => o.stateRegistration },
   { id: 'municipalRegistration', label: 'Inscrição Municipal', getValue: (o: Organization) => o.municipalRegistration },
   { id: 'workFolder', label: 'Pasta de Trabalho', getValue: (o: Organization) => o.workFolder },
@@ -192,14 +193,7 @@ const ORG_FILTER_FIELDS: EzDynamicFilterField[] = [
   { id: 'healthStatus', label: 'Saúde', getValue: (o: Organization) => o.healthStatus },
 ];
 
-function formatCnpj(value?: string | null) {
-  if (!value) return '';
-  const digits = value.replace(/\D/g, '');
-  if (digits.length !== 14) return value;
-  return digits.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
-}
-
-type DetailTab = 'users' | 'resources' | 'relationships' | 'billing';
+type DetailTab = 'general' | 'users' | 'resources' | 'relationships' | 'billing';
 
 export function OrganizationsPage() {
   const user = useAuthStore((state) => state.user);
@@ -210,7 +204,7 @@ export function OrganizationsPage() {
   // Formulário (EzEntityToolbar), substituindo o antigo modal único.
   const [mode, setMode] = useState<'list' | 'form'>('list');
   const [detailOrgId, setDetailOrgId] = useState<string | null>(null);
-  const [detailTab, setDetailTab] = useState<DetailTab>('users');
+  const [detailTab, setDetailTab] = useState<DetailTab>('general');
   const [cnpjLookupError, setCnpjLookupError] = useState<string | null>(null);
   const [profileDraft, setProfileDraft] = useState<{ serviceType: string; healthStatus: string } | null>(null);
   const [billingDraft, setBillingDraft] = useState<{
@@ -262,6 +256,7 @@ export function OrganizationsPage() {
   const [screenConfigInitialTab, setScreenConfigInitialTab] = useState<'grid' | 'form'>('grid');
   const [selectedOrgs, setSelectedOrgs] = useState<Organization[]>([]);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [inlineError, setInlineError] = useState<string | null>(null);
   const [focusedIndex, setFocusedIndex] = useState(0);
 
   // Modal para cadastro automático via CNPJ (Sankhya / Receita Federal)
@@ -423,11 +418,16 @@ export function OrganizationsPage() {
       const res = await api.patch<Organization>(`/organizations/${id}`, data);
       return res.data;
     },
+    onMutate: () => setInlineError(null),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['organizations'] });
       if (detailOrgId) {
         void queryClient.invalidateQueries({ queryKey: ['organizations', detailOrgId] });
       }
+    },
+    onError: (err) => {
+      const message = (err as { response?: { data?: { message?: string } } }).response?.data?.message;
+      setInlineError(message ?? 'Não foi possível salvar a alteração.');
     },
   });
 
@@ -568,7 +568,7 @@ export function OrganizationsPage() {
       setFocusedIndex(idx);
       setSelectedOrgs([filteredOrgs[idx]]);
     }
-    setDetailTab('users');
+    setDetailTab('general');
     setDetailOrgId(orgId);
     setProfileDraft(null);
     setBillingDraft(null);
@@ -597,39 +597,29 @@ export function OrganizationsPage() {
       {
         accessorKey: 'name',
         header: 'Nome',
+        size: 165,
+        meta: { truncate: true },
         cell: ({ row }) => (
-          <div className="flex items-center gap-1.5">
-            <EzTextEdit
-              value={row.original.name || ''}
-              placeholder="Nome"
-              className="text-xs font-medium text-brand-700"
-              onChange={(val) => {
-                const next = val.trim();
-                if (next && next !== (row.original.name || '')) {
-                  inlinePatchMutation.mutate({ id: row.original.id, data: { name: next } });
-                }
-              }}
-            />
-            <button
-              type="button"
-              aria-label={`Abrir cadastro de ${row.original.name}`}
-              title="Abrir cadastro (modo formulário)"
-              onClick={() => openDetail(row.original.id)}
-              className="text-gray-400 hover:text-brand-700 cursor-pointer"
-            >
-              <ExternalLink className="w-3.5 h-3.5" />
-            </button>
-          </div>
+          <button
+            type="button"
+            aria-label={`Abrir cadastro de ${row.original.name}`}
+            onClick={() => openDetail(row.original.id)}
+            className="block max-w-full truncate text-left text-xs font-medium text-brand-700 hover:underline cursor-pointer"
+          >
+            {row.original.name}
+          </button>
         ),
       },
       {
         accessorKey: 'legalName',
         header: 'Razão Social',
+        size: 240,
+        meta: { truncate: true, hideBelowSm: true },
         cell: ({ row }) => (
           <EzTextEdit
             value={row.original.legalName || ''}
             placeholder="Razão Social"
-            className="text-xs text-gray-900"
+            className="max-w-full text-xs text-gray-900 [&>span]:truncate"
             onChange={(val) => {
               if (val !== (row.original.legalName || '')) {
                 inlinePatchMutation.mutate({ id: row.original.id, data: { legalName: val.trim() } });
@@ -641,14 +631,16 @@ export function OrganizationsPage() {
       {
         id: 'document',
         header: 'CPF / CNPJ',
+        size: 180,
+        meta: { hideBelowSm: true },
         cell: ({ row }) => {
           const isCpf = row.original.documentType === 'CPF';
           const doc = isCpf ? row.original.cpf : row.original.cnpj;
           return (
             <EzTextEdit
-              value={doc ? (isCpf ? doc : formatCnpj(doc)) : ''}
+              value={doc ? (isCpf ? formatCpf(doc) : formatCnpj(doc)) : ''}
               placeholder={isCpf ? 'CPF' : 'CNPJ'}
-              className="font-mono text-xs text-gray-700"
+              className="font-mono text-xs text-gray-700 whitespace-nowrap"
               onChange={(val) => {
                 const digits = val.replace(/\D/g, '');
                 if (digits !== (doc || '').replace(/\D/g, '')) {
@@ -665,31 +657,15 @@ export function OrganizationsPage() {
       {
         id: 'status',
         header: 'Status',
+        size: 115,
         accessorFn: (org) => (org.active === false ? 'Inativo' : 'Ativo'),
-        cell: ({ row }) => (
-          <button
-            type="button"
-            title="Alternar status (Ativo/Inativo)"
-            onClick={() => {
-              inlinePatchMutation.mutate({
-                id: row.original.id,
-                data: { active: row.original.active === false },
-              });
-            }}
-            className={cn(
-              'text-xs font-medium px-2 py-0.5 rounded-full cursor-pointer transition-colors',
-              row.original.active === false
-                ? 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
-            )}
-          >
-            {row.original.active === false ? 'Inativo' : 'Ativo'}
-          </button>
-        ),
+        cell: ({ row }) => <ActiveTag active={row.original.active !== false} />,
       },
       {
         id: 'clientes',
-        header: 'Clientes',
+        header: 'Usuários',
+        size: 90,
+        meta: { align: 'right' },
         cell: ({ row }) => <span className="text-xs text-gray-500">{row.original._count?.users || 0}</span>,
       },
       {
@@ -989,6 +965,12 @@ export function OrganizationsPage() {
               actions={toolbarActions}
             />
 
+            {inlineError && (
+              <EzAlert variant="error" onClose={() => setInlineError(null)}>
+                {inlineError}
+              </EzAlert>
+            )}
+
             {deleteError && (
               <EzAlert variant="error" onClose={() => setDeleteError(null)}>
                 {deleteError}
@@ -996,7 +978,7 @@ export function OrganizationsPage() {
             )}
 
             {mode === 'list' && (
-              <div className="flex flex-1 overflow-hidden min-h-[420px]">
+              <div className="relative flex flex-1 overflow-hidden min-h-[420px]">
                 {/* Lateral Filter Drawer com Filtros Dinâmicos e Filtros Salvos */}
                 <EzFilterDrawer
                   isOpen={isFilterPanelOpen}
@@ -1084,7 +1066,7 @@ export function OrganizationsPage() {
 
                 {/* Grid Content */}
                 <div data-testid="organizations-grid-content"
-className="flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll-x-contain min-w-0 flex flex-col">
+className="isolate flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll-x-contain min-w-0 flex flex-col">
                   {orgs?.length === 0 ? (
                     <div className="p-4">
                       <EzEmptyCard title="Nenhuma empresa cadastrada ainda." />
@@ -1094,7 +1076,7 @@ className="flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll-x-conta
                       columns={orgColumns}
                       data={filteredOrgs}
                       showRowNumbers
-                      rowNumberLabel="Código"
+                      compactBelowSm
                       enableColumnGrouping={false}
                       selectable
                       showGridCornerMenu
@@ -1301,7 +1283,7 @@ className="flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll-x-conta
                       <div className="space-y-1">
                         <span className="text-xs font-medium text-gray-500">CPF/CNPJ</span>
                         <div className="text-gray-900 font-medium text-sm font-mono">
-                          {orgDetail.documentType === 'CPF' ? (orgDetail.cpf || '—') : (formatCnpj(orgDetail.cnpj) || '—')}
+                          {orgDetail.documentType === 'CPF' ? (formatCpf(orgDetail.cpf) || '—') : (formatCnpj(orgDetail.cnpj) || '—')}
                         </div>
                       </div>
 
@@ -1354,6 +1336,7 @@ className="flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll-x-conta
 
                   <EzTabs
                 tabs={[
+                  { id: 'general', label: 'Geral' },
                   { id: 'users', label: 'Usuários' },
                   { id: 'resources', label: 'Recursos' },
                   { id: 'relationships', label: 'Relacionamentos' },
@@ -1363,7 +1346,7 @@ className="flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll-x-conta
                 onChange={(tabId) => setDetailTab(tabId as DetailTab)}
               />
 
-              {detailTab === 'users' && (
+              {detailTab === 'general' && (
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-3">
                     <EzTextInput id="org-legal-name-edit" label="Razão Social" defaultValue={orgDetail.legalName ?? ''}
@@ -1371,32 +1354,6 @@ className="flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll-x-conta
                     <EzTextInput id="org-name-edit" label="Nome Fantasia" defaultValue={orgDetail.name ?? ''}
                       onBlur={(e) => { if (e.target.value !== orgDetail.name) updateOrgMutation.mutate({ name: e.target.value }); }} />
                   </div>
-
-                  <h4 className="text-sm font-semibold text-gray-900">Usuários vinculados</h4>
-                  {isLoadingUsers ? <EzSpinner label="Carregando usuários…" /> : (
-                    <div className="max-h-72 overflow-y-auto space-y-2 border border-gray-200 rounded-[12px] p-3">
-                      {(usersList ?? []).filter(u => u.role.includes('CLIENT')).map(u => {
-                        const isPinned = u.organizationId === detailOrgId;
-                        return (
-                          <div key={u.id} className="flex justify-between items-center text-sm p-1 hover:bg-gray-90 rounded-[8px]">
-                            <div>
-                              <span className="text-gray-900">{u.name}</span>{' '}
-                              <span className="text-gray-500">({u.email})</span>
-                            </div>
-                            <EzButton
-                              variant="tertiary"
-                              size="x-small"
-                              disabled={attachUserMutation.isPending}
-                              onClick={() => attachUserMutation.mutate({ userId: u.id, orgId: isPinned ? null : detailOrgId })}
-                              className={isPinned ? 'text-red-600 hover:text-red-700' : 'text-green-600 hover:text-green-700'}
-                            >
-                              {isPinned ? 'Remover' : 'Adicionar'}
-                            </EzButton>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
 
                   <h4 className="text-sm font-semibold text-gray-900 pt-2">Perfil do Cliente</h4>
                   {profileDraft && (
@@ -1533,6 +1490,36 @@ className="flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll-x-conta
                       </EzButton>
                     </div>
                   </form>
+                </div>
+              )}
+
+              {detailTab === 'users' && (
+                <div className="space-y-4">
+                  <h4 className="text-sm font-semibold text-gray-900">Usuários vinculados</h4>
+                  {isLoadingUsers ? <EzSpinner label="Carregando usuários…" /> : (
+                    <div className="max-h-72 overflow-y-auto space-y-2 border border-gray-200 rounded-[12px] p-3">
+                      {(usersList ?? []).filter(u => u.role.includes('CLIENT')).map(u => {
+                        const isPinned = u.organizationId === detailOrgId;
+                        return (
+                          <div key={u.id} className="flex justify-between items-center text-sm p-1 hover:bg-gray-90 rounded-[8px]">
+                            <div>
+                              <span className="text-gray-900">{u.name}</span>{' '}
+                              <span className="text-gray-500">({u.email})</span>
+                            </div>
+                            <EzButton
+                              variant="tertiary"
+                              size="x-small"
+                              disabled={attachUserMutation.isPending}
+                              onClick={() => attachUserMutation.mutate({ userId: u.id, orgId: isPinned ? null : detailOrgId })}
+                              className={isPinned ? 'text-red-600 hover:text-red-700' : 'text-green-600 hover:text-green-700'}
+                            >
+                              {isPinned ? 'Remover' : 'Adicionar'}
+                            </EzButton>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
               )}
 

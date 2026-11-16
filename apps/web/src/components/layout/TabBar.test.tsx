@@ -162,4 +162,49 @@ describe('TabBar', () => {
     expect(closeButton).toHaveAccessibleName('Fechar aba');
     expect(closeButton).toHaveAccessibleDescription('Busca avançada');
   });
+
+  it('DMTE-541 AC-10: on a route that is not a tab, shows an extra active tab with the menu title and no close button', () => {
+    renderBar(['/organizations']);
+
+    const extra = screen.getByRole('tab', { name: 'Clientes' });
+    expect(extra).toHaveAttribute('aria-selected', 'true');
+    expect(within(extra).queryByRole('button', { name: 'Fechar aba' })).not.toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Tickets' })).toHaveAttribute('aria-selected', 'false');
+  });
+
+  it('DMTE-541 AC-10: the extra tab is not saved in sessionStorage and disappears when navigating away', async () => {
+    const user = userEvent.setup();
+    renderBar(['/organizations']);
+
+    expect(screen.getByRole('tab', { name: 'Clientes' })).toBeInTheDocument();
+    expect(sessionStorage.getItem('aponta_tabs') ?? '').not.toContain('/organizations');
+
+    await user.click(screen.getByRole('tab', { name: 'Tickets' }));
+
+    expect(screen.queryByRole('tab', { name: 'Clientes' })).not.toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Tickets' })).toHaveAttribute('aria-selected', 'true');
+    expect(sessionStorage.getItem('aponta_tabs') ?? '').not.toContain('/organizations');
+  });
+
+  it('DMTE-541 AC-10: no extra tab when the route is already a tab or is not in the menu', () => {
+    const home = renderBar(['/']);
+    expect(screen.getAllByRole('tab')).toHaveLength(1);
+    home.unmount();
+
+    renderBar(['/rota-desconhecida']);
+    expect(screen.getAllByRole('tab')).toHaveLength(1);
+    expect(screen.queryByRole('tab', { name: /desconhecida/i })).not.toBeInTheDocument();
+  });
+
+  it('DMTE-541 AC-10: an open tab keeps behaving as before while the extra tab is shown', async () => {
+    const user = userEvent.setup();
+    renderBar(['/organizations']);
+
+    await user.click(screen.getByText('Open #AP-0001 - Impressora'));
+
+    expect(screen.queryByRole('tab', { name: 'Clientes' })).not.toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /AP-0001/ })).toHaveAttribute('aria-selected', 'true');
+    expect(within(screen.getByRole('tab', { name: 'Tickets' })).getByRole('button', { name: 'Fechar aba' })).toBeInTheDocument();
+  });
 });
+

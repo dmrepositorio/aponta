@@ -7,11 +7,8 @@ import type {
 } from '../../hooks/useContracts';
 import { brasiliaDayStartIso } from '../../lib/billingTime';
 import { brasiliaDateString, brasiliaTimeString } from '../../lib/brasiliaTime';
-import {
-  ContractActiveTag,
-  ContractApprovalTag,
-  approvalLabel,
-} from './ContractStateTags';
+import { ActiveTag } from '../ActiveTag';
+import { ContractApprovalTag, approvalLabel } from './ContractStateTags';
 import {
   EzAlert,
   EzButton,
@@ -143,7 +140,7 @@ export function ContractList({
         accessorFn: (c) => `${c.active ? 'Ativo' : 'Inativo'} · ${contractApproval(c)}`,
         cell: ({ row }) => (
           <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
-            <ContractActiveTag active={row.original.active} />
+            <ActiveTag active={row.original.active} />
             <ContractApprovalTag state={contractApproval(row.original)} />
           </span>
         ),

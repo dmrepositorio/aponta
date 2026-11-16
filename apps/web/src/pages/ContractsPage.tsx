@@ -397,7 +397,7 @@ export function ContractsPage() {
         )}
 
         {mode === 'list' && (
-        <div className="flex flex-1 overflow-hidden min-h-[420px]">
+        <div className="relative flex flex-1 overflow-hidden min-h-[420px]">
           <EzFilterDrawer
             isOpen={isFilterPanelOpen}
             onClose={() => setIsFilterPanelOpen(false)}
@@ -476,7 +476,7 @@ export function ContractsPage() {
             </div>
           </EzFilterDrawer>
 
-          <div className="flex-1 p-3 overflow-x-auto min-w-0 flex flex-col">
+          <div className="isolate flex-1 p-3 overflow-x-auto min-w-0 flex flex-col">
             <ContractList
               contracts={filteredContracts}
               loading={contracts.isLoading}
