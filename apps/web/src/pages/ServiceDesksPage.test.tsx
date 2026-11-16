@@ -517,6 +517,35 @@ describe('ServiceDesksPage', () => {
     });
   });
 
+  it('DMTE-531 AC-05, AC-06: the desk tabs scroll in one row instead of wrapping, with the same 12 tabs in the same order', async () => {
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    renderPage();
+    await screen.findByText('Suporte N1');
+    await user.click(screen.getByText('Suporte N1'));
+
+    const first = await screen.findByRole('tab', { name: 'Informações básicas' });
+    const tablist = first.parentElement as HTMLElement;
+    expect(tablist).toHaveAttribute('role', 'tablist');
+    expect(tablist.className).not.toContain('flex-wrap');
+    expect(tablist.className).not.toContain('overflow-visible');
+    expect(tablist).toHaveClass('overflow-x-auto');
+    expect(within(tablist).getAllByRole('tab').map((tab) => tab.textContent)).toEqual([
+      'Informações básicas',
+      'Parâmetros',
+      'Campos obrigatórios',
+      'Prioridades',
+      'Clientes',
+      'Grupos de atendentes',
+      'Estágio',
+      'Status',
+      'Reabertura',
+      'Seções do ticket',
+      'Revisão',
+      'Expediente',
+    ]);
+  });
+
   it('DMTE-541 AC-08: the filter panel sits in a positioned container so it can overlay the grid below xl', async () => {
     loginAs('ADMIN');
     const user = userEvent.setup();
