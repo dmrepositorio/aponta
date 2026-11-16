@@ -138,11 +138,14 @@ export const EzEntityToolbar = forwardRef<HTMLDivElement, EzEntityToolbarProps>(
         ref={ref}
         data-testid="ez-entity-toolbar"
         className={cn(
-          'flex items-center justify-between gap-3 px-3 py-1.5 bg-white border-b border-gray-200 select-none min-h-[44px] max-sm:flex-nowrap max-sm:overflow-x-auto',
+          'flex items-center gap-3 px-3 py-1.5 bg-white border-b border-gray-200 select-none min-h-[44px] max-sm:flex-col max-sm:items-stretch max-sm:gap-0 max-sm:px-0',
           className
         )}
         {...props}
       >
+        {/* Abaixo de 640 px esta linha rola; a partir daí `contents` a desfaz e os grupos
+            ficam direto na toolbar, como antes. O contador fica fora dela (DMTE-531). */}
+        <div className="flex items-center justify-between gap-3 max-sm:overflow-x-auto max-sm:px-3 sm:contents">
         {/* ================= LEFT GROUP ================= */}
         <div className="flex items-center gap-1 flex-wrap max-sm:flex-nowrap shrink-0 sm:shrink">
           {/* 1. Painel de Filtros */}
@@ -401,7 +404,7 @@ export const EzEntityToolbar = forwardRef<HTMLDivElement, EzEntityToolbarProps>(
         </div>
 
         {/* ================= RIGHT GROUP ================= */}
-        <div className="flex items-center gap-1.5 shrink-0 sm:shrink">
+        <div className="flex items-center gap-1.5 shrink-0 sm:shrink sm:ml-auto">
           {/* 8. Botão Ações (menu dropdown) */}
           <div className="relative inline-block" ref={actionsMenuRef}>
             <button
@@ -485,16 +488,18 @@ export const EzEntityToolbar = forwardRef<HTMLDivElement, EzEntityToolbarProps>(
             </button>
           )}
 
-          {/* 11. Quantidade de Registros */}
-          {recordCountText && (
-            <div
-              data-testid="ez-toolbar-record-count"
-              className="text-[12px] font-medium text-gray-500 pl-1.5 border-l border-gray-200 whitespace-nowrap"
-            >
-              {recordCountText}
-            </div>
-          )}
         </div>
+        </div>
+
+        {/* 11. Quantidade de Registros */}
+        {recordCountText && (
+          <div
+            data-testid="ez-toolbar-record-count"
+            className="text-[12px] font-medium text-gray-500 whitespace-nowrap sm:pl-1.5 sm:border-l sm:border-gray-200 sm:-ml-1.5 max-sm:self-end max-sm:px-3 max-sm:pb-1"
+          >
+            {recordCountText}
+          </div>
+        )}
       </div>
     );
   }

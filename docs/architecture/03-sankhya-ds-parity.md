@@ -201,3 +201,10 @@ Nenhum componente nem token novo. Seis mudanças no DS, todas verificadas por te
 - **`EzPageHeader`:** compacto, com 8 px de padding vertical (era 16), linha mínima de 32 px (era 40), 16 px dos lados abaixo de 640 px e 24 px a partir daí; cerca de 49 px medidos (eram 73). Vale para as 7 páginas que o usam. `EzPageLayout` mantém o padding do corpo.
 - **`TabBar`:** quando a rota atual não é uma aba aberta mas está no menu lateral, mostra uma aba ativa transitória com o título do menu (sem botão de fechar, fora do `sessionStorage`; some ao navegar).
 - **`ActiveTag`** (`components/ActiveTag.tsx`): o status Ativo/Inativo de Contratos (`ContractActiveTag`) foi movido para um componente neutro e passou a valer também em Clientes e Usuários, sem mudar a aparência. Verde com check e cinza com traço, pares `green-800/green-100` e `gray-700/gray-90` a 4,5:1 ou mais, sem `emerald` cru.
+
+## Mesa: toolbar e abas em tela estreita (DMTE-531)
+
+Nenhum componente nem token novo. Medido em Chromium (390, 1024 e 1440 px, `scripts/mesa_responsive_check.mjs`, dados sintéticos; evidência técnica, o aceite visual é do Alfredo).
+
+- **`EzEntityToolbar`:** os grupos de botões foram para uma linha interna que rola abaixo de 640 px (`max-sm:overflow-x-auto`) e vira `sm:contents` a partir daí; o contador de registros saiu do grupo da direita e fica fora dessa linha: abaixo de 640 px ocupa uma linha própria, alinhada à direita (`max-sm:self-end`), e a toolbar passa a ter no máximo 2 linhas com o contador inteiro; a partir de 640 px ele segue à direita dos botões, com a mesma borda e espaçamento (retângulos iguais, medidos). Sem prop nova; a rolagem em uma linha e os alvos de 44 px da DMTE-541 continuam. Ganha a story `DS/EzEntityToolbar` (Default; o caso estreito se vê reduzindo a janela, sem addon de viewport).
+- **Abas da Mesa:** o uso do `EzTabs` em `ServiceDesksPage` deixou de anular a rolagem do componente (`flex-wrap overflow-visible` removido): as 12 abas ficam numa linha que rola. `EzTabs` não mudou.

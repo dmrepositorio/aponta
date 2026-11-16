@@ -22,7 +22,7 @@ Medido em Chromium (Vite local, API simulada, perfil ADMIN, base `c786183`, `scr
 
 1. **Contador em linha própria abaixo de 640 px, fora da área que rola.** O `EzEntityToolbar` passa a ter a linha de botões (que rola, como hoje) e, abaixo de `sm`, uma segunda linha só com o contador, alinhado à direita, sem rolagem. A toolbar fica com no máximo 2 linhas e o contador inteiro. A partir de 640 px o layout é idêntico ao atual (contador no fim da linha, com a borda esquerda).
 2. **Sem prop nova, sem mudança nos botões.** O contador continua o mesmo elemento (`data-testid="ez-toolbar-record-count"`); só sua posição no DOM e as classes `max-sm:` mudam. Os alvos de 44 px e a rolagem da linha de botões (D13 da DMTE-541) ficam como estão.
-3. **Abas da Mesa com rolagem horizontal, não seletor.** Remover `flex-wrap overflow-visible` do uso em `ServiceDesksPage`; o `EzTabs` pills passa a rolar numa linha, sem mudar o componente. O seletor (select) no mobile foi descartado: duplicaria a navegação e as abas já são 12 rótulos curtos; a rolagem é o padrão que a toolbar da DMTE-541 já adotou. A barra de rolagem continua escondida (`no-scrollbar`): o corte da aba na borda direita é a pista de que há mais.
+3. **Abas da Mesa com rolagem horizontal, não seletor.** Remover `flex-wrap overflow-visible` do uso em `ServiceDesksPage`; o `EzTabs` pills passa a rolar numa linha, sem mudar o componente. O seletor (select) no mobile foi descartado: duplicaria a navegação e as abas já são 12 rótulos curtos; a rolagem é o padrão que a toolbar da DMTE-541 já adotou. A barra de rolagem continua escondida (`no-scrollbar`): o corte da aba na borda direita é a pista de que há mais (a 390 px, com a aba "Parâmetros" terminando a 8 px da borda, o corte pode não aparecer; medido na captura).
 4. **Nada muda de 640 px para cima** nas três telas que usam a toolbar. Provado por medição: retângulos de todos os elementos com `data-testid` da toolbar iguais antes e depois a 1440 e 1024 px, em Mesa, Contratos e Clientes.
 5. **Fora do escopo:** foco e semântica das abas (DMTE-532), salvamento (DMTE-533), erro de validação de Contratos (DMTE-539), menu Ações vazio na Mesa ("Nenhuma ação disponível"), alteração de API ou regra.
 
@@ -36,7 +36,7 @@ Não aplicável: grill-with-docs → to-spec → to-tickets completos. Não é f
 - AC-04: em Chromium a 1440 e 1024 px, os retângulos dos elementos com `data-testid` da toolbar de Mesa, Contratos e Clientes são idênticos aos da base `c786183`.
 - AC-05: na Mesa, as abas não têm `flex-wrap` nem `overflow-visible`; em Chromium a 390 px as 12 abas ocupam uma linha com rolagem horizontal e a aba ativa fica dentro da área visível; o primeiro campo do formulário começa dentro da primeira tela (abaixo de 844 px) e a página não ganha rolagem horizontal nos três tamanhos.
 - AC-06: `EzTabs.tsx` não é alterado; sem mudança de API, schema, regra, rótulos ou ordem das abas.
-- AC-07: o DS documenta a mudança em `docs/architecture/03-sankhya-ds-parity.md` e o `EzEntityToolbar` ganha story (hoje não tem) com o contador e uma variante de viewport estreito.
+- AC-07: o DS documenta a mudança em `docs/architecture/03-sankhya-ds-parity.md` e o `EzEntityToolbar` ganha story (hoje não tem) com o contador; o caso estreito se vê reduzindo a janela (o Storybook do projeto não tem addon de viewport).
 
 ## Testes (seams: componente do DS e página, nível do projeto — vitest + Testing Library; layout medido no navegador)
 
@@ -52,6 +52,6 @@ Capturas antes e depois, a 390 px (e 1024/1440 para provar a ausência de regres
 
 ## Riscos
 
-- O `EzEntityToolbar` é compartilhado com Contratos e Clientes: a linha extra do contador abaixo de 640 px aumenta ~24 px de altura nessas duas telas no celular. Mitigação: medição nas três telas e suíte `web` completa; o ganho (contador legível) é o objetivo do item.
+- O `EzEntityToolbar` é compartilhado com Contratos e Clientes: a linha extra do contador abaixo de 640 px aumenta 22 px a toolbar (59 → 81 px, medido) quando há contador; em Contratos e Clientes ele só existe no formulário ("1 de N"), na lista não há contador. Mitigação: medição nas três telas e suíte `web` completa; o ganho (contador legível) é o objetivo do item.
 - A barra de rolagem das abas continua escondida: quem não percebe o corte da aba na borda pode não saber que há mais abas. A DMTE-532 trata a navegação por teclado; indicador de rolagem visual fica como melhoria possível, fora desta entrega.
 - Sem impacto em RBAC, tenant ou API: só apresentação, na tela já restrita a ADMIN.

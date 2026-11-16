@@ -484,7 +484,6 @@ export function ServiceDesksPage() {
                 <div className="space-y-4">
                   <EzTabs
                     variant="pills"
-                    className="flex-wrap overflow-visible"
                     tabs={mesaTabs}
                     activeTab={activeTab}
                     onChange={(tabId) => setActiveTab(String(tabId))}

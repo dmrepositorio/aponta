@@ -136,22 +136,30 @@ async function run(baseUrl) {
       const shot = (name) => page.screenshot({ path: path.join(outDir, `${name}-${width}.png`) });
 
       // Toolbar nas três telas que usam o EzEntityToolbar (lista) e no formulário da Mesa
-      for (const [name, route, waitFor] of [
-        ['mesa', '/service-desks', 'Suporte N1'],
-        ['contratos', '/contracts', 'Cliente 0'],
-        ['clientes', '/organizations', 'Cliente 0'],
+      // Contratos e Clientes só mostram o contador ("1 de N") no formulário: medir também lá
+      for (const [name, route, waitFor, openForm] of [
+        ['mesa', '/service-desks', 'Suporte N1', null],
+        ['contratos', '/contracts', 'Cliente 0', () => page.getByRole('button', { name: /Ver detalhes/ }).first().click()],
+        ['clientes', '/organizations', 'Cliente 0', () => page.getByRole('button', { name: /Abrir cadastro/ }).first().click()],
       ]) {
         await page.goto(`${baseUrl}${route}`);
         await page.getByText(waitFor).first().waitFor();
-        const m = await page.evaluate(measureToolbar);
-        data[`${name}-${width}`] = m;
-        const problems = [];
-        if (narrow) {
-          if (m.rows > 2) problems.push(`toolbar com ${m.rows} linhas (máximo 2)`);
-          if (!m.countFullyVisible) problems.push(`contador "${m.countText}" cortado ou fora da tela`);
+        for (const stage of openForm ? ['lista', 'formulario'] : ['lista']) {
+          if (stage === 'formulario') {
+            await openForm();
+            await page.getByTestId('ez-toolbar-record-count').waitFor();
+          }
+          const m = await page.evaluate(measureToolbar);
+          data[`${name}-${stage}-${width}`] = m;
+          const problems = [];
+          if (narrow) {
+            if (m.rows > 2) problems.push(`toolbar com ${m.rows} linhas (máximo 2)`);
+            if (!m.countFullyVisible) problems.push(`contador "${m.countText}" cortado ou fora da tela`);
+            if (stage === 'formulario' && m.countText === null) problems.push('contador ausente no formulário');
+          }
+          await shot(`toolbar-${name}-${stage}`);
+          check(`Toolbar ${name} (${stage}) ${width} px (${m.rows} linha(s), ${m.height} px, contador ${m.countText ?? 'ausente'})`, problems);
         }
-        await shot(`toolbar-${name}`);
-        check(`Toolbar ${name} ${width} px (${m.rows} linha(s), ${m.height} px)`, problems);
       }
 
       // Detalhe da Mesa: abas e início do formulário
