@@ -1,50 +1,50 @@
 
  RUN  v4.1.11 /home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-521-c4187c3d45b2/workdir/red-wt/apps/web
 
- ❯ |web| src/components/contracts/ContractStateTags.test.tsx (8 tests | 7 failed) 46ms
-     × uses one vocabulary: legacy wins, then approved, else draft 9ms
-     × shows Ativo and Inativo with text and an icon, differing in icon and classes, without red 21ms
+ ❯ |web| src/components/contracts/ContractStateTags.test.tsx (8 tests | 7 failed) 55ms
+     × uses one vocabulary: legacy wins, then approved, else draft 11ms
+     × shows Ativo and Inativo with text and an icon, differing in icon and classes, without red 23ms
      × shows each approval state with its own text and icon, none of them red 3ms
      × keeps Rascunho and Regularização pendente in the same warning family but apart by text and icon 2ms
-     × lets icons inherit the text color (no own text-* class) 2ms
-     × declares a token pair for every state 3ms
+     × lets icons inherit the text color (no own text-* class) 4ms
+     × declares a token pair for every state 4ms
      × declares the same tokens the rendered tags really use 3ms
      ✓ reaches 4.5:1 for every text/background pair (icons inherit the text color, so they reach it too) 0ms
- ❯ |web| src/pages/ContractsPage.test.tsx (29 tests | 7 failed) 4897ms
-     ✓ shows a loading state while contracts are being fetched 78ms
-     ✓ shows an error state when the contracts request fails 42ms
+ ❯ |web| src/pages/ContractsPage.test.tsx (29 tests | 7 failed) 5242ms
+     ✓ shows a loading state while contracts are being fetched 83ms
+     ✓ shows an error state when the contracts request fails 52ms
      ✓ shows the empty state when there are no contracts 33ms
-     ✓ shows financial columns (valor mensal / reajuste) for ADMIN 146ms
-     ✓ shows financial columns for CLIENT_MASTER as well 91ms
-     ✓ hides financial columns for AGENT (masked by the backend, but double-check the UI gate too) 48ms
-     ✓ displays inactive contracts and zero money honestly 58ms
-     ✓ lets admins create with explicit excess rate and minute allowance 272ms
-     ✓ prevents non-admin management and hides detail financial data 100ms
-     ✓ opens a contract's detail as a full page (no dialog) and returns to the list via the back button 221ms
-     ✓ navigates between contracts using the toolbar Anterior/Próximo buttons 112ms
-     ✓ shows a dedicated "Novo contrato" button directly on the toolbar for ADMIN, opening the full-page form 147ms
-     ✓ lets an ADMIN select a contract and delete it via the toolbar 142ms
-     ✓ shows the backend conflict message when deleting a contract with worklogs fails 141ms
-     ✓ does not show the delete button for AGENT, who cannot manage contracts 44ms
-     ✓ renders the Sankhya standard filter drawer and screen config modal (parity with Clientes) 96ms
-     ✓ filters contracts by name or company on the client side via the filter drawer 252ms
-     ✓ filters contracts by status (Ativo/Inativo) via the filter drawer 186ms
-     ✓ filters dynamically by modality using the rule builder (Sankhya Filtros parity) 273ms
-     ✓ saves, applies, and deletes a saved filter from the drawer (Sankhya saved filters parity)  411ms
-     ✓ edits via the update command without turning zero into missing money 228ms
-     ✓ validates reversed dates before saving 103ms
-     × opens the detail from the contract name button and has no Ações column 81ms
-     × opens the detail of the row on double click 1084ms
-     × keeps Contrato and Empresa on one line with the full text in the title, and fixed column widths 69ms
-     × shows Status and Aprovação as two columns of tags with text and icon 84ms
-     × uses the same approval words in the detail 86ms
-     × filters by the same approval words, including Rascunho and Regularização pendente 183ms
-     × starts with Hora excedente and Reajuste hidden but still configurable 83ms
+     ✓ shows financial columns (valor mensal / reajuste) for ADMIN 128ms
+     ✓ shows financial columns for CLIENT_MASTER as well 90ms
+     ✓ hides financial columns for AGENT (masked by the backend, but double-check the UI gate too) 59ms
+     ✓ displays inactive contracts and zero money honestly 64ms
+     ✓ lets admins create with explicit excess rate and minute allowance 264ms
+     ✓ prevents non-admin management and hides detail financial data 119ms
+     ✓ opens a contract's detail as a full page (no dialog) and returns to the list via the back button  355ms
+     ✓ navigates between contracts using the toolbar Anterior/Próximo buttons 92ms
+     ✓ shows a dedicated "Novo contrato" button directly on the toolbar for ADMIN, opening the full-page form 130ms
+     ✓ lets an ADMIN select a contract and delete it via the toolbar 156ms
+     ✓ shows the backend conflict message when deleting a contract with worklogs fails 153ms
+     ✓ does not show the delete button for AGENT, who cannot manage contracts 41ms
+     ✓ renders the Sankhya standard filter drawer and screen config modal (parity with Clientes) 82ms
+     ✓ filters contracts by name or company on the client side via the filter drawer 275ms
+     ✓ filters contracts by status (Ativo/Inativo) via the filter drawer 200ms
+     ✓ filters dynamically by modality using the rule builder (Sankhya Filtros parity) 296ms
+     ✓ saves, applies, and deletes a saved filter from the drawer (Sankhya saved filters parity)  478ms
+     ✓ edits via the update command without turning zero into missing money 272ms
+     ✓ validates reversed dates before saving 107ms
+     × opens the detail from the contract name button and has no Ações column 77ms
+     × opens the detail of the row on double click 1082ms
+     × keeps Contrato and Empresa on one line with the full text in the title, and fixed column widths 71ms
+     × shows Ativo/Inativo and the approval state as tags with text and icon in one Situação column 84ms
+     × uses the same approval words in the detail 95ms
+     × filters by the same approval words, including Rascunho and Regularização pendente 186ms
+     × starts with Hora excedente and Reajuste hidden but still configurable 116ms
 
  Test Files  2 failed (2)
       Tests  14 failed | 23 passed (37)
-   Start at  21:43:21
-   Duration  7.28s (transform 1.19s, setup 169ms, import 1.89s, tests 4.94s, environment 869ms)
+   Start at  21:49:05
+   Duration  8.14s (transform 1.60s, setup 220ms, import 2.36s, tests 5.30s, environment 1.16s)
 
 
 ⎯⎯⎯⎯⎯⎯ Failed Tests 14 ⎯⎯⎯⎯⎯⎯⎯
@@ -361,7 +361,7 @@ Received:
 
 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/14]⎯
 
- FAIL  |web| src/pages/ContractsPage.test.tsx > ContractsPage grid (DMTE-536) > shows Status and Aprovação as two columns of tags with text and icon
+ FAIL  |web| src/pages/ContractsPage.test.tsx > ContractsPage grid (DMTE-536) > shows Ativo/Inativo and the approval state as tags with text and icon in one Situação column
 AssertionError: expected false to be true // Object.is equality
 
 - Expected
@@ -370,13 +370,13 @@ AssertionError: expected false to be true // Object.is equality
 - true
 + false
 
- ❯ src/pages/ContractsPage.test.tsx:711:65
-    709|     const headers = screen.getAllByRole('columnheader').map((header) =…
-    710|     expect(headers.some((text) => text?.includes('Status'))).toBe(true…
-    711|     expect(headers.some((text) => text?.includes('Aprovação'))).toBe(t…
-       |                                                                 ^
-    712|
-    713|     expect(screen.getAllByText('Ativo')).toHaveLength(2);
+ ❯ src/pages/ContractsPage.test.tsx:709:64
+    707|     await screen.findByRole('button', { name: `Ver detalhes ${longName…
+    708|     const headers = screen.getAllByRole('columnheader').map((header) =…
+    709|     expect(headers.some((text) => text?.includes('Situação'))).toBe(tr…
+       |                                                                ^
+    710|
+    711|     expect(screen.getAllByText('Ativo')).toHaveLength(2);
 
 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/14]⎯
 
@@ -387,13 +387,13 @@ Expected element to have text content:
 [32m  Rascunho[39m
 Received:
 [31m  AprovaçãoPendente[39m
- ❯ src/pages/ContractsPage.test.tsx:729:57
-    727|     fireEvent.click(await screen.findByRole('button', { name: 'Ver det…
-    728|     await screen.findByText('Mesas cobertas');
-    729|     expect(screen.getByText('Aprovação').parentElement).toHaveTextCont…
+ ❯ src/pages/ContractsPage.test.tsx:727:57
+    725|     fireEvent.click(await screen.findByRole('button', { name: 'Ver det…
+    726|     await screen.findByText('Mesas cobertas');
+    727|     expect(screen.getByText('Aprovação').parentElement).toHaveTextCont…
        |                                                         ^
-    730|
-    731|     fireEvent.click(screen.getByTitle('Voltar'));
+    728|
+    729|     fireEvent.click(screen.getByTitle('Voltar'));
 
 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/14]⎯
 
@@ -412,13 +412,13 @@ AssertionError: expected [ Array(3) ] to deeply equal ArrayContaining{…}
 +   "Pendente",
   ]
 
- ❯ src/pages/ContractsPage.test.tsx:751:21
-    749|     const value = within(rule).getByLabelText('Valor', { selector: 'se…
-    750|     const options = within(value).getAllByRole('option', { hidden: tru…
-    751|     expect(options).toEqual(expect.arrayContaining(['Aprovado', 'Rascu…
+ ❯ src/pages/ContractsPage.test.tsx:749:21
+    747|     const value = within(rule).getByLabelText('Valor', { selector: 'se…
+    748|     const options = within(value).getAllByRole('option', { hidden: tru…
+    749|     expect(options).toEqual(expect.arrayContaining(['Aprovado', 'Rascu…
        |                     ^
-    752|     expect(options).not.toContain('Pendente');
-    753|
+    750|     expect(options).not.toContain('Pendente');
+    751|
 
 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/14]⎯
 
@@ -431,13 +431,13 @@ AssertionError: expected true to be false // Object.is equality
 - false
 + true
 
- ❯ src/pages/ContractsPage.test.tsx:771:74
-    769|     const headerText = () => screen.getAllByRole('columnheader').map((…
-    770|     expect(headerText().some((text) => text.includes('Valor mensal')))…
-    771|     expect(headerText().some((text) => text.includes('Hora excedente')…
+ ❯ src/pages/ContractsPage.test.tsx:769:74
+    767|     const headerText = () => screen.getAllByRole('columnheader').map((…
+    768|     expect(headerText().some((text) => text.includes('Valor mensal')))…
+    769|     expect(headerText().some((text) => text.includes('Hora excedente')…
        |                                                                          ^
-    772|     expect(headerText().some((text) => text.includes('Reajuste'))).toB…
-    773|
+    770|     expect(headerText().some((text) => text.includes('Reajuste'))).toB…
+    771|
 
 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/14]⎯
 
