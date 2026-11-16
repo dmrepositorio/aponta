@@ -60,9 +60,9 @@
     },
     {
       "id": "AC-07",
-      "description": "o DS documenta a mudança em `docs/architecture/03-sankhya-ds-parity.md` e o `EzEntityToolbar` ganha story (hoje não tem) com o contador e uma variante de viewport estreito.",
+      "description": "o DS documenta a mudança em `docs/architecture/03-sankhya-ds-parity.md` e o `EzEntityToolbar` ganha story (hoje não tem) com o contador; o caso estreito se vê reduzindo a janela (o Storybook do projeto não tem addon de viewport).",
       "tests": [
-        "apps/web/src/components/ds/EzEntityToolbar.stories.tsx: stories Default e NarrowViewport (build do Storybook)",
+        "apps/web/src/components/ds/EzEntityToolbar.stories.tsx: story Default (build do Storybook)",
         "docs/architecture/03-sankhya-ds-parity.md: registro da mudança do EzEntityToolbar"
       ],
       "tdd_required": false,
@@ -81,6 +81,9 @@
       "EzEntityToolbar",
       "EzTabs"
     ],
-    "reason": "Reaproveita EzEntityToolbar (contador em linha própria abaixo de sm, sem prop nova) e EzTabs pills (rolagem que o componente já tem, sem alterá-lo); só tokens já definidos; nenhum componente ou token novo no DS."
+    "reason": "Reaproveita EzEntityToolbar (contador em linha própria abaixo de sm, sem prop nova) e EzTabs pills (rolagem que o componente já tem, sem alterá-lo); só tokens já definidos; nenhum componente ou token novo no DS.",
+    "stories": [
+      "apps/web/src/components/ds/EzEntityToolbar.stories.tsx"
+    ]
   }
 }

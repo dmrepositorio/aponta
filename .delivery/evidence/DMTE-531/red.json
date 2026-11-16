@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "phase": "red",
+  "started_at": "2026-11-16T12:11:27.718585+00:00",
+  "finished_at": "2026-11-16T12:11:39.732771+00:00",
+  "command": [
+    "pnpm",
+    "--dir",
+    "apps/web",
+    "exec",
+    "vitest",
+    "run",
+    "src/components/ds/EzEntityToolbar.test.tsx",
+    "src/pages/ServiceDesksPage.test.tsx"
+  ],
+  "base_sha": "c786183f3b3d73c99e4f339f3c24f3a900a9966a",
+  "head_sha": "1d7c00031c6663cc18fdff7232a1dd1f6efb3016",
+  "exit_code": 1,
+  "tests": {
+    "apps/web/src/components/ds/EzEntityToolbar.test.tsx": "460476111d38bec579d6641abefceb5487fa75592a27448dbbcc929500da364c",
+    "apps/web/src/pages/ServiceDesksPage.test.tsx": "26b15e59877252d026e1c8c018ce94899858eae4c94fa8b44a2970c8f57cad6a"
+  },
+  "criteria": [
+    "AC-01",
+    "AC-02",
+    "AC-05",
+    "AC-06"
+  ],
+  "source_hashes": {
+    ".tmp-dmte531/before.json": "6a14e695cb31b94b9bfd4247553d26f7d70b81a64a4cce4115ac826852e21249",
+    ".tmp-dmte531/before/mesa-form-1024.png": "85aeeb27c3ab6e63063413b4540a4409f51b18151f698241c13337eb179c4da3",
+    ".tmp-dmte531/before/mesa-form-1440.png": "fd5b13519234ec39a92e0d19ce57ec13858a20a9cfcb710857b807171d45a118",
+    ".tmp-dmte531/before/mesa-form-390.png": "dc73666e0bba0437a92bf7f0b617e5870c47d8a9f9ecc083bb6c9dddbcc99247",
+    ".tmp-dmte531/before/toolbar-clientes-1024.png": "a69c71849d8bb6d574ae41f578d9dfa60feaf28ebafa7fce4dd50d412d05ab29",
+    ".tmp-dmte531/before/toolbar-clientes-1440.png": "41ab8b878e3700f2063d1abd7c0d6ed056aa8f628e5098ffe919594d46d8d498",
+    ".tmp-dmte531/before/toolbar-clientes-390.png": "56afc72109ef90539702ad58d8188f93e55cdc347fb4f8ff14b92416b463fd3d",
+    ".tmp-dmte531/before/toolbar-contratos-1024.png": "365e9719bf43db8710a0ba0e0a9069aba1b6e1f7cf162013fd1dc6a7a553250b",
+    ".tmp-dmte531/before/toolbar-contratos-1440.png": "0941b00c44c531db4a43aaa5dd7af4413d6b0eb1ab76ae757fefd46bab1312df",
+    ".tmp-dmte531/before/toolbar-contratos-390.png": "25b1d2947ca34a33657cd14cbb814412bc1c9a9f8d75a538d15e2b244ad230da",
+    ".tmp-dmte531/before/toolbar-mesa-1024.png": "39a1cabe5d0475dd339d740d005b5f18d1cefb11c8d36965ca554e41fdb088ce",
+    ".tmp-dmte531/before/toolbar-mesa-1440.png": "a46f8806d8431ae89c4e7d09ca2b411dbffdf4c3a9f672eff3d477a77f69c682",
+    ".tmp-dmte531/before/toolbar-mesa-390.png": "b50103edaff2d180d9329c570e335ff261be78ab4b3eeacada28eac671207e45",
+    "apps/web/src/components/ds/EzEntityToolbar.test.tsx": "460476111d38bec579d6641abefceb5487fa75592a27448dbbcc929500da364c",
+    "apps/web/src/pages/ServiceDesksPage.test.tsx": "26b15e59877252d026e1c8c018ce94899858eae4c94fa8b44a2970c8f57cad6a",
+    "scripts/mesa_responsive_check.mjs": "4dbf21569fc7ac75ae5d396da338596e1c6102c4743d6b508ba81edd20c9a48b"
+  },
+  "log": ".delivery/evidence/DMTE-531/red.log",
+  "log_sha256": "2e9f1fbb02308e54c56179543524c59c82256b95bd3bd13cb7661de9bbc0c405"
+}
