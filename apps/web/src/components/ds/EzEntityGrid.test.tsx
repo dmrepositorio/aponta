@@ -960,4 +960,22 @@ describe('EzEntityGrid DMTE-541', () => {
     expect(screen.getAllByTestId('ez-grid-row-number')[0].closest('td')).not.toHaveClass('hidden');
     expect(screen.getAllByRole('checkbox', { name: 'Selecionar linha' })[0].closest('td')).not.toHaveClass('hidden');
   });
+
+  it('AC-02: typing a space in an editable cell does not toggle the row selection or lose the space', async () => {
+    const user = userEvent.setup();
+    const editable: ColumnDef<Ticket>[] = [
+      { accessorKey: 'id', header: 'ID' },
+      { accessorKey: 'title', header: 'Título', cell: ({ row }) => <input aria-label={`Título ${row.original.id}`} defaultValue="" /> },
+    ];
+    render(<EzEntityGrid columns={editable} data={data} selectable />);
+
+    await user.click(screen.getByLabelText('Título 1'));
+    await user.type(screen.getByLabelText('Título 1'), 'a b');
+
+    expect(screen.getByLabelText('Título 1')).toHaveValue('a b');
+    for (const box of screen.getAllByRole('checkbox', { name: 'Selecionar linha' })) {
+      expect(box).not.toBeChecked();
+    }
+  });
 });
+

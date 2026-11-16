@@ -1025,6 +1025,7 @@ describe('OrganizationsPage DMTE-541', { timeout: 15000 }, () => {
       if (url === '/users') return Promise.resolve({ data: users });
       if (url === '/service-desks') return Promise.resolve({ data: serviceDesks });
       if (url === '/organizations/org-1') return Promise.resolve({ data: { ...orgDetail, cpf: '12345678901', documentType: 'CPF' } });
+      if (url === '/organizations/org-2') return Promise.resolve({ data: { ...orgDetail, id: 'org-2', name: 'Empresa B', legalName: 'Empresa B ME' } });
       return Promise.reject(new Error(`Unexpected GET ${url}`));
     });
     useAuthStore.setState({ token: null, user: null });
