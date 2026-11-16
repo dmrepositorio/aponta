@@ -6,7 +6,7 @@ const inMs = (ms: number) => new Date(now.getTime() + ms).toISOString();
 const H = 3600000;
 
 /**
- * Chip compacto de prazo (SLA): ícone + tempo restante (negativo = vencido), cor
+ * Chip compacto de prazo (SLA): ícone + palavra curta + tempo restante (negativo = vencido), cor
  * semântica do DS e o texto completo no nome acessível e no tooltip. Usado no
  * cartão do Kanban.
  */

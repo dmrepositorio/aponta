@@ -52,6 +52,9 @@ const FINAL_STATUSES: TicketStatus[] = ['RESOLVED', 'CLOSED'];
 const STRIP_STEP_PX = 64;
 const stripRight = (collapsedIds: string[], id: string) =>
   (collapsedIds.length - 1 - collapsedIds.indexOf(id)) * STRIP_STEP_PX;
+/** Alvo de 32 px (WCAG 2.5.8) com margem negativa para o cabeçalho da coluna manter a altura. */
+const collapseButtonClass =
+  '-my-1.5 -ml-1.5 flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-gray-400 hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500';
 const boardStyle = (collapsedIds: string[]) =>
   ({ '--strips-width': `${collapsedIds.length * STRIP_STEP_PX}px` }) as CSSProperties;
 const KANBAN_COLUMN_CLASS =
@@ -622,7 +625,7 @@ export function TicketKanban({
           aria-pressed={selectedAgentIds.has(agent.id)}
           onClick={() => toggleAgentFilter(agent.id)}
           className={cn(
-            'rounded-full ring-2 ring-white transition-transform hover:z-10 hover:scale-110',
+            'rounded-full ring-2 ring-white transition-transform hover:z-10 hover:scale-110 focus-visible:z-10 focus-visible:outline-none focus-visible:ring-brand-600',
             selectedAgentIds.has(agent.id) && 'ring-brand-500',
           )}
         >
@@ -862,8 +865,9 @@ export function TicketKanban({
                           <button
                             type="button"
                             onClick={() => toggleColumnCollapsed(col.id, false)}
-                            className="flex items-center gap-1 text-gray-400 hover:text-gray-700 cursor-pointer"
+                            className={collapseButtonClass}
                             title="Recolher coluna"
+                            aria-label={`Recolher coluna ${col.label}`}
                             data-testid={`collapse-column-${col.id}`}
                           >
                             <ChevronLeft className="w-3.5 h-3.5" />
@@ -975,8 +979,9 @@ export function TicketKanban({
                         <button
                           type="button"
                           onClick={() => toggleColumnCollapsed(col, false)}
-                          className="flex items-center gap-1 text-gray-400 hover:text-gray-700 cursor-pointer"
+                          className={collapseButtonClass}
                           title="Recolher coluna"
+                          aria-label={`Recolher coluna ${statusLabels[col]}`}
                           data-testid={`collapse-column-${col}`}
                         >
                           <ChevronLeft className="w-3.5 h-3.5" />

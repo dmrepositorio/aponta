@@ -114,6 +114,7 @@ export function TicketKanbanCard({
               align="right"
               trigger={<MoreVertical className="h-4 w-4 text-gray-400" />}
               aria-label="Mais ações"
+              className="-my-1.5 -mr-1.5 h-8 w-8"
               options={[
                 { label: 'Abrir ticket', onClick: () => openInTab(path, tabTitle) },
                 { label: 'Abrir em nova aba interna', onClick: () => openInTab(path, tabTitle) },
