@@ -63,9 +63,11 @@ const isLegacy = (c: Contract) => !commercialModalities[c.type];
 export const contractApproval = (c: Contract) =>
   approvalLabel({ legacy: isLegacy(c), approved: !!c.approved });
 
-function TruncatedText({ value }: { value: string }) {
+// A tabela da grade usa layout automático: sem um teto em px o texto longo estica a coluna além do `size`.
+// O teto é o `size` da coluna menos o padding horizontal da célula (32 px); classe literal para o Tailwind.
+function TruncatedText({ value, maxWidth }: { value: string; maxWidth: string }) {
   return (
-    <span title={value} className="block max-w-full truncate">
+    <span title={value} className={`block ${maxWidth} truncate`}>
       {value}
     </span>
   );
@@ -97,7 +99,7 @@ export function ContractList({
       {
         id: 'contract',
         header: 'Contrato',
-        size: 220,
+        size: 180,
         accessorFn: (c) => c.name || 'Sem nome',
         // O nome é a ação principal da linha: fica na primeira coluna de dados, sempre à vista.
         cell: ({ row }) => {
@@ -109,7 +111,7 @@ export function ContractList({
               title={label}
               aria-label={`Ver detalhes ${c.name || c.organization?.name || c.id}`}
               onClick={() => onDetail(c.id)}
-              className="block max-w-full truncate text-left font-medium text-brand-700 hover:underline"
+              className="block max-w-[148px] truncate text-left font-medium text-brand-700 hover:underline"
             >
               {label}
             </button>
@@ -119,37 +121,35 @@ export function ContractList({
       {
         id: 'organization',
         header: 'Empresa',
-        size: 160,
+        size: 166,
         accessorFn: (c) => c.organization?.name || '—',
-        cell: ({ getValue }) => <TruncatedText value={getValue<string>()} />,
+        cell: ({ getValue }) => <TruncatedText value={getValue<string>()} maxWidth="max-w-[134px]" />,
       },
       {
         id: 'modality',
         header: 'Modalidade',
-        size: 200,
+        size: 188,
         accessorFn: (c) => modality(c),
-        cell: ({ getValue }) => <TruncatedText value={getValue<string>()} />,
+        cell: ({ getValue }) => <TruncatedText value={getValue<string>()} maxWidth="max-w-[156px]" />,
       },
       {
-        id: 'status',
-        header: 'Status',
-        size: 120,
-        accessorFn: (c) => (c.active ? 'Ativo' : 'Inativo'),
-        cell: ({ row }) => <ContractActiveTag active={row.original.active} />,
-      },
-      {
-        id: 'approval',
-        header: 'Aprovação',
-        size: 200,
-        accessorFn: (c) => contractApproval(c),
-        cell: ({ row }) => <ContractApprovalTag state={contractApproval(row.original)} />,
+        id: 'situation',
+        header: 'Situação',
+        size: 300,
+        accessorFn: (c) => `${c.active ? 'Ativo' : 'Inativo'} · ${contractApproval(c)}`,
+        cell: ({ row }) => (
+          <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
+            <ContractActiveTag active={row.original.active} />
+            <ContractApprovalTag state={contractApproval(row.original)} />
+          </span>
+        ),
       },
       ...(showFinancial
         ? ([
             {
               id: 'monthlyValue',
               header: 'Valor mensal',
-              size: 120,
+              size: 156,
               cell: ({ row }) =>
                 contractMoney(
                   row.original.monthlyFeeCents != null
@@ -160,7 +160,7 @@ export function ContractList({
             {
               id: 'excessHourlyRate',
               header: 'Hora excedente',
-              size: 120,
+              size: 130,
               cell: ({ row }) =>
                 contractMoney(
                   row.original.excessHourlyRateCents == null
@@ -171,7 +171,7 @@ export function ContractList({
             {
               id: 'adjustmentDate',
               header: 'Reajuste',
-              size: 110,
+              size: 120,
               cell: ({ row }) => dateLabel(row.original.adjustmentDate),
             },
           ] as ColumnDef<Contract>[])

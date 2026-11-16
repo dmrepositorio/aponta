@@ -88,8 +88,7 @@ const CONTRACT_SCREEN_CONFIG_BASE_COLUMNS = [
   { id: 'contract', label: 'Contrato' },
   { id: 'organization', label: 'Empresa' },
   { id: 'modality', label: 'Modalidade' },
-  { id: 'status', label: 'Status' },
-  { id: 'approval', label: 'Aprovação' },
+  { id: 'situation', label: 'Situação' },
 ];
 
 const CONTRACT_SCREEN_CONFIG_FINANCIAL_COLUMNS = [
