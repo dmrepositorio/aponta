@@ -276,6 +276,9 @@
       "EzAvatar",
       "EzSlaChip"
     ],
-    "reason": "Reaproveita os componentes do DS da aba Tickets e os tokens do @theme; único token novo é --control-height-toolbar (36 px), exceção registrada na escala de altura de styles.css com esta SPEC e o Q1 como fonte, sem alterar --control-height-md (42 px) nem --control-height-compact (32 px). EzSegmented ganha a opção size (default mantém 42 px; toolbar 36 px a partir de sm e 44 px abaixo), com story e teste. O seletor de Mesa passa a usar o contorno do EzSelect em brand-500/brand-700 sem variante nova no DS."
+    "reason": "Reaproveita os componentes do DS da aba Tickets e os tokens do @theme; único token novo é --control-height-toolbar (36 px), exceção registrada na escala de altura de styles.css com esta SPEC e o Q1 como fonte, sem alterar --control-height-md (42 px) nem --control-height-compact (32 px). EzSegmented ganha a opção size (default mantém 42 px; toolbar 36 px a partir de sm e 44 px abaixo), com story e teste. O seletor de Mesa passa a usar o contorno do EzSelect em brand-500/brand-700 sem variante nova no DS.",
+    "stories": [
+      "apps/web/src/components/ds/EzSegmented.stories.tsx"
+    ]
   }
 }
