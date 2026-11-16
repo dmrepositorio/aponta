@@ -1,0 +1,91 @@
+{
+  "version": 1,
+  "delivery": "DMTE-541",
+  "repository": "dmrepositorio/aponta",
+  "github_issue": 273,
+  "multica_id": "01a1e22a-3305-7c24-a994-df846c1d46e8",
+  "cycle": "2026-11-09/2026-11-22",
+  "tier": 2,
+  "criteria": [
+    {
+      "id": "AC-01",
+      "description": "o nome de cada cliente na grade é um botão com o nome acessível `Abrir cadastro de <nome>` que abre o modo formulário por clique e por Enter; o ícone `ExternalLink` não existe; clicar no nome não abre input de edição.",
+      "tests": []
+    },
+    {
+      "id": "AC-02",
+      "description": "Razão Social e CPF/CNPJ continuam editáveis por clique; quando o PATCH falha, aparece um `EzAlert` de erro com o motivo e a célula volta ao valor anterior; quando dá certo, nenhum aviso de sucesso aparece.",
+      "tests": []
+    },
+    {
+      "id": "AC-03",
+      "description": "o status é somente leitura (sem `<button>`, sem ação ao clicar), mostra `EzTag` com texto e ícone (Ativo verde com check; Inativo cinza com traço), sem `emerald-*` nem `red-*`; o mesmo componente é usado em Clientes, Usuários e Contratos; todo par texto/fundo tem contraste mínimo de 4,5:1 lido de `styles.css`.",
+      "tests": []
+    },
+    {
+      "id": "AC-04",
+      "description": "o cabeçalho da coluna de contagem é \"Usuários\", alinhado à direita e com `tabular-nums`; o rótulo da numeração é \"#\"; a palavra \"Código\" não aparece como cabeçalho na grade de Clientes.",
+      "tests": []
+    },
+    {
+      "id": "AC-05",
+      "description": "`formatCpf` devolve 000.000.000-00 para 11 dígitos e o valor original para outro tamanho; a grade e o resumo do formulário mostram o CPF mascarado e o CNPJ continua mascarado.",
+      "tests": []
+    },
+    {
+      "id": "AC-06",
+      "description": "`EzEntityGrid` tem uma opção de linha única com reticências e `title` do texto inteiro, desligada por padrão (com a opção desligada o markup é igual ao atual); Clientes a liga para Nome e Razão Social, com larguras fixas.",
+      "tests": []
+    },
+    {
+      "id": "AC-07",
+      "description": "o checkbox de seleção do cabeçalho e o de cada linha, e os checkboxes de filtro de coluna e de configuração, têm `accent-brand-600`.",
+      "tests": []
+    },
+    {
+      "id": "AC-08",
+      "description": "`EzFilterDrawer` renderiza como sobreposição abaixo de `xl` (classes de posição e camada declaradas) e ao lado da grade a partir de `xl`; Esc e o botão de fechar continuam fechando; Clientes, Mesa e Contratos usam o mesmo comportamento sem lógica nova nas páginas.",
+      "tests": []
+    },
+    {
+      "id": "AC-09",
+      "description": "`EzPageHeader` tem padding vertical de 8 px, altura mínima de 32 px e padding horizontal de 16 px abaixo de `sm` e 24 px a partir dele (classes declaradas); as 7 páginas continuam renderizando título, botão de voltar e ações.",
+      "tests": []
+    },
+    {
+      "id": "AC-10",
+      "description": "quando a rota atual não está entre as abas, o `TabBar` mostra uma aba extra, ativa (`aria-selected`), com o título do menu lateral, sem botão de fechar; ela não é gravada no `sessionStorage` e some ao navegar; a aba \"Tickets\" e as abas abertas se comportam como hoje.",
+      "tests": []
+    },
+    {
+      "id": "AC-11",
+      "description": "o formulário do cliente tem as abas Geral, Usuários, Recursos, Relacionamentos e Faturamento, com \"Geral\" aberta por padrão; \"Geral\" mostra Razão Social, Nome Fantasia, Perfil, Endereços e Contatos; \"Usuários\" mostra só os usuários vinculados e o botão Adicionar/Remover de cada um.",
+      "tests": []
+    },
+    {
+      "id": "AC-12",
+      "description": "abaixo de 640 px a grade de Clientes esconde \"#\" e a seleção (classes de breakpoint declaradas) e mostra Nome e Status; a toolbar da grade rola em uma linha; os botões da toolbar têm altura e largura mínimas de 44 px abaixo de 640 px e mantêm o tamanho atual a partir daí.",
+      "tests": []
+    },
+    {
+      "id": "AC-13",
+      "description": "em Chromium, a 1440×900, 1024×768 e 390×844: a página de Clientes não tem rolagem horizontal; as linhas da grade têm a mesma altura; o painel de filtros aberto abaixo de `xl` não estreita a grade; as páginas Mesa e Contratos, com o painel aberto, e as 7 páginas do cabeçalho compacto não têm rolagem horizontal. Evidência técnica com capturas antes e depois; jsdom não mede layout, e o aceite visual é do Alfredo.",
+      "tests": []
+    },
+    {
+      "id": "AC-14",
+      "description": "sem mudança de API, schema ou regra; `docs/architecture/03-sankhya-ds-parity.md` registra as mudanças de DS (`EzFilterDrawer`, `EzEntityGrid`, `EzEntityToolbar`, `EzPageLayout`); `EzEntityGrid` e `EzPageLayout` têm story atualizada; `EzFilterDrawer` não tem story hoje e o manifesto registra a exceção.",
+      "tests": []
+    }
+  ],
+  "spec": "docs/delivery/specs/DMTE-541.md",
+  "tdd": {
+    "mode": "required",
+    "red": ".delivery/evidence/DMTE-541/red.json",
+    "green": ".delivery/evidence/DMTE-541/green.json"
+  },
+  "design_system": {
+    "applicable": true,
+    "reused": []
+  }
+}
