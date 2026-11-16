@@ -1,50 +1,50 @@
 
- RUN  v4.1.11 /home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-521-c4187c3d45b2/workdir/aponta/apps/web
+ RUN  v4.1.11 /home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-521-c4187c3d45b2/workdir/red-wt/apps/web
 
- ❯ |web| src/components/contracts/ContractStateTags.test.tsx (8 tests | 7 failed) 50ms
+ ❯ |web| src/components/contracts/ContractStateTags.test.tsx (8 tests | 7 failed) 46ms
      × uses one vocabulary: legacy wins, then approved, else draft 9ms
-     × shows Ativo and Inativo with text and an icon, differing in icon and classes, without red 22ms
+     × shows Ativo and Inativo with text and an icon, differing in icon and classes, without red 21ms
      × shows each approval state with its own text and icon, none of them red 3ms
-     × keeps Rascunho and Regularização pendente in the same warning family but apart by text and icon 3ms
-     × lets icons inherit the text color (no own text-* class) 3ms
+     × keeps Rascunho and Regularização pendente in the same warning family but apart by text and icon 2ms
+     × lets icons inherit the text color (no own text-* class) 2ms
      × declares a token pair for every state 3ms
-     × declares the same tokens the rendered tags really use 4ms
+     × declares the same tokens the rendered tags really use 3ms
      ✓ reaches 4.5:1 for every text/background pair (icons inherit the text color, so they reach it too) 0ms
- ❯ |web| src/pages/ContractsPage.test.tsx (29 tests | 7 failed) 6511ms
-     ✓ shows a loading state while contracts are being fetched 114ms
-     ✓ shows an error state when the contracts request fails 70ms
-     ✓ shows the empty state when there are no contracts 61ms
-     ✓ shows financial columns (valor mensal / reajuste) for ADMIN 241ms
-     ✓ shows financial columns for CLIENT_MASTER as well 160ms
-     ✓ hides financial columns for AGENT (masked by the backend, but double-check the UI gate too) 69ms
-     ✓ displays inactive contracts and zero money honestly 96ms
-     ✓ lets admins create with explicit excess rate and minute allowance  470ms
-     ✓ prevents non-admin management and hides detail financial data 152ms
-     ✓ opens a contract's detail as a full page (no dialog) and returns to the list via the back button 236ms
-     ✓ navigates between contracts using the toolbar Anterior/Próximo buttons 129ms
-     ✓ shows a dedicated "Novo contrato" button directly on the toolbar for ADMIN, opening the full-page form 182ms
-     ✓ lets an ADMIN select a contract and delete it via the toolbar 194ms
-     ✓ shows the backend conflict message when deleting a contract with worklogs fails 187ms
-     ✓ does not show the delete button for AGENT, who cannot manage contracts 63ms
-     ✓ renders the Sankhya standard filter drawer and screen config modal (parity with Clientes) 143ms
-     ✓ filters contracts by name or company on the client side via the filter drawer  386ms
-     ✓ filters contracts by status (Ativo/Inativo) via the filter drawer 251ms
-     ✓ filters dynamically by modality using the rule builder (Sankhya Filtros parity)  388ms
-     ✓ saves, applies, and deletes a saved filter from the drawer (Sankhya saved filters parity)  660ms
-     ✓ edits via the update command without turning zero into missing money 295ms
-     ✓ validates reversed dates before saving 120ms
-     × opens the detail from the contract name button and has no Ações column 95ms
-     × opens the detail of the row on double click 1116ms
-     × keeps Contrato and Empresa on one line with the full text in the title, and fixed column widths 67ms
-     × shows Status and Aprovação as two columns of tags with text and icon 96ms
-     × uses the same approval words in the detail 97ms
-     × filters by the same approval words, including Rascunho and Regularização pendente 227ms
-     × starts with Hora excedente and Reajuste hidden but still configurable 133ms
+ ❯ |web| src/pages/ContractsPage.test.tsx (29 tests | 7 failed) 4897ms
+     ✓ shows a loading state while contracts are being fetched 78ms
+     ✓ shows an error state when the contracts request fails 42ms
+     ✓ shows the empty state when there are no contracts 33ms
+     ✓ shows financial columns (valor mensal / reajuste) for ADMIN 146ms
+     ✓ shows financial columns for CLIENT_MASTER as well 91ms
+     ✓ hides financial columns for AGENT (masked by the backend, but double-check the UI gate too) 48ms
+     ✓ displays inactive contracts and zero money honestly 58ms
+     ✓ lets admins create with explicit excess rate and minute allowance 272ms
+     ✓ prevents non-admin management and hides detail financial data 100ms
+     ✓ opens a contract's detail as a full page (no dialog) and returns to the list via the back button 221ms
+     ✓ navigates between contracts using the toolbar Anterior/Próximo buttons 112ms
+     ✓ shows a dedicated "Novo contrato" button directly on the toolbar for ADMIN, opening the full-page form 147ms
+     ✓ lets an ADMIN select a contract and delete it via the toolbar 142ms
+     ✓ shows the backend conflict message when deleting a contract with worklogs fails 141ms
+     ✓ does not show the delete button for AGENT, who cannot manage contracts 44ms
+     ✓ renders the Sankhya standard filter drawer and screen config modal (parity with Clientes) 96ms
+     ✓ filters contracts by name or company on the client side via the filter drawer 252ms
+     ✓ filters contracts by status (Ativo/Inativo) via the filter drawer 186ms
+     ✓ filters dynamically by modality using the rule builder (Sankhya Filtros parity) 273ms
+     ✓ saves, applies, and deletes a saved filter from the drawer (Sankhya saved filters parity)  411ms
+     ✓ edits via the update command without turning zero into missing money 228ms
+     ✓ validates reversed dates before saving 103ms
+     × opens the detail from the contract name button and has no Ações column 81ms
+     × opens the detail of the row on double click 1084ms
+     × keeps Contrato and Empresa on one line with the full text in the title, and fixed column widths 69ms
+     × shows Status and Aprovação as two columns of tags with text and icon 84ms
+     × uses the same approval words in the detail 86ms
+     × filters by the same approval words, including Rascunho and Regularização pendente 183ms
+     × starts with Hora excedente and Reajuste hidden but still configurable 83ms
 
  Test Files  2 failed (2)
       Tests  14 failed | 23 passed (37)
-   Start at  21:40:58
-   Duration  10.08s (transform 2.24s, setup 194ms, import 3.04s, tests 6.56s, environment 896ms)
+   Start at  21:43:21
+   Duration  7.28s (transform 1.19s, setup 169ms, import 1.89s, tests 4.94s, environment 869ms)
 
 
 ⎯⎯⎯⎯⎯⎯ Failed Tests 14 ⎯⎯⎯⎯⎯⎯⎯
@@ -398,44 +398,27 @@ Received:
 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/14]⎯
 
  FAIL  |web| src/pages/ContractsPage.test.tsx > ContractsPage grid (DMTE-536) > filters by the same approval words, including Rascunho and Regularização pendente
-TestingLibraryElementError: Unable to find an accessible element with the role "option"
+AssertionError: expected [ Array(3) ] to deeply equal ArrayContaining{…}
 
-There are no accessible roles. But there might be some inaccessible roles. If you wish to access them, then set the `hidden` option to `true`. Learn more about this here: https://testing-library.com/docs/dom-testing-library/api-queries#byrole
+- Expected
++ Received
 
-Ignored nodes: comments, script, style
-[36m<select[39m
-  [33maria-hidden[39m=[32m"true"[39m
-  [33maria-label[39m=[32m"Valor"[39m
-  [33mclass[39m=[32m"sr-only"[39m
-  [33mid[39m=[32m"_r_j_"[39m
-  [33mtabindex[39m=[32m"-1"[39m
-[36m>[39m
-  [36m<option[39m
-    [33mvalue[39m=[32m""[39m
-  [36m>[39m
-    [0mSelecione…[0m
-  [36m</option>[39m
-  [36m<option[39m
-    [33mvalue[39m=[32m"Aprovado"[39m
-  [36m>[39m
-    [0mAprovado[0m
-  [36m</option>[39m
-  [36m<option[39m
-    [33mvalue[39m=[32m"Pendente"[39m
-  [36m>[39m
-    [0mPendente[0m
-  [36m</option>[39m
-[36m</select>[39m
- ❯ Object.getElementError ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/config.js:37:19
- ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
- ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:109:15
- ❯ src/pages/ContractsPage.test.tsx:750:35
-    748|
+- ArrayContaining [
++ [
++   "Selecione…",
+    "Aprovado",
+-   "Rascunho",
+-   "Regularização pendente",
++   "Pendente",
+  ]
+
+ ❯ src/pages/ContractsPage.test.tsx:751:21
     749|     const value = within(rule).getByLabelText('Valor', { selector: 'se…
-    750|     const options = within(value).getAllByRole('option').map((option) …
-       |                                   ^
+    750|     const options = within(value).getAllByRole('option', { hidden: tru…
     751|     expect(options).toEqual(expect.arrayContaining(['Aprovado', 'Rascu…
+       |                     ^
     752|     expect(options).not.toContain('Pendente');
+    753|
 
 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/14]⎯
 
