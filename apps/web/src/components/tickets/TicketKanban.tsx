@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { CSSProperties, ReactNode, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronDown, ChevronLeft, ChevronRight, Plus, SlidersHorizontal, ArrowUpDown } from 'lucide-react';
 import {
@@ -37,11 +37,23 @@ const statusColumns: TicketStatus[] = [
 /**
  * Responsive board (DMTE-458): the board scrolls horizontally with snap on
  * phones/tablets (columns ~80vw / 260px) and, from `lg`, columns share the
- * available width (flex-1, min 220px) so the board fits the viewport and only
- * scrolls when there are more columns than fit.
+ * available width (flex-1, min 220px) so the board only scrolls when there are
+ * more columns than fit. DMTE-527: o encaixe é `proximity` (não prende a
+ * rolagem) e, a partir de `lg`, o `scroll-padding` à direita reserva o espaço
+ * das faixas recolhidas, que ficam fixas na borda (ver `CollapsedColumn`).
  */
 const KANBAN_BOARD_CLASS =
-  'flex items-start gap-3 overflow-x-auto pb-4 snap-x snap-mandatory lg:snap-none lg:gap-4';
+  'flex items-start gap-3 overflow-x-auto pb-4 snap-x snap-proximity lg:gap-4 lg:scroll-pr-[var(--strips-width)]';
+
+/** Colunas que abrem recolhidas quando o usuário ainda não escolheu (DMTE-527 AC-07). */
+const FINAL_STATUSES: TicketStatus[] = ['RESOLVED', 'CLOSED'];
+
+/** Faixa recolhida (48 px) mais o `gap-4` do quadro: cada faixa fixa fica uma posição à esquerda da seguinte, onde estaria no fim do quadro. */
+const STRIP_STEP_PX = 64;
+const stripRight = (collapsedIds: string[], id: string) =>
+  (collapsedIds.length - 1 - collapsedIds.indexOf(id)) * STRIP_STEP_PX;
+const boardStyle = (collapsedIds: string[]) =>
+  ({ '--strips-width': `${collapsedIds.length * STRIP_STEP_PX}px` }) as CSSProperties;
 const KANBAN_COLUMN_CLASS =
   'flex w-[80vw] max-w-[320px] shrink-0 snap-start sm:w-[260px] lg:w-auto lg:min-w-[220px] lg:max-w-none lg:flex-1';
 
@@ -202,10 +214,14 @@ function extractErrorMessage(err: unknown): string {
 /** TiFlux parity: a collapsed column shrinks to a thin strip (no ticket
  * list), with its label rotated vertically and a chevron to re-expand. It
  * still renders the Droppable's ref/props (required by @hello-pangea/dnd
- * even while `isDropDisabled`) but never accepts a drop while collapsed. */
+ * even while `isDropDisabled`) but never accepts a drop while collapsed.
+ * DMTE-527: a faixa inteira é o botão de expandir (alvo de 48 px de largura) e,
+ * a partir de `lg`, fica fixa na borda direita do quadro (`right` em px vem de
+ * `--strip-right`, para as faixas não se sobreporem). */
 function CollapsedColumn({
   label,
   count,
+  right,
   onExpand,
   droppableRef,
   droppableProps,
@@ -213,6 +229,7 @@ function CollapsedColumn({
 }: {
   label: string;
   count: number;
+  right: number;
   onExpand: () => void;
   droppableRef: (element: HTMLElement | null) => void;
   droppableProps: DroppableProvidedProps;
@@ -222,19 +239,20 @@ function CollapsedColumn({
     <div
       ref={droppableRef}
       {...droppableProps}
-      className="flex min-h-[500px] w-12 shrink-0 flex-col items-center gap-2 self-stretch rounded-lg border border-gray-200 bg-gray-80 p-2"
+      style={{ '--strip-right': `${right}px` } as CSSProperties}
+      className="group relative flex min-h-[500px] w-12 shrink-0 flex-col items-center gap-2 self-stretch rounded-lg border border-gray-200 bg-gray-80 p-2 lg:sticky lg:right-[var(--strip-right)]"
     >
       <button
         type="button"
         onClick={onExpand}
-        className="text-gray-400 hover:text-gray-700 cursor-pointer"
+        aria-label={`Expandir coluna ${label}`}
         title="Expandir coluna"
         data-testid="expand-column"
-      >
-        <ChevronRight className="w-3.5 h-3.5" />
-      </button>
-      <EzTag label={String(count)} variant="gray" className="!px-1.5 !py-0.5" />
-      <span className="[writing-mode:vertical-rl] rotate-180 text-xs font-semibold text-gray-900 py-1 whitespace-nowrap">
+        className="absolute inset-0 cursor-pointer rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+      />
+      <ChevronRight className="pointer-events-none h-3.5 w-3.5 text-gray-400 group-hover:text-gray-700" aria-hidden="true" />
+      <EzTag label={String(count)} variant="gray" className="pointer-events-none !px-1.5 !py-0.5" />
+      <span className="pointer-events-none [writing-mode:vertical-rl] rotate-180 text-xs font-semibold text-gray-900 py-1 whitespace-nowrap">
         {label}
       </span>
       {placeholder}
@@ -298,7 +316,7 @@ function ToolbarMenu({
         aria-expanded={open}
         aria-controls={open ? panelId : undefined}
         onClick={() => onOpenChange(!open)}
-        className="flex h-[var(--control-height-md)] items-center gap-2 rounded-control border border-gray-200 bg-white px-3 text-[14px] font-medium text-gray-700 hover:border-gray-300 hover:bg-gray-90 focus-visible:border-brand-600 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-600"
+        className="flex items-center gap-2 rounded-control border border-gray-200 bg-white px-3 text-[14px] max-sm:h-11 sm:h-[var(--control-height-toolbar)] font-medium text-gray-700 hover:border-gray-300 hover:bg-gray-90 focus-visible:border-brand-600 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand-600"
       >
         {icon}
         {label}
@@ -404,21 +422,21 @@ export function TicketKanban({
   // enabled). `null` while nothing is being dragged.
   const [draggingAllowedColumnIds, setDraggingAllowedColumnIds] =
     useState<Set<string> | null>(null);
+  // O encaixe `proximity` devolve cada passo da rolagem automática do arrastar ao ponto de
+  // encaixe e o quadro não anda até a borda (medido em Chromium, DMTE-527 AC-09): sem encaixe enquanto arrasta.
+  const [isDragging, setIsDragging] = useState(false);
+  const draggableBoardClass = cn(KANBAN_BOARD_CLASS, isDragging && 'snap-none');
 
   // TiFlux parity: columns (status or stage) can be individually collapsed
   // to a thin strip, independent of which mesa/mode is active. Keyed by
-  // column id, so the set is naturally shared across both render modes.
-  const [collapsedColumnIds, setCollapsedColumnIds] = useState<Set<string>>(
-    new Set(),
-  );
-  const toggleColumnCollapsed = (columnId: string) => {
-    setCollapsedColumnIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(columnId)) next.delete(columnId);
-      else next.add(columnId);
-      return next;
-    });
-  };
+  // column id, so the map is naturally shared across both render modes.
+  // DMTE-527: guarda só a escolha do usuário (em memória); coluna sem entrada
+  // usa o padrão (Resolvido, Fechado e estágios finais recolhidos).
+  const [collapseChoices, setCollapseChoices] = useState<Record<string, boolean>>({});
+  const isColumnCollapsed = (columnId: string, byDefault: boolean) =>
+    collapseChoices[columnId] ?? byDefault;
+  const toggleColumnCollapsed = (columnId: string, collapsed: boolean) =>
+    setCollapseChoices((prev) => ({ ...prev, [columnId]: !collapsed }));
 
   const {
     data: stages = [],
@@ -511,6 +529,7 @@ export function TicketKanban({
   });
 
   const onDragStart = (start: DragStart) => {
+    setIsDragging(true);
     if (!stageMode) return;
     const ticket = tickets.find((t) => t.id === start.draggableId);
     if (!ticket) return;
@@ -521,6 +540,7 @@ export function TicketKanban({
 
   const onDragEnd = (result: DropResult) => {
     const { destination, source, draggableId } = result;
+    setIsDragging(false);
     setDraggingAllowedColumnIds(null);
 
     if (!destination) return;
@@ -552,18 +572,17 @@ export function TicketKanban({
   // visible regardless of loading/error/fallback state, so switching mesas
   // never requires leaving the Kanban.
 
-  // Mesma cor do botão "Novo Ticket" do menu (DMTE-498). O EzSelect não expõe
-  // className do controle interno, então as variantes descendentes pintam a caixa
-  // (o div que contém o combobox), o texto, o chevron e o foco só neste seletor.
+  // Seletor em contorno (DMTE-527 AC-04): fundo branco, borda brand-500, texto e seta
+  // brand-700, hover claro e o anel de foco do próprio EzSelect. O EzSelect não expõe
+  // className do controle interno, então as variantes descendentes pintam a caixa (o div
+  // que contém o combobox), o texto e a seta só neste seletor; a altura segue a barra.
   const mesaSelector = (
     <div
       className={cn(
-        'max-w-xs',
-        '[&_div:has(>[role=combobox])]:border-brand-500 [&_div:has(>[role=combobox])]:bg-brand-500',
-        '[&_div:has(>[role=combobox])]:hover:border-brand-700 [&_div:has(>[role=combobox])]:hover:bg-brand-700',
-        '[&_[role=combobox]]:text-gray-70 [&_[role=combobox]_svg]:text-gray-70',
-        // O anel brand-600 do EzSelect não aparece sobre brand-500: foco do EzButton primário.
-        '[&_div:has(>[role=combobox])]:focus-within:ring-4 [&_div:has(>[role=combobox])]:focus-within:ring-brand-200 [&_div:has(>[role=combobox])]:focus-within:ring-offset-2',
+        'w-full sm:w-auto sm:max-w-xs',
+        '[&_div:has(>[role=combobox])]:max-sm:h-11 [&_div:has(>[role=combobox])]:sm:h-[var(--control-height-toolbar)]',
+        '[&_div:has(>[role=combobox])]:border-brand-500 [&_div:has(>[role=combobox])]:hover:border-brand-700 [&_div:has(>[role=combobox])]:hover:bg-brand-50',
+        '[&_[role=combobox]]:text-brand-700 [&_[role=combobox]_svg]:text-brand-700',
       )}
     >
       <label htmlFor="kanban-mesa-select" className="sr-only">
@@ -588,7 +607,7 @@ export function TicketKanban({
 
   // D6a: fila de avatares (clique alterna filtro por agente, multi).
   const agentAvatarRow = presentAgents.length > 0 && (
-    <div className="flex items-center -space-x-1.5" role="group" aria-label="Filtrar por responsável">
+    <div className="flex flex-wrap items-center -space-x-1.5" role="group" aria-label="Filtrar por responsável">
       {presentAgents.map((agent) => (
         <button
           key={agent.id}
@@ -687,8 +706,10 @@ export function TicketKanban({
     <div className="flex flex-wrap items-center gap-3">
       {mesaSelector}
       {agentAvatarRow}
-      {sortMenu}
-      {configMenu}
+      <div className="flex items-center gap-3">
+        {sortMenu}
+        {configMenu}
+      </div>
     </div>
   );
 
@@ -754,11 +775,13 @@ export function TicketKanban({
     const stageColumns = orderedStages.map((stage) => ({
       id: stage.id,
       label: stage.name,
+      collapsedByDefault: stage.isFinal,
       tickets: applySort(visibleTickets.filter((t) => t.stageId === stage.id), sortField, sortDir),
     }));
     stageColumns.push({
       id: NO_STAGE_COLUMN_ID,
       label: 'Sem estágio',
+      collapsedByDefault: false,
       tickets: applySort(
         visibleTickets.filter(
           (t) => stageColumnIdFor(t, stages) === NO_STAGE_COLUMN_ID,
@@ -767,6 +790,9 @@ export function TicketKanban({
         sortDir,
       ),
     });
+    const collapsedIds = stageColumns
+      .filter((col) => isColumnCollapsed(col.id, col.collapsedByDefault))
+      .map((col) => col.id);
 
     return (
       <div className="space-y-3">
@@ -782,9 +808,9 @@ export function TicketKanban({
           </EzAlert>
         )}
         <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
-          <div data-testid="kanban-board" className={KANBAN_BOARD_CLASS}>
+          <div data-testid="kanban-board" className={draggableBoardClass} style={boardStyle(collapsedIds)}>
             {stageColumns.map((col) => {
-              const isCollapsed = collapsedColumnIds.has(col.id);
+              const isCollapsed = collapsedIds.includes(col.id);
               const isUnreachableWhileDragging =
                 draggingAllowedColumnIds !== null &&
                 !draggingAllowedColumnIds.has(col.id);
@@ -805,7 +831,8 @@ export function TicketKanban({
                       <CollapsedColumn
                         label={col.label}
                         count={col.tickets.length}
-                        onExpand={() => toggleColumnCollapsed(col.id)}
+                        right={stripRight(collapsedIds, col.id)}
+                        onExpand={() => toggleColumnCollapsed(col.id, true)}
                         droppableRef={provided.innerRef}
                         droppableProps={provided.droppableProps}
                         placeholder={provided.placeholder}
@@ -827,7 +854,7 @@ export function TicketKanban({
                         <div className="flex items-center justify-between">
                           <button
                             type="button"
-                            onClick={() => toggleColumnCollapsed(col.id)}
+                            onClick={() => toggleColumnCollapsed(col.id, false)}
                             className="flex items-center gap-1 text-gray-400 hover:text-gray-700 cursor-pointer"
                             title="Recolher coluna"
                             data-testid={`collapse-column-${col.id}`}
@@ -898,13 +925,17 @@ export function TicketKanban({
     {} as Record<TicketStatus, Ticket[]>,
   );
 
+  const collapsedIds = statusColumns.filter((col) =>
+    isColumnCollapsed(col, FINAL_STATUSES.includes(col)),
+  );
+
   return (
     <div className="space-y-3">
       {toolbar}
-      <DragDropContext onDragEnd={onDragEnd}>
-        <div data-testid="kanban-board" className={KANBAN_BOARD_CLASS}>
+      <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
+        <div data-testid="kanban-board" className={draggableBoardClass} style={boardStyle(collapsedIds)}>
           {statusColumns.map((col) => {
-            const isCollapsed = collapsedColumnIds.has(col);
+            const isCollapsed = collapsedIds.includes(col);
             return (
               <Droppable
                 key={col}
@@ -916,7 +947,8 @@ export function TicketKanban({
                     <CollapsedColumn
                       label={statusLabels[col]}
                       count={grouped[col].length}
-                      onExpand={() => toggleColumnCollapsed(col)}
+                      right={stripRight(collapsedIds, col)}
+                      onExpand={() => toggleColumnCollapsed(col, true)}
                       droppableRef={provided.innerRef}
                       droppableProps={provided.droppableProps}
                       placeholder={provided.placeholder}
@@ -935,7 +967,7 @@ export function TicketKanban({
                       <div className="flex items-center justify-between">
                         <button
                           type="button"
-                          onClick={() => toggleColumnCollapsed(col)}
+                          onClick={() => toggleColumnCollapsed(col, false)}
                           className="flex items-center gap-1 text-gray-400 hover:text-gray-700 cursor-pointer"
                           title="Recolher coluna"
                           data-testid={`collapse-column-${col}`}
@@ -971,7 +1003,7 @@ export function TicketKanban({
                                 className={`${dragSnapshot.isDragging ? 'opacity-70 rotate-2 scale-105' : ''} transition-transform`}
                                 style={provided.draggableProps.style}
                               >
-                                <TicketKanbanCard ticket={ticket} visibleFields={visibleCardFields} />
+                                <TicketKanbanCard ticket={ticket} visibleFields={visibleCardFields} groupBy="status" />
                               </div>
                             )}
                           </Draggable>
