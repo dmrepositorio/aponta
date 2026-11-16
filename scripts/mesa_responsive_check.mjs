@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 // DMTE-531 AC-05/AC-06: mede a toolbar e as abas da Mesa em Chromium, a 1440×900, 1024×768 e 390×844.
 // A API é interceptada no navegador com dados SINTÉTICOS (sem backend). jsdom não mede layout.
-// Uso: node scripts/mesa_responsive_check.mjs [--out <pasta>] [--url <app já no ar>] [--no-assert] [--json <arquivo>]
+// Uso: node scripts/mesa_responsive_check.mjs [--out <pasta>] [--url <app já no ar>] [--no-assert] [--json <arquivo>] [--compare <json da base>]
+// --compare: falha se, a partir de 640 px, algum retângulo da toolbar diferir do JSON gravado na base (AC-04).
 // Sai com 1 se alguma medição falhar (exceto com --no-assert, usado para capturar a base "antes").
 import { spawn } from 'node:child_process';
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import net from 'node:net';
 import path from 'node:path';
 import { chromium } from '@playwright/test';
@@ -12,6 +13,8 @@ import { chromium } from '@playwright/test';
 const SIZES = [
   { width: 1440, height: 900 },
   { width: 1024, height: 768 },
+  { width: 768, height: 1024 },
+  { width: 640, height: 900 }, // limite de `sm`: a partir daqui a toolbar tem de ser igual à da base
   { width: 390, height: 844 },
 ];
 const args = process.argv.slice(2);
@@ -19,6 +22,7 @@ const option = (name) => (args.includes(name) ? args[args.indexOf(name) + 1] : u
 const outDir = path.resolve(option('--out') ?? 'mesa-responsive-out');
 const jsonOut = option('--json');
 const noAssert = args.includes('--no-assert');
+const compareWith = option('--compare');
 
 const serviceDesks = ['Suporte N1', 'Infraestrutura', 'Financeiro', 'Comercial'].map((name, i) => ({
   id: `sd${i}`, name, createdAt: '2026-09-29T10:00:00.000Z', active: i !== 2, acceptingNewTickets: true, ticketSections: [], organizations: [], agentGroups: [],
@@ -91,6 +95,7 @@ function measureToolbar() {
     // contador inteiro dentro da janela e sem precisar rolar a toolbar (sem contador, não há o que cortar)
     countFullyVisible: !count || (cr.left >= -0.5 && cr.right <= window.innerWidth + 0.5 && cr.width >= count.scrollWidth - 1),
     // linhas distintas ocupadas por botões e contador (cada linha = um top diferente)
+    // 24 px ≈ uma linha da toolbar: botões com o centro no mesmo balde estão na mesma linha
     rows: new Set([...toolbar.querySelectorAll('button'), ...(count ? [count] : [])].map((el) => Math.round((el.getBoundingClientRect().top + el.getBoundingClientRect().height / 2) / 24))).size,
     rects: Object.fromEntries([...toolbar.querySelectorAll('[data-testid]')].map((el) => [el.dataset.testid, r(el)])),
   };
@@ -189,6 +194,12 @@ async function run(baseUrl) {
     await browser.close();
   }
   if (jsonOut) writeFileSync(path.resolve(jsonOut), `${JSON.stringify(data, null, 2)}\n`);
+  if (compareWith) {
+    const base = JSON.parse(readFileSync(path.resolve(compareWith), 'utf8'));
+    const keys = Object.keys(base).filter((key) => !key.startsWith('abas') && Number(key.split('-').pop()) >= 640);
+    const different = keys.filter((key) => JSON.stringify(base[key]?.rects) !== JSON.stringify(data[key]?.rects));
+    check(`Toolbar a partir de 640 px igual à base (${keys.length} medições)`, different.map((key) => `retângulos diferentes: ${key}`));
+  }
   return report;
 }
 

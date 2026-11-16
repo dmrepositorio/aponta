@@ -30,10 +30,10 @@ Não aplicável: grill-with-docs → to-spec → to-tickets completos. Não é f
 
 ## Acceptance criteria
 
-- AC-01: abaixo de 640 px o contador do `EzEntityToolbar` fica numa linha própria, fora do elemento que rola (nenhum ancestral do contador até a raiz da toolbar tem `overflow-x-auto`), com `max-sm` para a linha própria; a linha de botões continua rolável (`max-sm:flex-nowrap max-sm:overflow-x-auto`).
+- AC-01: abaixo de 640 px o contador do `EzEntityToolbar` fica numa linha própria, fora do elemento que rola (nenhum ancestral do contador até a raiz da toolbar tem `overflow-x-auto`), com `max-sm` para a linha própria; a linha de botões continua rolável e sem quebra (`max-sm:overflow-x-auto` na linha; `max-sm:flex-nowrap` no grupo da esquerda).
 - AC-02: a partir de 640 px a toolbar é igual à atual: o contador segue à direita dos botões da direita, com a borda esquerda; sem prop nova; ids de teste, rótulos e ordem de foco dos botões iguais.
 - AC-03: em Chromium a 390 px, na lista da Mesa, no formulário da Mesa, em Contratos e em Clientes, a toolbar ocupa no máximo 2 linhas e o contador aparece inteiro dentro da janela.
-- AC-04: em Chromium a 1440 e 1024 px, os retângulos dos elementos com `data-testid` da toolbar de Mesa, Contratos e Clientes são idênticos aos da base `c786183`.
+- AC-04: em Chromium a 1440, 1024, 768 e 640 px, os retângulos dos elementos com `data-testid` da toolbar de Mesa, Contratos e Clientes (lista e formulário) são idênticos aos da base `c786183` (`--compare` do script contra `.delivery/evidence/DMTE-531/layout-base.json`).
 - AC-05: na Mesa, as abas não têm `flex-wrap` nem `overflow-visible`; em Chromium a 390 px as 12 abas ocupam uma linha com rolagem horizontal e a aba ativa fica dentro da área visível; o primeiro campo do formulário começa dentro da primeira tela (abaixo de 844 px) e a página não ganha rolagem horizontal nos três tamanhos.
 - AC-06: `EzTabs.tsx` não é alterado; sem mudança de API, schema, regra, rótulos ou ordem das abas.
 - AC-07: o DS documenta a mudança em `docs/architecture/03-sankhya-ds-parity.md` e o `EzEntityToolbar` ganha story (hoje não tem) com o contador; o caso estreito se vê reduzindo a janela (o Storybook do projeto não tem addon de viewport).

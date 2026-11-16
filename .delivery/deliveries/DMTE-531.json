@@ -9,7 +9,7 @@
   "criteria": [
     {
       "id": "AC-01",
-      "description": "abaixo de 640 px o contador do `EzEntityToolbar` fica numa linha própria, fora do elemento que rola (nenhum ancestral do contador até a raiz da toolbar tem `overflow-x-auto`), com `max-sm` para a linha própria; a linha de botões continua rolável (`max-sm:flex-nowrap max-sm:overflow-x-auto`).",
+      "description": "abaixo de 640 px o contador do `EzEntityToolbar` fica numa linha própria, fora do elemento que rola (nenhum ancestral do contador até a raiz da toolbar tem `overflow-x-auto`), com `max-sm` para a linha própria; a linha de botões continua rolável e sem quebra (`max-sm:overflow-x-auto` na linha; `max-sm:flex-nowrap` no grupo da esquerda).",
       "tests": [
         "apps/web/src/components/ds/EzEntityToolbar.test.tsx: puts the count in its own row, outside the row that scrolls",
         "apps/web/src/components/ds/EzEntityToolbar.test.tsx: scrolls the buttons in a single row below 640 px and wraps from 640 px up",
@@ -36,9 +36,9 @@
     },
     {
       "id": "AC-04",
-      "description": "em Chromium a 1440 e 1024 px, os retângulos dos elementos com `data-testid` da toolbar de Mesa, Contratos e Clientes são idênticos aos da base `c786183`.",
+      "description": "em Chromium a 1440, 1024, 768 e 640 px, os retângulos dos elementos com `data-testid` da toolbar de Mesa, Contratos e Clientes (lista e formulário) são idênticos aos da base `c786183` (`--compare` do script contra `.delivery/evidence/DMTE-531/layout-base.json`).",
       "tests": [
-        "scripts/mesa_responsive_check.mjs: Chromium a 1440 e 1024 px, retângulos da toolbar iguais à base c786183 (--json antes e depois)"
+        "scripts/mesa_responsive_check.mjs: Chromium a 1440, 1024, 768 e 640 px, retângulos da toolbar iguais à base c786183 (--compare contra .delivery/evidence/DMTE-531/layout-base.json)"
       ],
       "tdd_required": false,
       "reason": "Medida de layout em navegador (jsdom não calcula layout); o comportamento causador (contador fora da linha que rola) é coberto por AC-01 e AC-02"

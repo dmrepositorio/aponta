@@ -1,0 +1,2267 @@
+{
+  "mesa-lista-1440": {
+    "height": 45,
+    "countText": "1 - 4 de 4",
+    "countFullyVisible": true,
+    "rows": 1,
+    "rects": {
+      "ez-toolbar-filter-panel-button": [
+        301,
+        211.5,
+        77.7,
+        32
+      ],
+      "ez-toolbar-mode-toggle-button": [
+        392.7,
+        212.5,
+        76.6,
+        30
+      ],
+      "ez-toolbar-mode-menu-button": [
+        469.3,
+        212.5,
+        24,
+        30
+      ],
+      "ez-toolbar-insert-button": [
+        507.3,
+        211.5,
+        32,
+        32
+      ],
+      "ez-toolbar-previous-button": [
+        544.3,
+        212.5,
+        30,
+        30
+      ],
+      "ez-toolbar-next-button": [
+        575.3,
+        212.5,
+        30,
+        30
+      ],
+      "ez-toolbar-delete-button": [
+        610.3,
+        211.5,
+        32,
+        32
+      ],
+      "ez-toolbar-clone-button": [
+        646.3,
+        211.5,
+        32,
+        32
+      ],
+      "ez-toolbar-refresh-button": [
+        682.3,
+        211.5,
+        32,
+        32
+      ],
+      "ez-toolbar-actions-button": [
+        1174.9,
+        211.5,
+        95.6,
+        32
+      ],
+      "ez-toolbar-screen-config-button": [
+        1276.5,
+        211.5,
+        32,
+        32
+      ],
+      "ez-toolbar-record-count": [
+        1314.5,
+        218.5,
+        64.5,
+        18
+      ]
+    }
+  },
+  "contratos-lista-1440": {
+    "height": 45,
+    "countText": null,
+    "countFullyVisible": true,
+    "rows": 1,
+    "rects": {
+      "ez-toolbar-filter-panel-button": [
+        301,
+        211.5,
+        77.7,
+        32
+      ],
+      "ez-toolbar-mode-toggle-button": [
+        392.7,
+        212.5,
+        76.6,
+        30
+      ],
+      "ez-toolbar-mode-menu-button": [
+        469.3,
+        212.5,
+        24,
+        30
+      ],
+      "ez-toolbar-insert-button": [
+        507.3,
+        211.5,
+        32,
+        32
+      ],
+      "ez-toolbar-previous-button": [
+        544.3,
+        212.5,
+        30,
+        30
+      ],
+      "ez-toolbar-next-button": [
+        575.3,
+        212.5,
+        30,
+        30
+      ],
+      "ez-toolbar-delete-button": [
+        610.3,
+        211.5,
+        32,
+        32
+      ],
+      "ez-toolbar-refresh-button": [
+        646.3,
+        211.5,
+        32,
+        32
+      ],
+      "ez-toolbar-actions-button": [
+        1245.4,
+        211.5,
+        95.6,
+        32
+      ],
+      "ez-toolbar-screen-config-button": [
+        1347,
+        211.5,
+        32,
+        32
+      ]
+    }
+  },
+  "contratos-formulario-1440": {
+    "height": 45,
+    "countText": "1 de 5",
+    "countFullyVisible": true,
+    "rows": 1,
+    "rects": {
+      "ez-toolbar-filter-panel-button": [
+        301,
+        211.5,
+        77.7,
+        32
+      ],
+      "ez-toolbar-mode-toggle-button": [
+        392.7,
+        212.5,
+        104.1,
+        30
+      ],
+      "ez-toolbar-mode-menu-button": [
+        496.8,
+        212.5,
+        24,
+        30
+      ],
+      "ez-toolbar-insert-button": [
+        534.8,
+        211.5,
+        32,
+        32
+      ],
+      "ez-toolbar-previous-button": [
+        571.8,
+        212.5,
+        30,
+        30
+      ],
+      "ez-toolbar-next-button": [
+        602.8,
+        212.5,
+        30,
+        30
+      ],
+      "ez-toolbar-delete-button": [
+        637.8,
+        211.5,
+        32,
+        32
+      ],
+      "ez-toolbar-refresh-button": [
+        673.8,
+        211.5,
+        32,
+        32
+      ],
+      "ez-toolbar-actions-button": [
+        1194.5,
+        211.5,
+        95.6,
+        32
+      ],
+      "ez-toolbar-screen-config-button": [
+        1296.1,
+        211.5,
+        32,
+        32
+      ],
+      "ez-toolbar-record-count": [
+        1334.1,
+        218.5,
+        44.9,
+        18
+      ]
+    }
+  },
+  "clientes-lista-1440": {
+    "height": 45,
+    "countText": null,
+    "countFullyVisible": true,
+    "rows": 1,
+    "rects": {
+      "ez-toolbar-filter-panel-button": [
+        301,
+        211.5,
+        77.7,
+        32
+      ],
+      "ez-toolbar-mode-toggle-button": [
+        392.7,
+        212.5,
+        76.6,
+        30
+      ],
+      "ez-toolbar-mode-menu-button": [
+        469.3,
+        212.5,
+        24,
+        30
+      ],
+      "ez-toolbar-previous-button": [
+        508.3,
+        212.5,
+        30,
+        30
+      ],
+      "ez-toolbar-next-button": [
+        539.3,
+        212.5,
+        30,
+        30
+      ],
+      "ez-toolbar-delete-button": [
+        574.3,
+        211.5,
+        32,
+        32
+      ],
+      "ez-toolbar-clone-button": [
+        610.3,
+        211.5,
+        32,
+        32
+      ],
+      "ez-toolbar-refresh-button": [
+        646.3,
+        211.5,
+        32,
+        32
+      ],
+      "ez-toolbar-actions-button": [
+        1245.4,
+        211.5,
+        95.6,
+        32
+      ],
+      "ez-toolbar-screen-config-button": [
+        1347,
+        211.5,
+        32,
+        32
+      ]
+    }
+  },
+  "clientes-formulario-1440": {
+    "height": 45,
+    "countText": "1 de 6",
+    "countFullyVisible": true,
+    "rows": 1,
+    "rects": {
+      "ez-toolbar-filter-panel-button": [
+        301,
+        211.5,
+        77.7,
+        32
+      ],
+      "ez-toolbar-mode-toggle-button": [
+        392.7,
+        212.5,
+        104.1,
+        30
+      ],
+      "ez-toolbar-mode-menu-button": [
+        496.8,
+        212.5,
+        24,
+        30
+      ],
+      "ez-toolbar-previous-button": [
+        535.8,
+        212.5,
+        30,
+        30
+      ],
+      "ez-toolbar-next-button": [
+        566.8,
+        212.5,
+        30,
+        30
+      ],
+      "ez-toolbar-delete-button": [
+        601.8,
+        211.5,
+        32,
+        32
+      ],
+      "ez-toolbar-clone-button": [
+        637.8,
+        211.5,
+        32,
+        32
+      ],
+      "ez-toolbar-refresh-button": [
+        673.8,
+        211.5,
+        32,
+        32
+      ],
+      "ez-toolbar-actions-button": [
+        1194.5,
+        211.5,
+        95.6,
+        32
+      ],
+      "ez-toolbar-screen-config-button": [
+        1296.1,
+        211.5,
+        32,
+        32
+      ],
+      "ez-toolbar-record-count": [
+        1334.1,
+        218.5,
+        44.9,
+        18
+      ]
+    }
+  },
+  "abas-1440": {
+    "tabCount": 12,
+    "rows": 2,
+    "tablistHeight": 82,
+    "scrollable": false,
+    "formFieldTop": 421,
+    "activeInside": true,
+    "pageOverflow": 0
+  },
+  "mesa-form-toolbar-1440": {
+    "height": 45,
+    "countText": "1 de 4",
+    "countFullyVisible": true,
+    "rows": 1,
+    "rects": {
+      "ez-toolbar-filter-panel-button": [
+        301,
+        211.5,
+        77.7,
+        32
+      ],
+      "ez-toolbar-mode-toggle-button": [
+        392.7,
+        212.5,
+        104.1,
+        30
+      ],
+      "ez-toolbar-mode-menu-button": [
+        496.8,
+        212.5,
+        24,
+        30
+      ],
+      "ez-toolbar-insert-button": [
+        534.8,
+        211.5,
+        32,
+        32
+      ],
+      "ez-toolbar-previous-button": [
+        571.8,
+        212.5,
+        30,
+        30
+      ],
+      "ez-toolbar-next-button": [
+        602.8,
+        212.5,
+        30,
+        30
+      ],
+      "ez-toolbar-delete-button": [
+        637.8,
+        211.5,
+        32,
+        32
+      ],
+      "ez-toolbar-clone-button": [
+        673.8,
+        211.5,
+        32,
+        32
+      ],
+      "ez-toolbar-refresh-button": [
+        709.8,
+        211.5,
+        32,
+        32
+      ],
+      "ez-toolbar-actions-button": [
+        1194.5,
+        211.5,
+        95.6,
+        32
+      ],
+      "ez-toolbar-screen-config-button": [
+        1296.1,
+        211.5,
+        32,
+        32
+      ],
+      "ez-toolbar-record-count": [
+        1334.1,
+        218.5,
+        44.9,
+        18
+      ]
+    }
+  },
+  "mesa-lista-1024": {
+    "height": 45,
+    "countText": "1 - 4 de 4",
+    "countFullyVisible": true,
+    "rows": 1,
+    "rects": {
+      "ez-toolbar-filter-panel-button": [
+        301,
+        211.5,
+        77.7,
+        32
+      ],
+      "ez-toolbar-mode-toggle-button": [
+        392.7,
+        212.5,
+        76.6,
+        30
+      ],
+      "ez-toolbar-mode-menu-button": [
+        469.3,
+        212.5,
+        24,
+        30
+      ],
+      "ez-toolbar-insert-button": [
+        507.3,
+        211.5,
+        32,
+        32
+      ],
+      "ez-toolbar-previous-button": [
+        544.3,
+        212.5,
+        30,
+        30
+      ],
+      "ez-toolbar-next-button": [
+        575.3,
+        212.5,
+        30,
+        30
+      ],
+      "ez-toolbar-delete-button": [
+        610.3,
+        211.5,
+        32,
+        32
+      ],
+      "ez-toolbar-clone-button": [
+        646.3,
+        211.5,
+        32,
+        32
+      ],
+      "ez-toolbar-refresh-button": [
+        682.3,
+        211.5,
+        32,
+        32
+      ],
+      "ez-toolbar-actions-button": [
+        758.9,
+        211.5,
+        95.6,
+        32
+      ],
+      "ez-toolbar-screen-config-button": [
+        860.5,
+        211.5,
+        32,
+        32
+      ],
+      "ez-toolbar-record-count": [
+        898.5,
+        218.5,
+        64.5,
+        18
+      ]
+    }
+  },
+  "contratos-lista-1024": {
+    "height": 45,
+    "countText": null,
+    "countFullyVisible": true,
+    "rows": 1,
+    "rects": {
+      "ez-toolbar-filter-panel-button": [
+        301,
+        211.5,
+        77.7,
+        32
+      ],
+      "ez-toolbar-mode-toggle-button": [
+        392.7,
+        212.5,
+        76.6,
+        30
+      ],
+      "ez-toolbar-mode-menu-button": [
+        469.3,
+        212.5,
+        24,
+        30
+      ],
+      "ez-toolbar-insert-button": [
+        507.3,
+        211.5,
+        32,
+        32
+      ],
+      "ez-toolbar-previous-button": [
+        544.3,
+        212.5,
+        30,
+        30
+      ],
+      "ez-toolbar-next-button": [
+        575.3,
+        212.5,
+        30,
+        30
+      ],
+      "ez-toolbar-delete-button": [
+        610.3,
+        211.5,
+        32,
+        32
+      ],
+      "ez-toolbar-refresh-button": [
+        646.3,
+        211.5,
+        32,
+        32
+      ],
+      "ez-toolbar-actions-button": [
+        829.4,
+        211.5,
+        95.6,
+        32
+      ],
+      "ez-toolbar-screen-config-button": [
+        931,
+        211.5,
+        32,
+        32
+      ]
+    }
+  },
+  "contratos-formulario-1024": {
+    "height": 45,
+    "countText": "1 de 5",
+    "countFullyVisible": true,
+    "rows": 1,
+    "rects": {
+      "ez-toolbar-filter-panel-button": [
+        301,
+        211.5,
+        77.7,
+        32
+      ],
+      "ez-toolbar-mode-toggle-button": [
+        392.7,
+        212.5,
+        104.1,
+        30
+      ],
+      "ez-toolbar-mode-menu-button": [
+        496.8,
+        212.5,
+        24,
+        30
+      ],
+      "ez-toolbar-insert-button": [
+        534.8,
+        211.5,
+        32,
+        32
+      ],
+      "ez-toolbar-previous-button": [
+        571.8,
+        212.5,
+        30,
+        30
+      ],
+      "ez-toolbar-next-button": [
+        602.8,
+        212.5,
+        30,
+        30
+      ],
+      "ez-toolbar-delete-button": [
+        637.8,
+        211.5,
+        32,
+        32
+      ],
+      "ez-toolbar-refresh-button": [
+        673.8,
+        211.5,
+        32,
+        32
+      ],
+      "ez-toolbar-actions-button": [
+        778.5,
+        211.5,
+        95.6,
+        32
+      ],
+      "ez-toolbar-screen-config-button": [
+        880.1,
+        211.5,
+        32,
+        32
+      ],
+      "ez-toolbar-record-count": [
+        918.1,
+        218.5,
+        44.9,
+        18
+      ]
+    }
+  },
+  "clientes-lista-1024": {
+    "height": 45,
+    "countText": null,
+    "countFullyVisible": true,
+    "rows": 1,
+    "rects": {
+      "ez-toolbar-filter-panel-button": [
+        301,
+        211.5,
+        77.7,
+        32
+      ],
+      "ez-toolbar-mode-toggle-button": [
+        392.7,
+        212.5,
+        76.6,
+        30
+      ],
+      "ez-toolbar-mode-menu-button": [
+        469.3,
+        212.5,
+        24,
+        30
+      ],
+      "ez-toolbar-previous-button": [
+        508.3,
+        212.5,
+        30,
+        30
+      ],
+      "ez-toolbar-next-button": [
+        539.3,
+        212.5,
+        30,
+        30
+      ],
+      "ez-toolbar-delete-button": [
+        574.3,
+        211.5,
+        32,
+        32
+      ],
+      "ez-toolbar-clone-button": [
+        610.3,
+        211.5,
+        32,
+        32
+      ],
+      "ez-toolbar-refresh-button": [
+        646.3,
+        211.5,
+        32,
+        32
+      ],
+      "ez-toolbar-actions-button": [
+        829.4,
+        211.5,
+        95.6,
+        32
+      ],
+      "ez-toolbar-screen-config-button": [
+        931,
+        211.5,
+        32,
+        32
+      ]
+    }
+  },
+  "clientes-formulario-1024": {
+    "height": 45,
+    "countText": "1 de 6",
+    "countFullyVisible": true,
+    "rows": 1,
+    "rects": {
+      "ez-toolbar-filter-panel-button": [
+        301,
+        211.5,
+        77.7,
+        32
+      ],
+      "ez-toolbar-mode-toggle-button": [
+        392.7,
+        212.5,
+        104.1,
+        30
+      ],
+      "ez-toolbar-mode-menu-button": [
+        496.8,
+        212.5,
+        24,
+        30
+      ],
+      "ez-toolbar-previous-button": [
+        535.8,
+        212.5,
+        30,
+        30
+      ],
+      "ez-toolbar-next-button": [
+        566.8,
+        212.5,
+        30,
+        30
+      ],
+      "ez-toolbar-delete-button": [
+        601.8,
+        211.5,
+        32,
+        32
+      ],
+      "ez-toolbar-clone-button": [
+        637.8,
+        211.5,
+        32,
+        32
+      ],
+      "ez-toolbar-refresh-button": [
+        673.8,
+        211.5,
+        32,
+        32
+      ],
+      "ez-toolbar-actions-button": [
+        778.5,
+        211.5,
+        95.6,
+        32
+      ],
+      "ez-toolbar-screen-config-button": [
+        880.1,
+        211.5,
+        32,
+        32
+      ],
+      "ez-toolbar-record-count": [
+        918.1,
+        218.5,
+        44.9,
+        18
+      ]
+    }
+  },
+  "abas-1024": {
+    "tabCount": 12,
+    "rows": 3,
+    "tablistHeight": 127,
+    "scrollable": false,
+    "formFieldTop": 466,
+    "activeInside": true,
+    "pageOverflow": 0
+  },
+  "mesa-form-toolbar-1024": {
+    "height": 45,
+    "countText": "1 de 4",
+    "countFullyVisible": true,
+    "rows": 1,
+    "rects": {
+      "ez-toolbar-filter-panel-button": [
+        301,
+        211.5,
+        77.7,
+        32
+      ],
+      "ez-toolbar-mode-toggle-button": [
+        392.7,
+        212.5,
+        104.1,
+        30
+      ],
+      "ez-toolbar-mode-menu-button": [
+        496.8,
+        212.5,
+        24,
+        30
+      ],
+      "ez-toolbar-insert-button": [
+        534.8,
+        211.5,
+        32,
+        32
+      ],
+      "ez-toolbar-previous-button": [
+        571.8,
+        212.5,
+        30,
+        30
+      ],
+      "ez-toolbar-next-button": [
+        602.8,
+        212.5,
+        30,
+        30
+      ],
+      "ez-toolbar-delete-button": [
+        637.8,
+        211.5,
+        32,
+        32
+      ],
+      "ez-toolbar-clone-button": [
+        673.8,
+        211.5,
+        32,
+        32
+      ],
+      "ez-toolbar-refresh-button": [
+        709.8,
+        211.5,
+        32,
+        32
+      ],
+      "ez-toolbar-actions-button": [
+        778.5,
+        211.5,
+        95.6,
+        32
+      ],
+      "ez-toolbar-screen-config-button": [
+        880.1,
+        211.5,
+        32,
+        32
+      ],
+      "ez-toolbar-record-count": [
+        918.1,
+        218.5,
+        44.9,
+        18
+      ]
+    }
+  },
+  "mesa-lista-768": {
+    "height": 117,
+    "countText": "1 - 4 de 4",
+    "countFullyVisible": true,
+    "rows": 3,
+    "rects": {
+      "ez-toolbar-filter-panel-button": [
+        301,
+        211.5,
+        77.7,
+        32
+      ],
+      "ez-toolbar-mode-toggle-button": [
+        302,
+        248.5,
+        76.6,
+        30
+      ],
+      "ez-toolbar-mode-menu-button": [
+        378.6,
+        248.5,
+        24,
+        30
+      ],
+      "ez-toolbar-insert-button": [
+        416.6,
+        247.5,
+        32,
+        32
+      ],
+      "ez-toolbar-previous-button": [
+        302,
+        284.5,
+        30,
+        30
+      ],
+      "ez-toolbar-next-button": [
+        333,
+        284.5,
+        30,
+        30
+      ],
+      "ez-toolbar-delete-button": [
+        368,
+        283.5,
+        32,
+        32
+      ],
+      "ez-toolbar-clone-button": [
+        404,
+        283.5,
+        32,
+        32
+      ],
+      "ez-toolbar-refresh-button": [
+        440,
+        283.5,
+        32,
+        32
+      ],
+      "ez-toolbar-actions-button": [
+        502.9,
+        247.5,
+        95.6,
+        32
+      ],
+      "ez-toolbar-screen-config-button": [
+        604.5,
+        247.5,
+        32,
+        32
+      ],
+      "ez-toolbar-record-count": [
+        642.5,
+        254.5,
+        64.5,
+        18
+      ]
+    }
+  },
+  "contratos-lista-768": {
+    "height": 81,
+    "countText": null,
+    "countFullyVisible": true,
+    "rows": 3,
+    "rects": {
+      "ez-toolbar-filter-panel-button": [
+        301,
+        211.5,
+        77.7,
+        32
+      ],
+      "ez-toolbar-mode-toggle-button": [
+        392.7,
+        212.5,
+        76.6,
+        30
+      ],
+      "ez-toolbar-mode-menu-button": [
+        469.3,
+        212.5,
+        24,
+        30
+      ],
+      "ez-toolbar-insert-button": [
+        507.3,
+        211.5,
+        32,
+        32
+      ],
+      "ez-toolbar-previous-button": [
+        302,
+        248.5,
+        30,
+        30
+      ],
+      "ez-toolbar-next-button": [
+        333,
+        248.5,
+        30,
+        30
+      ],
+      "ez-toolbar-delete-button": [
+        368,
+        247.5,
+        32,
+        32
+      ],
+      "ez-toolbar-refresh-button": [
+        404,
+        247.5,
+        32,
+        32
+      ],
+      "ez-toolbar-actions-button": [
+        573.4,
+        229.5,
+        95.6,
+        32
+      ],
+      "ez-toolbar-screen-config-button": [
+        675,
+        229.5,
+        32,
+        32
+      ]
+    }
+  },
+  "contratos-formulario-768": {
+    "height": 117,
+    "countText": "1 de 5",
+    "countFullyVisible": true,
+    "rows": 3,
+    "rects": {
+      "ez-toolbar-filter-panel-button": [
+        301,
+        211.5,
+        77.7,
+        32
+      ],
+      "ez-toolbar-mode-toggle-button": [
+        302,
+        248.5,
+        104.1,
+        30
+      ],
+      "ez-toolbar-mode-menu-button": [
+        406.1,
+        248.5,
+        24,
+        30
+      ],
+      "ez-toolbar-insert-button": [
+        444.1,
+        247.5,
+        32,
+        32
+      ],
+      "ez-toolbar-previous-button": [
+        302,
+        284.5,
+        30,
+        30
+      ],
+      "ez-toolbar-next-button": [
+        333,
+        284.5,
+        30,
+        30
+      ],
+      "ez-toolbar-delete-button": [
+        368,
+        283.5,
+        32,
+        32
+      ],
+      "ez-toolbar-refresh-button": [
+        404,
+        283.5,
+        32,
+        32
+      ],
+      "ez-toolbar-actions-button": [
+        522.5,
+        247.5,
+        95.6,
+        32
+      ],
+      "ez-toolbar-screen-config-button": [
+        624.1,
+        247.5,
+        32,
+        32
+      ],
+      "ez-toolbar-record-count": [
+        662.1,
+        254.5,
+        44.9,
+        18
+      ]
+    }
+  },
+  "clientes-lista-768": {
+    "height": 81,
+    "countText": null,
+    "countFullyVisible": true,
+    "rows": 3,
+    "rects": {
+      "ez-toolbar-filter-panel-button": [
+        301,
+        211.5,
+        77.7,
+        32
+      ],
+      "ez-toolbar-mode-toggle-button": [
+        392.7,
+        212.5,
+        76.6,
+        30
+      ],
+      "ez-toolbar-mode-menu-button": [
+        469.3,
+        212.5,
+        24,
+        30
+      ],
+      "ez-toolbar-previous-button": [
+        302,
+        248.5,
+        30,
+        30
+      ],
+      "ez-toolbar-next-button": [
+        333,
+        248.5,
+        30,
+        30
+      ],
+      "ez-toolbar-delete-button": [
+        368,
+        247.5,
+        32,
+        32
+      ],
+      "ez-toolbar-clone-button": [
+        404,
+        247.5,
+        32,
+        32
+      ],
+      "ez-toolbar-refresh-button": [
+        440,
+        247.5,
+        32,
+        32
+      ],
+      "ez-toolbar-actions-button": [
+        573.4,
+        229.5,
+        95.6,
+        32
+      ],
+      "ez-toolbar-screen-config-button": [
+        675,
+        229.5,
+        32,
+        32
+      ]
+    }
+  },
+  "clientes-formulario-768": {
+    "height": 117,
+    "countText": "1 de 6",
+    "countFullyVisible": true,
+    "rows": 3,
+    "rects": {
+      "ez-toolbar-filter-panel-button": [
+        301,
+        211.5,
+        77.7,
+        32
+      ],
+      "ez-toolbar-mode-toggle-button": [
+        302,
+        248.5,
+        104.1,
+        30
+      ],
+      "ez-toolbar-mode-menu-button": [
+        406.1,
+        248.5,
+        24,
+        30
+      ],
+      "ez-toolbar-previous-button": [
+        445.1,
+        248.5,
+        30,
+        30
+      ],
+      "ez-toolbar-next-button": [
+        476.1,
+        248.5,
+        30,
+        30
+      ],
+      "ez-toolbar-delete-button": [
+        301,
+        283.5,
+        32,
+        32
+      ],
+      "ez-toolbar-clone-button": [
+        337,
+        283.5,
+        32,
+        32
+      ],
+      "ez-toolbar-refresh-button": [
+        373,
+        283.5,
+        32,
+        32
+      ],
+      "ez-toolbar-actions-button": [
+        522.5,
+        247.5,
+        95.6,
+        32
+      ],
+      "ez-toolbar-screen-config-button": [
+        624.1,
+        247.5,
+        32,
+        32
+      ],
+      "ez-toolbar-record-count": [
+        662.1,
+        254.5,
+        44.9,
+        18
+      ]
+    }
+  },
+  "abas-768": {
+    "tabCount": 12,
+    "rows": 5,
+    "tablistHeight": 217,
+    "scrollable": false,
+    "formFieldTop": 628,
+    "activeInside": true,
+    "pageOverflow": 0
+  },
+  "mesa-form-toolbar-768": {
+    "height": 117,
+    "countText": "1 de 4",
+    "countFullyVisible": true,
+    "rows": 3,
+    "rects": {
+      "ez-toolbar-filter-panel-button": [
+        301,
+        211.5,
+        77.7,
+        32
+      ],
+      "ez-toolbar-mode-toggle-button": [
+        302,
+        248.5,
+        104.1,
+        30
+      ],
+      "ez-toolbar-mode-menu-button": [
+        406.1,
+        248.5,
+        24,
+        30
+      ],
+      "ez-toolbar-insert-button": [
+        444.1,
+        247.5,
+        32,
+        32
+      ],
+      "ez-toolbar-previous-button": [
+        302,
+        284.5,
+        30,
+        30
+      ],
+      "ez-toolbar-next-button": [
+        333,
+        284.5,
+        30,
+        30
+      ],
+      "ez-toolbar-delete-button": [
+        368,
+        283.5,
+        32,
+        32
+      ],
+      "ez-toolbar-clone-button": [
+        404,
+        283.5,
+        32,
+        32
+      ],
+      "ez-toolbar-refresh-button": [
+        440,
+        283.5,
+        32,
+        32
+      ],
+      "ez-toolbar-actions-button": [
+        522.5,
+        247.5,
+        95.6,
+        32
+      ],
+      "ez-toolbar-screen-config-button": [
+        624.1,
+        247.5,
+        32,
+        32
+      ],
+      "ez-toolbar-record-count": [
+        662.1,
+        254.5,
+        44.9,
+        18
+      ]
+    }
+  },
+  "mesa-lista-640": {
+    "height": 81,
+    "countText": "1 - 4 de 4",
+    "countFullyVisible": true,
+    "rows": 2,
+    "rects": {
+      "ez-toolbar-filter-panel-button": [
+        61,
+        214.5,
+        77.7,
+        32
+      ],
+      "ez-toolbar-mode-toggle-button": [
+        152.7,
+        215.5,
+        76.6,
+        30
+      ],
+      "ez-toolbar-mode-menu-button": [
+        229.3,
+        215.5,
+        24,
+        30
+      ],
+      "ez-toolbar-insert-button": [
+        267.3,
+        214.5,
+        32,
+        32
+      ],
+      "ez-toolbar-previous-button": [
+        62,
+        251.5,
+        30,
+        30
+      ],
+      "ez-toolbar-next-button": [
+        93,
+        251.5,
+        30,
+        30
+      ],
+      "ez-toolbar-delete-button": [
+        128,
+        250.5,
+        32,
+        32
+      ],
+      "ez-toolbar-clone-button": [
+        164,
+        250.5,
+        32,
+        32
+      ],
+      "ez-toolbar-refresh-button": [
+        200,
+        250.5,
+        32,
+        32
+      ],
+      "ez-toolbar-actions-button": [
+        374.9,
+        232.5,
+        95.6,
+        32
+      ],
+      "ez-toolbar-screen-config-button": [
+        476.5,
+        232.5,
+        32,
+        32
+      ],
+      "ez-toolbar-record-count": [
+        514.5,
+        239.5,
+        64.5,
+        18
+      ]
+    }
+  },
+  "contratos-lista-640": {
+    "height": 81,
+    "countText": null,
+    "countFullyVisible": true,
+    "rows": 2,
+    "rects": {
+      "ez-toolbar-filter-panel-button": [
+        61,
+        214.5,
+        77.7,
+        32
+      ],
+      "ez-toolbar-mode-toggle-button": [
+        152.7,
+        215.5,
+        76.6,
+        30
+      ],
+      "ez-toolbar-mode-menu-button": [
+        229.3,
+        215.5,
+        24,
+        30
+      ],
+      "ez-toolbar-insert-button": [
+        267.3,
+        214.5,
+        32,
+        32
+      ],
+      "ez-toolbar-previous-button": [
+        304.3,
+        215.5,
+        30,
+        30
+      ],
+      "ez-toolbar-next-button": [
+        335.3,
+        215.5,
+        30,
+        30
+      ],
+      "ez-toolbar-delete-button": [
+        370.3,
+        214.5,
+        32,
+        32
+      ],
+      "ez-toolbar-refresh-button": [
+        61,
+        250.5,
+        32,
+        32
+      ],
+      "ez-toolbar-actions-button": [
+        445.4,
+        232.5,
+        95.6,
+        32
+      ],
+      "ez-toolbar-screen-config-button": [
+        547,
+        232.5,
+        32,
+        32
+      ]
+    }
+  },
+  "contratos-formulario-640": {
+    "height": 81,
+    "countText": "1 de 5",
+    "countFullyVisible": true,
+    "rows": 2,
+    "rects": {
+      "ez-toolbar-filter-panel-button": [
+        61,
+        214.5,
+        77.7,
+        32
+      ],
+      "ez-toolbar-mode-toggle-button": [
+        152.7,
+        215.5,
+        104.1,
+        30
+      ],
+      "ez-toolbar-mode-menu-button": [
+        256.8,
+        215.5,
+        24,
+        30
+      ],
+      "ez-toolbar-insert-button": [
+        294.8,
+        214.5,
+        32,
+        32
+      ],
+      "ez-toolbar-previous-button": [
+        62,
+        251.5,
+        30,
+        30
+      ],
+      "ez-toolbar-next-button": [
+        93,
+        251.5,
+        30,
+        30
+      ],
+      "ez-toolbar-delete-button": [
+        128,
+        250.5,
+        32,
+        32
+      ],
+      "ez-toolbar-refresh-button": [
+        164,
+        250.5,
+        32,
+        32
+      ],
+      "ez-toolbar-actions-button": [
+        394.5,
+        232.5,
+        95.6,
+        32
+      ],
+      "ez-toolbar-screen-config-button": [
+        496.1,
+        232.5,
+        32,
+        32
+      ],
+      "ez-toolbar-record-count": [
+        534.1,
+        239.5,
+        44.9,
+        18
+      ]
+    }
+  },
+  "clientes-lista-640": {
+    "height": 81,
+    "countText": null,
+    "countFullyVisible": true,
+    "rows": 2,
+    "rects": {
+      "ez-toolbar-filter-panel-button": [
+        61,
+        214.5,
+        77.7,
+        32
+      ],
+      "ez-toolbar-mode-toggle-button": [
+        152.7,
+        215.5,
+        76.6,
+        30
+      ],
+      "ez-toolbar-mode-menu-button": [
+        229.3,
+        215.5,
+        24,
+        30
+      ],
+      "ez-toolbar-previous-button": [
+        268.3,
+        215.5,
+        30,
+        30
+      ],
+      "ez-toolbar-next-button": [
+        299.3,
+        215.5,
+        30,
+        30
+      ],
+      "ez-toolbar-delete-button": [
+        334.3,
+        214.5,
+        32,
+        32
+      ],
+      "ez-toolbar-clone-button": [
+        370.3,
+        214.5,
+        32,
+        32
+      ],
+      "ez-toolbar-refresh-button": [
+        61,
+        250.5,
+        32,
+        32
+      ],
+      "ez-toolbar-actions-button": [
+        445.4,
+        232.5,
+        95.6,
+        32
+      ],
+      "ez-toolbar-screen-config-button": [
+        547,
+        232.5,
+        32,
+        32
+      ]
+    }
+  },
+  "clientes-formulario-640": {
+    "height": 81,
+    "countText": "1 de 6",
+    "countFullyVisible": true,
+    "rows": 2,
+    "rects": {
+      "ez-toolbar-filter-panel-button": [
+        61,
+        214.5,
+        77.7,
+        32
+      ],
+      "ez-toolbar-mode-toggle-button": [
+        152.7,
+        215.5,
+        104.1,
+        30
+      ],
+      "ez-toolbar-mode-menu-button": [
+        256.8,
+        215.5,
+        24,
+        30
+      ],
+      "ez-toolbar-previous-button": [
+        295.8,
+        215.5,
+        30,
+        30
+      ],
+      "ez-toolbar-next-button": [
+        326.8,
+        215.5,
+        30,
+        30
+      ],
+      "ez-toolbar-delete-button": [
+        61,
+        250.5,
+        32,
+        32
+      ],
+      "ez-toolbar-clone-button": [
+        97,
+        250.5,
+        32,
+        32
+      ],
+      "ez-toolbar-refresh-button": [
+        133,
+        250.5,
+        32,
+        32
+      ],
+      "ez-toolbar-actions-button": [
+        394.5,
+        232.5,
+        95.6,
+        32
+      ],
+      "ez-toolbar-screen-config-button": [
+        496.1,
+        232.5,
+        32,
+        32
+      ],
+      "ez-toolbar-record-count": [
+        534.1,
+        239.5,
+        44.9,
+        18
+      ]
+    }
+  },
+  "abas-640": {
+    "tabCount": 12,
+    "rows": 4,
+    "tablistHeight": 172,
+    "scrollable": false,
+    "formFieldTop": 538,
+    "activeInside": true,
+    "pageOverflow": 0
+  },
+  "mesa-form-toolbar-640": {
+    "height": 81,
+    "countText": "1 de 4",
+    "countFullyVisible": true,
+    "rows": 2,
+    "rects": {
+      "ez-toolbar-filter-panel-button": [
+        61,
+        214.5,
+        77.7,
+        32
+      ],
+      "ez-toolbar-mode-toggle-button": [
+        152.7,
+        215.5,
+        104.1,
+        30
+      ],
+      "ez-toolbar-mode-menu-button": [
+        256.8,
+        215.5,
+        24,
+        30
+      ],
+      "ez-toolbar-insert-button": [
+        294.8,
+        214.5,
+        32,
+        32
+      ],
+      "ez-toolbar-previous-button": [
+        62,
+        251.5,
+        30,
+        30
+      ],
+      "ez-toolbar-next-button": [
+        93,
+        251.5,
+        30,
+        30
+      ],
+      "ez-toolbar-delete-button": [
+        128,
+        250.5,
+        32,
+        32
+      ],
+      "ez-toolbar-clone-button": [
+        164,
+        250.5,
+        32,
+        32
+      ],
+      "ez-toolbar-refresh-button": [
+        200,
+        250.5,
+        32,
+        32
+      ],
+      "ez-toolbar-actions-button": [
+        394.5,
+        232.5,
+        95.6,
+        32
+      ],
+      "ez-toolbar-screen-config-button": [
+        496.1,
+        232.5,
+        32,
+        32
+      ],
+      "ez-toolbar-record-count": [
+        534.1,
+        239.5,
+        44.9,
+        18
+      ]
+    }
+  },
+  "mesa-lista-390": {
+    "height": 59,
+    "countText": "1 - 4 de 4",
+    "countFullyVisible": false,
+    "rows": 1,
+    "rects": {
+      "ez-toolbar-filter-panel-button": [
+        49,
+        203.5,
+        77.7,
+        44
+      ],
+      "ez-toolbar-mode-toggle-button": [
+        140.7,
+        203.5,
+        76.6,
+        44
+      ],
+      "ez-toolbar-mode-menu-button": [
+        217.3,
+        203.5,
+        44,
+        44
+      ],
+      "ez-toolbar-insert-button": [
+        275.3,
+        203.5,
+        44,
+        44
+      ],
+      "ez-toolbar-previous-button": [
+        324.3,
+        203.5,
+        44,
+        44
+      ],
+      "ez-toolbar-next-button": [
+        369.3,
+        203.5,
+        44,
+        44
+      ],
+      "ez-toolbar-delete-button": [
+        418.3,
+        203.5,
+        44,
+        44
+      ],
+      "ez-toolbar-clone-button": [
+        466.3,
+        203.5,
+        44,
+        44
+      ],
+      "ez-toolbar-refresh-button": [
+        514.3,
+        203.5,
+        44,
+        44
+      ],
+      "ez-toolbar-actions-button": [
+        570.3,
+        203.5,
+        95.6,
+        44
+      ],
+      "ez-toolbar-screen-config-button": [
+        671.8,
+        203.5,
+        44,
+        44
+      ],
+      "ez-toolbar-record-count": [
+        721.8,
+        216.5,
+        64.5,
+        18
+      ]
+    }
+  },
+  "contratos-lista-390": {
+    "height": 59,
+    "countText": null,
+    "countFullyVisible": true,
+    "rows": 1,
+    "rects": {
+      "ez-toolbar-filter-panel-button": [
+        49,
+        203.5,
+        77.7,
+        44
+      ],
+      "ez-toolbar-mode-toggle-button": [
+        140.7,
+        203.5,
+        76.6,
+        44
+      ],
+      "ez-toolbar-mode-menu-button": [
+        217.3,
+        203.5,
+        44,
+        44
+      ],
+      "ez-toolbar-insert-button": [
+        275.3,
+        203.5,
+        44,
+        44
+      ],
+      "ez-toolbar-previous-button": [
+        324.3,
+        203.5,
+        44,
+        44
+      ],
+      "ez-toolbar-next-button": [
+        369.3,
+        203.5,
+        44,
+        44
+      ],
+      "ez-toolbar-delete-button": [
+        418.3,
+        203.5,
+        44,
+        44
+      ],
+      "ez-toolbar-refresh-button": [
+        466.3,
+        203.5,
+        44,
+        44
+      ],
+      "ez-toolbar-actions-button": [
+        522.3,
+        203.5,
+        95.6,
+        44
+      ],
+      "ez-toolbar-screen-config-button": [
+        623.8,
+        203.5,
+        44,
+        44
+      ]
+    }
+  },
+  "contratos-formulario-390": {
+    "height": 59,
+    "countText": "1 de 5",
+    "countFullyVisible": false,
+    "rows": 1,
+    "rects": {
+      "ez-toolbar-filter-panel-button": [
+        49,
+        203.5,
+        77.7,
+        44
+      ],
+      "ez-toolbar-mode-toggle-button": [
+        140.7,
+        203.5,
+        104.1,
+        44
+      ],
+      "ez-toolbar-mode-menu-button": [
+        244.8,
+        203.5,
+        44,
+        44
+      ],
+      "ez-toolbar-insert-button": [
+        302.8,
+        203.5,
+        44,
+        44
+      ],
+      "ez-toolbar-previous-button": [
+        351.8,
+        203.5,
+        44,
+        44
+      ],
+      "ez-toolbar-next-button": [
+        396.8,
+        203.5,
+        44,
+        44
+      ],
+      "ez-toolbar-delete-button": [
+        445.8,
+        203.5,
+        44,
+        44
+      ],
+      "ez-toolbar-refresh-button": [
+        493.8,
+        203.5,
+        44,
+        44
+      ],
+      "ez-toolbar-actions-button": [
+        549.8,
+        203.5,
+        95.6,
+        44
+      ],
+      "ez-toolbar-screen-config-button": [
+        651.4,
+        203.5,
+        44,
+        44
+      ],
+      "ez-toolbar-record-count": [
+        701.4,
+        216.5,
+        44.9,
+        18
+      ]
+    }
+  },
+  "clientes-lista-390": {
+    "height": 59,
+    "countText": null,
+    "countFullyVisible": true,
+    "rows": 1,
+    "rects": {
+      "ez-toolbar-filter-panel-button": [
+        49,
+        203.5,
+        77.7,
+        44
+      ],
+      "ez-toolbar-mode-toggle-button": [
+        140.7,
+        203.5,
+        76.6,
+        44
+      ],
+      "ez-toolbar-mode-menu-button": [
+        217.3,
+        203.5,
+        44,
+        44
+      ],
+      "ez-toolbar-previous-button": [
+        276.3,
+        203.5,
+        44,
+        44
+      ],
+      "ez-toolbar-next-button": [
+        321.3,
+        203.5,
+        44,
+        44
+      ],
+      "ez-toolbar-delete-button": [
+        370.3,
+        203.5,
+        44,
+        44
+      ],
+      "ez-toolbar-clone-button": [
+        418.3,
+        203.5,
+        44,
+        44
+      ],
+      "ez-toolbar-refresh-button": [
+        466.3,
+        203.5,
+        44,
+        44
+      ],
+      "ez-toolbar-actions-button": [
+        522.3,
+        203.5,
+        95.6,
+        44
+      ],
+      "ez-toolbar-screen-config-button": [
+        623.8,
+        203.5,
+        44,
+        44
+      ]
+    }
+  },
+  "clientes-formulario-390": {
+    "height": 59,
+    "countText": "1 de 6",
+    "countFullyVisible": false,
+    "rows": 1,
+    "rects": {
+      "ez-toolbar-filter-panel-button": [
+        49,
+        203.5,
+        77.7,
+        44
+      ],
+      "ez-toolbar-mode-toggle-button": [
+        140.7,
+        203.5,
+        104.1,
+        44
+      ],
+      "ez-toolbar-mode-menu-button": [
+        244.8,
+        203.5,
+        44,
+        44
+      ],
+      "ez-toolbar-previous-button": [
+        303.8,
+        203.5,
+        44,
+        44
+      ],
+      "ez-toolbar-next-button": [
+        348.8,
+        203.5,
+        44,
+        44
+      ],
+      "ez-toolbar-delete-button": [
+        397.8,
+        203.5,
+        44,
+        44
+      ],
+      "ez-toolbar-clone-button": [
+        445.8,
+        203.5,
+        44,
+        44
+      ],
+      "ez-toolbar-refresh-button": [
+        493.8,
+        203.5,
+        44,
+        44
+      ],
+      "ez-toolbar-actions-button": [
+        549.8,
+        203.5,
+        95.6,
+        44
+      ],
+      "ez-toolbar-screen-config-button": [
+        651.4,
+        203.5,
+        44,
+        44
+      ],
+      "ez-toolbar-record-count": [
+        701.4,
+        216.5,
+        44.9,
+        18
+      ]
+    }
+  },
+  "abas-390": {
+    "tabCount": 12,
+    "rows": 8,
+    "tablistHeight": 352,
+    "scrollable": false,
+    "formFieldTop": 684,
+    "activeInside": true,
+    "pageOverflow": 0
+  },
+  "mesa-form-toolbar-390": {
+    "height": 59,
+    "countText": "1 de 4",
+    "countFullyVisible": false,
+    "rows": 1,
+    "rects": {
+      "ez-toolbar-filter-panel-button": [
+        49,
+        203.5,
+        77.7,
+        44
+      ],
+      "ez-toolbar-mode-toggle-button": [
+        140.7,
+        203.5,
+        104.1,
+        44
+      ],
+      "ez-toolbar-mode-menu-button": [
+        244.8,
+        203.5,
+        44,
+        44
+      ],
+      "ez-toolbar-insert-button": [
+        302.8,
+        203.5,
+        44,
+        44
+      ],
+      "ez-toolbar-previous-button": [
+        351.8,
+        203.5,
+        44,
+        44
+      ],
+      "ez-toolbar-next-button": [
+        396.8,
+        203.5,
+        44,
+        44
+      ],
+      "ez-toolbar-delete-button": [
+        445.8,
+        203.5,
+        44,
+        44
+      ],
+      "ez-toolbar-clone-button": [
+        493.8,
+        203.5,
+        44,
+        44
+      ],
+      "ez-toolbar-refresh-button": [
+        541.8,
+        203.5,
+        44,
+        44
+      ],
+      "ez-toolbar-actions-button": [
+        597.8,
+        203.5,
+        95.6,
+        44
+      ],
+      "ez-toolbar-screen-config-button": [
+        699.4,
+        203.5,
+        44,
+        44
+      ],
+      "ez-toolbar-record-count": [
+        749.4,
+        216.5,
+        44.9,
+        18
+      ]
+    }
+  }
+}

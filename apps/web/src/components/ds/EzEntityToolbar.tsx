@@ -489,9 +489,11 @@ export const EzEntityToolbar = forwardRef<HTMLDivElement, EzEntityToolbarProps>(
           )}
 
         </div>
+        {/* fim da linha que rola (conteúdo não reindentado para manter o diff curto) */}
         </div>
 
-        {/* 11. Quantidade de Registros */}
+        {/* 11. Quantidade de Registros. Fora do grupo da direita: sm:-ml-1.5 compensa o gap-3 da
+            toolbar para manter os 6 px (gap-1.5) que o grupo da direita tinha até o contador. */}
         {recordCountText && (
           <div
             data-testid="ez-toolbar-record-count"
