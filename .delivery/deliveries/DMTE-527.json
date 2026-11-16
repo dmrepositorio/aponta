@@ -9,7 +9,7 @@
   "criteria": [
     {
       "id": "AC-01",
-      "description": "`styles.css` define `--control-height-toolbar: 36px` sem alterar `--control-height-md` (42 px) nem `--control-height-compact` (32 px); a partir de `sm`, título/busca/\"Busca avançada\", Lista/Kanban, Mesa, Ordenar e Configurações usam o token de 36 px, e atalhos, \"Exibir colunas\" e \"Agrupar por\" usam 32 px; abaixo de `sm`, esses controles têm `min-h-11` (44 px).",
+      "description": "`styles.css` define `--control-height-toolbar: 36px` sem alterar `--control-height-md` (42 px) nem `--control-height-compact` (32 px); a partir de `sm`, título (que não é controle e só acompanha a altura a partir de `sm`), busca, \"Busca avançada\", Lista/Kanban, Mesa, Ordenar e Configurações usam o token de 36 px, e atalhos, \"Exibir colunas\" e \"Agrupar por\" usam 32 px; abaixo de `sm`, os controles (exceto o título) têm `min-h-11` (44 px).",
       "tests": [
         "apps/web/src/components/ds/EzDesignTokens.test.tsx: AC-01: styles.css defines --control-height-toolbar as 36px",
         "apps/web/src/components/ds/EzDesignTokens.test.tsx: AC-01: --control-height-md stays 42px and --control-height-compact stays 32px",
@@ -157,7 +157,7 @@
     },
     {
       "id": "AC-12",
-      "description": "o servidor valida o formato (limites do item 11) e devolve 400 para campo desconhecido, tipo errado, mais de 100 entradas em `collapsed`, id com mais de 64 caracteres ou corpo acima de 64 KB; um corpo válido é gravado e relido igual.",
+      "description": "o servidor valida o formato (limites do item 11) e devolve 400 para campo desconhecido, tipo errado, mais de 100 entradas em `collapsed`, id com mais de 64 caracteres ou corpo acima de 64 KB (400, ou 413 acima de 100 KB); um corpo válido é gravado e relido igual.",
       "tests": [
         "apps/api/src/user-screen-preferences/user-screen-preferences.service.spec.ts: AC-12: o que o PUT grava, o GET relê igual",
         "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-12: um corpo válido é gravado (200) e relido igual",
@@ -199,7 +199,7 @@
     },
     {
       "id": "AC-14",
-      "description": "`useUserScreenConfig` mantém a assinatura para as cinco telas, lê do servidor antes de a tela desenhar, grava cada mudança no servidor com espera de 400 ms e deixa de usar o `localStorage` depois da importação; os testes existentes das cinco telas seguem verdes.",
+      "description": "`useUserScreenConfig` mantém a assinatura para as cinco telas, lê do servidor (Kanban e Lista esperam a leitura antes de desenhar), grava cada mudança no servidor com espera de 400 ms e deixa de usar o `localStorage` depois da importação; os testes existentes das cinco telas seguem verdes.",
       "tests": [
         "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-14: mantém a assinatura e lê GET /me/screen-preferences/organizations",
         "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-14: mantém a assinatura e lê GET /me/screen-preferences/contracts",
