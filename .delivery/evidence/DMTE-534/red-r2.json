@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "phase": "red",
+  "started_at": "2026-11-16T23:14:50.211199+00:00",
+  "finished_at": "2026-11-16T23:15:01.176645+00:00",
+  "command": [
+    "pnpm",
+    "--dir",
+    "apps/web",
+    "exec",
+    "vitest",
+    "run",
+    "src/pages/KnowledgePage.test.tsx",
+    "src/components/knowledge/KnowledgeArticleAttachments.test.tsx",
+    "src/components/knowledge/articleExcerpt.test.ts",
+    "src/components/knowledge/articleContentStyles.test.ts"
+  ],
+  "base_sha": "ca24983d9270307547ae68f3035a6f95af1a92f2",
+  "head_sha": "9f4477a3701721b9ce550603d89bffe17489abb1",
+  "exit_code": 1,
+  "tests": {
+    "apps/web/src/pages/KnowledgePage.test.tsx": "3aaba8f856bd297906ad7bce426187ce8c47f001cb24526a0e903f2bf1616c06",
+    "apps/web/src/components/knowledge/KnowledgeArticleAttachments.test.tsx": "1e6ec04605900591e1c0a57507b041e686e712a11732bda64b2427fe66a960a9",
+    "apps/web/src/components/knowledge/articleExcerpt.test.ts": "4e85cba0738e362cdef2fc2b2b0c14549bb8752f4d2b063fc28542398cd4319f",
+    "apps/web/src/components/knowledge/articleContentStyles.test.ts": "640a0d1c0de8cc769a6043db42296c110d7cc7c9285de68dd17ffd07fbacc3b4"
+  },
+  "criteria": [
+    "AC-01",
+    "AC-02",
+    "AC-03",
+    "AC-04",
+    "AC-05",
+    "AC-06",
+    "AC-07",
+    "AC-08",
+    "AC-09"
+  ],
+  "source_hashes": {
+    "apps/web/src/components/knowledge/KnowledgeArticleAttachments.test.tsx": "1e6ec04605900591e1c0a57507b041e686e712a11732bda64b2427fe66a960a9",
+    "apps/web/src/components/knowledge/KnowledgeArticleAttachments.tsx": "0c280643c5c52529e8a656d5f4fd460ef7677129222979afbd1848ff8632408a",
+    "apps/web/src/components/knowledge/KnowledgeArticleCard.tsx": "c0875b86e5e75b55a80ae2ad4758c6e9450bfeaafcd9c557f9cbc46aebae07bf",
+    "apps/web/src/components/knowledge/articleContentStyles.test.ts": "640a0d1c0de8cc769a6043db42296c110d7cc7c9285de68dd17ffd07fbacc3b4",
+    "apps/web/src/components/knowledge/articleExcerpt.test.ts": "4e85cba0738e362cdef2fc2b2b0c14549bb8752f4d2b063fc28542398cd4319f",
+    "apps/web/src/components/knowledge/articleExcerpt.ts": "223b5f66cfc9f8a52f3ed8b2c6a569c4d1507dc65dcb0de377f38ea07107ef55",
+    "apps/web/src/pages/KnowledgePage.test.tsx": "3aaba8f856bd297906ad7bce426187ce8c47f001cb24526a0e903f2bf1616c06",
+    "apps/web/src/pages/KnowledgePage.tsx": "f5ae1f57d235b31030a93281abe9c9025876275aaa2be108275aec30caa6be71",
+    "apps/web/src/styles.css": "9ed05cd2f913eda4025c6de67d08dd3e6fa8d077481e0e3858e7c3606eed14d7"
+  },
+  "log": ".delivery/evidence/DMTE-534/red-r2.log",
+  "log_sha256": "8aa54f42dbe4e76ca55045ae2dac725c1c7bb958ce9f05afd57d8b93ec93d678"
+}

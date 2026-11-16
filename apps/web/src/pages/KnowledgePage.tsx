@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { LayoutGrid, List as ListIcon } from 'lucide-react';
 import { api } from '../lib/api';
@@ -24,6 +24,7 @@ import {
   KnowledgeArticleAttachments,
   type KnowledgeAttachment,
 } from '../components/knowledge/KnowledgeArticleAttachments';
+import { KnowledgeArticleCard } from '../components/knowledge/KnowledgeArticleCard';
 
 type ArticleVisibility = 'PUBLIC' | 'PRIVATE';
 
@@ -65,11 +66,6 @@ type ViewMode = 'list' | 'grid';
 
 const PAGE_SIZE = 10;
 
-function formatUpdatedAt(value?: string) {
-  if (!value) return null;
-  return new Date(value).toLocaleDateString('pt-BR');
-}
-
 export function KnowledgePage() {
   const user = useAuthStore((state) => state.user);
   const canAuthor =
@@ -88,6 +84,7 @@ export function KnowledgePage() {
   const [sort, setSort] = useState<ArticleSort>('updated_desc');
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [page, setPage] = useState(1);
+  const searchRef = useRef<HTMLInputElement>(null);
 
   // Tiflux-parity: ordenação e filtro por múltiplas tags reiniciam a paginação.
   useEffect(() => {
@@ -107,7 +104,7 @@ export function KnowledgePage() {
   });
   const selectedFolder = folders?.find((f) => f.id === selectedFolderId);
 
-  const { data: articles, isLoading } = useQuery<Article[]>({
+  const { data: articles, isLoading, isError, refetch } = useQuery<Article[]>({
     queryKey: ['articles', { search, tags: selectedTags, sort, folderId: selectedFolderId }],
     queryFn: async () => {
       const params = new URLSearchParams();
@@ -169,6 +166,13 @@ export function KnowledgePage() {
     () => (articles ?? []).slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
     [articles, page]
   );
+
+  const hasFilters = search !== '' || selectedTags.length > 0;
+  const clearFilters = () => {
+    setSearch('');
+    setSelectedTags([]);
+    searchRef.current?.focus();
+  };
 
   const toggleTag = (t: string) => {
     setSelectedTags((prev) => (prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]));
@@ -305,28 +309,41 @@ export function KnowledgePage() {
         ]}
       />
 
-      <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
-        <div>
+      <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-4">
+        <div className="min-w-0">
           <h1 className="text-[20px] font-semibold text-gray-900">Base de Conhecimento (FAQ)</h1>
           {!user && <p className="text-sm text-gray-500">Exibindo apenas artigos públicos</p>}
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center">
           <EzTextInput
+            ref={searchRef}
             type="search"
             placeholder="Buscar palavra-chave..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             title="busca por palavra-chave"
-            className="min-w-[200px]"
+            className="w-full md:w-[280px]"
           />
+          {canAuthor && !isFormOpen && (
+            <EzButton type="button" onClick={openNewForm} size="small" className="shrink-0 self-start md:self-auto">
+              + Novo artigo
+            </EzButton>
+          )}
+        </div>
+      </div>
+
+      {selectedTags.length > 0 && (
+        <div data-testid="knowledge-active-filters" className="mb-4 flex flex-wrap items-center gap-2">
           {selectedTags.map((t) => (
             <EzTag
               key={t}
               label={`Tag: ${t}`}
               variant="ocean"
+              className="whitespace-nowrap"
               rightIcon={
                 <button
+                  type="button"
                   onClick={() => toggleTag(t)}
                   aria-label={`Remover filtro de tag ${t}`}
                   className="hover:text-brand-900 font-bold"
@@ -336,14 +353,8 @@ export function KnowledgePage() {
               }
             />
           ))}
-
-          {canAuthor && !isFormOpen && (
-            <EzButton type="button" onClick={openNewForm} size="small">
-              + Novo artigo
-            </EzButton>
-          )}
         </div>
-      </div>
+      )}
 
       {canAuthor && isFormOpen && (
         <form
@@ -374,6 +385,13 @@ export function KnowledgePage() {
               onChange={(e) => setTagsInput(e.target.value)}
               placeholder="ex: acesso, senha, rh"
             />
+            {editingId && (
+              <KnowledgeArticleAttachments
+                articleId={editingId}
+                attachments={articles?.find((a) => a.id === editingId)?.attachments ?? []}
+                canManage
+              />
+            )}
 
             <div className="flex items-end gap-3">
               <div className="w-[220px]">
@@ -565,74 +583,53 @@ export function KnowledgePage() {
         }
       >
         {pagedArticles.map((art) => (
-          <EzCardItem key={art.id} flat className="p-4">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-3">
-                <h2 className="text-[16px] font-semibold text-gray-900">{art.title}</h2>
-                {art.visibility === 'PRIVATE' && <EzTag label="Interno" variant="yellow" />}
-              </div>
-              {canAuthor && (
-                <div className="flex gap-2">
-                  <EzButton variant="tertiary" size="small" onClick={() => openEditForm(art)}>
-                    Editar
-                  </EzButton>
-                  {canDelete && (
-                    <EzButton
-                      variant="tertiary"
-                      size="small"
-                      className="text-red-600 hover:text-red-700"
-                      onClick={() => {
-                        if (window.confirm('Excluir este artigo?')) deleteMutation.mutate(art.id);
-                      }}
-                    >
-                      Excluir
-                    </EzButton>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {(art.author?.name || art.updatedAt) && (
-              <p className="text-xs text-gray-500 mb-2">
-                {art.author?.name && <span>Por {art.author.name}</span>}
-                {art.author?.name && art.updatedAt && <span> • </span>}
-                {art.updatedAt && <span>{formatUpdatedAt(art.updatedAt)}</span>}
-              </p>
-            )}
-
-            {/*
-              Safe to render raw: article content only ever reaches the
-              client after passing through the backend's
-              sanitizeArticleContent step on save (strict tag/attribute/
-              inline-style allowlist) — this is never unsanitized HTML
-              typed directly by the current user.
-            */}
-            <div
-              className="prose prose-sm max-w-none text-gray-700 mb-3"
-              dangerouslySetInnerHTML={{ __html: art.content }}
-            />
-
-            {art.tags && art.tags.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {art.tags.map((t) => (
-                  <button key={t} onClick={() => toggleTag(t)} title={`Filtrar por ${t}`}>
-                    <EzTag label={`#${t}`} variant={selectedTags.includes(t) ? 'ocean' : 'gray'} />
-                  </button>
-                ))}
-              </div>
-            )}
-
-            <KnowledgeArticleAttachments
-              articleId={art.id}
-              attachments={art.attachments ?? []}
-              canManage={canAuthor}
-            />
-          </EzCardItem>
+          <KnowledgeArticleCard
+            key={art.id}
+            article={art}
+            selectedTags={selectedTags}
+            onToggleTag={toggleTag}
+            canAuthor={canAuthor}
+            canDelete={canDelete}
+            onEdit={() => openEditForm(art)}
+            onDelete={() => {
+              if (window.confirm('Excluir este artigo?')) deleteMutation.mutate(art.id);
+            }}
+          />
         ))}
-        {!isLoading && !articles?.length && (
-          <EzEmptyCard title="Nenhum artigo encontrado para a busca atual." />
-        )}
       </div>
+
+      {isError && !isLoading && (
+        <div className="flex flex-col items-start gap-3">
+          <EzAlert variant="error">Não foi possível carregar os artigos.</EzAlert>
+          <EzButton type="button" variant="secondary" size="small" onClick={() => void refetch()}>
+            Tentar novamente
+          </EzButton>
+        </div>
+      )}
+      {!isLoading && !isError && !articles?.length && (
+        hasFilters ? (
+          <EzEmptyCard
+            title="Nenhum artigo encontrado para a busca atual."
+            action={
+              <EzButton type="button" variant="secondary" size="small" onClick={clearFilters}>
+                Limpar busca e filtros
+              </EzButton>
+            }
+          />
+        ) : (
+          <EzEmptyCard
+            title="Esta pasta ainda não tem artigos."
+            description={canAuthor ? undefined : 'Quando houver artigos, eles aparecem aqui.'}
+            action={
+              canAuthor && !isFormOpen ? (
+                <EzButton type="button" size="small" onClick={openNewForm}>
+                  + Novo artigo
+                </EzButton>
+              ) : undefined
+            }
+          />
+        )
+      )}
 
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-2 mt-6">

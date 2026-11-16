@@ -1,0 +1,108 @@
+
+ RUN  v4.1.11 /home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-534-924bb02c2d4f/workdir/aponta/apps/web
+
+ ✓ |web| src/components/knowledge/articleExcerpt.test.ts (6 tests) 25ms
+ ✓ |web| src/components/knowledge/articleContentStyles.test.ts (5 tests) 6ms
+ ✓ |web| src/components/knowledge/KnowledgeArticleAttachments.test.tsx (9 tests) 341ms
+ ❯ |web| src/pages/KnowledgePage.test.tsx (37 tests | 1 failed) 6831ms
+     ✓ shows the folders grid first, not the article list 65ms
+     ✓ opens a folder and lists only its articles, filtered by folderId 143ms
+     ✓ shows a breadcrumb back to the folders grid once inside a folder 128ms
+     ✓ does not show the new-article form or edit/delete buttons to a CLIENT 92ms
+     ✓ shows the Interno badge only for a PRIVATE article (visibility-based, not the old isPublic) 43ms
+     ✓ defaults a new article to "Público" and hides the Compartilhar button 216ms
+     ✓ shows the Compartilhar button once "Privado" is selected, and opens the sharing dialog  313ms
+     ✓ shows the new-article form to an AGENT and creates a PUBLIC article inside the open folder  818ms
+     ✓ selects an agent group and a client in the share dialog, and sends them (plus auto-share) in the create payload  835ms
+     ✓ allows an AGENT to update an existing article, pre-populating the access type and sharing lists  527ms
+     ✓ allows filtering by search keyword and tag inside a folder 95ms
+     ✓ allows selecting more than one tag at once (OR filter) 115ms
+     ✓ shows the author and last-updated date on each article 39ms
+     ✓ sends the chosen sort order to the API 42ms
+     ✓ toggles between list and grid view modes 88ms
+     ✓ paginates articles beyond the first page 123ms
+     ✓ allows deleting an article 77ms
+     ✓ renders article content as real HTML, not escaped text 55ms
+     ✓ shows the attachment count only for articles that have attachments, and the links once expanded 76ms
+     ✓ never shows attachment upload controls to a CLIENT, not even when the card is expanded 93ms
+     ✓ keeps upload and remove out of the cards and manages attachments inside the edit form 262ms
+     ✓ shows no attachment manager in the new-article form 99ms
+     ✓ loads the edit form with EzRichText pre-filled with the existing article content 104ms
+       ✓ keeps the search field mounted, with its text and focus, while typing against a slow API  362ms
+       ✓ keeps the header and shows the loading state only in the list area while a folder opens 186ms
+       ✓ sends the full typed search to the API and lists the result of that query  434ms
+       ✓ collapses the card to title, meta, a plain-text excerpt, five tags and the attachment count 47ms
+       ✓ expands and collapses the card, revealing the full body, every tag and the attachments 96ms
+       ✓ offers no expand button when nothing is hidden 55ms
+       × offers no expand button when the body is only empty markup 63ms
+       ✓ keeps the title on its own line, with the tag, meta and actions outside its row 59ms
+       ✓ puts the active tag filters in their own row, apart from the search and the new-article button 82ms
+       ✓ tells an empty folder apart from a search, offering to create the first article to authors 145ms
+       ✓ shows readers an empty folder without a create action 100ms
+       ✓ offers "Limpar busca e filtros" when a search finds nothing, and clearing resets search and tags but keeps the sort  380ms
+       ✓ also offers to clear when only a tag filter finds nothing 273ms
+       ✓ shows a retryable error, not the empty message, when the query fails 96ms
+
+ Test Files  1 failed | 3 passed (4)
+      Tests  1 failed | 56 passed (57)
+   Start at  20:14:51
+   Duration  9.60s (transform 2.23s, setup 385ms, import 3.74s, tests 7.20s, environment 2.30s)
+
+stderr | src/pages/KnowledgePage.test.tsx > KnowledgePage > defaults a new article to "Público" and hides the Compartilhar button
+[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues.
+
+stderr | src/pages/KnowledgePage.test.tsx > KnowledgePage > shows the Compartilhar button once "Privado" is selected, and opens the sharing dialog
+[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues.
+
+stderr | src/pages/KnowledgePage.test.tsx > KnowledgePage > shows the new-article form to an AGENT and creates a PUBLIC article inside the open folder
+[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues.
+
+stderr | src/pages/KnowledgePage.test.tsx > KnowledgePage > selects an agent group and a client in the share dialog, and sends them (plus auto-share) in the create payload
+[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues.
+
+stderr | src/pages/KnowledgePage.test.tsx > KnowledgePage > allows an AGENT to update an existing article, pre-populating the access type and sharing lists
+[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues.
+
+stderr | src/pages/KnowledgePage.test.tsx > KnowledgePage > keeps upload and remove out of the cards and manages attachments inside the edit form
+[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues.
+
+stderr | src/pages/KnowledgePage.test.tsx > KnowledgePage > shows no attachment manager in the new-article form
+[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues.
+
+stderr | src/pages/KnowledgePage.test.tsx > KnowledgePage > loads the edit form with EzRichText pre-filled with the existing article content
+[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues.
+
+stderr | src/pages/KnowledgePage.test.tsx > KnowledgePage > article card, header and empty states > tells an empty folder apart from a search, offering to create the first article to authors
+[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues.
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |web| src/pages/KnowledgePage.test.tsx > KnowledgePage > article card, header and empty states > offers no expand button when the body is only empty markup
+Error: [2mexpect([22m[31melement[39m[2m).not.toBeInTheDocument()[22m
+
+[31mexpected document not to contain element, found <button
+  aria-expanded="false"
+  class="relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent text-brand-600 hover:text-brand-800 disabled:text-gray-400 disabled:bg-transparent h-[32px] text-xs px-4"
+  type="button"
+>
+  <div
+    class="relative z-10 flex items-center gap-2"
+  >
+    <span
+      class="font-medium"
+    >
+      Ler artigo completo
+    </span>
+  </div>
+</button> instead[39m
+ ❯ src/pages/KnowledgePage.test.tsx:847:105
+    845|       await openSupportFolder_(user, 'Corpo vazio');
+    846|
+    847|       expect(within(cardOf('Corpo vazio')).queryByRole('button', { nam…
+       |                                                                                                         ^
+    848|       expect(within(cardOf('Só imagem')).getByRole('button', { name: /…
+    849|     });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

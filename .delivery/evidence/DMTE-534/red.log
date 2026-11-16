@@ -1,0 +1,3575 @@
+
+ RUN  v4.1.11 /home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-534-924bb02c2d4f/workdir/red-wt/apps/web
+
+ ❯ |web| src/components/knowledge/articleContentStyles.test.ts (5 tests | 5 failed) 24ms
+     × restores list markers, including nested lists 13ms
+     × gives headings a hierarchy below the card title 3ms
+     × styles blockquote and links 1ms
+     × keeps tables and images inside the card 2ms
+     × styles inline code and code blocks 1ms
+ ❯ |web| src/components/knowledge/articleExcerpt.test.ts (6 tests | 5 failed) 15ms
+     × returns only the text, without markup 8ms
+     × separates adjacent blocks with a space so words do not glue together 1ms
+     × collapses whitespace 1ms
+     × cuts at a word boundary within the limit and adds an ellipsis 1ms
+     × does not add an ellipsis when the text fits 1ms
+     ✓ returns an empty string for empty or markup-only html 0ms
+ ❯ |web| src/components/knowledge/KnowledgeArticleAttachments.test.tsx (9 tests | 1 failed) 529ms
+     ✓ shows the attachment count in the section title 48ms
+     ✓ shows zero in the title and an empty message when an author has no attachments 33ms
+     × renders nothing when there are no attachments and the user cannot manage them 12ms
+     ✓ lists attachments with a download link for everyone, regardless of canManage 74ms
+     ✓ does not show upload or remove controls when canManage is false 6ms
+     ✓ shows upload and remove controls when canManage is true 57ms
+     ✓ uploads a file and invalidates the articles query on success 106ms
+     ✓ shows an error mentioning the 25MB limit when upload fails 109ms
+     ✓ deletes an attachment and invalidates the articles query on success 71ms
+ ❯ |web| src/pages/KnowledgePage.test.tsx (36 tests | 14 failed) 10499ms
+     ✓ shows the folders grid first, not the article list 112ms
+     ✓ opens a folder and lists only its articles, filtered by folderId 171ms
+     ✓ shows a breadcrumb back to the folders grid once inside a folder 132ms
+     ✓ does not show the new-article form or edit/delete buttons to a CLIENT 151ms
+     ✓ shows the Interno badge only for a PRIVATE article (visibility-based, not the old isPublic) 111ms
+     ✓ defaults a new article to "Público" and hides the Compartilhar button  424ms
+     ✓ shows the Compartilhar button once "Privado" is selected, and opens the sharing dialog  624ms
+     ✓ shows the new-article form to an AGENT and creates a PUBLIC article inside the open folder  1246ms
+     ✓ selects an agent group and a client in the share dialog, and sends them (plus auto-share) in the create payload  1171ms
+     ✓ allows an AGENT to update an existing article, pre-populating the access type and sharing lists  652ms
+     ✓ allows filtering by search keyword and tag inside a folder 124ms
+     ✓ allows selecting more than one tag at once (OR filter) 127ms
+     ✓ shows the author and last-updated date on each article 43ms
+     ✓ sends the chosen sort order to the API 49ms
+     ✓ toggles between list and grid view modes 79ms
+     ✓ paginates articles beyond the first page 77ms
+     ✓ allows deleting an article 93ms
+     × renders article content as real HTML, not escaped text 89ms
+     × shows the attachment count only for articles that have attachments, and the links once expanded 39ms
+     × never shows attachment upload controls to a CLIENT, not even when the card is expanded 124ms
+     × keeps upload and remove out of the cards and manages attachments inside the edit form 45ms
+     × shows no attachment manager in the new-article form 156ms
+     ✓ loads the edit form with EzRichText pre-filled with the existing article content 120ms
+       ✓ keeps the search field mounted, with its text and focus, while typing against a slow API  365ms
+       ✓ keeps the header and shows the loading state only in the list area while a folder opens 183ms
+       ✓ sends the full typed search to the API and lists the result of that query  443ms
+       × collapses the card to title, meta, a plain-text excerpt, five tags and the attachment count 52ms
+       × expands and collapses the card, revealing the full body, every tag and the attachments 41ms
+       ✓ offers no expand button when nothing is hidden 38ms
+       × keeps the title on its own line, with the tag, meta and actions outside its row 59ms
+       × puts the active tag filters in their own row, apart from the search and the new-article button 46ms
+       × tells an empty folder apart from a search, offering to create the first article to authors 1036ms
+       × shows readers an empty folder without a create action 1028ms
+       × offers "Limpar busca e filtros" when a search finds nothing, and clearing resets search and tags but keeps the sort 167ms
+       × also offers to clear when only a tag filter finds nothing 40ms
+       × shows a retryable error, not the empty message, when the query fails 1033ms
+
+ Test Files  4 failed (4)
+      Tests  25 failed | 31 passed (56)
+   Start at  19:51:35
+   Duration  14.34s (transform 3.64s, setup 595ms, import 5.85s, tests 11.07s, environment 2.49s)
+
+stderr | src/pages/KnowledgePage.test.tsx > KnowledgePage > defaults a new article to "Público" and hides the Compartilhar button
+[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues.
+
+stderr | src/pages/KnowledgePage.test.tsx > KnowledgePage > shows the Compartilhar button once "Privado" is selected, and opens the sharing dialog
+[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues.
+
+stderr | src/pages/KnowledgePage.test.tsx > KnowledgePage > shows the new-article form to an AGENT and creates a PUBLIC article inside the open folder
+[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues.
+
+stderr | src/pages/KnowledgePage.test.tsx > KnowledgePage > selects an agent group and a client in the share dialog, and sends them (plus auto-share) in the create payload
+[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues.
+
+stderr | src/pages/KnowledgePage.test.tsx > KnowledgePage > allows an AGENT to update an existing article, pre-populating the access type and sharing lists
+[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues.
+
+stderr | src/pages/KnowledgePage.test.tsx > KnowledgePage > shows no attachment manager in the new-article form
+[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues.
+
+stderr | src/pages/KnowledgePage.test.tsx > KnowledgePage > loads the edit form with EzRichText pre-filled with the existing article content
+[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues.
+
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 25 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |web| src/pages/KnowledgePage.test.tsx > KnowledgePage > renders article content as real HTML, not escaped text
+TestingLibraryElementError: Unable to find an accessible element with the role "button" and name `/ler artigo completo/i`
+
+Here are the accessible roles:
+
+  navigation:
+
+  Name "Breadcrumb":
+  [36m<nav[39m
+    [33maria-label[39m=[32m"Breadcrumb"[39m
+    [33mclass[39m=[32m"flex items-center text-[14px] mb-4"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  list:
+
+  Name "":
+  [36m<ol[39m
+    [33mclass[39m=[32m"flex items-center space-x-1.5 md:space-x-2"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  listitem:
+
+  Name "":
+  [36m<li[39m
+    [33mclass[39m=[32m"flex items-center"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<li[39m
+    [33mclass[39m=[32m"flex items-center"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  button:
+
+  Name "Pastas":
+  [36m<button[39m
+    [33mclass[39m=[32m"inline-flex items-center gap-1.5 transition-colors font-medium text-gray-500 hover:text-brand-600 cursor-pointer"[39m
+  [36m/>[39m
+
+  Name "Exibir em lista":
+  [36m<button[39m
+    [33maria-label[39m=[32m"Exibir em lista"[39m
+    [33maria-pressed[39m=[32m"true"[39m
+    [33mclass[39m=[32m"flex items-center justify-center w-8 h-8 rounded-[8px] transition-colors bg-brand-50 text-brand-700"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Exibir em grade":
+  [36m<button[39m
+    [33maria-label[39m=[32m"Exibir em grade"[39m
+    [33maria-pressed[39m=[32m"false"[39m
+    [33mclass[39m=[32m"flex items-center justify-center w-8 h-8 rounded-[8px] transition-colors text-gray-500 hover:bg-gray-90"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  heading:
+
+  Name "Base de Conhecimento (FAQ)":
+  [36m<h1[39m
+    [33mclass[39m=[32m"text-[20px] font-semibold text-gray-900"[39m
+  [36m/>[39m
+
+  Name "Artigo com HTML":
+  [36m<h2[39m
+    [33mclass[39m=[32m"text-[16px] font-semibold text-gray-900"[39m
+  [36m/>[39m
+
+  Name "Anexos (0)":
+  [36m<h3[39m
+    [33mclass[39m=[32m"text-sm font-semibold text-gray-900"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  paragraph:
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-sm text-gray-500"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-sm text-gray-500"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  searchbox:
+
+  Name "busca por palavra-chave":
+  [36m<input[39m
+    [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+    [33mplaceholder[39m=[32m"Buscar palavra-chave..."[39m
+    [33mtitle[39m=[32m"busca por palavra-chave"[39m
+    [33mtype[39m=[32m"search"[39m
+    [33mvalue[39m=[32m""[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  combobox:
+
+  Name "Ordenar por":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33maria-haspopup[39m=[32m"listbox"[39m
+    [33maria-label[39m=[32m"Ordenar por"[39m
+    [33mclass[39m=[32m"flex h-full w-full items-center justify-between gap-2 bg-transparent text-left text-gray-900 outline-none pl-4 pr-3 text-[14px]"[39m
+    [33mrole[39m=[32m"combobox"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  strong:
+
+  Name "":
+  [36m<strong />[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body[39m
+  [33mstyle[39m=[32m""[39m
+[36m>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"p-8 flex-1 overflow-y-auto"[39m
+    [36m>[39m
+      [36m<nav[39m
+        [33maria-label[39m=[32m"Breadcrumb"[39m
+        [33mclass[39m=[32m"flex items-center text-[14px] mb-4"[39m
+      [36m>[39m
+        [36m<ol[39m
+          [33mclass[39m=[32m"flex items-center space-x-1.5 md:space-x-2"[39m
+        [36m>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"inline-flex items-center gap-1.5 transition-colors font-medium text-gray-500 hover:text-brand-600 cursor-pointer"[39m
+            [36m>[39m
+              [0mPastas[0m
+            [36m</button>[39m
+          [36m</li>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-right w-4 h-4 text-gray-300 mx-1 shrink-0"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m9 18 6-6-6-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span[39m
+              [33maria-current[39m=[32m"page"[39m
+              [33mclass[39m=[32m"inline-flex items-center gap-1.5 transition-colors font-medium text-brand-600 cursor-default pointer-events-none"[39m
+            [36m>[39m
+              [0mSuporte[0m
+            [36m</span>[39m
+          [36m</li>[39m
+        [36m</ol>[39m
+      [36m</nav>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4"[39m
+      [36m>[39m
+        [36m<div>[39m
+          [36m<h1[39m
+            [33mclass[39m=[32m"text-[20px] font-semibold text-gray-900"[39m
+          [36m>[39m
+            [0mBase de Conhecimento (FAQ)[0m
+          [36m</h1>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"text-sm text-gray-500"[39m
+          [36m>[39m
+            [0mExibindo apenas artigos públicos[0m
+          [36m</p>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center gap-2"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-col w-full gap-1.5 min-w-[200px]"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"[39m
+            [36m>[39m
+              [36m<input[39m
+                [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+                [33mplaceholder[39m=[32m"Buscar palavra-chave..."[39m
+                [33mtitle[39m=[32m"busca por palavra-chave"[39m
+                [33mtype[39m=[32m"search"[39m
+                [33mvalue[39m=[32m""[39m
+              [36m/>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center justify-between mb-4 gap-3"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"w-[220px]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-col w-full gap-1.5"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border bg-white rounded-[12px] h-[42px] focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300"[39m
+              [36m>[39m
+                [36m<select[39m
+                  [33maria-hidden[39m=[32m"true"[39m
+                  [33maria-label[39m=[32m"Ordenar por"[39m
+                  [33mclass[39m=[32m"sr-only"[39m
+                  [33mid[39m=[32m"article-sort"[39m
+                  [33mtabindex[39m=[32m"-1"[39m
+                [36m>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"updated_desc"[39m
+                  [36m>[39m
+                    [0mÚltima atualização[0m
+                  [36m</option>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"title_asc"[39m
+                  [36m>[39m
+                    [0mA - Z[0m
+                  [36m</option>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"title_desc"[39m
+                  [36m>[39m
+                    [0mZ - A[0m
+                  [36m</option>[39m
+                [36m</select>[39m
+                [36m<button[39m
+                  [33maria-expanded[39m=[32m"false"[39m
+                  [33maria-haspopup[39m=[32m"listbox"[39m
+                  [33maria-label[39m=[32m"Ordenar por"[39m
+                  [33mclass[39m=[32m"flex h-full w-full items-center justify-between gap-2 bg-transparent text-left text-gray-900 outline-none pl-4 pr-3 text-[14px]"[39m
+                  [33mrole[39m=[32m"combobox"[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"truncate"[39m
+                  [36m>[39m
+                    [0mÚltima atualização[0m
+                  [36m</span>[39m
+                  [36m<svg[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"lucide lucide-chevron-down shrink-0 text-gray-500 w-4 h-4"[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mheight[39m=[32m"24"[39m
+                    [33mstroke[39m=[32m"currentColor"[39m
+                    [33mstroke-linecap[39m=[32m"round"[39m
+                    [33mstroke-linejoin[39m=[32m"round"[39m
+                    [33mstroke-width[39m=[32m"2"[39m
+                    [33mviewBox[39m=[32m"0 0 24 24"[39m
+                    [33mwidth[39m=[32m"24"[39m
+                    [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                  [36m>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"m6 9 6 6 6-6"[39m
+                    [36m/>[39m
+                  [36m</svg>[39m
+                [36m</button>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center gap-1 shrink-0 rounded-[12px] border border-gray-200 p-1"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33maria-label[39m=[32m"Exibir em lista"[39m
+            [33maria-pressed[39m=[32m"true"[39m
+            [33mclass[39m=[32m"flex items-center justify-center w-8 h-8 rounded-[8px] transition-colors bg-brand-50 text-brand-700"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-list w-4 h-4"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M3 5h.01"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M3 12h.01"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M3 19h.01"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M8 5h13"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M8 12h13"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M8 19h13"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-label[39m=[32m"Exibir em grade"[39m
+            [33maria-pressed[39m=[32m"false"[39m
+            [33mclass[39m=[32m"flex items-center justify-center w-8 h-8 rounded-[8px] transition-colors text-gray-500 hover:bg-gray-90"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-layout-grid w-4 h-4"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"7"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"3"[39m
+                [33my[39m=[32m"3"[39m
+              [36m/>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"7"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"14"[39m
+                [33my[39m=[32m"3"[39m
+              [36m/>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"7"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"14"[39m
+                [33my[39m=[32m"14"[39m
+              [36m/>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"7"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"3"[39m
+                [33my[39m=[32m"14"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"space-y-4"[39m
+        [33mdata-testid[39m=[32m"knowledge-articles"[39m
+        [33mdata-view-mode[39m=[32m"list"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex flex-col w-full bg-white rounded-[16px] border border-gray-100 transition-all p-4"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center justify-between mb-2"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center gap-3"[39m
+            [36m>[39m
+              [36m<h2[39m
+                [33mclass[39m=[32m"text-[16px] font-semibold text-gray-900"[39m
+              [36m>[39m
+                [0mArtigo com HTML[0m
+              [36m</h2>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"prose prose-sm max-w-none text-gray-700 mb-3"[39m
+          [36m>[39m
+            [36m<p>[39m
+              [0mVeja o [0m
+              [36m<strong>[39m
+                [0mpasso a passo[0m
+              [36m</strong>[39m
+              [0m abaixo.[0m
+            [36m</p>[39m
+          [36m</div>[39m
+          [36m<section[39m
+            [33mclass[39m=[32m"space-y-3 rounded-lg border border-gray-200 bg-white p-4 mt-3"[39m
+          [36m>[39m
+            [36m<h3[39m
+              [33mclass[39m=[32m"text-sm font-semibold text-gray-900"[39m
+            [36m>[39m
+              [0mAnexos ([0m
+              [0m0[0m
+              [0m)[0m
+            [36m</h3>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"text-sm text-gray-500"[39m
+            [36m>[39m
+              [0mNenhum anexo neste artigo ainda.[0m
+            [36m</p>[39m
+          [36m</section>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/pages/KnowledgePage.test.tsx:560:29
+    558|     });
+    559|
+    560|     await user.click(screen.getByRole('button', { name: /ler artigo co…
+       |                             ^
+    561|
+    562|     const strong = screen.getByText('passo a passo');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/25]⎯
+
+ FAIL  |web| src/pages/KnowledgePage.test.tsx > KnowledgePage > shows the attachment count only for articles that have attachments, and the links once expanded
+TestingLibraryElementError: Unable to find an element with the text: 1 anexo. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body[39m
+  [33mstyle[39m=[32m""[39m
+[36m>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"p-8 flex-1 overflow-y-auto"[39m
+    [36m>[39m
+      [36m<nav[39m
+        [33maria-label[39m=[32m"Breadcrumb"[39m
+        [33mclass[39m=[32m"flex items-center text-[14px] mb-4"[39m
+      [36m>[39m
+        [36m<ol[39m
+          [33mclass[39m=[32m"flex items-center space-x-1.5 md:space-x-2"[39m
+        [36m>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"inline-flex items-center gap-1.5 transition-colors font-medium text-gray-500 hover:text-brand-600 cursor-pointer"[39m
+            [36m>[39m
+              [0mPastas[0m
+            [36m</button>[39m
+          [36m</li>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-right w-4 h-4 text-gray-300 mx-1 shrink-0"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m9 18 6-6-6-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span[39m
+              [33maria-current[39m=[32m"page"[39m
+              [33mclass[39m=[32m"inline-flex items-center gap-1.5 transition-colors font-medium text-brand-600 cursor-default pointer-events-none"[39m
+            [36m>[39m
+              [0mSuporte[0m
+            [36m</span>[39m
+          [36m</li>[39m
+        [36m</ol>[39m
+      [36m</nav>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4"[39m
+      [36m>[39m
+        [36m<div>[39m
+          [36m<h1[39m
+            [33mclass[39m=[32m"text-[20px] font-semibold text-gray-900"[39m
+          [36m>[39m
+            [0mBase de Conhecimento (FAQ)[0m
+          [36m</h1>[39m
+          [36m<p[39m
+            [33mclass[39m=[32m"text-sm text-gray-500"[39m
+          [36m>[39m
+            [0mExibindo apenas artigos públicos[0m
+          [36m</p>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center gap-2"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-col w-full gap-1.5 min-w-[200px]"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"[39m
+            [36m>[39m
+              [36m<input[39m
+                [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+                [33mplaceholder[39m=[32m"Buscar palavra-chave..."[39m
+                [33mtitle[39m=[32m"busca por palavra-chave"[39m
+                [33mtype[39m=[32m"search"[39m
+                [33mvalue[39m=[32m""[39m
+              [36m/>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center justify-between mb-4 gap-3"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"w-[220px]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-col w-full gap-1.5"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border bg-white rounded-[12px] h-[42px] focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300"[39m
+              [36m>[39m
+                [36m<select[39m
+                  [33maria-hidden[39m=[32m"true"[39m
+                  [33maria-label[39m=[32m"Ordenar por"[39m
+                  [33mclass[39m=[32m"sr-only"[39m
+                  [33mid[39m=[32m"article-sort"[39m
+                  [33mtabindex[39m=[32m"-1"[39m
+                [36m>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"updated_desc"[39m
+                  [36m>[39m
+                    [0mÚltima atualização[0m
+                  [36m</option>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"title_asc"[39m
+                  [36m>[39m
+                    [0mA - Z[0m
+                  [36m</option>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"title_desc"[39m
+                  [36m>[39m
+                    [0mZ - A[0m
+                  [36m</option>[39m
+                [36m</select>[39m
+                [36m<button[39m
+                  [33maria-expanded[39m=[32m"false"[39m
+                  [33maria-haspopup[39m=[32m"listbox"[39m
+                  [33maria-label[39m=[32m"Ordenar por"[39m
+                  [33mclass[39m=[32m"flex h-full w-full items-center justify-between gap-2 bg-transparent text-left text-gray-900 outline-none pl-4 pr-3 text-[14px]"[39m
+                  [33mrole[39m=[32m"combobox"[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"truncate"[39m
+                  [36m>[39m
+                    [0mÚltima atualização[0m
+                  [36m</span>[39m
+                  [36m<svg[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"lucide lucide-chevron-down shrink-0 text-gray-500 w-4 h-4"[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mheight[39m=[32m"24"[39m
+                    [33mstroke[39m=[32m"currentColor"[39m
+                    [33mstroke-linecap[39m=[32m"round"[39m
+                    [33mstroke-linejoin[39m=[32m"round"[39m
+                    [33mstroke-width[39m=[32m"2"[39m
+                    [33mviewBox[39m=[32m"0 0 24 24"[39m
+                    [33mwidth[39m...
+ ❯ Object.getElementError ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/pages/KnowledgePage.test.tsx:575:19
+    573|     await openSupportFolder(user);
+    574|
+    575|     expect(screen.getByText('1 anexo')).toBeInTheDocument();
+       |                   ^
+    576|     expect(screen.queryByText(/Anexos \(/)).not.toBeInTheDocument();
+    577|     expect(screen.queryByRole('link', { name: /manual\.pdf/i })).not.t…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/25]⎯
+
+ FAIL  |web| src/pages/KnowledgePage.test.tsx > KnowledgePage > never shows attachment upload controls to a CLIENT, not even when the card is expanded
+TestingLibraryElementError: Unable to find an accessible element with the role "button" and name `/ler artigo completo/i`
+
+Here are the accessible roles:
+
+  navigation:
+
+  Name "Breadcrumb":
+  [36m<nav[39m
+    [33maria-label[39m=[32m"Breadcrumb"[39m
+    [33mclass[39m=[32m"flex items-center text-[14px] mb-4"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  list:
+
+  Name "":
+  [36m<ol[39m
+    [33mclass[39m=[32m"flex items-center space-x-1.5 md:space-x-2"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<ul[39m
+    [33mclass[39m=[32m"space-y-2"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  listitem:
+
+  Name "":
+  [36m<li[39m
+    [33mclass[39m=[32m"flex items-center"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<li[39m
+    [33mclass[39m=[32m"flex items-center"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<li[39m
+    [33mclass[39m=[32m"flex items-center justify-between gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  button:
+
+  Name "Pastas":
+  [36m<button[39m
+    [33mclass[39m=[32m"inline-flex items-center gap-1.5 transition-colors font-medium text-gray-500 hover:text-brand-600 cursor-pointer"[39m
+  [36m/>[39m
+
+  Name "Exibir em lista":
+  [36m<button[39m
+    [33maria-label[39m=[32m"Exibir em lista"[39m
+    [33maria-pressed[39m=[32m"true"[39m
+    [33mclass[39m=[32m"flex items-center justify-center w-8 h-8 rounded-[8px] transition-colors bg-brand-50 text-brand-700"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Exibir em grade":
+  [36m<button[39m
+    [33maria-label[39m=[32m"Exibir em grade"[39m
+    [33maria-pressed[39m=[32m"false"[39m
+    [33mclass[39m=[32m"flex items-center justify-center w-8 h-8 rounded-[8px] transition-colors text-gray-500 hover:bg-gray-90"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "#senha":
+  [36m<button[39m
+    [33mtitle[39m=[32m"Filtrar por senha"[39m
+  [36m/>[39m
+
+  Name "#ajuda":
+  [36m<button[39m
+    [33mtitle[39m=[32m"Filtrar por ajuda"[39m
+  [36m/>[39m
+
+  Name "#interno":
+  [36m<button[39m
+    [33mtitle[39m=[32m"Filtrar por interno"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  heading:
+
+  Name "Base de Conhecimento (FAQ)":
+  [36m<h1[39m
+    [33mclass[39m=[32m"text-[20px] font-semibold text-gray-900"[39m
+  [36m/>[39m
+
+  Name "Como abrir um chamado":
+  [36m<h2[39m
+    [33mclass[39m=[32m"text-[16px] font-semibold text-gray-900"[39m
+  [36m/>[39m
+
+  Name "Anexos (1)":
+  [36m<h3[39m
+    [33mclass[39m=[32m"text-sm font-semibold text-gray-900"[39m
+  [36m/>[39m
+
+  Name "Artigo interno":
+  [36m<h2[39m
+    [33mclass[39m=[32m"text-[16px] font-semibold text-gray-900"[39m
+  [36m/>[39m
+
+  Name "Anexos (0)":
+  [36m<h3[39m
+    [33mclass[39m=[32m"text-sm font-semibold text-gray-900"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  searchbox:
+
+  Name "busca por palavra-chave":
+  [36m<input[39m
+    [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+    [33mplaceholder[39m=[32m"Buscar palavra-chave..."[39m
+    [33mtitle[39m=[32m"busca por palavra-chave"[39m
+    [33mtype[39m=[32m"search"[39m
+    [33mvalue[39m=[32m""[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  combobox:
+
+  Name "Ordenar por":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33maria-haspopup[39m=[32m"listbox"[39m
+    [33maria-label[39m=[32m"Ordenar por"[39m
+    [33mclass[39m=[32m"flex h-full w-full items-center justify-between gap-2 bg-transparent text-left text-gray-900 outline-none pl-4 pr-3 text-[14px]"[39m
+    [33mrole[39m=[32m"combobox"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  paragraph:
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-xs text-gray-500 mb-2"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-xs text-gray-500 mb-2"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-sm text-gray-500"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  link:
+
+  Name "manual.pdf":
+  [36m<a[39m
+    [33mclass[39m=[32m"flex min-w-0 items-center gap-2 truncate text-brand-600 hover:underline"[39m
+    [33mhref[39m=[32m"/uploads/manual.pdf"[39m
+    [33mrel[39m=[32m"noreferrer"[39m
+    [33mtarget[39m=[32m"_blank"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body[39m
+  [33mstyle[39m=[32m""[39m
+[36m>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"p-8 flex-1 overflow-y-auto"[39m
+    [36m>[39m
+      [36m<nav[39m
+        [33maria-label[39m=[32m"Breadcrumb"[39m
+        [33mclass[39m=[32m"flex items-center text-[14px] mb-4"[39m
+      [36m>[39m
+        [36m<ol[39m
+          [33mclass[39m=[32m"flex items-center space-x-1.5 md:space-x-2"[39m
+        [36m>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"inline-flex items-center gap-1.5 transition-colors font-medium text-gray-500 hover:text-brand-600 cursor-pointer"[39m
+            [36m>[39m
+              [0mPastas[0m
+            [36m</button>[39m
+          [36m</li>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-right w-4 h-4 text-gray-300 mx-1 shrink-0"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m9 18 6-6-6-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span[39m
+              [33maria-current[39m=[32m"page"[39m
+              [33mclass[39m=[32m"inline-flex items-center gap-1.5 transition-colors font-medium text-brand-600 cursor-default pointer-events-none"[39m
+            [36m>[39m
+              [0mSuporte[0m
+            [36m</span>[39m
+          [36m</li>[39m
+        [36m</ol>[39m
+      [36m</nav>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4"[39m
+      [36m>[39m
+        [36m<div>[39m
+          [36m<h1[39m
+            [33mclass[39m=[32m"text-[20px] font-semibold text-gray-900"[39m
+          [36m>[39m
+            [0mBase de Conhecimento (FAQ)[0m
+          [36m</h1>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center gap-2"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-col w-full gap-1.5 min-w-[200px]"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"[39m
+            [36m>[39m
+              [36m<input[39m
+                [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+                [33mplaceholder[39m=[32m"Buscar palavra-chave..."[39m
+                [33mtitle[39m=[32m"busca por palavra-chave"[39m
+                [33mtype[39m=[32m"search"[39m
+                [33mvalue[39m=[32m""[39m
+              [36m/>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center justify-between mb-4 gap-3"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"w-[220px]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-col w-full gap-1.5"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border bg-white rounded-[12px] h-[42px] focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300"[39m
+              [36m>[39m
+                [36m<select[39m
+                  [33maria-hidden[39m=[32m"true"[39m
+                  [33maria-label[39m=[32m"Ordenar por"[39m
+                  [33mclass[39m=[32m"sr-only"[39m
+                  [33mid[39m=[32m"article-sort"[39m
+                  [33mtabindex[39m=[32m"-1"[39m
+                [36m>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"updated_desc"[39m
+                  [36m>[39m
+                    [0mÚltima atualização[0m
+                  [36m</option>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"title_asc"[39m
+                  [36m>[39m
+                    [0mA - Z[0m
+                  [36m</option>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"title_desc"[39m
+                  [36m>[39m
+                    [0mZ - A[0m
+                  [36m</option>[39m
+                [36m</select>[39m
+                [36m<button[39m
+                  [33maria-expanded[39m=[32m"false"[39m
+                  [33maria-haspopup[39m=[32m"listbox"[39m
+                  [33maria-label[39m=[32m"Ordenar por"[39m
+                  [33mclass[39m=[32m"flex h-full w-full items-center justify-between gap-2 bg-transparent text-left text-gray-900 outline-none pl-4 pr-3 text-[14px]"[39m
+                  [33mrole[39m=[32m"combobox"[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"truncate"[39m
+                  [36m>[39m
+                    [0mÚltima atualização[0m
+                  [36m</span>[39m
+                  [36m<svg[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"lucide lucide-chevron-down shrink-0 text-gray-500 w-4 h-4"[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mheight[39m=[32m"24"[39m
+                    [33mstroke[39m=[32m"currentColor"[39m
+                    [33mstroke-linecap[39m=[32m"round"[39m
+                    [33mstroke-linejoin[39m=[32m"round"[39m
+                    [33mstroke-width[39m=[32m"2"[39m
+                    [33mviewBox[39m=[32m"0 0 24 24"[39m
+                    [33mwidth[39m=[32m"24"[39m
+                    [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                  [36m>[39m
+                    [36m<path[39m
+                      [33md...
+ ❯ Object.getElementError ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:109:15
+ ❯ src/pages/KnowledgePage.test.tsx:594:33
+    592|
+    593|     await openSupportFolder(user);
+    594|     for (const toggle of screen.getAllByRole('button', { name: /ler ar…
+       |                                 ^
+    595|       await user.click(toggle);
+    596|     }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/25]⎯
+
+ FAIL  |web| src/pages/KnowledgePage.test.tsx > KnowledgePage > keeps upload and remove out of the cards and manages attachments inside the edit form
+AssertionError: expected [ <label …(2)></label>, …(1) ] to have a length of +0 but got 2
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ src/pages/KnowledgePage.test.tsx:610:57
+    608|     await openSupportFolder(user);
+    609|
+    610|     expect(screen.queryAllByText('Selecionar arquivo')).toHaveLength(0…
+       |                                                         ^
+    611|     for (const toggle of screen.getAllByRole('button', { name: /ler ar…
+    612|       await user.click(toggle);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/25]⎯
+
+ FAIL  |web| src/pages/KnowledgePage.test.tsx > KnowledgePage > shows no attachment manager in the new-article form
+TestingLibraryElementError: Found multiple elements with the text: Selecionar arquivo
+
+Here are the matching elements:
+
+Ignored nodes: comments, script, style
+[36m<label[39m
+  [33mclass[39m=[32m"cursor-pointer rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-80"[39m
+  [33mfor[39m=[32m"knowledge-attachment-file-article-1"[39m
+[36m>[39m
+  [0mSelecionar arquivo[0m
+[36m</label>[39m
+
+Ignored nodes: comments, script, style
+[36m<label[39m
+  [33mclass[39m=[32m"cursor-pointer rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-80"[39m
+  [33mfor[39m=[32m"knowledge-attachment-file-article-2"[39m
+[36m>[39m
+  [0mSelecionar arquivo[0m
+[36m</label>[39m
+
+(If this is intentional, then use the `*AllBy*` variant of the query (like `queryAllByText`, `getAllByText`, or `findAllByText`)).
+
+Ignored nodes: comments, script, style
+[36m<body[39m
+  [33mstyle[39m=[32m""[39m
+[36m>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"p-8 flex-1 overflow-y-auto"[39m
+    [36m>[39m
+      [36m<nav[39m
+        [33maria-label[39m=[32m"Breadcrumb"[39m
+        [33mclass[39m=[32m"flex items-center text-[14px] mb-4"[39m
+      [36m>[39m
+        [36m<ol[39m
+          [33mclass[39m=[32m"flex items-center space-x-1.5 md:space-x-2"[39m
+        [36m>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"inline-flex items-center gap-1.5 transition-colors font-medium text-gray-500 hover:text-brand-600 cursor-pointer"[39m
+            [36m>[39m
+              [0mPastas[0m
+            [36m</button>[39m
+          [36m</li>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-right w-4 h-4 text-gray-300 mx-1 shrink-0"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m9 18 6-6-6-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span[39m
+              [33maria-current[39m=[32m"page"[39m
+              [33mclass[39m=[32m"inline-flex items-center gap-1.5 transition-colors font-medium text-brand-600 cursor-default pointer-events-none"[39m
+            [36m>[39m
+              [0mSuporte[0m
+            [36m</span>[39m
+          [36m</li>[39m
+        [36m</ol>[39m
+      [36m</nav>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4"[39m
+      [36m>[39m
+        [36m<div>[39m
+          [36m<h1[39m
+            [33mclass[39m=[32m"text-[20px] font-semibold text-gray-900"[39m
+          [36m>[39m
+            [0mBase de Conhecimento (FAQ)[0m
+          [36m</h1>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center gap-2"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-col w-full gap-1.5 min-w-[200px]"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"[39m
+            [36m>[39m
+              [36m<input[39m
+                [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+                [33mplaceholder[39m=[32m"Buscar palavra-chave..."[39m
+                [33mtitle[39m=[32m"busca por palavra-chave"[39m
+                [33mtype[39m=[32m"search"[39m
+                [33mvalue[39m=[32m""[39m
+              [36m/>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<form[39m
+        [33mclass[39m=[32m"mb-6"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex flex-col w-full bg-white rounded-[16px] border border-gray-100 transition-all p-4 space-y-3"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-col w-full gap-1.5"[39m
+          [36m>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"text-[14px] font-medium leading-none mb-0.5 select-none text-gray-900"[39m
+              [33mfor[39m=[32m"article-title"[39m
+            [36m>[39m
+              [0mTítulo[0m
+              [36m<span[39m
+                [33mclass[39m=[32m"ml-1 text-red-600"[39m
+              [36m>[39m
+                [0m*[0m
+              [36m</span>[39m
+            [36m</label>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"[39m
+            [36m>[39m
+              [36m<input[39m
+                [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+                [33mid[39m=[32m"article-title"[39m
+                [33mrequired[39m=[32m""[39m
+                [33mtype[39m=[32m"text"[39m
+                [33mvalue[39m=[32m""[39m
+              [36m/>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-col w-full gap-1.5"[39m
+          [36m>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"text-[14px] font-medium leading-none mb-0.5 select-none text-gray-900"[39m
+            [36m>[39m
+              [0mConteúdo[0m
+            [36m</label>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex flex-col w-full border rounded-[12px] bg-white overflow-hidden transition-colors border-gray-200 focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center gap-1 p-1.5 border-b border-gray-200 bg-gray-80 flex-wrap"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"p-1.5 rounded transition-colors text-gray-600 hover:bg-gray-100 hover:text-gray-900"[39m
+                  [33mtitle[39m=[32m"Negrito"[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [36m<svg[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"lucide lucide-bold w-4 h-4"[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mheight[39m=[32m"24"[39m
+                    [33mstroke[39m=[32m"currentColor"[39m
+                    [33mstroke-linecap[39m=[32m"round"[39m
+                    [33mstroke-linejoin[39m=[32m"round"[39m
+                    [33mstroke-width[39m=[32m"2"[39m
+                    [33mviewBox[39m=[32m"0 0 24 24"[39m
+...
+ ❯ Object.getElementError ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ getElementError ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:20:35
+ ❯ getMultipleElementsFoundError ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:23:10
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:55:13
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/pages/KnowledgePage.test.tsx:637:19
+    635|
+    636|     expect(screen.getByLabelText(/título/i)).toBeInTheDocument();
+    637|     expect(screen.queryByText('Selecionar arquivo')).not.toBeInTheDocu…
+       |                   ^
+    638|   });
+    639|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/25]⎯
+
+ FAIL  |web| src/pages/KnowledgePage.test.tsx > KnowledgePage > article card, header and empty states > collapses the card to title, meta, a plain-text excerpt, five tags and the attachment count
+TypeError: Expected container to be an Element, a Document or a DocumentFragment but got null.
+ ❯ checkContainerType ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/helpers.js:61:11
+ ❯ queryAllByText ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/queries/text.js:18:35
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:74:17
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/pages/KnowledgePage.test.tsx:770:27
+    768|
+    769|       const card = cardOf('Artigo rico');
+    770|       expect(within(card).getByText('Passo a passo Primeiro passo um d…
+       |                           ^
+    771|       expect(card.querySelector('.article-content')).toBeNull();
+    772|       expect(within(card).queryByRole('listitem')).not.toBeInTheDocume…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/25]⎯
+
+ FAIL  |web| src/pages/KnowledgePage.test.tsx > KnowledgePage > article card, header and empty states > expands and collapses the card, revealing the full body, every tag and the attachments
+TypeError: Expected container to be an Element, a Document or a DocumentFragment but got null.
+ ❯ checkContainerType ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/helpers.js:61:11
+ ❯ queryAllByRole ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/queries/role.js:34:35
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:74:17
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/pages/KnowledgePage.test.tsx:794:35
+    792|
+    793|       const card = cardOf('Artigo rico');
+    794|       const toggle = within(card).getByRole('button', { name: /ler art…
+       |                                   ^
+    795|       expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    796|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/25]⎯
+
+ FAIL  |web| src/pages/KnowledgePage.test.tsx > KnowledgePage > article card, header and empty states > keeps the title on its own line, with the tag, meta and actions outside its row
+TypeError: Expected container to be an Element, a Document or a DocumentFragment but got null.
+ ❯ checkContainerType ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/helpers.js:61:11
+ ❯ queryAllByText ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/queries/text.js:18:35
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:74:17
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/pages/KnowledgePage.test.tsx:838:71
+    836|       const heading = screen.getByRole('heading', { name: 'Artigo inte…
+    837|       const card = cardOf('Artigo interno');
+    838|       expect(heading.parentElement).not.toContainElement(within(card).…
+       |                                                                       ^
+    839|       expect(heading.parentElement).not.toContainElement(within(card).…
+    840|       expect(heading.parentElement).not.toContainElement(within(card).…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/25]⎯
+
+ FAIL  |web| src/pages/KnowledgePage.test.tsx > KnowledgePage > article card, header and empty states > puts the active tag filters in their own row, apart from the search and the new-article button
+TypeError: Expected container to be an Element, a Document or a DocumentFragment but got null.
+ ❯ checkContainerType ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/helpers.js:61:11
+ ❯ queryAllByText ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/queries/text.js:18:35
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:74:17
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/pages/KnowledgePage.test.tsx:850:64
+    848|       await openSupportFolder(user);
+    849|
+    850|       await user.click(within(cardOf('Como abrir um chamado')).getByTe…
+       |                                                                ^
+    851|
+    852|       const chip = await screen.findByText('Tag: senha');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/25]⎯
+
+ FAIL  |web| src/pages/KnowledgePage.test.tsx > KnowledgePage > article card, header and empty states > tells an empty folder apart from a search, offering to create the first article to authors
+TestingLibraryElementError: Unable to find an element with the text: Esta pasta ainda não tem artigos.. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body[39m
+  [33mstyle[39m=[32m""[39m
+[36m>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"p-8 flex-1 overflow-y-auto"[39m
+    [36m>[39m
+      [36m<nav[39m
+        [33maria-label[39m=[32m"Breadcrumb"[39m
+        [33mclass[39m=[32m"flex items-center text-[14px] mb-4"[39m
+      [36m>[39m
+        [36m<ol[39m
+          [33mclass[39m=[32m"flex items-center space-x-1.5 md:space-x-2"[39m
+        [36m>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"inline-flex items-center gap-1.5 transition-colors font-medium text-gray-500 hover:text-brand-600 cursor-pointer"[39m
+            [36m>[39m
+              [0mPastas[0m
+            [36m</button>[39m
+          [36m</li>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-right w-4 h-4 text-gray-300 mx-1 shrink-0"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m9 18 6-6-6-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span[39m
+              [33maria-current[39m=[32m"page"[39m
+              [33mclass[39m=[32m"inline-flex items-center gap-1.5 transition-colors font-medium text-brand-600 cursor-default pointer-events-none"[39m
+            [36m>[39m
+              [0mSuporte[0m
+            [36m</span>[39m
+          [36m</li>[39m
+        [36m</ol>[39m
+      [36m</nav>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4"[39m
+      [36m>[39m
+        [36m<div>[39m
+          [36m<h1[39m
+            [33mclass[39m=[32m"text-[20px] font-semibold text-gray-900"[39m
+          [36m>[39m
+            [0mBase de Conhecimento (FAQ)[0m
+          [36m</h1>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center gap-2"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-col w-full gap-1.5 min-w-[200px]"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"[39m
+            [36m>[39m
+              [36m<input[39m
+                [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+                [33mplaceholder[39m=[32m"Buscar palavra-chave..."[39m
+                [33mtitle[39m=[32m"busca por palavra-chave"[39m
+                [33mtype[39m=[32m"search"[39m
+                [33mvalue[39m=[32m""[39m
+              [36m/>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-brand-500 text-gray-70 border border-brand-500 hover:bg-brand-700 hover:border-brand-700 disabled:bg-gray-400 disabled:border-gray-400 disabled:text-gray-70 h-[32px] text-xs px-4"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative z-10 flex items-center gap-2"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"font-normal"[39m
+              [36m>[39m
+                [0m+ Novo artigo[0m
+              [36m</span>[39m
+            [36m</div>[39m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center justify-between mb-4 gap-3"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"w-[220px]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-col w-full gap-1.5"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border bg-white rounded-[12px] h-[42px] focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300"[39m
+              [36m>[39m
+                [36m<select[39m
+                  [33maria-hidden[39m=[32m"true"[39m
+                  [33maria-label[39m=[32m"Ordenar por"[39m
+                  [33mclass[39m=[32m"sr-only"[39m
+                  [33mid[39m=[32m"article-sort"[39m
+                  [33mtabindex[39m=[32m"-1"[39m
+                [36m>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"updated_desc"[39m
+                  [36m>[39m
+                    [0mÚltima atualização[0m
+                  [36m</option>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"title_asc"[39m
+                  [36m>[39m
+                    [0mA - Z[0m
+                  [36m</option>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"title_desc"[39m
+                  [36m>[39m
+                    [0mZ - A[0m
+                  [36m</option>[39m
+                [36m</select>[39m
+                [36m<button[39m
+                  [33maria-expanded[39m=[32m"false"[39m
+                  [33maria-haspopup[39m=[32m"listbox"[39m
+                  [33maria-label[39m=[32m"Ordenar por"[39m
+                  [33mclass[39m=[32m"flex h-full w-full items-center justify-between gap-2 bg-transparent text-left text-gray-900 outline-none pl-4 pr-3 text-[14px]"[39m
+                  [33mrole[39m=[32m"combobox"[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"truncate"[39m
+                  [36m>[39m
+                    [0mÚltima atualização[0m
+                  [36m</span>[39m
+                  [36m<svg[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"lucide lucide-chevron-down shrink-0 text-gray-500 w-4 h-4"[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mheight[39m=[32m"24"[39m
+                    [33mstroke[39m=[32m"currentColor"[39m
+                    [33mstroke-linecap[39m=[32m"round"[39m
+                    [33mstroke-linejoin[39m=[32m"round"[39m
+                    [33mstroke-width[39m=[32m"2"[39m
+                    [33mviewBox[39m=[32m"0 0 24 24"[39m
+                    [33mwidth[39m=[32m"24"[39m
+                    [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                  [36m>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"m6 9 6 6 6-6"[39m
+                    [36m/>[39m
+                  [36m</svg>[39m
+                [36m</button>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center gap-1 shrink-0 rounded-[12px] border border-gray-200 p-1"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33maria-label[39m=[32m"Exibir em lista"[39m
+            [33maria-pressed[39m=[32m"true"[39m
+            [33mclass[39m=[32m"flex items-center justify-center w-8 h-8 rounded-[8px] transition-colors bg-brand-50 text-brand-700"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-list w-4 h-4"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M3 5h.01"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M3 12h.01"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M3 19h.01"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M8 5h13"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M8 12h13"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M8 19h13"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-label[39m=[32m"Exibir em grade"[39m
+            [33maria-pressed[39m=[32m"false"[39m
+            [33mclass[39m=[32m"flex items-center justify-center w-8 h-8 rounded-[8px] transition-colors text-gray-500 hover:bg-gray-90"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-layout-grid w-4 h-4"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"7"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"3"[39m
+                [33my[39m=[32m"3"[39m
+              [36m/>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"7"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"14"[39m
+                [33my[39m=[32m"3"[39m
+              [36m/>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"7"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"14"[39m
+                [33my[39m=[32m"14"[39m
+              [36m/>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"7"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"3"[39m
+                [33my[39m=[32m"14"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"space-y-4"[39m
+        [33mdata-testid[39m=[32m"knowledge-articles"[39m
+        [33mdata-view-mode[39m=[32m"list"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex flex-col items-center justify-center w-full p-8 text-center bg-gray-90 rounded-[16px] border border-dashed border-gray-200"[39m
+        [36m>[39m
+          [36m<h3[39m
+            [33mclass[39m=[32m"text-[16px] font-semibold text-gray-900 mb-1"[39m
+          [36m>[39m
+            [0mNenhum artigo encontrado para a busca atual.[0m
+          [36m</h3>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body[39m
+  [33mstyle[39m=[32m""[39m
+[36m>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"p-8 flex-1 overflow-y-auto"[39m
+    [36m>[39m
+      [36m<nav[39m
+        [33maria-label[39m=[32m"Breadcrumb"[39m
+        [33mclass[39m=[32m"flex items-center text-[14px] mb-4"[39m
+      [36m>[39m
+        [36m<ol[39m
+          [33mclass[39m=[32m"flex items-center space-x-1.5 md:space-x-2"[39m
+        [36m>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"inline-flex items-center gap-1.5 transition-colors font-medium text-gray-500 hover:text-brand-600 cursor-pointer"[39m
+            [36m>[39m
+              [0mPastas[0m
+            [36m</button>[39m
+          [36m</li>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-right w-4 h-4 text-gray-300 mx-1 shrink-0"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m9 18 6-6-6-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span[39m
+              [33maria-current[39m=[32m"page"[39m
+              [33mclass[39m=[32m"inline-flex items-center gap-1.5 transition-colors font-medium text-brand-600 cursor-default pointer-events-none"[39m
+            [36m>[39m
+              [0mSuporte[0m
+            [36m</span>[39m
+          [36m</li>[39m
+        [36m</ol>[39m
+      [36m</nav>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4"[39m
+      [36m>[39m
+        [36m<div>[39m
+          [36m<h1[39m
+            [33mclass[39m=[32m"text-[20px] font-semibold text-gray-900"[39m
+          [36m>[39m
+            [0mBase de Conhecimento (FAQ)[0m
+          [36m</h1>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center gap-2"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-col w-full gap-1.5 min-w-[200px]"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"[39m
+            [36m>[39m
+              [36m<input[39m
+                [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+                [33mplaceholder[39m=[32m"Buscar palavra-chave..."[39m
+                [33mtitle[39m=[32m"busca por palavra-chave"[39m
+                [33mtype[39m=[32m"search"[39m
+                [33mvalue[39m=[32m""[39m
+              [36m/>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-brand-500 text-gray-70 border border-brand-500 hover:bg-brand-700 hover:border-brand-700 disabled:bg-gray-400 disabled:border-gray-400 disabled:text-gray-70 h-[32px] text-xs px-4"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative z-10 flex items-center gap-2"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"font-normal"[39m
+              [36m>[39m
+                [0m+ Novo artigo[0m
+              [36m</span>[39m
+            [36m</div>[39m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center justify-between mb-4 gap-3"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"w-[220px]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-col w-full gap-1.5"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border bg-white rounded-[12px] h-[42px] focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300"[39m
+              [36m>[39m
+                [36m<select[39m
+                  [33maria-hidden[39m=[32m"true"[39m
+                  [33maria-label[39m=[32m"Ordenar por"[39m
+                  [33mclass[39m=[32m"sr-only"[39m
+                  [33mid[39m=[32m"article-sort"[39m
+                  [33mtabindex[39m=[32m"-1"[39m
+                [36m>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"updated_desc"[39m
+                  [36m>[39m
+                    [0mÚltima atualização[0m
+                  [36m</option>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"title_asc"[39m
+                  [36m>[39m
+                    [0mA - Z[0m
+                  [36m</option>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"title_desc"[39m
+                  [36m>[39m
+                    [0mZ - A[0m
+                  [36m</option>[39m
+                [36m</select>[39m
+                [36m<button[39m
+                  [33maria-expanded[39m=[32m"false"[39m
+                  [33maria-haspopup[39m=[32m"listbox"[39m
+                  [33maria-label[39m=[32m"Ordenar por"[39m
+                  [33mclass[39m=[32m"flex h-full w-full items-center justify-between gap-2 bg-transparent text-left text-gray-900 outline-none pl-4 pr-3 text-[14px]"[39m
+                  [33mrole[39m=[32m"combobox"[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"truncate"[39m
+                  [36m>[39m
+                    [0mÚltima atualização[0m
+                  [36m</span>[39m
+                  [36m<svg[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"lucide lucide-chevron-down shrink-0 text-gray-500 w-4 h-4"[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mheight[39m=[32m"24"[39m
+                    [33mstroke[39m=[32m"currentColor"[39m
+                    [33mstroke-linecap[39m=[32m"round"[39m
+                    [33mstroke-linejoin[39m=[32m"round"[39m
+                    [33mstroke-width[39m=[32m"2"[39m
+                    [33mviewBox[39m=[32m"0 0 24 24"[39m
+                    [33mwidth[39m=[32m"24"[39m
+                    [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                  [36m>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"m6 9 6 6 6-6"[39m
+                    [36m/>[39m
+                  [36m</svg>[39m
+                [36m</button>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center gap-1 shrink-0 rounded-[12px] border border-gray-200 p-1"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33maria-label[39m=[32m"Exibir em lista"[39m
+            [33maria-pressed[39m=[32m"true"[39m
+            [33mclass[39m=[32m"flex items-center justify-center w-8 h-8 rounded-[8px] transition-colors bg-brand-50 text-brand-700"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-list w-4 h-4"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M3 5h.01"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M3 12h.01"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M3 19h.01"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M8 5h13"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M8 12h13"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M8 19h13"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-label[39m=[32m"Exibir em grade"[39m
+            [33maria-pressed[39m=[32m"false"[39m
+            [33mclass[39m=[32m"flex items-center justify-center w-8 h-8 rounded-[8px] transition-colors text-gray-500 hover:bg-gray-90"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-layout-grid w-4 h-4"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"7"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"3"[39m
+                [33my[39m=[32m"3"[39m
+              [36m/>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"7"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"14"[39m
+                [33my[39m=[32m"3"[39m
+              [36m/>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"7"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"14"[39m
+                [33my[39m=[32m"14"[39m
+              [36m/>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"7"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"3"[39m
+                [33my[39m=[32m"14"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"space-y-4"[39m
+        [33mdata-testid[39m=[32m"knowledge-articles"[39m
+        [33mdata-view-mode[39m=[32m"list"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex flex-col items-center justify-center w-full p-8 text-center bg-gray-90 rounded-[16px] border border-dashed border-gray-200"[39m
+        [36m>[39m
+          [36m<h3[39m
+            [33mclass[39m=[32m"text-[16px] font-semibold text-gray-900 mb-1"[39m
+          [36m>[39m
+            [0mNenhum artigo encontrado para a busca atual.[0m
+          [36m</h3>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ waitForWrapper ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/pages/KnowledgePage.test.tsx:869:27
+    867|       await user.click(screen.getByText('Suporte'));
+    868|
+    869|       expect(await screen.findByText('Esta pasta ainda não tem artigos…
+       |                           ^
+    870|       expect(screen.queryByText('Nenhum artigo encontrado para a busca…
+    871|       expect(screen.queryByRole('button', { name: 'Limpar busca e filt…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/25]⎯
+
+ FAIL  |web| src/pages/KnowledgePage.test.tsx > KnowledgePage > article card, header and empty states > shows readers an empty folder without a create action
+TestingLibraryElementError: Unable to find an element with the text: Esta pasta ainda não tem artigos.. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body[39m
+  [33mstyle[39m=[32m""[39m
+[36m>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"p-8 flex-1 overflow-y-auto"[39m
+    [36m>[39m
+      [36m<nav[39m
+        [33maria-label[39m=[32m"Breadcrumb"[39m
+        [33mclass[39m=[32m"flex items-center text-[14px] mb-4"[39m
+      [36m>[39m
+        [36m<ol[39m
+          [33mclass[39m=[32m"flex items-center space-x-1.5 md:space-x-2"[39m
+        [36m>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"inline-flex items-center gap-1.5 transition-colors font-medium text-gray-500 hover:text-brand-600 cursor-pointer"[39m
+            [36m>[39m
+              [0mPastas[0m
+            [36m</button>[39m
+          [36m</li>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-right w-4 h-4 text-gray-300 mx-1 shrink-0"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m9 18 6-6-6-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span[39m
+              [33maria-current[39m=[32m"page"[39m
+              [33mclass[39m=[32m"inline-flex items-center gap-1.5 transition-colors font-medium text-brand-600 cursor-default pointer-events-none"[39m
+            [36m>[39m
+              [0mSuporte[0m
+            [36m</span>[39m
+          [36m</li>[39m
+        [36m</ol>[39m
+      [36m</nav>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4"[39m
+      [36m>[39m
+        [36m<div>[39m
+          [36m<h1[39m
+            [33mclass[39m=[32m"text-[20px] font-semibold text-gray-900"[39m
+          [36m>[39m
+            [0mBase de Conhecimento (FAQ)[0m
+          [36m</h1>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center gap-2"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-col w-full gap-1.5 min-w-[200px]"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"[39m
+            [36m>[39m
+              [36m<input[39m
+                [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+                [33mplaceholder[39m=[32m"Buscar palavra-chave..."[39m
+                [33mtitle[39m=[32m"busca por palavra-chave"[39m
+                [33mtype[39m=[32m"search"[39m
+                [33mvalue[39m=[32m""[39m
+              [36m/>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center justify-between mb-4 gap-3"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"w-[220px]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-col w-full gap-1.5"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border bg-white rounded-[12px] h-[42px] focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300"[39m
+              [36m>[39m
+                [36m<select[39m
+                  [33maria-hidden[39m=[32m"true"[39m
+                  [33maria-label[39m=[32m"Ordenar por"[39m
+                  [33mclass[39m=[32m"sr-only"[39m
+                  [33mid[39m=[32m"article-sort"[39m
+                  [33mtabindex[39m=[32m"-1"[39m
+                [36m>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"updated_desc"[39m
+                  [36m>[39m
+                    [0mÚltima atualização[0m
+                  [36m</option>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"title_asc"[39m
+                  [36m>[39m
+                    [0mA - Z[0m
+                  [36m</option>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"title_desc"[39m
+                  [36m>[39m
+                    [0mZ - A[0m
+                  [36m</option>[39m
+                [36m</select>[39m
+                [36m<button[39m
+                  [33maria-expanded[39m=[32m"false"[39m
+                  [33maria-haspopup[39m=[32m"listbox"[39m
+                  [33maria-label[39m=[32m"Ordenar por"[39m
+                  [33mclass[39m=[32m"flex h-full w-full items-center justify-between gap-2 bg-transparent text-left text-gray-900 outline-none pl-4 pr-3 text-[14px]"[39m
+                  [33mrole[39m=[32m"combobox"[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"truncate"[39m
+                  [36m>[39m
+                    [0mÚltima atualização[0m
+                  [36m</span>[39m
+                  [36m<svg[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"lucide lucide-chevron-down shrink-0 text-gray-500 w-4 h-4"[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mheight[39m=[32m"24"[39m
+                    [33mstroke[39m=[32m"currentColor"[39m
+                    [33mstroke-linecap[39m=[32m"round"[39m
+                    [33mstroke-linejoin[39m=[32m"round"[39m
+                    [33mstroke-width[39m=[32m"2"[39m
+                    [33mviewBox[39m=[32m"0 0 24 24"[39m
+                    [33mwidth[39m=[32m"24"[39m
+                    [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                  [36m>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"m6 9 6 6 6-6"[39m
+                    [36m/>[39m
+                  [36m</svg>[39m
+                [36m</button>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center gap-1 shrink-0 rounded-[12px] border border-gray-200 p-1"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33maria-label[39m=[32m"Exibir em lista"[39m
+            [33maria-pressed[39m=[32m"true"[39m
+            [33mclass[39m=[32m"flex items-center justify-center w-8 h-8 rounded-[8px] transition-colors bg-brand-50 text-brand-700"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-list w-4 h-4"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M3 5h.01"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M3 12h.01"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M3 19h.01"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M8 5h13"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M8 12h13"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M8 19h13"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-label[39m=[32m"Exibir em grade"[39m
+            [33maria-pressed[39m=[32m"false"[39m
+            [33mclass[39m=[32m"flex items-center justify-center w-8 h-8 rounded-[8px] transition-colors text-gray-500 hover:bg-gray-90"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-layout-grid w-4 h-4"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"7"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"3"[39m
+                [33my[39m=[32m"3"[39m
+              [36m/>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"7"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"14"[39m
+                [33my[39m=[32m"3"[39m
+              [36m/>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"7"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"14"[39m
+                [33my[39m=[32m"14"[39m
+              [36m/>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"7"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"3"[39m
+                [33my[39m=[32m"14"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"space-y-4"[39m
+        [33mdata-testid[39m=[32m"knowledge-articles"[39m
+        [33mdata-view-mode[39m=[32m"list"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex flex-col items-center justify-center w-full p-8 text-center bg-gray-90 rounded-[16px] border border-dashed border-gray-200"[39m
+        [36m>[39m
+          [36m<h3[39m
+            [33mclass[39m=[32m"text-[16px] font-semibold text-gray-900 mb-1"[39m
+          [36m>[39m
+            [0mNenhum artigo encontrado para a busca atual.[0m
+          [36m</h3>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body[39m
+  [33mstyle[39m=[32m""[39m
+[36m>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"p-8 flex-1 overflow-y-auto"[39m
+    [36m>[39m
+      [36m<nav[39m
+        [33maria-label[39m=[32m"Breadcrumb"[39m
+        [33mclass[39m=[32m"flex items-center text-[14px] mb-4"[39m
+      [36m>[39m
+        [36m<ol[39m
+          [33mclass[39m=[32m"flex items-center space-x-1.5 md:space-x-2"[39m
+        [36m>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"inline-flex items-center gap-1.5 transition-colors font-medium text-gray-500 hover:text-brand-600 cursor-pointer"[39m
+            [36m>[39m
+              [0mPastas[0m
+            [36m</button>[39m
+          [36m</li>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-right w-4 h-4 text-gray-300 mx-1 shrink-0"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m9 18 6-6-6-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span[39m
+              [33maria-current[39m=[32m"page"[39m
+              [33mclass[39m=[32m"inline-flex items-center gap-1.5 transition-colors font-medium text-brand-600 cursor-default pointer-events-none"[39m
+            [36m>[39m
+              [0mSuporte[0m
+            [36m</span>[39m
+          [36m</li>[39m
+        [36m</ol>[39m
+      [36m</nav>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4"[39m
+      [36m>[39m
+        [36m<div>[39m
+          [36m<h1[39m
+            [33mclass[39m=[32m"text-[20px] font-semibold text-gray-900"[39m
+          [36m>[39m
+            [0mBase de Conhecimento (FAQ)[0m
+          [36m</h1>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center gap-2"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-col w-full gap-1.5 min-w-[200px]"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"[39m
+            [36m>[39m
+              [36m<input[39m
+                [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+                [33mplaceholder[39m=[32m"Buscar palavra-chave..."[39m
+                [33mtitle[39m=[32m"busca por palavra-chave"[39m
+                [33mtype[39m=[32m"search"[39m
+                [33mvalue[39m=[32m""[39m
+              [36m/>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center justify-between mb-4 gap-3"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"w-[220px]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-col w-full gap-1.5"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border bg-white rounded-[12px] h-[42px] focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300"[39m
+              [36m>[39m
+                [36m<select[39m
+                  [33maria-hidden[39m=[32m"true"[39m
+                  [33maria-label[39m=[32m"Ordenar por"[39m
+                  [33mclass[39m=[32m"sr-only"[39m
+                  [33mid[39m=[32m"article-sort"[39m
+                  [33mtabindex[39m=[32m"-1"[39m
+                [36m>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"updated_desc"[39m
+                  [36m>[39m
+                    [0mÚltima atualização[0m
+                  [36m</option>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"title_asc"[39m
+                  [36m>[39m
+                    [0mA - Z[0m
+                  [36m</option>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"title_desc"[39m
+                  [36m>[39m
+                    [0mZ - A[0m
+                  [36m</option>[39m
+                [36m</select>[39m
+                [36m<button[39m
+                  [33maria-expanded[39m=[32m"false"[39m
+                  [33maria-haspopup[39m=[32m"listbox"[39m
+                  [33maria-label[39m=[32m"Ordenar por"[39m
+                  [33mclass[39m=[32m"flex h-full w-full items-center justify-between gap-2 bg-transparent text-left text-gray-900 outline-none pl-4 pr-3 text-[14px]"[39m
+                  [33mrole[39m=[32m"combobox"[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"truncate"[39m
+                  [36m>[39m
+                    [0mÚltima atualização[0m
+                  [36m</span>[39m
+                  [36m<svg[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"lucide lucide-chevron-down shrink-0 text-gray-500 w-4 h-4"[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mheight[39m=[32m"24"[39m
+                    [33mstroke[39m=[32m"currentColor"[39m
+                    [33mstroke-linecap[39m=[32m"round"[39m
+                    [33mstroke-linejoin[39m=[32m"round"[39m
+                    [33mstroke-width[39m=[32m"2"[39m
+                    [33mviewBox[39m=[32m"0 0 24 24"[39m
+                    [33mwidth[39m=[32m"24"[39m
+                    [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                  [36m>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"m6 9 6 6 6-6"[39m
+                    [36m/>[39m
+                  [36m</svg>[39m
+                [36m</button>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center gap-1 shrink-0 rounded-[12px] border border-gray-200 p-1"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33maria-label[39m=[32m"Exibir em lista"[39m
+            [33maria-pressed[39m=[32m"true"[39m
+            [33mclass[39m=[32m"flex items-center justify-center w-8 h-8 rounded-[8px] transition-colors bg-brand-50 text-brand-700"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-list w-4 h-4"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M3 5h.01"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M3 12h.01"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M3 19h.01"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M8 5h13"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M8 12h13"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M8 19h13"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-label[39m=[32m"Exibir em grade"[39m
+            [33maria-pressed[39m=[32m"false"[39m
+            [33mclass[39m=[32m"flex items-center justify-center w-8 h-8 rounded-[8px] transition-colors text-gray-500 hover:bg-gray-90"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-layout-grid w-4 h-4"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"7"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"3"[39m
+                [33my[39m=[32m"3"[39m
+              [36m/>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"7"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"14"[39m
+                [33my[39m=[32m"3"[39m
+              [36m/>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"7"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"14"[39m
+                [33my[39m=[32m"14"[39m
+              [36m/>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"7"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"3"[39m
+                [33my[39m=[32m"14"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"space-y-4"[39m
+        [33mdata-testid[39m=[32m"knowledge-articles"[39m
+        [33mdata-view-mode[39m=[32m"list"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex flex-col items-center justify-center w-full p-8 text-center bg-gray-90 rounded-[16px] border border-dashed border-gray-200"[39m
+        [36m>[39m
+          [36m<h3[39m
+            [33mclass[39m=[32m"text-[16px] font-semibold text-gray-900 mb-1"[39m
+          [36m>[39m
+            [0mNenhum artigo encontrado para a busca atual.[0m
+          [36m</h3>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ waitForWrapper ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/pages/KnowledgePage.test.tsx:888:27
+    886|       await user.click(screen.getByText('Suporte'));
+    887|
+    888|       expect(await screen.findByText('Esta pasta ainda não tem artigos…
+       |                           ^
+    889|       expect(screen.getByText('Quando houver artigos, eles aparecem aq…
+    890|       expect(screen.queryByRole('button', { name: '+ Novo artigo' })).…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/25]⎯
+
+ FAIL  |web| src/pages/KnowledgePage.test.tsx > KnowledgePage > article card, header and empty states > offers "Limpar busca e filtros" when a search finds nothing, and clearing resets search and tags but keeps the sort
+TestingLibraryElementError: Unable to find an accessible element with the role "button" and name "Limpar busca e filtros"
+
+Here are the accessible roles:
+
+  navigation:
+
+  Name "Breadcrumb":
+  [36m<nav[39m
+    [33maria-label[39m=[32m"Breadcrumb"[39m
+    [33mclass[39m=[32m"flex items-center text-[14px] mb-4"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  list:
+
+  Name "":
+  [36m<ol[39m
+    [33mclass[39m=[32m"flex items-center space-x-1.5 md:space-x-2"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  listitem:
+
+  Name "":
+  [36m<li[39m
+    [33mclass[39m=[32m"flex items-center"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<li[39m
+    [33mclass[39m=[32m"flex items-center"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  button:
+
+  Name "Pastas":
+  [36m<button[39m
+    [33mclass[39m=[32m"inline-flex items-center gap-1.5 transition-colors font-medium text-gray-500 hover:text-brand-600 cursor-pointer"[39m
+  [36m/>[39m
+
+  Name "Exibir em lista":
+  [36m<button[39m
+    [33maria-label[39m=[32m"Exibir em lista"[39m
+    [33maria-pressed[39m=[32m"true"[39m
+    [33mclass[39m=[32m"flex items-center justify-center w-8 h-8 rounded-[8px] transition-colors bg-brand-50 text-brand-700"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Exibir em grade":
+  [36m<button[39m
+    [33maria-label[39m=[32m"Exibir em grade"[39m
+    [33maria-pressed[39m=[32m"false"[39m
+    [33mclass[39m=[32m"flex items-center justify-center w-8 h-8 rounded-[8px] transition-colors text-gray-500 hover:bg-gray-90"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  heading:
+
+  Name "Base de Conhecimento (FAQ)":
+  [36m<h1[39m
+    [33mclass[39m=[32m"text-[20px] font-semibold text-gray-900"[39m
+  [36m/>[39m
+
+  Name "Nenhum artigo encontrado para a busca atual.":
+  [36m<h3[39m
+    [33mclass[39m=[32m"text-[16px] font-semibold text-gray-900 mb-1"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  searchbox:
+
+  Name "busca por palavra-chave":
+  [36m<input[39m
+    [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+    [33mplaceholder[39m=[32m"Buscar palavra-chave..."[39m
+    [33mtitle[39m=[32m"busca por palavra-chave"[39m
+    [33mtype[39m=[32m"search"[39m
+    [33mvalue[39m=[32m"zzz"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  combobox:
+
+  Name "Ordenar por":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33maria-haspopup[39m=[32m"listbox"[39m
+    [33maria-label[39m=[32m"Ordenar por"[39m
+    [33mclass[39m=[32m"flex h-full w-full items-center justify-between gap-2 bg-transparent text-left text-gray-900 outline-none pl-4 pr-3 text-[14px]"[39m
+    [33mrole[39m=[32m"combobox"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body[39m
+  [33mstyle[39m=[32m""[39m
+[36m>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"p-8 flex-1 overflow-y-auto"[39m
+    [36m>[39m
+      [36m<nav[39m
+        [33maria-label[39m=[32m"Breadcrumb"[39m
+        [33mclass[39m=[32m"flex items-center text-[14px] mb-4"[39m
+      [36m>[39m
+        [36m<ol[39m
+          [33mclass[39m=[32m"flex items-center space-x-1.5 md:space-x-2"[39m
+        [36m>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"inline-flex items-center gap-1.5 transition-colors font-medium text-gray-500 hover:text-brand-600 cursor-pointer"[39m
+            [36m>[39m
+              [0mPastas[0m
+            [36m</button>[39m
+          [36m</li>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-right w-4 h-4 text-gray-300 mx-1 shrink-0"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m9 18 6-6-6-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span[39m
+              [33maria-current[39m=[32m"page"[39m
+              [33mclass[39m=[32m"inline-flex items-center gap-1.5 transition-colors font-medium text-brand-600 cursor-default pointer-events-none"[39m
+            [36m>[39m
+              [0mSuporte[0m
+            [36m</span>[39m
+          [36m</li>[39m
+        [36m</ol>[39m
+      [36m</nav>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4"[39m
+      [36m>[39m
+        [36m<div>[39m
+          [36m<h1[39m
+            [33mclass[39m=[32m"text-[20px] font-semibold text-gray-900"[39m
+          [36m>[39m
+            [0mBase de Conhecimento (FAQ)[0m
+          [36m</h1>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center gap-2"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-col w-full gap-1.5 min-w-[200px]"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"[39m
+            [36m>[39m
+              [36m<input[39m
+                [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+                [33mplaceholder[39m=[32m"Buscar palavra-chave..."[39m
+                [33mtitle[39m=[32m"busca por palavra-chave"[39m
+                [33mtype[39m=[32m"search"[39m
+                [33mvalue[39m=[32m"zzz"[39m
+              [36m/>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center justify-between mb-4 gap-3"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"w-[220px]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-col w-full gap-1.5"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border bg-white rounded-[12px] h-[42px] focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300"[39m
+              [36m>[39m
+                [36m<select[39m
+                  [33maria-hidden[39m=[32m"true"[39m
+                  [33maria-label[39m=[32m"Ordenar por"[39m
+                  [33mclass[39m=[32m"sr-only"[39m
+                  [33mid[39m=[32m"article-sort"[39m
+                  [33mtabindex[39m=[32m"-1"[39m
+                [36m>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"updated_desc"[39m
+                  [36m>[39m
+                    [0mÚltima atualização[0m
+                  [36m</option>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"title_asc"[39m
+                  [36m>[39m
+                    [0mA - Z[0m
+                  [36m</option>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"title_desc"[39m
+                  [36m>[39m
+                    [0mZ - A[0m
+                  [36m</option>[39m
+                [36m</select>[39m
+                [36m<button[39m
+                  [33maria-expanded[39m=[32m"false"[39m
+                  [33maria-haspopup[39m=[32m"listbox"[39m
+                  [33maria-label[39m=[32m"Ordenar por"[39m
+                  [33mclass[39m=[32m"flex h-full w-full items-center justify-between gap-2 bg-transparent text-left text-gray-900 outline-none pl-4 pr-3 text-[14px]"[39m
+                  [33mrole[39m=[32m"combobox"[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"truncate"[39m
+                  [36m>[39m
+                    [0mA - Z[0m
+                  [36m</span>[39m
+                  [36m<svg[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"lucide lucide-chevron-down shrink-0 text-gray-500 w-4 h-4"[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mheight[39m=[32m"24"[39m
+                    [33mstroke[39m=[32m"currentColor"[39m
+                    [33mstroke-linecap[39m=[32m"round"[39m
+                    [33mstroke-linejoin[39m=[32m"round"[39m
+                    [33mstroke-width[39m=[32m"2"[39m
+                    [33mviewBox[39m=[32m"0 0 24 24"[39m
+                    [33mwidth[39m=[32m"24"[39m
+                    [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                  [36m>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"m6 9 6 6 6-6"[39m
+                    [36m/>[39m
+                  [36m</svg>[39m
+                [36m</button>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center gap-1 shrink-0 rounded-[12px] border border-gray-200 p-1"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33maria-label[39m=[32m"Exibir em lista"[39m
+            [33maria-pressed[39m=[32m"true"[39m
+            [33mclass[39m=[32m"flex items-center justify-center w-8 h-8 rounded-[8px] transition-colors bg-brand-50 text-brand-700"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-list w-4 h-4"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M3 5h.01"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M3 12h.01"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M3 19h.01"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M8 5h13"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M8 12h13"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M8 19h13"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-label[39m=[32m"Exibir em grade"[39m
+            [33maria-pressed[39m=[32m"false"[39m
+            [33mclass[39m=[32m"flex items-center justify-center w-8 h-8 rounded-[8px] transition-colors text-gray-500 hover:bg-gray-90"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-layout-grid w-4 h-4"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"7"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"3"[39m
+                [33my[39m=[32m"3"[39m
+              [36m/>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"7"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"14"[39m
+                [33my[39m=[32m"3"[39m
+              [36m/>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"7"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"14"[39m
+                [33my[39m=[32m"14"[39m
+              [36m/>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"7"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"3"[39m
+                [33my[39m=[32m"14"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"space-y-4"[39m
+        [33mdata-testid[39m=[32m"knowledge-articles"[39m
+        [33mdata-view-mode[39m=[32m"list"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex flex-col items-center justify-center w-full p-8 text-center bg-gray-90 rounded-[16px] border border-dashed border-gray-200"[39m
+        [36m>[39m
+          [36m<h3[39m
+            [33mclass[39m=[32m"text-[16px] font-semibold text-gray-900 mb-1"[39m
+          [36m>[39m
+            [0mNenhum artigo encontrado para a busca atual.[0m
+          [36m</h3>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/pages/KnowledgePage.test.tsx:906:31
+    904|       expect(screen.queryByText('Esta pasta ainda não tem artigos.')).…
+    905|
+    906|       await user.click(screen.getByRole('button', { name: 'Limpar busc…
+       |                               ^
+    907|
+    908|       expect(screen.getByRole('searchbox')).toHaveValue('');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/25]⎯
+
+ FAIL  |web| src/pages/KnowledgePage.test.tsx > KnowledgePage > article card, header and empty states > also offers to clear when only a tag filter finds nothing
+TypeError: Expected container to be an Element, a Document or a DocumentFragment but got null.
+ ❯ checkContainerType ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/helpers.js:61:11
+ ❯ queryAllByText ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/queries/text.js:18:35
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:74:17
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/pages/KnowledgePage.test.tsx:925:64
+    923|       await openSupportFolder(user);
+    924|
+    925|       await user.click(within(cardOf('Como abrir um chamado')).getByTe…
+       |                                                                ^
+    926|
+    927|       expect(await screen.findByText('Nenhum artigo encontrado para a …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/25]⎯
+
+ FAIL  |web| src/pages/KnowledgePage.test.tsx > KnowledgePage > article card, header and empty states > shows a retryable error, not the empty message, when the query fails
+TestingLibraryElementError: Unable to find an element with the text: Não foi possível carregar os artigos.. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body[39m
+  [33mstyle[39m=[32m""[39m
+[36m>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"p-8 flex-1 overflow-y-auto"[39m
+    [36m>[39m
+      [36m<nav[39m
+        [33maria-label[39m=[32m"Breadcrumb"[39m
+        [33mclass[39m=[32m"flex items-center text-[14px] mb-4"[39m
+      [36m>[39m
+        [36m<ol[39m
+          [33mclass[39m=[32m"flex items-center space-x-1.5 md:space-x-2"[39m
+        [36m>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"inline-flex items-center gap-1.5 transition-colors font-medium text-gray-500 hover:text-brand-600 cursor-pointer"[39m
+            [36m>[39m
+              [0mPastas[0m
+            [36m</button>[39m
+          [36m</li>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-right w-4 h-4 text-gray-300 mx-1 shrink-0"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m9 18 6-6-6-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span[39m
+              [33maria-current[39m=[32m"page"[39m
+              [33mclass[39m=[32m"inline-flex items-center gap-1.5 transition-colors font-medium text-brand-600 cursor-default pointer-events-none"[39m
+            [36m>[39m
+              [0mSuporte[0m
+            [36m</span>[39m
+          [36m</li>[39m
+        [36m</ol>[39m
+      [36m</nav>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4"[39m
+      [36m>[39m
+        [36m<div>[39m
+          [36m<h1[39m
+            [33mclass[39m=[32m"text-[20px] font-semibold text-gray-900"[39m
+          [36m>[39m
+            [0mBase de Conhecimento (FAQ)[0m
+          [36m</h1>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center gap-2"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-col w-full gap-1.5 min-w-[200px]"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"[39m
+            [36m>[39m
+              [36m<input[39m
+                [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+                [33mplaceholder[39m=[32m"Buscar palavra-chave..."[39m
+                [33mtitle[39m=[32m"busca por palavra-chave"[39m
+                [33mtype[39m=[32m"search"[39m
+                [33mvalue[39m=[32m""[39m
+              [36m/>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center justify-between mb-4 gap-3"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"w-[220px]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-col w-full gap-1.5"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border bg-white rounded-[12px] h-[42px] focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300"[39m
+              [36m>[39m
+                [36m<select[39m
+                  [33maria-hidden[39m=[32m"true"[39m
+                  [33maria-label[39m=[32m"Ordenar por"[39m
+                  [33mclass[39m=[32m"sr-only"[39m
+                  [33mid[39m=[32m"article-sort"[39m
+                  [33mtabindex[39m=[32m"-1"[39m
+                [36m>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"updated_desc"[39m
+                  [36m>[39m
+                    [0mÚltima atualização[0m
+                  [36m</option>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"title_asc"[39m
+                  [36m>[39m
+                    [0mA - Z[0m
+                  [36m</option>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"title_desc"[39m
+                  [36m>[39m
+                    [0mZ - A[0m
+                  [36m</option>[39m
+                [36m</select>[39m
+                [36m<button[39m
+                  [33maria-expanded[39m=[32m"false"[39m
+                  [33maria-haspopup[39m=[32m"listbox"[39m
+                  [33maria-label[39m=[32m"Ordenar por"[39m
+                  [33mclass[39m=[32m"flex h-full w-full items-center justify-between gap-2 bg-transparent text-left text-gray-900 outline-none pl-4 pr-3 text-[14px]"[39m
+                  [33mrole[39m=[32m"combobox"[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"truncate"[39m
+                  [36m>[39m
+                    [0mÚltima atualização[0m
+                  [36m</span>[39m
+                  [36m<svg[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"lucide lucide-chevron-down shrink-0 text-gray-500 w-4 h-4"[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mheight[39m=[32m"24"[39m
+                    [33mstroke[39m=[32m"currentColor"[39m
+                    [33mstroke-linecap[39m=[32m"round"[39m
+                    [33mstroke-linejoin[39m=[32m"round"[39m
+                    [33mstroke-width[39m=[32m"2"[39m
+                    [33mviewBox[39m=[32m"0 0 24 24"[39m
+                    [33mwidth[39m=[32m"24"[39m
+                    [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                  [36m>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"m6 9 6 6 6-6"[39m
+                    [36m/>[39m
+                  [36m</svg>[39m
+                [36m</button>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center gap-1 shrink-0 rounded-[12px] border border-gray-200 p-1"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33maria-label[39m=[32m"Exibir em lista"[39m
+            [33maria-pressed[39m=[32m"true"[39m
+            [33mclass[39m=[32m"flex items-center justify-center w-8 h-8 rounded-[8px] transition-colors bg-brand-50 text-brand-700"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-list w-4 h-4"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M3 5h.01"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M3 12h.01"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M3 19h.01"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M8 5h13"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M8 12h13"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M8 19h13"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-label[39m=[32m"Exibir em grade"[39m
+            [33maria-pressed[39m=[32m"false"[39m
+            [33mclass[39m=[32m"flex items-center justify-center w-8 h-8 rounded-[8px] transition-colors text-gray-500 hover:bg-gray-90"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-layout-grid w-4 h-4"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"7"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"3"[39m
+                [33my[39m=[32m"3"[39m
+              [36m/>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"7"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"14"[39m
+                [33my[39m=[32m"3"[39m
+              [36m/>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"7"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"14"[39m
+                [33my[39m=[32m"14"[39m
+              [36m/>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"7"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"3"[39m
+                [33my[39m=[32m"14"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"space-y-4"[39m
+        [33mdata-testid[39m=[32m"knowledge-articles"[39m
+        [33mdata-view-mode[39m=[32m"list"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex flex-col items-center justify-center w-full p-8 text-center bg-gray-90 rounded-[16px] border border-dashed border-gray-200"[39m
+        [36m>[39m
+          [36m<h3[39m
+            [33mclass[39m=[32m"text-[16px] font-semibold text-gray-900 mb-1"[39m
+          [36m>[39m
+            [0mNenhum artigo encontrado para a busca atual.[0m
+          [36m</h3>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body[39m
+  [33mstyle[39m=[32m""[39m
+[36m>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"p-8 flex-1 overflow-y-auto"[39m
+    [36m>[39m
+      [36m<nav[39m
+        [33maria-label[39m=[32m"Breadcrumb"[39m
+        [33mclass[39m=[32m"flex items-center text-[14px] mb-4"[39m
+      [36m>[39m
+        [36m<ol[39m
+          [33mclass[39m=[32m"flex items-center space-x-1.5 md:space-x-2"[39m
+        [36m>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"inline-flex items-center gap-1.5 transition-colors font-medium text-gray-500 hover:text-brand-600 cursor-pointer"[39m
+            [36m>[39m
+              [0mPastas[0m
+            [36m</button>[39m
+          [36m</li>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-right w-4 h-4 text-gray-300 mx-1 shrink-0"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m9 18 6-6-6-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span[39m
+              [33maria-current[39m=[32m"page"[39m
+              [33mclass[39m=[32m"inline-flex items-center gap-1.5 transition-colors font-medium text-brand-600 cursor-default pointer-events-none"[39m
+            [36m>[39m
+              [0mSuporte[0m
+            [36m</span>[39m
+          [36m</li>[39m
+        [36m</ol>[39m
+      [36m</nav>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4"[39m
+      [36m>[39m
+        [36m<div>[39m
+          [36m<h1[39m
+            [33mclass[39m=[32m"text-[20px] font-semibold text-gray-900"[39m
+          [36m>[39m
+            [0mBase de Conhecimento (FAQ)[0m
+          [36m</h1>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center gap-2"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-col w-full gap-1.5 min-w-[200px]"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"[39m
+            [36m>[39m
+              [36m<input[39m
+                [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+                [33mplaceholder[39m=[32m"Buscar palavra-chave..."[39m
+                [33mtitle[39m=[32m"busca por palavra-chave"[39m
+                [33mtype[39m=[32m"search"[39m
+                [33mvalue[39m=[32m""[39m
+              [36m/>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center justify-between mb-4 gap-3"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"w-[220px]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-col w-full gap-1.5"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border bg-white rounded-[12px] h-[42px] focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300"[39m
+              [36m>[39m
+                [36m<select[39m
+                  [33maria-hidden[39m=[32m"true"[39m
+                  [33maria-label[39m=[32m"Ordenar por"[39m
+                  [33mclass[39m=[32m"sr-only"[39m
+                  [33mid[39m=[32m"article-sort"[39m
+                  [33mtabindex[39m=[32m"-1"[39m
+                [36m>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"updated_desc"[39m
+                  [36m>[39m
+                    [0mÚltima atualização[0m
+                  [36m</option>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"title_asc"[39m
+                  [36m>[39m
+                    [0mA - Z[0m
+                  [36m</option>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"title_desc"[39m
+                  [36m>[39m
+                    [0mZ - A[0m
+                  [36m</option>[39m
+                [36m</select>[39m
+                [36m<button[39m
+                  [33maria-expanded[39m=[32m"false"[39m
+                  [33maria-haspopup[39m=[32m"listbox"[39m
+                  [33maria-label[39m=[32m"Ordenar por"[39m
+                  [33mclass[39m=[32m"flex h-full w-full items-center justify-between gap-2 bg-transparent text-left text-gray-900 outline-none pl-4 pr-3 text-[14px]"[39m
+                  [33mrole[39m=[32m"combobox"[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"truncate"[39m
+                  [36m>[39m
+                    [0mÚltima atualização[0m
+                  [36m</span>[39m
+                  [36m<svg[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"lucide lucide-chevron-down shrink-0 text-gray-500 w-4 h-4"[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mheight[39m=[32m"24"[39m
+                    [33mstroke[39m=[32m"currentColor"[39m
+                    [33mstroke-linecap[39m=[32m"round"[39m
+                    [33mstroke-linejoin[39m=[32m"round"[39m
+                    [33mstroke-width[39m=[32m"2"[39m
+                    [33mviewBox[39m=[32m"0 0 24 24"[39m
+                    [33mwidth[39m=[32m"24"[39m
+                    [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                  [36m>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"m6 9 6 6 6-6"[39m
+                    [36m/>[39m
+                  [36m</svg>[39m
+                [36m</button>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center gap-1 shrink-0 rounded-[12px] border border-gray-200 p-1"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33maria-label[39m=[32m"Exibir em lista"[39m
+            [33maria-pressed[39m=[32m"true"[39m
+            [33mclass[39m=[32m"flex items-center justify-center w-8 h-8 rounded-[8px] transition-colors bg-brand-50 text-brand-700"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-list w-4 h-4"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M3 5h.01"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M3 12h.01"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M3 19h.01"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M8 5h13"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M8 12h13"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M8 19h13"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-label[39m=[32m"Exibir em grade"[39m
+            [33maria-pressed[39m=[32m"false"[39m
+            [33mclass[39m=[32m"flex items-center justify-center w-8 h-8 rounded-[8px] transition-colors text-gray-500 hover:bg-gray-90"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-layout-grid w-4 h-4"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"7"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"3"[39m
+                [33my[39m=[32m"3"[39m
+              [36m/>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"7"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"14"[39m
+                [33my[39m=[32m"3"[39m
+              [36m/>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"7"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"14"[39m
+                [33my[39m=[32m"14"[39m
+              [36m/>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"7"[39m
+                [33mrx[39m=[32m"1"[39m
+                [33mwidth[39m=[32m"7"[39m
+                [33mx[39m=[32m"3"[39m
+                [33my[39m=[32m"14"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"space-y-4"[39m
+        [33mdata-testid[39m=[32m"knowledge-articles"[39m
+        [33mdata-view-mode[39m=[32m"list"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex flex-col items-center justify-center w-full p-8 text-center bg-gray-90 rounded-[16px] border border-dashed border-gray-200"[39m
+        [36m>[39m
+          [36m<h3[39m
+            [33mclass[39m=[32m"text-[16px] font-semibold text-gray-900 mb-1"[39m
+          [36m>[39m
+            [0mNenhum artigo encontrado para a busca atual.[0m
+          [36m</h3>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ waitForWrapper ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/pages/KnowledgePage.test.tsx:942:27
+    940|       await user.click(screen.getByText('Suporte'));
+    941|
+    942|       expect(await screen.findByText('Não foi possível carregar os art…
+       |                           ^
+    943|       expect(screen.queryByText(/Nenhum artigo encontrado/)).not.toBeI…
+    944|       expect(screen.queryByText('Esta pasta ainda não tem artigos.')).…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/25]⎯
+
+ FAIL  |web| src/components/knowledge/KnowledgeArticleAttachments.test.tsx > KnowledgeArticleAttachments > renders nothing when there are no attachments and the user cannot manage them
+Error: [2mexpect([22m[31melement[39m[2m).toBeEmptyDOMElement()[22m
+
+Received:
+  [31m"<section class="space-y-3 rounded-lg border border-gray-200 bg-white p-4 mt-3"><h3 class="text-sm font-semibold text-gray-900">Anexos (0)</h3><p class="text-sm text-gray-500">Nenhum anexo neste artigo ainda.</p></section>"[39m
+ ❯ src/components/knowledge/KnowledgeArticleAttachments.test.tsx:63:23
+     61|   it('renders nothing when there are no attachments and the user canno…
+     62|     const { container } = renderComponent({ attachments: [], canManage…
+     63|     expect(container).toBeEmptyDOMElement();
+       |                       ^
+     64|   });
+     65|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/25]⎯
+
+ FAIL  |web| src/components/knowledge/articleContentStyles.test.ts > .article-content styles > restores list markers, including nested lists
+AssertionError: expected '' to contain 'list-style-type: disc'
+
+- Expected
++ Received
+
+- list-style-type: disc
+
+ ❯ src/components/knowledge/articleContentStyles.test.ts:18:41
+     16| describe('.article-content styles', () => {
+     17|   it('restores list markers, including nested lists', () => {
+     18|     expect(rule('.article-content ul')).toContain('list-style-type: di…
+       |                                         ^
+     19|     expect(rule('.article-content ol')).toContain('list-style-type: de…
+     20|     expect(rule('.article-content ul ul')).toContain('list-style-type:…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/25]⎯
+
+ FAIL  |web| src/components/knowledge/articleContentStyles.test.ts > .article-content styles > gives headings a hierarchy below the card title
+AssertionError: expected '' to match /font-size: 1rem/
+
+- Expected:
+/font-size: 1rem/
+
++ Received:
+""
+
+ ❯ src/components/knowledge/articleContentStyles.test.ts:25:41
+     23|
+     24|   it('gives headings a hierarchy below the card title', () => {
+     25|     expect(rule('.article-content h1')).toMatch(/font-size: 1rem/);
+       |                                         ^
+     26|     expect(rule('.article-content h2')).toMatch(/font-weight: 600/);
+     27|     expect(rule('.article-content h3')).toMatch(/font-size: 0\.875rem/…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/25]⎯
+
+ FAIL  |web| src/components/knowledge/articleContentStyles.test.ts > .article-content styles > styles blockquote and links
+AssertionError: expected '' to contain 'border-left'
+
+- Expected
++ Received
+
+- border-left
+
+ ❯ src/components/knowledge/articleContentStyles.test.ts:31:49
+     29|
+     30|   it('styles blockquote and links', () => {
+     31|     expect(rule('.article-content blockquote')).toContain('border-left…
+       |                                                 ^
+     32|     expect(rule('.article-content a')).toContain('text-decoration: und…
+     33|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/25]⎯
+
+ FAIL  |web| src/components/knowledge/articleContentStyles.test.ts > .article-content styles > keeps tables and images inside the card
+AssertionError: expected '' to contain 'overflow-x: auto'
+
+- Expected
++ Received
+
+- overflow-x: auto
+
+ ❯ src/components/knowledge/articleContentStyles.test.ts:36:44
+     34|
+     35|   it('keeps tables and images inside the card', () => {
+     36|     expect(rule('.article-content table')).toContain('overflow-x: auto…
+       |                                            ^
+     37|     expect(rule('.article-content table')).toContain('max-width: 100%'…
+     38|     expect(rule('.article-content img')).toContain('max-width: 100%');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/25]⎯
+
+ FAIL  |web| src/components/knowledge/articleContentStyles.test.ts > .article-content styles > styles inline code and code blocks
+AssertionError: expected '' to contain 'background-color'
+
+- Expected
++ Received
+
+- background-color
+
+ ❯ src/components/knowledge/articleContentStyles.test.ts:43:43
+     41|
+     42|   it('styles inline code and code blocks', () => {
+     43|     expect(rule('.article-content code')).toContain('background-color'…
+       |                                           ^
+     44|     expect(rule('.article-content pre')).toContain('overflow-x: auto');
+     45|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/25]⎯
+
+ FAIL  |web| src/components/knowledge/articleExcerpt.test.ts > articleExcerpt > returns only the text, without markup
+AssertionError: expected '' to be 'Veja o passo a passo abaixo.' // Object.is equality
+
+- Expected
++ Received
+
+- Veja o passo a passo abaixo.
+
+ ❯ src/components/knowledge/articleExcerpt.test.ts:6:84
+      4| describe('articleExcerpt', () => {
+      5|   it('returns only the text, without markup', () => {
+      6|     expect(articleExcerpt('<p>Veja o <strong>passo a passo</strong> ab…
+       |                                                                                    ^
+      7|       'Veja o passo a passo abaixo.',
+      8|     );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/25]⎯
+
+ FAIL  |web| src/components/knowledge/articleExcerpt.test.ts > articleExcerpt > separates adjacent blocks with a space so words do not glue together
+AssertionError: expected '' to be 'Título Passo um a b' // Object.is equality
+
+- Expected
++ Received
+
+- Título Passo um a b
+
+ ❯ src/components/knowledge/articleExcerpt.test.ts:12:91
+     10|
+     11|   it('separates adjacent blocks with a space so words do not glue toge…
+     12|     expect(articleExcerpt('<h2>Título</h2><p>Passo um</p><ul><li>a</li…
+       |                                                                                           ^
+     13|       'Título Passo um a b',
+     14|     );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/25]⎯
+
+ FAIL  |web| src/components/knowledge/articleExcerpt.test.ts > articleExcerpt > collapses whitespace
+AssertionError: expected '' to be 'muito espaço' // Object.is equality
+
+- Expected
++ Received
+
+- muito espaço
+
+ ❯ src/components/knowledge/articleExcerpt.test.ts:19:60
+     17|
+     18|   it('collapses whitespace', () => {
+     19|     expect(articleExcerpt('<p>  muito \n   espaço  </p>')).toBe('muito…
+       |                                                            ^
+     20|   });
+     21|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/25]⎯
+
+ FAIL  |web| src/components/knowledge/articleExcerpt.test.ts > articleExcerpt > cuts at a word boundary within the limit and adds an ellipsis
+AssertionError: expected '' to be 'alfa beta gama…' // Object.is equality
+
+- Expected
++ Received
+
+- alfa beta gama…
+
+ ❯ src/components/knowledge/articleExcerpt.test.ts:24:21
+     22|   it('cuts at a word boundary within the limit and adds an ellipsis', …
+     23|     const excerpt = articleExcerpt('<p>alfa beta gama delta epsilon</p…
+     24|     expect(excerpt).toBe('alfa beta gama…');
+       |                     ^
+     25|     expect(excerpt.length).toBeLessThanOrEqual(16);
+     26|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/25]⎯
+
+ FAIL  |web| src/components/knowledge/articleExcerpt.test.ts > articleExcerpt > does not add an ellipsis when the text fits
+AssertionError: expected '' to be 'alfa beta' // Object.is equality
+
+- Expected
++ Received
+
+- alfa beta
+
+ ❯ src/components/knowledge/articleExcerpt.test.ts:29:52
+     27|
+     28|   it('does not add an ellipsis when the text fits', () => {
+     29|     expect(articleExcerpt('<p>alfa beta</p>', 11)).toBe('alfa beta');
+       |                                                    ^
+     30|   });
+     31|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/25]⎯
+

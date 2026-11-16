@@ -1,0 +1,136 @@
+{
+  "version": 1,
+  "delivery": "DMTE-534",
+  "repository": "dmrepositorio/aponta",
+  "github_issue": 297,
+  "multica_id": "01a1e004-5f6a-7286-a0d9-6c7b363dd363",
+  "cycle": "2026-11-09/2026-11-22",
+  "tier": 2,
+  "criteria": [
+    {
+      "id": "AC-01",
+      "description": "o card de artigo, recolhido por padrão, mostra o título, a meta (tag \"Interno\" quando privado, autor e data), um trecho em texto simples sem o corpo completo, no máximo 5 tags com \"+N\" para as demais e, só quando há anexos, a contagem de anexos; não mostra \"Selecionar arquivo\", \"Anexar arquivo\" nem \"Anexos (0)\".",
+      "tests": [
+        "apps/web/src/pages/KnowledgePage.test.tsx: collapses the card to title, meta, a plain-text excerpt, five tags and the attachment count",
+        "apps/web/src/pages/KnowledgePage.test.tsx: shows the attachment count only for articles that have attachments, and the links once expanded"
+      ]
+    },
+    {
+      "id": "AC-02",
+      "description": "\"Ler artigo completo\" expande o card (`aria-expanded=\"true\"`, `aria-controls` apontando para o corpo): aparecem o corpo completo como HTML real dentro de `.article-content`, todas as tags e a lista de anexos com os links de download, quando houver; \"Recolher\" volta ao estado anterior. O botão não existe quando não há nada escondido.",
+      "tests": [
+        "apps/web/src/pages/KnowledgePage.test.tsx: expands and collapses the card, revealing the full body, every tag and the attachments",
+        "apps/web/src/pages/KnowledgePage.test.tsx: offers no expand button when nothing is hidden",
+        "apps/web/src/pages/KnowledgePage.test.tsx: offers no expand button when the body is only empty markup",
+        "apps/web/src/pages/KnowledgePage.test.tsx: renders article content as real HTML, not escaped text"
+      ]
+    },
+    {
+      "id": "AC-03",
+      "description": "`articleExcerpt` devolve só texto, com espaço entre blocos adjacentes, no máximo 240 caracteres cortados em limite de palavra com \"…\", e `\"\"` para HTML vazio ou só com marcação.",
+      "tests": [
+        "apps/web/src/components/knowledge/articleExcerpt.test.ts: returns only the text, without markup",
+        "apps/web/src/components/knowledge/articleExcerpt.test.ts: separates adjacent blocks with a space so words do not glue together",
+        "apps/web/src/components/knowledge/articleExcerpt.test.ts: collapses whitespace",
+        "apps/web/src/components/knowledge/articleExcerpt.test.ts: cuts at a word boundary within the limit and adds an ellipsis",
+        "apps/web/src/components/knowledge/articleExcerpt.test.ts: does not add an ellipsis when the text fits",
+        "apps/web/src/components/knowledge/articleExcerpt.test.ts: returns an empty string for empty or markup-only html"
+      ]
+    },
+    {
+      "id": "AC-04",
+      "description": "o gerenciador de anexos (enviar e remover) aparece dentro do formulário de edição para AGENT, AGENT_MASTER e ADMIN, com os anexos do artigo editado; nenhum card mostra controle de upload ou de remoção; CLIENT e anônimo nunca veem os controles; `KnowledgeArticleAttachments` sem anexo e sem `canManage` não renderiza nada.",
+      "tests": [
+        "apps/web/src/pages/KnowledgePage.test.tsx: keeps upload and remove out of the cards and manages attachments inside the edit form",
+        "apps/web/src/pages/KnowledgePage.test.tsx: never shows attachment upload controls to a CLIENT, not even when the card is expanded",
+        "apps/web/src/pages/KnowledgePage.test.tsx: shows no attachment manager in the new-article form",
+        "apps/web/src/components/knowledge/KnowledgeArticleAttachments.test.tsx: renders nothing when there are no attachments and the user cannot manage them",
+        "apps/web/src/components/knowledge/KnowledgeArticleAttachments.test.tsx: shows zero in the title and an empty message when an author has no attachments"
+      ]
+    },
+    {
+      "id": "AC-05",
+      "description": "no card, o `<h2>` fica numa linha própria (nenhuma tag, meta nem botão é irmão do título na mesma linha) e as ações Editar/Excluir ficam no rodapé em `flex-wrap`. No navegador, em 390 px e em grade de 3 colunas em 1440 px, o título ocupa a largura útil do card e nenhum botão sai do card.",
+      "tests": [
+        "apps/web/src/pages/KnowledgePage.test.tsx: keeps the title on its own line, with the tag, meta and actions outside its row",
+        "Medição em Chromium (390 px e grade de 3 colunas em 1440 px): título na largura útil do card, nenhum botão fora do card (resultado no PR)"
+      ]
+    },
+    {
+      "id": "AC-06",
+      "description": "o cabeçalho da página tem a busca em linha própria abaixo de `md`; os chips de tag ativos ficam numa linha própria, cada um em uma única linha, e \"+ Novo artigo\" fica inteiro dentro da janela, com folga da borda. Em 390 px e 1440 px não há rolagem horizontal da página.",
+      "tests": [
+        "apps/web/src/pages/KnowledgePage.test.tsx: puts the active tag filters in their own row, apart from the search and the new-article button",
+        "Medição em Chromium (390 px e 1440 px): busca em linha própria abaixo de md, chip em uma linha, botão dentro da janela, sem rolagem horizontal (resultado no PR)"
+      ]
+    },
+    {
+      "id": "AC-07",
+      "description": "`styles.css` define, escopadas em `.article-content`, as regras de listas (disco, decimal, aninhadas), `h1` a `h4`, `blockquote`, `a`, `table` (borda e `overflow-x: auto`), `img` (`max-width: 100%`, `max-height`) e `code`/`pre`. No navegador, com o artigo rico da auditoria: `ul` mede `list-style-type: disc`, `ol` mede `decimal`, `h2` mede 16 px com peso 600 ou mais e difere do parágrafo (14 px), a tabela de 7 colunas rola na horizontal dentro do card em 390 px sem alargar a página e a imagem de 1600 px não passa de 24 rem de altura.",
+      "tests": [
+        "apps/web/src/components/knowledge/articleContentStyles.test.ts: restores list markers, including nested lists",
+        "apps/web/src/components/knowledge/articleContentStyles.test.ts: gives headings a hierarchy below the card title",
+        "apps/web/src/components/knowledge/articleContentStyles.test.ts: styles blockquote and links",
+        "apps/web/src/components/knowledge/articleContentStyles.test.ts: keeps tables and images inside the card",
+        "apps/web/src/components/knowledge/articleContentStyles.test.ts: styles inline code and code blocks",
+        "Medição em Chromium com o artigo rico: list-style-type, tamanho e peso dos títulos, rolagem da tabela em 390 px, altura da imagem (resultado no PR)"
+      ]
+    },
+    {
+      "id": "AC-08",
+      "description": "lista vazia com falha de consulta mostra \"Não foi possível carregar os artigos.\" com \"Tentar novamente\" (que refaz a consulta) e não mostra \"Nenhum artigo encontrado\"; pasta vazia sem filtro mostra \"Esta pasta ainda não tem artigos.\" (com \"+ Novo artigo\" só para quem autora e com o formulário fechado); busca ou tag sem resultado mostra \"Nenhum artigo encontrado para a busca atual.\" com \"Limpar busca e filtros\".",
+      "tests": [
+        "apps/web/src/pages/KnowledgePage.test.tsx: tells an empty folder apart from a search, offering to create the first article to authors",
+        "apps/web/src/pages/KnowledgePage.test.tsx: shows readers an empty folder without a create action",
+        "apps/web/src/pages/KnowledgePage.test.tsx: shows a retryable error, not the empty message, when the query fails",
+        "apps/web/src/pages/KnowledgePage.test.tsx: offers \"Limpar busca e filtros\" when a search finds nothing, and clearing resets search and tags but keeps the sort"
+      ]
+    },
+    {
+      "id": "AC-09",
+      "description": "\"Limpar busca e filtros\" zera a busca e as tags, a API volta a ser chamada sem `search` nem `tags`, a ordenação é mantida e o foco vai para o campo de busca.",
+      "tests": [
+        "apps/web/src/pages/KnowledgePage.test.tsx: offers \"Limpar busca e filtros\" when a search finds nothing, and clearing resets search and tags but keeps the sort",
+        "apps/web/src/pages/KnowledgePage.test.tsx: also offers to clear when only a tag filter finds nothing"
+      ]
+    },
+    {
+      "id": "AC-10",
+      "description": "nenhum arquivo de `apps/web/src/components/ds/`, de `apps/api` nem de `apps/web-e2e` é alterado, `package.json` e `pnpm-lock.yaml` não mudam (nenhuma dependência nova), os parâmetros enviados à API não mudam, e os testes da DMTE-537 (`with a slow articles API`) passam sem edição. Os demais testes de `KnowledgePage.test.tsx` e de `KnowledgeArticleAttachments.test.tsx` só mudam onde o comportamento mudou por esta SPEC, e cada mudança é listada no PR.",
+      "tests": [
+        "git diff do PR: nenhum arquivo em apps/web/src/components/ds/, apps/api, apps/web-e2e, package.json nem pnpm-lock.yaml",
+        "apps/web/src/pages/KnowledgePage.test.tsx: testes da DMTE-537 (with a slow articles API), sem edição"
+      ],
+      "tdd_required": false,
+      "reason": "Verificação de escopo por git diff e testes da DMTE-537 que já existem e passam sem edição; sem comportamento novo."
+    },
+    {
+      "id": "AC-11",
+      "description": "no navegador (Chromium, API simulada, dados fictícios, os mesmos 10 artigos do fixture da auditoria, perfil ADMIN), a altura da lista com os 10 artigos recolhidos em 1440 px fica abaixo de 50% da medida na base `ca24983` com o mesmo fixture; o resultado, as duas medidas e as capturas de 1440 px e 390 px vão no PR.",
+      "tests": [
+        "Medição em Chromium (1440 px, 10 artigos fictícios do fixture da auditoria, base ca24983 e head): altura da lista recolhida abaixo de 50% da base (resultado no PR)"
+      ],
+      "tdd_required": false,
+      "reason": "Medida de altura em navegador real (jsdom não calcula layout); o comportamento que a causa (card recolhido) é coberto por AC-01 e AC-02."
+    }
+  ],
+  "spec": "docs/delivery/specs/DMTE-534.md",
+  "tdd": {
+    "mode": "required",
+    "red": ".delivery/evidence/DMTE-534/red-r2.json",
+    "green": ".delivery/evidence/DMTE-534/green-r2.json"
+  },
+  "design_system": {
+    "applicable": true,
+    "reused": [
+      "EzCardItem",
+      "EzButton",
+      "EzTag",
+      "EzEmptyCard",
+      "EzAlert",
+      "EzTextInput"
+    ],
+    "reason": "Reaproveita os componentes Ez* existentes e os tokens de cor e raio de styles.css; o estilo do corpo do artigo é uma classe escopada em styles.css, sem componente novo no DS.",
+    "exception": "Nenhum arquivo de apps/web/src/components/ds/ muda nesta entrega, então não há story nova."
+  }
+}

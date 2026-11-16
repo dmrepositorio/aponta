@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -557,38 +557,49 @@ describe('KnowledgePage', () => {
       expect(screen.getByText('Artigo com HTML')).toBeInTheDocument();
     });
 
+    await user.click(screen.getByRole('button', { name: /ler artigo completo/i }));
+
     const strong = screen.getByText('passo a passo');
     expect(strong.tagName).toBe('STRONG');
     // The sanitized markup renders as actual DOM nodes, not literal text.
     expect(screen.queryByText(/<strong>/)).not.toBeInTheDocument();
   });
 
-  it('shows the attachment count for each article', async () => {
+  it('shows the attachment count only for articles that have attachments, and the links once expanded', async () => {
     loginAs('anonymous');
     const user = userEvent.setup();
     renderPage();
 
     await openSupportFolder(user);
 
-    expect(screen.getByText('Anexos (1)')).toBeInTheDocument();
-    expect(screen.getByText('Anexos (0)')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /manual\.pdf/i })).toHaveAttribute(
+    expect(screen.getByText('1 anexo')).toBeInTheDocument();
+    expect(screen.queryByText(/Anexos \(/)).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /manual\.pdf/i })).not.toBeInTheDocument();
+
+    const card = screen.getByRole('heading', { name: 'Como abrir um chamado' }).closest('article')!;
+    await user.click(within(card).getByRole('button', { name: /ler artigo completo/i }));
+
+    expect(within(card).getByRole('link', { name: /manual\.pdf/i })).toHaveAttribute(
       'href',
       '/uploads/manual.pdf',
     );
   });
 
-  it('only shows attachment upload controls to users who can author articles', async () => {
+  it('never shows attachment upload controls to a CLIENT, not even when the card is expanded', async () => {
     loginAs('CLIENT');
     const user = userEvent.setup();
     renderPage();
 
     await openSupportFolder(user);
+    for (const toggle of screen.getAllByRole('button', { name: /ler artigo completo/i })) {
+      await user.click(toggle);
+    }
 
     expect(screen.queryAllByText('Selecionar arquivo')).toHaveLength(0);
+    expect(screen.queryByRole('button', { name: /remover/i })).not.toBeInTheDocument();
   });
 
-  it('shows attachment upload controls to an AGENT and allows removing an attachment', async () => {
+  it('keeps upload and remove out of the cards and manages attachments inside the edit form', async () => {
     loginAs('AGENT');
     vi.mocked(api.delete).mockResolvedValue({ data: {} });
     const user = userEvent.setup();
@@ -596,14 +607,34 @@ describe('KnowledgePage', () => {
 
     await openSupportFolder(user);
 
-    expect(screen.getAllByText('Selecionar arquivo').length).toBeGreaterThan(0);
+    expect(screen.queryAllByText('Selecionar arquivo')).toHaveLength(0);
+    for (const toggle of screen.getAllByRole('button', { name: /ler artigo completo/i })) {
+      await user.click(toggle);
+    }
+    expect(screen.queryAllByText('Selecionar arquivo')).toHaveLength(0);
+    expect(screen.queryByRole('button', { name: /remover/i })).not.toBeInTheDocument();
 
-    const removeButtons = screen.getAllByRole('button', { name: /remover/i });
-    await user.click(removeButtons[0]);
+    const card = screen.getByRole('heading', { name: 'Como abrir um chamado' }).closest('article')!;
+    await user.click(within(card).getByRole('button', { name: /editar/i }));
+
+    expect(screen.getAllByText('Selecionar arquivo')).toHaveLength(1);
+    await user.click(screen.getByRole('button', { name: /remover/i }));
 
     await waitFor(() => {
       expect(api.delete).toHaveBeenCalledWith('/articles/article-1/attachments/att-1');
     });
+  });
+
+  it('shows no attachment manager in the new-article form', async () => {
+    loginAs('AGENT');
+    const user = userEvent.setup();
+    renderPage();
+
+    await openSupportFolder(user);
+    await user.click(screen.getByRole('button', { name: '+ Novo artigo' }));
+
+    expect(screen.getByLabelText(/título/i)).toBeInTheDocument();
+    expect(screen.queryByText('Selecionar arquivo')).not.toBeInTheDocument();
   });
 
   it('loads the edit form with EzRichText pre-filled with the existing article content', async () => {
@@ -695,5 +726,255 @@ describe('KnowledgePage', () => {
       expect(await screen.findByText('Como abrir um chamado')).toBeInTheDocument();
       expect(screen.getByRole('searchbox')).toHaveValue('senha');
     });
+  });
+
+  // DMTE-534: card resumido, expansão, cabeçalho e estados vazios.
+  describe('article card, header and empty states', () => {
+    function mockArticles(list: unknown[] | ((url: string) => unknown[] | Promise<never>)) {
+      vi.mocked(api.get).mockImplementation((url: string) => {
+        if (url.startsWith('/knowledge-folders')) return Promise.resolve({ data: folders });
+        if (url.startsWith('/articles')) {
+          const result = typeof list === 'function' ? list(url) : list;
+          return result instanceof Promise ? result : Promise.resolve({ data: result });
+        }
+        if (url.startsWith('/organizations') || url.startsWith('/service-catalog-items')) {
+          return Promise.resolve({ data: [] });
+        }
+        return Promise.reject(new Error(`Unexpected GET ${url}`));
+      });
+    }
+
+    const richArticle = {
+      id: 'article-rich',
+      title: 'Artigo rico',
+      content: '<h2>Passo a passo</h2><p>Primeiro passo</p><ol><li>um</li><li>dois</li></ol>',
+      visibility: 'PUBLIC',
+      tags: ['t1', 't2', 't3', 't4', 't5', 't6', 't7'],
+      author: { id: 'u-1', name: 'Fulano' },
+      updatedAt: '2026-01-10T10:00:00.000Z',
+      attachments: [],
+    };
+
+    function cardOf(title: string) {
+      return screen.getByRole('heading', { name: title }).closest('article')!;
+    }
+
+    it('collapses the card to title, meta, a plain-text excerpt, five tags and the attachment count', async () => {
+      mockArticles([richArticle, articles[0]]);
+      loginAs('AGENT');
+      const user = userEvent.setup();
+      renderPage();
+      await openSupportFolder(user);
+
+      const card = cardOf('Artigo rico');
+      expect(within(card).getByText('Passo a passo Primeiro passo um dois')).toBeInTheDocument();
+      expect(card.querySelector('.article-content')).toBeNull();
+      expect(within(card).queryByRole('listitem')).not.toBeInTheDocument();
+      for (const tag of ['#t1', '#t2', '#t3', '#t4', '#t5']) {
+        expect(within(card).getByText(tag)).toBeInTheDocument();
+      }
+      expect(within(card).queryByText('#t6')).not.toBeInTheDocument();
+      expect(within(card).getByText('+2')).toBeInTheDocument();
+      expect(within(card).queryByText(/anexo/i)).not.toBeInTheDocument();
+      expect(within(card).queryByText(/Anexos \(/)).not.toBeInTheDocument();
+
+      expect(within(cardOf('Como abrir um chamado')).getByText('1 anexo')).toBeInTheDocument();
+    });
+
+    it('expands and collapses the card, revealing the full body, every tag and the attachments', async () => {
+      mockArticles([
+        { ...richArticle, attachments: articles[0].attachments },
+      ]);
+      loginAs('anonymous');
+      const user = userEvent.setup();
+      renderPage();
+      await openSupportFolder_(user, 'Artigo rico');
+
+      const card = cardOf('Artigo rico');
+      const toggle = within(card).getByRole('button', { name: /ler artigo completo/i });
+      expect(toggle).toHaveAttribute('aria-expanded', 'false');
+
+      await user.click(toggle);
+
+      const expanded = within(card).getByRole('button', { name: /recolher/i });
+      expect(expanded).toHaveAttribute('aria-expanded', 'true');
+      const body = card.querySelector(`#${expanded.getAttribute('aria-controls')}`)!;
+      expect(body).toHaveClass('article-content');
+      expect(within(body as HTMLElement).getAllByRole('listitem')).toHaveLength(2);
+      expect(within(card).getByText('#t6')).toBeInTheDocument();
+      expect(within(card).getByText('#t7')).toBeInTheDocument();
+      expect(within(card).getByRole('link', { name: /manual\.pdf/i })).toBeInTheDocument();
+
+      await user.click(expanded);
+
+      expect(within(card).getByRole('button', { name: /ler artigo completo/i })).toHaveAttribute(
+        'aria-expanded',
+        'false',
+      );
+      expect(card.querySelector('.article-content')).toBeNull();
+      expect(within(card).queryByText('#t6')).not.toBeInTheDocument();
+    });
+
+    it('offers no expand button when nothing is hidden', async () => {
+      mockArticles([
+        { id: 'a-empty', title: 'Só título', content: '', visibility: 'PUBLIC', tags: ['x'], attachments: [] },
+      ]);
+      loginAs('anonymous');
+      const user = userEvent.setup();
+      renderPage();
+      await openSupportFolder_(user, 'Só título');
+
+      expect(screen.queryByRole('button', { name: /ler artigo completo/i })).not.toBeInTheDocument();
+    });
+
+    it('offers no expand button when the body is only empty markup', async () => {
+      mockArticles([
+        { id: 'a-markup', title: 'Corpo vazio', content: '<p></p>', visibility: 'PUBLIC', tags: ['x'], attachments: [] },
+        {
+          id: 'a-image',
+          title: 'Só imagem',
+          content: '<p><img src="/uploads/a.png" alt="Captura"></p>',
+          visibility: 'PUBLIC',
+          tags: [],
+          attachments: [],
+        },
+      ]);
+      loginAs('anonymous');
+      const user = userEvent.setup();
+      renderPage();
+      await openSupportFolder_(user, 'Corpo vazio');
+
+      expect(within(cardOf('Corpo vazio')).queryByRole('button', { name: /ler artigo completo/i })).not.toBeInTheDocument();
+      expect(within(cardOf('Só imagem')).getByRole('button', { name: /ler artigo completo/i })).toBeInTheDocument();
+    });
+
+    it('keeps the title on its own line, with the tag, meta and actions outside its row', async () => {
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      renderPage();
+      await openSupportFolder(user);
+
+      const heading = screen.getByRole('heading', { name: 'Artigo interno' });
+      const card = cardOf('Artigo interno');
+      expect(heading.parentElement).not.toContainElement(within(card).getByText('Interno'));
+      expect(heading.parentElement).not.toContainElement(within(card).getByRole('button', { name: /editar/i }));
+      expect(heading.parentElement).not.toContainElement(within(card).getByRole('button', { name: /excluir/i }));
+      expect(within(card).getByRole('button', { name: /editar/i }).parentElement).toHaveClass('flex-wrap');
+    });
+
+    it('puts the active tag filters in their own row, apart from the search and the new-article button', async () => {
+      loginAs('AGENT');
+      const user = userEvent.setup();
+      renderPage();
+      await openSupportFolder(user);
+
+      await user.click(within(cardOf('Como abrir um chamado')).getByText('#senha'));
+
+      const chip = await screen.findByText('Tag: senha');
+      const filters = screen.getByTestId('knowledge-active-filters');
+      expect(filters).toContainElement(chip);
+      expect(filters).toHaveClass('flex-wrap');
+      expect(chip.closest('div')).toHaveClass('whitespace-nowrap');
+      expect(filters).not.toContainElement(screen.getByRole('searchbox'));
+      expect(filters).not.toContainElement(screen.getByRole('button', { name: '+ Novo artigo' }));
+    });
+
+    it('tells an empty folder apart from a search, offering to create the first article to authors', async () => {
+      mockArticles([]);
+      loginAs('AGENT');
+      const user = userEvent.setup();
+      renderPage();
+      await waitFor(() => expect(screen.getByText('Suporte')).toBeInTheDocument());
+      await user.click(screen.getByText('Suporte'));
+
+      expect(await screen.findByText('Esta pasta ainda não tem artigos.')).toBeInTheDocument();
+      expect(screen.queryByText('Nenhum artigo encontrado para a busca atual.')).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Limpar busca e filtros' })).not.toBeInTheDocument();
+
+      const buttons = screen.getAllByRole('button', { name: '+ Novo artigo' });
+      expect(buttons).toHaveLength(2);
+      await user.click(buttons[1]);
+      expect(screen.getByLabelText(/título/i)).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: '+ Novo artigo' })).not.toBeInTheDocument();
+    });
+
+    it('shows readers an empty folder without a create action', async () => {
+      mockArticles([]);
+      loginAs('CLIENT');
+      const user = userEvent.setup();
+      renderPage();
+      await waitFor(() => expect(screen.getByText('Suporte')).toBeInTheDocument());
+      await user.click(screen.getByText('Suporte'));
+
+      expect(await screen.findByText('Esta pasta ainda não tem artigos.')).toBeInTheDocument();
+      expect(screen.getByText('Quando houver artigos, eles aparecem aqui.')).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: '+ Novo artigo' })).not.toBeInTheDocument();
+    });
+
+    it('offers "Limpar busca e filtros" when a search finds nothing, and clearing resets search and tags but keeps the sort', async () => {
+      mockArticles((url) => (url.includes('search=') || url.includes('tags=') ? [] : articles));
+      loginAs('CLIENT');
+      const user = userEvent.setup();
+      renderPage();
+      await openSupportFolder(user);
+
+      await user.selectOptions(screen.getByLabelText('Ordenar por', { selector: 'select' }), 'title_asc');
+      await user.type(screen.getByRole('searchbox'), 'zzz');
+
+      expect(await screen.findByText('Nenhum artigo encontrado para a busca atual.')).toBeInTheDocument();
+      expect(screen.queryByText('Esta pasta ainda não tem artigos.')).not.toBeInTheDocument();
+
+      await user.click(screen.getByRole('button', { name: 'Limpar busca e filtros' }));
+
+      expect(screen.getByRole('searchbox')).toHaveValue('');
+      expect(screen.getByRole('searchbox')).toHaveFocus();
+      expect(await screen.findByText('Como abrir um chamado')).toBeInTheDocument();
+      const urls = vi.mocked(api.get).mock.calls.map((call) => call[0] as string);
+      const last = urls.filter((u) => u.startsWith('/articles')).at(-1)!;
+      expect(last).not.toContain('search=');
+      expect(last).not.toContain('tags=');
+      expect(last).toContain('sort=title_asc');
+    });
+
+    it('also offers to clear when only a tag filter finds nothing', async () => {
+      mockArticles((url) => (url.includes('tags=') ? [] : articles));
+      loginAs('CLIENT');
+      const user = userEvent.setup();
+      renderPage();
+      await openSupportFolder(user);
+
+      await user.click(within(cardOf('Como abrir um chamado')).getByText('#senha'));
+
+      expect(await screen.findByText('Nenhum artigo encontrado para a busca atual.')).toBeInTheDocument();
+      await user.click(screen.getByRole('button', { name: 'Limpar busca e filtros' }));
+      expect(screen.queryByText('Tag: senha')).not.toBeInTheDocument();
+      expect(await screen.findByText('Como abrir um chamado')).toBeInTheDocument();
+    });
+
+    it('shows a retryable error, not the empty message, when the query fails', async () => {
+      let fail = true;
+      mockArticles(() => (fail ? Promise.reject(new Error('boom')) : articles));
+      loginAs('CLIENT');
+      const user = userEvent.setup();
+      renderPage();
+      await waitFor(() => expect(screen.getByText('Suporte')).toBeInTheDocument());
+      await user.click(screen.getByText('Suporte'));
+
+      expect(await screen.findByText('Não foi possível carregar os artigos.')).toBeInTheDocument();
+      expect(screen.queryByText(/Nenhum artigo encontrado/)).not.toBeInTheDocument();
+      expect(screen.queryByText('Esta pasta ainda não tem artigos.')).not.toBeInTheDocument();
+
+      fail = false;
+      await user.click(screen.getByRole('button', { name: 'Tentar novamente' }));
+
+      expect(await screen.findByText('Como abrir um chamado')).toBeInTheDocument();
+      expect(screen.queryByText('Não foi possível carregar os artigos.')).not.toBeInTheDocument();
+    });
+
+    async function openSupportFolder_(user: ReturnType<typeof userEvent.setup>, title: string) {
+      await waitFor(() => expect(screen.getByText('Suporte')).toBeInTheDocument());
+      await user.click(screen.getByText('Suporte'));
+      await waitFor(() => expect(screen.getByText(title)).toBeInTheDocument());
+    }
   });
 });

@@ -81,8 +81,11 @@ export function KnowledgeArticleAttachments({
     uploadMutation.mutate(selectedFile);
   };
 
+  // Sem anexo e sem permissão para gerenciar, não há o que mostrar (DMTE-534).
+  if (!canManage && attachments.length === 0) return null;
+
   return (
-    <section className="space-y-3 rounded-lg border border-gray-200 bg-white p-4 mt-3">
+    <section className="space-y-3 rounded-lg border border-gray-200 bg-white p-4">
       <h3 className="text-sm font-semibold text-gray-900">
         Anexos ({attachments.length})
       </h3>

@@ -52,10 +52,15 @@ describe('KnowledgeArticleAttachments', () => {
     expect(screen.getByText('Anexos (1)')).toBeInTheDocument();
   });
 
-  it('shows zero in the title and an empty message when there are no attachments', () => {
-    renderComponent({ attachments: [] });
+  it('shows zero in the title and an empty message when an author has no attachments', () => {
+    renderComponent({ attachments: [], canManage: true });
     expect(screen.getByText('Anexos (0)')).toBeInTheDocument();
     expect(screen.getByText(/nenhum anexo/i)).toBeInTheDocument();
+  });
+
+  it('renders nothing when there are no attachments and the user cannot manage them', () => {
+    const { container } = renderComponent({ attachments: [], canManage: false });
+    expect(container).toBeEmptyDOMElement();
   });
 
   it('lists attachments with a download link for everyone, regardless of canManage', () => {
