@@ -691,24 +691,22 @@ describe('ContractsPage grid (DMTE-536)', () => {
     const headers = screen.getAllByRole('columnheader');
     const width = (label: string) =>
       headers.find((header) => header.textContent?.includes(label))?.style.width;
-    expect(width('Contrato')).toBe('220px');
-    expect(width('Empresa')).toBe('160px');
-    expect(width('Modalidade')).toBe('200px');
-    expect(width('Status')).toBe('120px');
-    expect(width('Aprovação')).toBe('200px');
-    expect(width('Valor mensal')).toBe('120px');
+    expect(width('Contrato')).toBe('180px');
+    expect(width('Empresa')).toBe('166px');
+    expect(width('Modalidade')).toBe('188px');
+    expect(width('Situação')).toBe('300px');
+    expect(width('Valor mensal')).toBe('156px');
     const total = headers.reduce((sum, header) => sum + parseInt(header.style.width, 10), 0);
-    expect(total).toBeLessThanOrEqual(1100);
+    expect(total).toBeLessThanOrEqual(1076);
   });
 
-  it('shows Status and Aprovação as two columns of tags with text and icon', async () => {
+  it('shows Ativo/Inativo and the approval state as tags with text and icon in one Situação column', async () => {
     mockGrid();
     renderPage();
 
     await screen.findByRole('button', { name: `Ver detalhes ${longName}` });
     const headers = screen.getAllByRole('columnheader').map((header) => header.textContent);
-    expect(headers.some((text) => text?.includes('Status'))).toBe(true);
-    expect(headers.some((text) => text?.includes('Aprovação'))).toBe(true);
+    expect(headers.some((text) => text?.includes('Situação'))).toBe(true);
 
     expect(screen.getAllByText('Ativo')).toHaveLength(2);
     expect(screen.getAllByText('Aprovado')).toHaveLength(1);
@@ -772,8 +770,7 @@ describe('ContractsPage grid (DMTE-536)', () => {
     expect(headerText().some((text) => text.includes('Reajuste'))).toBe(false);
 
     await user.click(screen.getByTestId('ez-toolbar-screen-config-button'));
-    expect(screen.getByTestId('ez-screen-config-toggle-status')).toBeInTheDocument();
-    expect(screen.getByTestId('ez-screen-config-toggle-approval')).toBeInTheDocument();
+    expect(screen.getByTestId('ez-screen-config-toggle-situation')).toBeInTheDocument();
     expect(screen.getByTestId('ez-screen-config-toggle-monthlyValue')).toBeChecked();
     expect(screen.getByTestId('ez-screen-config-toggle-excessHourlyRate')).not.toBeChecked();
     expect(screen.getByTestId('ez-screen-config-toggle-adjustmentDate')).not.toBeChecked();

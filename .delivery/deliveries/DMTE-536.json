@@ -17,19 +17,19 @@
     },
     {
       "id": "AC-02",
-      "description": "Contrato e Empresa renderizam em uma linha (`truncate`, sem quebra) com `title` do texto inteiro; cada coluna tem largura fixa (Contrato 240, Empresa 180, Modalidade 170, Status 100, Aprovação 170, Valor mensal 120, Hora excedente 120, Reajuste 110) e a soma das colunas visíveis por padrão, com o checkbox de 55 px, não passa de 1100 px.",
+      "description": "Contrato, Empresa e Modalidade renderizam em uma linha (`truncate`, sem quebra) com `title` do texto inteiro; cada coluna tem largura fixa (Contrato 180, Empresa 166, Modalidade 188, Situação 300, Valor mensal 156, Hora excedente 130, Reajuste 120) e a soma das colunas visíveis por padrão, com o checkbox de 55 px, não passa de 1076 px.",
       "tests": [
         "apps/web/src/pages/ContractsPage.test.tsx: keeps Contrato and Empresa on one line with the full text in the title, and fixed column widths"
       ]
     },
     {
       "id": "AC-03",
-      "description": "Status e Aprovação são duas colunas de `EzTag` com texto e ícone: Ativo/Inativo e Aprovado/Rascunho/Regularização pendente; o estado positivo e o negativo diferem em texto, ícone e conjunto de classes (não só em cor); nenhum usa `red-*`; Rascunho e Regularização pendente diferem em texto e ícone.",
+      "description": "a coluna \"Situação\" mostra duas `EzTag` com texto e ícone: Ativo/Inativo e Aprovado/Rascunho/Regularização pendente; o estado positivo e o negativo diferem em texto, ícone e conjunto de classes (não só em cor); nenhum usa `red-*`; Rascunho e Regularização pendente diferem em texto e ícone.",
       "tests": [
         "apps/web/src/components/contracts/ContractStateTags.test.tsx: shows Ativo and Inativo with text and an icon, differing in icon and classes, without red",
         "apps/web/src/components/contracts/ContractStateTags.test.tsx: shows each approval state with its own text and icon, none of them red",
         "apps/web/src/components/contracts/ContractStateTags.test.tsx: keeps Rascunho and Regularização pendente in the same warning family but apart by text and icon",
-        "apps/web/src/pages/ContractsPage.test.tsx: shows Status and Aprovação as two columns of tags with text and icon"
+        "apps/web/src/pages/ContractsPage.test.tsx: shows Ativo/Inativo and the approval state as tags with text and icon in one Situação column"
       ]
     },
     {
@@ -53,7 +53,7 @@
     },
     {
       "id": "AC-06",
-      "description": "\"Hora excedente\" e \"Reajuste\" começam ocultas na configuração padrão da tela e continuam na lista de colunas da configuração de tela; \"Status\" e \"Aprovação\" aparecem nessa lista.",
+      "description": "\"Hora excedente\" e \"Reajuste\" começam ocultas na configuração padrão da tela e continuam na lista de colunas da configuração de tela; \"Situação\" aparece nessa lista.",
       "tests": [
         "apps/web/src/pages/ContractsPage.test.tsx: starts with Hora excedente and Reajuste hidden but still configurable"
       ]
