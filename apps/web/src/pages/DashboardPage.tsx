@@ -1,9 +1,8 @@
 import { useMemo, useState, type ReactNode } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   Activity,
   AlertTriangle,
-  ArrowUpDown,
   Bell,
   Briefcase,
   Calendar,
@@ -24,12 +23,32 @@ import {
 } from 'lucide-react';
 import { useDashboardSummary } from '../hooks/useReports';
 import { useAuthStore } from '../stores/authStore';
-import { EzSpinner, EzTabs, EzActionsButton } from '../components/ds';
+import { EzSpinner, EzTabs, EzActionsButton, EzLineChart } from '../components/ds';
 import { cn } from '../components/ds/utils';
 import { statusLabels } from '../components/tickets/TicketCard';
 
-// TiFlux-style palette used for both the pie chart slices and the legend avatars.
-const CHART_COLORS = ['#f59e0b', '#14b8a6', '#6366f1', '#fb923c', '#0d9488', '#10b981', '#0ea5e9', '#ec4899'];
+/**
+ * Pie slices use only DS tokens with no semantic role (red and yellow carry
+ * "critical"/"attention" elsewhere on this screen). `text` is the number and
+ * letter color that reaches 4.5:1 on that slice; "Outros" is always the last one.
+ */
+const PIE_COLORS = [
+  { bg: 'bg-brand-600', fill: 'fill-brand-600', text: 'text-white', textFill: 'fill-white' },
+  { bg: 'bg-petroleum-500', fill: 'fill-petroleum-500', text: 'text-white', textFill: 'fill-white' },
+  { bg: 'bg-green-500', fill: 'fill-green-500', text: 'text-gray-900', textFill: 'fill-gray-900' },
+  { bg: 'bg-brand-300', fill: 'fill-brand-300', text: 'text-gray-900', textFill: 'fill-gray-900' },
+  { bg: 'bg-petroleum-300', fill: 'fill-petroleum-300', text: 'text-gray-900', textFill: 'fill-gray-900' },
+  { bg: 'bg-yellow-800', fill: 'fill-yellow-800', text: 'text-white', textFill: 'fill-white' },
+];
+const OTHERS_COLOR = { bg: 'bg-gray-300', fill: 'fill-gray-300', text: 'text-gray-900', textFill: 'fill-gray-900' };
+const MAX_PIE_SLICES = 6;
+
+const AGENT_STATUS: Record<string, { label: string; dot: string }> = {
+  online: { label: 'Online', dot: 'bg-green-500' },
+  busy: { label: 'Ocupado', dot: 'bg-yellow-600' },
+  away: { label: 'Ausente', dot: 'bg-gray-300' },
+  offline: { label: 'Offline', dot: 'bg-gray-500' },
+};
 
 function formatHoursAsClock(hours: number) {
   const totalMinutes = Math.max(0, Math.round(hours * 60));
@@ -85,36 +104,57 @@ function TiFluxCard({ title, tabs, children, className, bodyClassName }: TiFluxC
   );
 }
 
-/** A row of label-over-icon+number groups — the KPI style used throughout TiFlux. */
+/**
+ * Label-over-icon+number groups. Only an item with `to` is a link (hover, pointer
+ * and the DS focus ring); the rest are read-only and look it.
+ */
 interface KpiItem {
   label: string;
   value: ReactNode;
-  icon: ReactNode;
+  icon?: ReactNode;
   colorClass: string;
   /** When set, the whole item becomes a link to the matching filtered ticket list. */
   to?: string;
+  /** Bigger number, and the full row on a phone. */
+  emphasis?: boolean;
 }
 
-function KpiRow({ items }: { items: KpiItem[] }) {
+const KPI_LAYOUT = {
+  wrap: 'flex flex-wrap gap-x-10 gap-y-5',
+  strip: 'grid grid-cols-2 gap-x-6 gap-y-5 md:grid-cols-4',
+  quad: 'grid flex-1 grid-cols-4 gap-x-3',
+};
+
+function KpiRow({ items, layout = 'wrap' }: { items: KpiItem[]; layout?: keyof typeof KPI_LAYOUT }) {
   return (
-    <div className="flex flex-wrap gap-x-10 gap-y-5">
+    <div className={KPI_LAYOUT[layout]}>
       {items.map((item) => {
         const body = (
           <>
             <span className="text-[12px] text-gray-500 font-medium">{item.label}</span>
-            <span className={cn('flex items-center gap-1.5 text-[19px] font-bold leading-none', item.colorClass)}>
+            <span
+              className={cn(
+                'flex items-center gap-1.5 font-bold leading-none tabular-nums',
+                item.emphasis ? 'text-[28px]' : 'text-[19px]',
+                item.colorClass,
+              )}
+            >
               {item.icon}
               {item.value}
             </span>
           </>
         );
+        const span = item.emphasis && 'col-span-2 md:col-span-1';
 
         if (item.to) {
           return (
             <Link
               key={item.label}
               to={item.to}
-              className="flex flex-col gap-1.5 rounded-md -m-1 p-1 hover:bg-gray-50 transition-colors cursor-pointer"
+              className={cn(
+                'flex min-h-11 flex-col gap-1.5 rounded-md -m-1 p-1 transition-colors cursor-pointer hover:bg-gray-80 outline-none focus-visible:ring-4 focus-visible:ring-brand-200 lg:min-h-0',
+                span,
+              )}
             >
               {body}
             </Link>
@@ -122,11 +162,31 @@ function KpiRow({ items }: { items: KpiItem[] }) {
         }
 
         return (
-          <div key={item.label} className="flex flex-col gap-1.5">
+          <div key={item.label} className={cn('flex flex-col gap-1.5', span)}>
             {body}
           </div>
         );
       })}
+    </div>
+  );
+}
+
+const ICON = 'w-[18px] h-[18px]';
+
+/** One prazo row (Atendimento or Solução): name above the four cells on a phone, beside them from sm. */
+function DeadlineRow({ name, data }: { name: string; data?: { total: number; today: number; tomorrow: number; later: number } }) {
+  return (
+    <div role="group" aria-label={name} className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-6">
+      <h4 className="text-[13px] font-bold text-gray-700 sm:w-24 sm:shrink-0">{name}</h4>
+      <KpiRow
+        layout="quad"
+        items={[
+          { label: 'Todos', value: data?.total ?? 0, icon: <Timer className={ICON} />, colorClass: 'text-gray-500' },
+          { label: 'Hoje', value: data?.today ?? 0, icon: <AlertTriangle className={ICON} />, colorClass: 'text-yellow-800' },
+          { label: 'Amanhã', value: data?.tomorrow ?? 0, colorClass: 'text-gray-500' },
+          { label: 'Depois', value: data?.later ?? 0, colorClass: 'text-gray-500' },
+        ]}
+      />
     </div>
   );
 }
@@ -136,18 +196,15 @@ function EmptyState({ label = 'Não há dados' }: { label?: string }) {
   return (
     <div className="flex flex-col items-center justify-center py-10 text-center">
       <Inbox className="w-9 h-9 mb-2 text-gray-200" strokeWidth={1.25} />
-      <p className="text-[13px] text-gray-400 font-medium">{label}</p>
+      <p className="text-[13px] text-gray-500 font-medium">{label}</p>
     </div>
   );
 }
 
 function Th({ children }: { children: ReactNode }) {
   return (
-    <th className="py-3 px-4 font-bold text-gray-600">
-      <span className="inline-flex items-center gap-1">
-        {children}
-        <ArrowUpDown className="w-3 h-3 text-gray-400" />
-      </span>
+    <th scope="col" className="py-3 px-4 font-bold text-gray-600">
+      {children}
     </th>
   );
 }
@@ -164,7 +221,21 @@ function pieSlicePath(cx: number, cy: number, r: number, startAngle: number, end
   return `M ${cx} ${cy} L ${start.x} ${start.y} A ${r} ${r} 0 ${largeArcFlag} 1 ${end.x} ${end.y} Z`;
 }
 
-/** A real (non-donut) pie chart with a scrollable, avatar-style legend. */
+function formatPercent(fraction: number) {
+  const percent = Math.round(fraction * 100);
+  return percent < 1 ? '<1%' : `${percent}%`;
+}
+
+/** The biggest MAX_PIE_SLICES entries, with the rest summed into "Outros". */
+function groupSlices(data: { name: string; count: number }[]) {
+  const sorted = [...data].sort((a, b) => b.count - a.count);
+  const top = sorted.slice(0, MAX_PIE_SLICES).map((item, index) => ({ ...item, color: PIE_COLORS[index] }));
+  const rest = sorted.slice(MAX_PIE_SLICES);
+  if (rest.length === 0) return top;
+  return [...top, { name: 'Outros', count: rest.reduce((sum, item) => sum + item.count, 0), color: OTHERS_COLOR }];
+}
+
+/** A real (non-donut) pie chart with a full avatar-style legend: count and percent written out, never clipped. */
 function TicketsPieChart({ data }: { data: { name: string; count: number }[] }) {
   const total = data.reduce((acc, d) => acc + d.count, 0);
 
@@ -173,17 +244,11 @@ function TicketsPieChart({ data }: { data: { name: string; count: number }[] }) 
   }
 
   let cumulativeAngle = 0;
-  const slices = data.map((item, index) => {
+  const slices = groupSlices(data).map((item) => {
     const percent = total > 0 ? item.count / total : 0;
     const startAngle = cumulativeAngle;
     cumulativeAngle += percent * 360;
-    return {
-      ...item,
-      startAngle,
-      endAngle: cumulativeAngle,
-      percent,
-      color: CHART_COLORS[index % CHART_COLORS.length],
-    };
+    return { ...item, startAngle, endAngle: cumulativeAngle, percent };
   });
 
   return (
@@ -194,10 +259,10 @@ function TicketsPieChart({ data }: { data: { name: string; count: number }[] }) 
       <div className="w-full sm:w-2/5 sm:max-w-sm aspect-square shrink-0">
         <svg viewBox="0 0 100 100" className="w-full h-full" role="img" aria-label="Tickets em andamento por categoria">
           {slices.length === 1 ? (
-            <circle cx="50" cy="50" r="46" fill={slices[0].color} />
+            <circle cx="50" cy="50" r="46" className={slices[0].color.fill} />
           ) : (
             slices.map((s) => (
-              <path key={s.name} d={pieSlicePath(50, 50, 46, s.startAngle, s.endAngle)} fill={s.color} stroke="#ffffff" strokeWidth="0.75" />
+              <path key={s.name} d={pieSlicePath(50, 50, 46, s.startAngle, s.endAngle)} className={cn(s.color.fill, 'stroke-white')} strokeWidth="0.75" />
             ))
           )}
           {slices.map((s) => {
@@ -210,7 +275,7 @@ function TicketsPieChart({ data }: { data: { name: string; count: number }[] }) 
                 y={pos.y}
                 fontSize="7"
                 fontWeight="700"
-                fill="#ffffff"
+                className={s.color.textFill}
                 textAnchor="middle"
                 dominantBaseline="middle"
               >
@@ -221,18 +286,15 @@ function TicketsPieChart({ data }: { data: { name: string; count: number }[] }) 
         </svg>
       </div>
 
-      <div className="flex flex-col divide-y divide-gray-100 w-full sm:flex-1 max-h-64 overflow-y-auto no-scrollbar">
+      <div className="flex flex-col divide-y divide-gray-100 w-full sm:flex-1">
         {slices.map((s) => (
           <div key={s.name} className="flex items-center gap-3 py-2.5">
-            <span
-              className="w-8 h-8 rounded-full flex items-center justify-center text-white text-[13px] font-bold shrink-0"
-              style={{ backgroundColor: s.color }}
-            >
+            <span className={cn('w-8 h-8 rounded-full flex items-center justify-center text-[13px] font-bold shrink-0', s.color.bg, s.color.text)}>
               {s.name.charAt(0).toUpperCase()}
             </span>
             <div className="min-w-0">
-              <p className="text-[13px] font-semibold text-gray-900 truncate">{s.name}</p>
-              <p className="text-[12px] text-gray-500">Tickets {s.count}</p>
+              <p className="text-[13px] font-semibold text-gray-900 break-words">{s.name}</p>
+              <p className="text-[12px] text-gray-500 tabular-nums">{`Tickets ${s.count} · ${formatPercent(s.percent)}`}</p>
             </div>
           </div>
         ))}
@@ -241,85 +303,49 @@ function TicketsPieChart({ data }: { data: { name: string; count: number }[] }) 
   );
 }
 
-/** A small multi-series SVG line chart (no smoothing, just straight segments). */
-interface LineSeries {
-  name: string;
-  color: string;
-  values: number[];
+function NotificationsList({ items }: { items?: { id: string; protocol: string; title: string }[] }) {
+  if (!items || items.length === 0) return <EmptyState />;
+  return (
+    <div className="space-y-2.5 max-h-48 overflow-y-auto no-scrollbar">
+      {items.map((notif) => (
+        <div key={notif.id} className="flex items-start gap-2.5 text-xs py-1.5">
+          <Bell className="w-3.5 h-3.5 text-gray-400 mt-0.5 shrink-0" />
+          <div className="min-w-0">
+            <span className="font-mono text-brand-700 font-bold mr-1.5 text-[11px]">{notif.protocol}</span>
+            <span className="text-gray-700">{notif.title}</span>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 }
 
-/**
- * `height` takes a Tailwind height class (not a pixel number) so the chart
- * scales with the viewport/card instead of being pinned to one fixed size —
- * it grows across the sm/lg breakpoints by default, filling the card rather
- * than leaving an island of unused padding around a small fixed SVG.
- */
-function LineChart({
-  series,
-  xLabels,
-  height = 'h-56 sm:h-72 lg:h-80',
-}: {
-  series: LineSeries[];
-  xLabels: string[];
-  height?: string;
-}) {
-  const n = xLabels.length;
-  const maxVal = Math.max(1, ...series.flatMap((s) => s.values));
-
-  const toPoints = (values: number[]) =>
-    values
-      .map((v, i) => {
-        const x = n > 1 ? (i / (n - 1)) * 100 : 50;
-        const y = 100 - (v / maxVal) * 92;
-        return `${x},${y}`;
-      })
-      .join(' ');
-
-  const labelStep = Math.max(1, Math.ceil(n / 7));
-
+function RatingCard({ title, rating, className }: { title: string; rating?: { avg: number | null; count: number; satisfactionRate: number | null }; className?: string }) {
   return (
-    <div>
-      {series.length > 1 && (
-        <div className="flex flex-wrap items-center gap-4 mb-4 text-[12px] text-gray-600 font-medium">
-          {series.map((s) => (
-            <span key={s.name} className="flex items-center gap-1.5">
-              <span className="w-3 h-0.5 rounded-full" style={{ backgroundColor: s.color }} />
-              {s.name}
+    <TiFluxCard title={title} className={className}>
+      {!rating || rating.count === 0 ? (
+        <EmptyState />
+      ) : (
+        <div>
+          <div className="flex items-baseline gap-2 mb-2">
+            <span className="text-[30px] font-black text-gray-900 leading-none">{rating.avg?.toFixed(1) ?? '—'}</span>
+            <span className="text-yellow-700 text-sm">
+              <Star className="w-4 h-4 inline fill-yellow-600" />
             </span>
-          ))}
+          </div>
+          <p className="text-[12px] text-gray-500">
+            {rating.count} avaliações · {rating.satisfactionRate ?? 0}% satisfeitos
+          </p>
         </div>
       )}
-      <svg viewBox="0 0 100 100" preserveAspectRatio="none" className={cn('w-full', height)} role="img" aria-label="Gráfico de linha">
-        {[0, 25, 50, 75, 100].map((gy) => (
-          <line key={gy} x1="0" x2="100" y1={gy} y2={gy} stroke="#f1f5f9" strokeWidth="0.5" vectorEffect="non-scaling-stroke" />
-        ))}
-        {series.map((s) => (
-          <polyline
-            key={s.name}
-            points={toPoints(s.values)}
-            fill="none"
-            stroke={s.color}
-            strokeWidth="1.5"
-            vectorEffect="non-scaling-stroke"
-            strokeLinejoin="round"
-            strokeLinecap="round"
-          />
-        ))}
-      </svg>
-      <div className="flex justify-between mt-2 text-[10px] text-gray-400 font-medium">
-        {xLabels.map((l, i) => (
-          <span key={`${l}-${i}`} className={cn(i % labelStep !== 0 && i !== n - 1 && 'invisible')}>
-            {l}
-          </span>
-        ))}
-      </div>
-    </div>
+    </TiFluxCard>
   );
 }
 
 export function DashboardPage() {
   const { data, isLoading, isError } = useDashboardSummary();
   const user = useAuthStore((state) => state.user);
+  const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState<string | number>('tickets');
   const [pieGrouping, setPieGrouping] = useState<PieGrouping>('byAssignee');
@@ -368,31 +394,27 @@ export function DashboardPage() {
             Bom te ver de volta, {greetingName}
           </h1>
         </div>
-        <div className="flex items-center gap-5">
-          <span
-            className="inline-flex items-center gap-1.5 text-[13px] text-gray-500 font-medium cursor-not-allowed select-none"
-            title="Em breve"
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            disabled
+            aria-disabled="true"
+            className="inline-flex h-[var(--control-height-md)] min-h-11 items-center gap-1.5 rounded-lg border border-dashed border-gray-200 px-3 text-[13px] font-medium text-gray-500 cursor-not-allowed lg:min-h-0"
           >
             <Monitor className="w-4 h-4" />
             Modo TV
-          </span>
+            <span className="text-[12px] font-normal">· Em breve</span>
+          </button>
           <EzActionsButton
             label="Ações"
             align="right"
-            className="bg-brand-600 text-white border-brand-600 hover:bg-brand-700 h-[38px] rounded-lg"
-            actions={[
-              {
-                label: 'Novo Ticket',
-                onClick: () => {
-                  window.location.href = '/tickets/new';
-                },
-              },
-            ]}
+            className="bg-brand-600 text-white border-brand-600 hover:bg-brand-700 h-[var(--control-height-md)] min-h-11 rounded-lg lg:min-h-0"
+            actions={[{ label: 'Novo Ticket', onClick: () => navigate('/tickets/new') }]}
           />
         </div>
       </div>
 
-      {/* Plain-text tab row, teal underline on the active tab */}
+      {/* Plain-text tab row, brand underline on the active tab */}
       <EzTabs tabs={tabsConfig} activeTab={activeTab} onChange={(tabId) => setActiveTab(tabId as DashboardTab)} variant="line" />
 
       {isLoading && (
@@ -402,7 +424,7 @@ export function DashboardPage() {
       )}
 
       {isError && (
-        <p className="text-sm text-red-600 bg-red-50 p-4 rounded-xl border border-red-200">
+        <p className="text-sm text-red-600 bg-red-100 p-4 rounded-xl border border-red-200">
           Falha ao carregar as métricas do dashboard.
         </p>
       )}
@@ -411,259 +433,100 @@ export function DashboardPage() {
         <>
           {/* TAB: TICKETS */}
           {/*
-            TiFlux does not sync row heights across the two columns — each
-            column fills independently top-to-bottom (masonry-style), so a
-            short KPI card never gets stretched to match a tall chart card
-            next to it. We replicate that with two flex-col columns inside a
-            flex-row wrapper instead of a CSS grid (grid auto-placement syncs
-            row heights, which is what was causing the dead-space gaps).
-            Left column hugs together the short KPI-row cards; right column
-            anchors the two tall chart cards — matching TiFlux's own
-            grouping of "Resumo de tickets"/stat cards vs. "Minhas horas
-            apontadas"/"Tickets em andamento" observed in the reference
-            screenshots.
+            Top strip first (what needs action now), then two independent
+            columns on lg (masonry-style: a short card is never stretched to
+            match a tall one next to it). Below lg the columns dissolve
+            (`contents`) and `order-*` sets the reading order: Prazos, CSAT,
+            Tickets em andamento, 30 dias, Notificações.
           */}
           {activeTab === 'tickets' && (
             <div className="flex flex-col gap-5">
-              <div className="flex flex-col lg:flex-row gap-5">
-                <div className="flex flex-col gap-5 lg:flex-1 min-w-0">
-                  <TiFluxCard title="Resumo de tickets">
-                    <KpiRow
-                      items={[
-                        {
-                          label: 'Todos',
-                          value: data.ticketSummary?.total ?? data.openCount + data.closedCount,
-                          icon: <Ticket className="w-[18px] h-[18px]" />,
-                          colorClass: 'text-teal-600',
-                          to: '/tickets',
-                        },
-                        {
-                          label: 'Meus',
-                          value: data.ticketSummary?.mine ?? 0,
-                          icon: <UserCheck className="w-[18px] h-[18px]" />,
-                          colorClass: 'text-teal-600',
-                          to: '/tickets?mine=true',
-                        },
-                        {
-                          label: 'Não atendidos',
-                          value: data.ticketSummary?.unattended ?? 0,
-                          icon: <MessageSquareDot className="w-[18px] h-[18px]" />,
-                          colorClass: 'text-blue-600',
-                          to: '/tickets?unassigned=true',
-                        },
-                        {
-                          label: 'Em andamento',
-                          value: data.ticketSummary?.inProgress ?? data.byStatus?.IN_PROGRESS ?? 0,
-                          icon: <Activity className="w-[18px] h-[18px]" />,
-                          colorClass: 'text-green-600',
-                          to: '/tickets?status=IN_PROGRESS',
-                        },
-                        {
-                          label: 'Pausados',
-                          value: data.ticketSummary?.paused ?? 0,
-                          icon: <PauseCircle className="w-[18px] h-[18px]" />,
-                          colorClass: 'text-amber-500',
-                          to: '/tickets?paused=true',
-                        },
-                        {
-                          label: 'Vencidos',
-                          value: data.ticketSummary?.overdue ?? data.slaBreachedCount,
-                          icon: <AlertTriangle className="w-[18px] h-[18px]" />,
-                          colorClass: 'text-red-600',
-                          to: '/tickets?overdue=true',
-                        },
-                      ]}
-                    />
+              <TiFluxCard title="Resumo de tickets">
+                <KpiRow
+                  layout="strip"
+                  items={[
+                    {
+                      label: 'Vencidos',
+                      value: data.ticketSummary?.overdue ?? data.slaBreachedCount,
+                      icon: <AlertTriangle className="w-6 h-6" />,
+                      colorClass: 'text-red-600',
+                      to: '/tickets?overdue=true',
+                      emphasis: true,
+                    },
+                    {
+                      label: 'Não atendidos',
+                      value: data.ticketSummary?.unattended ?? 0,
+                      icon: <MessageSquareDot className={ICON} />,
+                      colorClass: 'text-yellow-800',
+                      to: '/tickets?unassigned=true',
+                    },
+                    {
+                      label: 'Sem resposta',
+                      value: data.unansweredTickets?.total ?? 0,
+                      icon: <MessageSquare className={ICON} />,
+                      colorClass: 'text-gray-500',
+                    },
+                    {
+                      label: 'Meus sem resposta',
+                      value: data.unansweredTickets?.mine ?? 0,
+                      icon: <UserCircle2 className={ICON} />,
+                      colorClass: 'text-gray-500',
+                    },
+                    {
+                      label: 'Meus',
+                      value: data.ticketSummary?.mine ?? 0,
+                      icon: <UserCheck className={ICON} />,
+                      colorClass: 'text-brand-600',
+                      to: '/tickets?mine=true',
+                    },
+                    {
+                      label: 'Todos',
+                      value: data.ticketSummary?.total ?? data.openCount + data.closedCount,
+                      icon: <Ticket className={ICON} />,
+                      colorClass: 'text-brand-600',
+                      to: '/tickets',
+                    },
+                    {
+                      label: 'Em andamento',
+                      value: data.ticketSummary?.inProgress ?? data.byStatus?.IN_PROGRESS ?? 0,
+                      icon: <Activity className={ICON} />,
+                      colorClass: 'text-green-600',
+                      to: '/tickets?status=IN_PROGRESS',
+                    },
+                    {
+                      label: 'Pausados',
+                      value: data.ticketSummary?.paused ?? 0,
+                      icon: <PauseCircle className={ICON} />,
+                      colorClass: 'text-gray-500',
+                      to: '/tickets?paused=true',
+                    },
+                  ]}
+                />
+              </TiFluxCard>
+
+              <div className="contents lg:flex lg:flex-row lg:gap-5">
+                <div className="contents lg:flex lg:min-w-0 lg:flex-1 lg:flex-col lg:gap-5">
+                  <TiFluxCard title="Prazos" className="order-1 lg:order-none">
+                    <div className="flex flex-col gap-5">
+                      <DeadlineRow name="Atendimento" data={data.responseDeadlines} />
+                      <DeadlineRow name="Solução" data={data.solutionDeadlines} />
+                    </div>
                   </TiFluxCard>
 
-                  <TiFluxCard title="Vencimento de atendimento">
-                    <KpiRow
-                      items={[
-                        {
-                          label: 'Todos',
-                          value: data.responseDeadlines?.total ?? 0,
-                          icon: <Timer className="w-[18px] h-[18px]" />,
-                          colorClass: 'text-gray-600',
-                        },
-                        {
-                          label: 'Hoje',
-                          value: data.responseDeadlines?.today ?? 0,
-                          icon: <AlertTriangle className="w-[18px] h-[18px]" />,
-                          colorClass: 'text-amber-500',
-                        },
-                        {
-                          label: 'Amanhã',
-                          value: data.responseDeadlines?.tomorrow ?? 0,
-                          icon: <AlertTriangle className="w-[18px] h-[18px]" />,
-                          colorClass: 'text-indigo-500',
-                        },
-                        {
-                          label: 'Depois',
-                          value: data.responseDeadlines?.later ?? 0,
-                          icon: <AlertTriangle className="w-[18px] h-[18px]" />,
-                          colorClass: 'text-emerald-500',
-                        },
-                      ]}
-                    />
-                  </TiFluxCard>
-
-                  <TiFluxCard title="Vencimento de solução">
-                    <KpiRow
-                      items={[
-                        {
-                          label: 'Todos',
-                          value: data.solutionDeadlines?.total ?? 0,
-                          icon: <Timer className="w-[18px] h-[18px]" />,
-                          colorClass: 'text-gray-600',
-                        },
-                        {
-                          label: 'Hoje',
-                          value: data.solutionDeadlines?.today ?? 0,
-                          icon: <AlertTriangle className="w-[18px] h-[18px]" />,
-                          colorClass: 'text-amber-500',
-                        },
-                        {
-                          label: 'Amanhã',
-                          value: data.solutionDeadlines?.tomorrow ?? 0,
-                          icon: <AlertTriangle className="w-[18px] h-[18px]" />,
-                          colorClass: 'text-indigo-500',
-                        },
-                        {
-                          label: 'Depois',
-                          value: data.solutionDeadlines?.later ?? 0,
-                          icon: <AlertTriangle className="w-[18px] h-[18px]" />,
-                          colorClass: 'text-emerald-500',
-                        },
-                      ]}
-                    />
-                  </TiFluxCard>
-
-                  <TiFluxCard title="Tickets sem respostas">
-                    <KpiRow
-                      items={[
-                        {
-                          label: 'Todos',
-                          value: data.unansweredTickets?.total ?? 0,
-                          icon: <MessageSquareDot className="w-[18px] h-[18px]" />,
-                          colorClass: 'text-teal-600',
-                        },
-                        {
-                          label: 'Meus',
-                          value: data.unansweredTickets?.mine ?? 0,
-                          icon: <UserCircle2 className="w-[18px] h-[18px]" />,
-                          colorClass: 'text-amber-500',
-                        },
-                      ]}
-                    />
-                  </TiFluxCard>
-
-                  {/* TiFlux pairs these two small rating cards side-by-side
-                      instead of stacking them — same idea applied here so
-                      the column keeps hugging tightly instead of doubling
-                      the vertical space for two one-line cards. */}
-                  <div className="flex flex-col sm:flex-row gap-5">
-                    <TiFluxCard title="Avaliação geral de tickets (30 dias)" className="sm:flex-1 min-w-0">
-                      {!data.csatGeneral30d || data.csatGeneral30d.count === 0 ? (
-                        <EmptyState />
-                      ) : (
-                        <div>
-                          <div className="flex items-baseline gap-2 mb-2">
-                            <span className="text-[30px] font-black text-gray-900 leading-none">
-                              {data.csatGeneral30d.avg?.toFixed(1) ?? '—'}
-                            </span>
-                            <span className="text-amber-400 text-sm">
-                              <Star className="w-4 h-4 inline fill-amber-400" />
-                            </span>
-                          </div>
-                          <p className="text-[12px] text-gray-500">
-                            {data.csatGeneral30d.count} avaliações · {data.csatGeneral30d.satisfactionRate ?? 0}% satisfeitos
-                          </p>
-                        </div>
-                      )}
-                    </TiFluxCard>
-
-                    <TiFluxCard title="Avaliação dos meus tickets (30 dias)" className="sm:flex-1 min-w-0">
-                      {!data.csatMine30d || data.csatMine30d.count === 0 ? (
-                        <EmptyState />
-                      ) : (
-                        <div>
-                          <div className="flex items-baseline gap-2 mb-2">
-                            <span className="text-[30px] font-black text-gray-900 leading-none">
-                              {data.csatMine30d.avg?.toFixed(1) ?? '—'}
-                            </span>
-                            <span className="text-amber-400 text-sm">
-                              <Star className="w-4 h-4 inline fill-amber-400" />
-                            </span>
-                          </div>
-                          <p className="text-[12px] text-gray-500">
-                            {data.csatMine30d.count} avaliações · {data.csatMine30d.satisfactionRate ?? 0}% satisfeitos
-                          </p>
-                        </div>
-                      )}
-                    </TiFluxCard>
+                  <div className="order-2 flex flex-col gap-5 sm:flex-row lg:order-none">
+                    <RatingCard title="Avaliação geral de tickets (30 dias)" rating={data.csatGeneral30d} className="sm:flex-1 min-w-0" />
+                    <RatingCard title="Avaliação dos meus tickets (30 dias)" rating={data.csatMine30d} className="sm:flex-1 min-w-0" />
                   </div>
 
-                  <TiFluxCard title="Últimas notificações">
-                    {!data.recentNotifications || data.recentNotifications.length === 0 ? (
-                      <EmptyState />
-                    ) : (
-                      <div className="space-y-2.5 max-h-48 overflow-y-auto no-scrollbar">
-                        {data.recentNotifications.map((notif) => (
-                          <div key={notif.id} className="flex items-start gap-2.5 text-xs py-1.5">
-                            <Bell className="w-3.5 h-3.5 text-gray-400 mt-0.5 shrink-0" />
-                            <div className="min-w-0">
-                              <span className="font-mono text-brand-700 font-bold mr-1.5 text-[11px]">{notif.protocol}</span>
-                              <span className="text-gray-700">{notif.title}</span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                  <TiFluxCard title="Últimas notificações" className="order-5 lg:order-none">
+                    <NotificationsList items={data.recentNotifications} />
                   </TiFluxCard>
                 </div>
 
-                <div className="flex flex-col gap-5 lg:flex-1 min-w-0">
-                  <TiFluxCard title="Minhas horas apontadas" bodyClassName="p-5 flex flex-col">
-                    <div className="flex items-center gap-10 mb-5">
-                      <div>
-                        <span className="text-[12px] text-gray-500 font-medium block mb-1">Ontem</span>
-                        <span className="flex items-center gap-1.5 text-[19px] font-bold text-teal-600">
-                          <UserCheck className="w-[18px] h-[18px]" />
-                          {formatHoursAsClock(yesterdayHours)}
-                        </span>
-                      </div>
-                      <div>
-                        <span className="text-[12px] text-gray-500 font-medium block mb-1">Hoje</span>
-                        <span className="flex items-center gap-1.5 text-[19px] font-bold text-amber-500">
-                          <Clock className="w-[18px] h-[18px]" />
-                          {formatHoursAsClock(todayHours)}
-                        </span>
-                      </div>
-                      <div className="ml-auto flex items-center gap-3 text-[11px] text-gray-500">
-                        <span>
-                          Apontadas <strong className="text-gray-700">{hoursLoggedTotal}H</strong>
-                        </span>
-                        <span>
-                          Faltantes <strong className="text-gray-700">{hoursRemainingTotal}H</strong>
-                        </span>
-                        <span>
-                          Meta <strong className="text-gray-700">{hoursTargetTotal}H</strong>
-                        </span>
-                      </div>
-                    </div>
-
-                    {weekDays.length === 0 ? (
-                      <EmptyState />
-                    ) : (
-                      <LineChart
-                        series={[{ name: 'Horas apontadas', color: '#008561', values: weekDays.map((d) => d.loggedHours) }]}
-                        xLabels={weekDays.map((d) => formatDateLabel(d.date))}
-                      />
-                    )}
-                  </TiFluxCard>
-
+                <div className="contents lg:flex lg:min-w-0 lg:flex-1 lg:flex-col lg:gap-5">
                   <TiFluxCard
                     title="Tickets em andamento"
+                    className="order-3 lg:order-none"
                     tabs={
                       <EzTabs
                         tabs={[
@@ -680,10 +543,27 @@ export function DashboardPage() {
                   >
                     <TicketsPieChart data={pieData} />
                   </TiFluxCard>
+
+                  <TiFluxCard title="Tickets nos últimos 30 dias" className="order-4 lg:order-none">
+                    {trend30d.length === 0 ? (
+                      <EmptyState />
+                    ) : (
+                      <EzLineChart
+                        ariaLabel="Tickets criados, fechados e cancelados nos últimos 30 dias"
+                        series={[
+                          { name: 'Tickets criados', color: 'brand-600', values: trend30d.map((d) => d.created) },
+                          { name: 'Tickets fechados', color: 'green-600', values: trend30d.map((d) => d.closed) },
+                          { name: 'Tickets cancelados', color: 'gray-500', values: trend30d.map((d) => d.cancelled) },
+                        ]}
+                        xLabels={trend30d.map((d) => formatDateLabel(d.date))}
+                        partialLast={trend30d[trend30d.length - 1].date === todayKey}
+                      />
+                    )}
+                  </TiFluxCard>
                 </div>
               </div>
 
-              <TiFluxCard title="Chamados abertos por status">
+              <TiFluxCard title="Chamados abertos por status" className="order-6">
                 {Object.keys(data.byStatus).length === 0 ? (
                   <EmptyState label="Nenhum chamado aberto no momento." />
                 ) : (
@@ -710,25 +590,25 @@ export function DashboardPage() {
                       {
                         label: 'Em atendimento',
                         value: data.myChats?.inProgress ?? 0,
-                        icon: <MessageSquare className="w-[18px] h-[18px]" />,
-                        colorClass: 'text-teal-600',
+                        icon: <MessageSquare className={ICON} />,
+                        colorClass: 'text-brand-600',
                       },
                       {
                         label: 'Aguardando resposta',
                         value: data.myChats?.waitingResponse ?? 0,
-                        icon: <MessageSquareDot className="w-[18px] h-[18px]" />,
-                        colorClass: 'text-amber-500',
+                        icon: <MessageSquareDot className={ICON} />,
+                        colorClass: 'text-yellow-800',
                       },
                       {
                         label: 'Média de espera',
                         value: data.myChats?.avgWaitMinutes != null ? `${data.myChats.avgWaitMinutes}m` : '—',
-                        icon: <Hourglass className="w-[18px] h-[18px]" />,
-                        colorClass: 'text-indigo-500',
+                        icon: <Hourglass className={ICON} />,
+                        colorClass: 'text-gray-500',
                       },
                       {
                         label: 'Média de atendimento',
                         value: data.myChats?.avgServiceMinutes != null ? `${data.myChats.avgServiceMinutes}m` : '—',
-                        icon: <Clock className="w-[18px] h-[18px]" />,
+                        icon: <Clock className={ICON} />,
                         colorClass: 'text-green-600',
                       },
                     ]}
@@ -741,31 +621,31 @@ export function DashboardPage() {
                       {
                         label: 'Todos',
                         value: data.allChats?.inProgress !== undefined ? (data.allChats.inProgress + (data.allChats.waitingResponse ?? 0)) : data.openCount,
-                        icon: <Users className="w-[18px] h-[18px]" />,
-                        colorClass: 'text-teal-700',
+                        icon: <Users className={ICON} />,
+                        colorClass: 'text-brand-700',
                       },
                       {
                         label: 'Em atendimento',
                         value: data.allChats?.inProgress ?? data.openCount,
-                        icon: <MessageSquare className="w-[18px] h-[18px]" />,
-                        colorClass: 'text-teal-600',
+                        icon: <MessageSquare className={ICON} />,
+                        colorClass: 'text-brand-600',
                       },
                       {
                         label: 'Aguardando resposta',
                         value: data.allChats?.waitingResponse ?? 0,
-                        icon: <MessageSquareDot className="w-[18px] h-[18px]" />,
-                        colorClass: 'text-amber-500',
+                        icon: <MessageSquareDot className={ICON} />,
+                        colorClass: 'text-yellow-800',
                       },
                       {
                         label: 'Média de espera',
                         value: data.allChats?.avgWaitMinutes != null ? `${data.allChats.avgWaitMinutes}m` : '—',
-                        icon: <Hourglass className="w-[18px] h-[18px]" />,
-                        colorClass: 'text-indigo-500',
+                        icon: <Hourglass className={ICON} />,
+                        colorClass: 'text-gray-500',
                       },
                       {
                         label: 'Média de atendimento',
                         value: data.allChats?.avgServiceMinutes != null ? `${data.allChats.avgServiceMinutes}m` : '—',
-                        icon: <Clock className="w-[18px] h-[18px]" />,
+                        icon: <Clock className={ICON} />,
                         colorClass: 'text-green-600',
                       },
                     ]}
@@ -778,9 +658,9 @@ export function DashboardPage() {
                   <EmptyState />
                 ) : (
                   <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs">
+                    <table aria-label="Chats por departamentos" className="w-full text-left text-xs">
                       <thead>
-                        <tr className="bg-gray-50 border-y border-gray-100 text-gray-600">
+                        <tr className="bg-gray-80 border-y border-gray-100 text-gray-600">
                           <Th>Departamento</Th>
                           <Th>Todos</Th>
                           <Th>Em atendimento</Th>
@@ -792,7 +672,7 @@ export function DashboardPage() {
                       </thead>
                       <tbody className="divide-y divide-gray-100">
                         {data.chatsByDepartment.map((dept, idx) => (
-                          <tr key={idx} className="hover:bg-gray-50 transition-colors">
+                          <tr key={idx} className="hover:bg-gray-80 transition-colors">
                             <td className="py-3 px-4 font-semibold text-gray-900">{dept.department}</td>
                             <td className="py-3 px-4 text-gray-700">{dept.total}</td>
                             <td className="py-3 px-4 text-gray-700">{dept.inProgress}</td>
@@ -813,9 +693,9 @@ export function DashboardPage() {
                   <EmptyState />
                 ) : (
                   <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs">
+                    <table aria-label="Chats por atendentes" className="w-full text-left text-xs">
                       <thead>
-                        <tr className="bg-gray-50 border-y border-gray-100 text-gray-600">
+                        <tr className="bg-gray-80 border-y border-gray-100 text-gray-600">
                           <Th>Atendente</Th>
                           <Th>Status</Th>
                           <Th>Em andamento</Th>
@@ -823,28 +703,22 @@ export function DashboardPage() {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-100">
-                        {data.chatsByAgent.map((ag, idx) => (
-                          <tr key={idx} className="hover:bg-gray-50 transition-colors">
-                            <td className="py-3 px-4 font-semibold text-gray-900">{ag.name}</td>
-                            <td className="py-3 px-4">
-                              <span className="inline-flex items-center gap-1.5">
-                                <span
-                                  className={cn(
-                                    'w-2 h-2 rounded-full',
-                                    ag.status === 'online' && 'bg-green-500',
-                                    ag.status === 'busy' && 'bg-amber-500',
-                                    ag.status === 'away' && 'bg-gray-400',
-                                    ag.status === 'offline' && 'bg-red-500',
-                                    !ag.status && 'bg-gray-200',
-                                  )}
-                                />
-                                <span className="text-gray-700 capitalize">{ag.status ?? '—'}</span>
-                              </span>
-                            </td>
-                            <td className="py-3 px-4 text-gray-700">{ag.inProgress}</td>
-                            <td className="py-3 px-4 text-gray-700">{ag.group}</td>
-                          </tr>
-                        ))}
+                        {data.chatsByAgent.map((ag, idx) => {
+                          const status = ag.status ? AGENT_STATUS[ag.status] : undefined;
+                          return (
+                            <tr key={idx} className="hover:bg-gray-80 transition-colors">
+                              <td className="py-3 px-4 font-semibold text-gray-900">{ag.name}</td>
+                              <td className="py-3 px-4">
+                                <span className="inline-flex items-center gap-1.5">
+                                  <span className={cn('w-2 h-2 rounded-full', status?.dot ?? 'bg-gray-200')} />
+                                  <span className="text-gray-700">{status?.label ?? ag.status ?? '—'}</span>
+                                </span>
+                              </td>
+                              <td className="py-3 px-4 text-gray-700">{ag.inProgress}</td>
+                              <td className="py-3 px-4 text-gray-700">{ag.group}</td>
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>
@@ -864,30 +738,10 @@ export function DashboardPage() {
                 <TiFluxCard title="Meus compromissos">
                   <KpiRow
                     items={[
-                      {
-                        label: 'Todos',
-                        value: data.myAppointments?.total ?? 0,
-                        icon: <Calendar className="w-[18px] h-[18px]" />,
-                        colorClass: 'text-gray-600',
-                      },
-                      {
-                        label: 'Hoje',
-                        value: data.myAppointments?.today ?? 0,
-                        icon: <Calendar className="w-[18px] h-[18px]" />,
-                        colorClass: 'text-amber-500',
-                      },
-                      {
-                        label: 'Semana',
-                        value: data.myAppointments?.week ?? 0,
-                        icon: <Calendar className="w-[18px] h-[18px]" />,
-                        colorClass: 'text-indigo-500',
-                      },
-                      {
-                        label: 'Mês',
-                        value: data.myAppointments?.month ?? 0,
-                        icon: <Calendar className="w-[18px] h-[18px]" />,
-                        colorClass: 'text-teal-600',
-                      },
+                      { label: 'Todos', value: data.myAppointments?.total ?? 0, icon: <Calendar className={ICON} />, colorClass: 'text-brand-600' },
+                      { label: 'Hoje', value: data.myAppointments?.today ?? 0, icon: <Calendar className={ICON} />, colorClass: 'text-yellow-800' },
+                      { label: 'Semana', value: data.myAppointments?.week ?? 0, icon: <Calendar className={ICON} />, colorClass: 'text-gray-500' },
+                      { label: 'Mês', value: data.myAppointments?.month ?? 0, icon: <Calendar className={ICON} />, colorClass: 'text-gray-500' },
                     ]}
                   />
                 </TiFluxCard>
@@ -907,30 +761,10 @@ export function DashboardPage() {
                 <TiFluxCard title="Todos os compromissos">
                   <KpiRow
                     items={[
-                      {
-                        label: 'Todos',
-                        value: data.allAppointments?.total ?? 0,
-                        icon: <Briefcase className="w-[18px] h-[18px]" />,
-                        colorClass: 'text-gray-600',
-                      },
-                      {
-                        label: 'Hoje',
-                        value: data.allAppointments?.today ?? 0,
-                        icon: <Briefcase className="w-[18px] h-[18px]" />,
-                        colorClass: 'text-amber-500',
-                      },
-                      {
-                        label: 'Semana',
-                        value: data.allAppointments?.week ?? 0,
-                        icon: <Briefcase className="w-[18px] h-[18px]" />,
-                        colorClass: 'text-indigo-500',
-                      },
-                      {
-                        label: 'Mês',
-                        value: data.allAppointments?.month ?? 0,
-                        icon: <Briefcase className="w-[18px] h-[18px]" />,
-                        colorClass: 'text-teal-600',
-                      },
+                      { label: 'Todos', value: data.allAppointments?.total ?? 0, icon: <Briefcase className={ICON} />, colorClass: 'text-brand-600' },
+                      { label: 'Hoje', value: data.allAppointments?.today ?? 0, icon: <Briefcase className={ICON} />, colorClass: 'text-yellow-800' },
+                      { label: 'Semana', value: data.allAppointments?.week ?? 0, icon: <Briefcase className={ICON} />, colorClass: 'text-gray-500' },
+                      { label: 'Mês', value: data.allAppointments?.month ?? 0, icon: <Briefcase className={ICON} />, colorClass: 'text-gray-500' },
                     ]}
                   />
                 </TiFluxCard>
@@ -948,89 +782,51 @@ export function DashboardPage() {
             </div>
           )}
 
-          {/* TAB: HORAS */}
-          {/* Matches the live TiFlux "Horas" tab capture: left column hugs
-              the 30-day trend chart together with "Últimas notificações"
-              right below it, while "Minhas horas apontadas" anchors the
-              right column on its own, independent height. */}
+          {/* TAB: HORAS — only the hours; the 30-day ticket chart and the notifications live in Tickets. */}
           {activeTab === 'horas' && (
-            <div className="flex flex-col lg:flex-row gap-5">
-              <div className="flex flex-col gap-5 lg:flex-1 min-w-0">
-                <TiFluxCard title="Tickets nos últimos 30 dias">
-                  {trend30d.length === 0 ? (
-                    <EmptyState />
-                  ) : (
-                    <LineChart
-                      series={[
-                        { name: 'Tickets criados', color: '#f59e0b', values: trend30d.map((d) => d.created) },
-                        { name: 'Tickets fechados', color: '#14b8a6', values: trend30d.map((d) => d.closed) },
-                        { name: 'Tickets cancelados', color: '#6366f1', values: trend30d.map((d) => d.cancelled) },
-                      ]}
-                      xLabels={trend30d.map((d) => formatDateLabel(d.date))}
-                    />
-                  )}
-                </TiFluxCard>
-
-                <TiFluxCard title="Últimas notificações">
-                  {!data.recentNotifications || data.recentNotifications.length === 0 ? (
-                    <EmptyState />
-                  ) : (
-                    <div className="space-y-2.5 max-h-48 overflow-y-auto no-scrollbar">
-                      {data.recentNotifications.map((notif) => (
-                        <div key={notif.id} className="flex items-start gap-2.5 text-xs py-1.5">
-                          <Bell className="w-3.5 h-3.5 text-gray-400 mt-0.5 shrink-0" />
-                          <div className="min-w-0">
-                            <span className="font-mono text-brand-700 font-bold mr-1.5 text-[11px]">{notif.protocol}</span>
-                            <span className="text-gray-700">{notif.title}</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </TiFluxCard>
-              </div>
-
-              <div className="flex flex-col gap-5 lg:flex-1 min-w-0">
-                <TiFluxCard title="Minhas horas apontadas">
-                  <div className="flex items-center gap-10 mb-5">
-                    <div>
-                      <span className="text-[12px] text-gray-500 font-medium block mb-1">Ontem</span>
-                      <span className="flex items-center gap-1.5 text-[19px] font-bold text-teal-600">
-                        <UserCheck className="w-[18px] h-[18px]" />
-                        {formatHoursAsClock(yesterdayHours)}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-[12px] text-gray-500 font-medium block mb-1">Hoje</span>
-                      <span className="flex items-center gap-1.5 text-[19px] font-bold text-amber-500">
-                        <Clock className="w-[18px] h-[18px]" />
-                        {formatHoursAsClock(todayHours)}
-                      </span>
-                    </div>
+            <div className="max-w-4xl">
+              <TiFluxCard title="Minhas horas apontadas">
+                <div className="mb-5 flex flex-wrap items-baseline gap-x-8 gap-y-2">
+                  <div className="flex items-baseline gap-2 text-[13px]">
+                    <span className="font-medium text-gray-500">Ontem</span>
+                    <strong className="flex items-center gap-1.5 text-[19px] font-bold tabular-nums text-brand-600">
+                      <UserCheck className={ICON} />
+                      {formatHoursAsClock(yesterdayHours)}
+                    </strong>
                   </div>
-
-                  {weekDays.length === 0 ? (
-                    <EmptyState />
-                  ) : (
-                    <LineChart
-                      series={[{ name: 'Horas apontadas', color: '#008561', values: weekDays.map((d) => d.loggedHours) }]}
-                      xLabels={weekDays.map((d) => formatDateLabel(d.date))}
-                    />
-                  )}
-
-                  <div className="mt-5 pt-4 border-t border-gray-100 flex items-center gap-6 text-[12px] text-gray-500">
-                    <span>
-                      Horas apontadas <strong className="text-gray-800">{hoursLoggedTotal}H</strong>
-                    </span>
-                    <span>
-                      Horas faltantes <strong className="text-gray-800">{hoursRemainingTotal}H</strong>
-                    </span>
-                    <span>
-                      Meta mensal <strong className="text-gray-800">{hoursTargetTotal}H</strong>
-                    </span>
+                  <div className="flex items-baseline gap-2 text-[13px]">
+                    <span className="font-medium text-gray-500">Hoje</span>
+                    <strong className="flex items-center gap-1.5 text-[19px] font-bold tabular-nums text-yellow-800">
+                      <Clock className={ICON} />
+                      {formatHoursAsClock(todayHours)}
+                    </strong>
                   </div>
-                </TiFluxCard>
-              </div>
+                  <div className="flex items-baseline gap-1.5 text-[13px] text-gray-500">
+                    <span>Apontadas</span>
+                    <strong className="text-gray-700">{hoursLoggedTotal}H</strong>
+                  </div>
+                  <div className="flex items-baseline gap-1.5 text-[13px] text-gray-500">
+                    <span>Faltantes</span>
+                    <strong className="text-gray-700">{hoursRemainingTotal}H</strong>
+                  </div>
+                  <div className="flex items-baseline gap-1.5 text-[13px] text-gray-500">
+                    <span>Meta</span>
+                    <strong className="text-gray-700">{hoursTargetTotal}H</strong>
+                  </div>
+                </div>
+
+                {weekDays.length === 0 ? (
+                  <EmptyState />
+                ) : (
+                  <EzLineChart
+                    ariaLabel="Horas apontadas por dia"
+                    series={[{ name: 'Horas apontadas', color: 'brand-600', values: weekDays.map((d) => d.loggedHours) }]}
+                    xLabels={weekDays.map((d) => formatDateLabel(d.date))}
+                    formatValue={formatHoursAsClock}
+                    partialLast={weekDays[weekDays.length - 1].date === todayKey}
+                  />
+                )}
+              </TiFluxCard>
             </div>
           )}
         </>

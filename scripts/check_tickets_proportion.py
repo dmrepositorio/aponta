@@ -33,8 +33,8 @@ def main(argv: list[str]) -> int:
     return run_check(
         root,
         find_violations,
-        ok_message='OK: alturas de controle seguem a escala D6 na aba Tickets (AC-02, DMTE-427).',
-        fail_message='FALHA: altura de controle ad hoc fora da escala D6 na aba Tickets (AC-02, DMTE-427).',
+        ok_message='OK: alturas de controle seguem a escala D6 na aba Tickets e na Dashboard (AC-02, DMTE-427, DMTE-529).',
+        fail_message='FALHA: altura de controle ad hoc fora da escala D6 na aba Tickets e na Dashboard (AC-02, DMTE-427, DMTE-529).',
     )
 
 

@@ -26,7 +26,7 @@ API diferente para "paridade de nome" gera custo de manutenção sem ganho real.
 Os seguintes componentes foram criados porque eram gaps reais (não tinham
 equivalente funcional no Aponta DS) — todos com testes e tokens DS:
 
-`EzActionsButton`, `EzAlertList`, `EzCalendar`, `EzChart`, `EzChip`,
+`EzActionsButton`, `EzAlertList`, `EzCalendar`, `EzChart`, `EzLineChart`, `EzChip`,
 `EzClassicComboBox`, `EzClassicInput`, `EzClassicTextArea`, `EzCollapsibleBox`,
 `EzDateTimeInput`, `EzDialog`, `EzFilter`, `EzFilterInput`, `EzForm`,
 `EzFormView`, `EzGridView`, `EzGuideNavigator`, `EzModalContainer`,
@@ -186,3 +186,7 @@ O que a primeira captura mostrou em 390px: a barra lateral fixa de 240px ocupava
 - **Outras páginas do shell (Dashboard, Relatórios, Clientes, Mesa, Contratos, Agenda, Configurações e Conhecimentos):** capturadas em 390px e 768px só para medir rolagem horizontal da página (nenhuma passou da largura) e olhadas por amostra (Dashboard e Contratos usáveis). Não foram ajustadas nem validadas ponta a ponta; o menu retrátil e a margem de 12px valem para elas.
 
 Não foi feito, de propósito: (a) menu recolhido por padrão entre 768px e 1023px (o menu fixo de 240px funciona, e o botão "Esconder" recolhe); (b) a lista de raios fora de token e controles nativos do detalhe registrada na seção da fatia 6, que continua pendente e não ganhou captura de decisão; (c) tabela da Lista em cartões no celular (hoje rola na horizontal). Não testado: toque real em aparelho, orientação paisagem e Safari; as capturas são do Chromium com viewport emulado.
+
+## Dashboard: gráfico de linha no DS (DMTE-529)
+
+`EzLineChart` (`apps/web/src/components/ds/EzLineChart.tsx`, story `DS/EzLineChart`) é o gráfico de linha da Dashboard, em SVG próprio, sem dependência nova (`recharts` continua sem uso). Eixo Y com 0, valor médio e máximo; rótulos do eixo X escolhidos pela largura medida do contêiner (no máximo 4 abaixo de 640 px e 7 acima, sempre com o último ponto, sem sobreposição); tooltip por hover do mouse, foco de teclado e toque; último ponto parcial (dia de hoje) como marcador vazado, sem segmento de queda; altura de 160 px abaixo de 640 px e 192 px a partir daí. A cor da série é um token do DS (`brand-600`, `green-600`, `gray-500`), nunca hex. Medido em Chromium nas quatro larguras por `scripts/dashboard_responsive_check.mjs` (evidência técnica, aceite visual é humano).

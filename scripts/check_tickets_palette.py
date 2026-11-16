@@ -56,8 +56,8 @@ def main(argv: list[str]) -> int:
     return run_check(
         root,
         find_violations,
-        ok_message='OK: nenhum hex literal ou classe de paleta fora do DS na aba Tickets (AC-01, DMTE-427).',
-        fail_message='FALHA: paleta fora do DS ou hex literal na aba Tickets (AC-01, DMTE-427).',
+        ok_message='OK: nenhum hex literal ou classe de paleta fora do DS na aba Tickets e na Dashboard (AC-01, DMTE-427, DMTE-529).',
+        fail_message='FALHA: paleta fora do DS ou hex literal na aba Tickets e na Dashboard (AC-01, DMTE-427, DMTE-529).',
     )
 
 
