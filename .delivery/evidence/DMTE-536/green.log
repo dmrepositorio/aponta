@@ -1,19 +1,15 @@
 
  RUN  v4.1.11 /home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-521-c4187c3d45b2/workdir/aponta/apps/web
 
- ✓ |web| src/components/contracts/ContractStateTags.test.tsx (8 tests) 110ms
- ✓ |web| src/pages/ContractsPage.test.tsx (29 tests) 7389ms
-     ✓ lets admins create with explicit excess rate and minute allowance  357ms
-     ✓ opens a contract's detail as a full page (no dialog) and returns to the list via the back button  341ms
-     ✓ lets an ADMIN select a contract and delete it via the toolbar  371ms
-     ✓ filters contracts by name or company on the client side via the filter drawer  728ms
-     ✓ filters dynamically by modality using the rule builder (Sankhya Filtros parity)  630ms
-     ✓ saves, applies, and deletes a saved filter from the drawer (Sankhya saved filters parity)  1108ms
-     ✓ edits via the update command without turning zero into missing money  387ms
-     ✓ filters by the same approval words, including Rascunho and Regularização pendente  305ms
+ ✓ |web| src/components/contracts/ContractStateTags.test.tsx (8 tests) 138ms
+ ✓ |web| src/pages/ContractsPage.test.tsx (29 tests) 5447ms
+     ✓ lets admins create with explicit excess rate and minute allowance  324ms
+     ✓ filters contracts by name or company on the client side via the filter drawer  535ms
+     ✓ saves, applies, and deletes a saved filter from the drawer (Sankhya saved filters parity)  607ms
+     ✓ filters by the same approval words, including Rascunho and Regularização pendente  354ms
 
  Test Files  2 passed (2)
       Tests  37 passed (37)
-   Start at  21:49:30
-   Duration  10.74s (transform 2.40s, setup 316ms, import 3.86s, tests 7.50s, environment 1.63s)
+   Start at  21:56:08
+   Duration  8.90s (transform 3.33s, setup 278ms, import 4.84s, tests 5.59s, environment 1.21s)
 
