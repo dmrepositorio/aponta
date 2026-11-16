@@ -1,0 +1,35 @@
+
+ RUN  v4.1.11 /home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-537-8d3e6a6647e5/workdir/aponta/apps/web
+
+ ✓ |web| src/pages/KnowledgePage.test.tsx (25 tests) 6621ms
+     ✓ defaults a new article to "Público" and hides the Compartilhar button  322ms
+     ✓ shows the Compartilhar button once "Privado" is selected, and opens the sharing dialog  489ms
+     ✓ shows the new-article form to an AGENT and creates a PUBLIC article inside the open folder  1248ms
+     ✓ selects an agent group and a client in the share dialog, and sends them (plus auto-share) in the create payload  1164ms
+     ✓ allows an AGENT to update an existing article, pre-populating the access type and sharing lists  674ms
+       ✓ keeps the search field mounted, with its text and focus, while typing against a slow API  368ms
+       ✓ sends the full typed search to the API and lists the result of that query  488ms
+
+ Test Files  1 passed (1)
+      Tests  25 passed (25)
+   Start at  16:53:21
+   Duration  10.11s (transform 1.74s, setup 119ms, import 2.52s, tests 6.62s, environment 596ms)
+
+stderr | src/pages/KnowledgePage.test.tsx > KnowledgePage > defaults a new article to "Público" and hides the Compartilhar button
+[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues.
+
+stderr | src/pages/KnowledgePage.test.tsx > KnowledgePage > shows the Compartilhar button once "Privado" is selected, and opens the sharing dialog
+[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues.
+
+stderr | src/pages/KnowledgePage.test.tsx > KnowledgePage > shows the new-article form to an AGENT and creates a PUBLIC article inside the open folder
+[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues.
+
+stderr | src/pages/KnowledgePage.test.tsx > KnowledgePage > selects an agent group and a client in the share dialog, and sends them (plus auto-share) in the create payload
+[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues.
+
+stderr | src/pages/KnowledgePage.test.tsx > KnowledgePage > allows an AGENT to update an existing article, pre-populating the access type and sharing lists
+[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues.
+
+stderr | src/pages/KnowledgePage.test.tsx > KnowledgePage > loads the edit form with EzRichText pre-filled with the existing article content
+[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues.
+

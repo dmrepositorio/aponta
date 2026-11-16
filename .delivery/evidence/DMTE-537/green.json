@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "phase": "green",
+  "started_at": "2026-11-16T19:53:20.058066+00:00",
+  "finished_at": "2026-11-16T19:53:31.706725+00:00",
+  "command": [
+    "pnpm",
+    "--dir",
+    "apps/web",
+    "exec",
+    "vitest",
+    "run",
+    "src/pages/KnowledgePage.test.tsx"
+  ],
+  "base_sha": "caa119698ba992cae446b04630c1b5fb7d7ef8b7",
+  "head_sha": "4873b16646408b593d7022f510c61c15df149665",
+  "exit_code": 0,
+  "tests": {
+    "apps/web/src/pages/KnowledgePage.test.tsx": "2ebcade816f6eff8d0784a9a1784989f2fdec37368e00bed5614d70b9ac5cec0"
+  },
+  "criteria": [
+    "AC-01",
+    "AC-02",
+    "AC-03",
+    "AC-04"
+  ],
+  "source_hashes": {
+    "apps/web/src/pages/KnowledgePage.test.tsx": "2ebcade816f6eff8d0784a9a1784989f2fdec37368e00bed5614d70b9ac5cec0",
+    "apps/web/src/pages/KnowledgePage.tsx": "584229f66cab0236f6746787a8083352a43d99b7845694babe5beacdb2a58420"
+  },
+  "log": ".delivery/evidence/DMTE-537/green.log",
+  "log_sha256": "8d714cddb02606da9b0a18358e89a273e712f0252c236201a5973fa539b1c9be"
+}

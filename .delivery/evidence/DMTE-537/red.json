@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "phase": "red",
+  "started_at": "2026-11-16T19:52:32.769801+00:00",
+  "finished_at": "2026-11-16T19:52:45.797850+00:00",
+  "command": [
+    "pnpm",
+    "--dir",
+    "apps/web",
+    "exec",
+    "vitest",
+    "run",
+    "src/pages/KnowledgePage.test.tsx"
+  ],
+  "base_sha": "caa119698ba992cae446b04630c1b5fb7d7ef8b7",
+  "head_sha": "4873b16646408b593d7022f510c61c15df149665",
+  "exit_code": 1,
+  "tests": {
+    "apps/web/src/pages/KnowledgePage.test.tsx": "2ebcade816f6eff8d0784a9a1784989f2fdec37368e00bed5614d70b9ac5cec0"
+  },
+  "criteria": [
+    "AC-01",
+    "AC-02",
+    "AC-03",
+    "AC-04"
+  ],
+  "source_hashes": {
+    "apps/web/src/pages/KnowledgePage.test.tsx": "2ebcade816f6eff8d0784a9a1784989f2fdec37368e00bed5614d70b9ac5cec0"
+  },
+  "log": ".delivery/evidence/DMTE-537/red.log",
+  "log_sha256": "fe3d12bc0d3d464c99b2f4761fb485dd0efd8db02700a2980ff896f6911a1120"
+}
