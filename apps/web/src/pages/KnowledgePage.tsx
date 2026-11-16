@@ -550,7 +550,11 @@ export function KnowledgePage() {
 
       {/* DMTE-537: o carregamento fica na área da lista; o cabeçalho (busca,
           ordenação, tags) continua montado para não perder foco nem teclas. */}
-      {isLoading && <EzSpinner label="Carregando artigos..." />}
+      {isLoading && (
+        <div className="flex justify-center p-4">
+          <EzSpinner label="Carregando artigos..." />
+        </div>
+      )}
       <div
         data-testid="knowledge-articles"
         data-view-mode={viewMode}

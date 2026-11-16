@@ -14,7 +14,7 @@ Identidade: DMTE-537, issue dmrepositorio/aponta#293, Tier 2, ciclo 2026-11-09/2
 
 ## Decisões (proposta do planejamento dentro do pedido da auditoria)
 
-1. **Carregamento na área da lista, cabeçalho sempre montado.** Remove o `return` antecipado por `isLoading`. Com `isLoading`, o bloco de cards e a paginação dão lugar ao `EzSpinner` com o mesmo rótulo ("Carregando artigos..."); o resto da página não muda. É o critério do card: "a lista mostra carregamento sem desmontar o cabeçalho".
+1. **Carregamento na área da lista, cabeçalho sempre montado.** Remove o `return` antecipado por `isLoading`. Com `isLoading`, o `EzSpinner` com o mesmo rótulo ("Carregando artigos...") aparece na área da lista, centralizado como em `ReportsPage`; o resto da página não muda. Sem `placeholderData`, `articles` fica `undefined` durante a consulta, então a lista e a paginação ficam vazias sozinhas; quem acrescentar `placeholderData` depois precisa esconder os cards durante o carregamento. É o critério do card: "a lista mostra carregamento sem desmontar o cabeçalho".
 2. **Sem `keepPreviousData`.** Mostraria artigos de outra pasta ao trocar de pasta (a `folderId` está na chave) e exigiria uma regra extra. O spinner na lista basta e é a menor mudança.
 3. **O estado vazio só aparece sem carregamento:** `!isLoading && !articles?.length`.
 4. **Debounce fora do escopo.** Reduziria requisições, mas não causa a perda do foco. Proposta para outra entrega, se Alfredo quiser.
