@@ -38,7 +38,7 @@ const PIE_COLORS = [
   { bg: 'bg-green-500', fill: 'fill-green-500', text: 'text-gray-900', textFill: 'fill-gray-900' },
   { bg: 'bg-brand-300', fill: 'fill-brand-300', text: 'text-gray-900', textFill: 'fill-gray-900' },
   { bg: 'bg-petroleum-300', fill: 'fill-petroleum-300', text: 'text-gray-900', textFill: 'fill-gray-900' },
-  { bg: 'bg-yellow-800', fill: 'fill-yellow-800', text: 'text-white', textFill: 'fill-white' },
+  { bg: 'bg-petroleum-700', fill: 'fill-petroleum-700', text: 'text-white', textFill: 'fill-white' },
 ];
 const OTHERS_COLOR = { bg: 'bg-gray-300', fill: 'fill-gray-300', text: 'text-gray-900', textFill: 'fill-gray-900' };
 const MAX_PIE_SLICES = 6;
@@ -622,7 +622,7 @@ export function DashboardPage() {
                         label: 'Todos',
                         value: data.allChats?.inProgress !== undefined ? (data.allChats.inProgress + (data.allChats.waitingResponse ?? 0)) : data.openCount,
                         icon: <Users className={ICON} />,
-                        colorClass: 'text-brand-700',
+                        colorClass: 'text-brand-600',
                       },
                       {
                         label: 'Em atendimento',

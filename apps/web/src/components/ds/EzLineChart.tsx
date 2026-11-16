@@ -26,6 +26,8 @@ export interface EzLineChartProps {
 const SM = 640;
 /** Width of one `dd/mm/yyyy` label at 11px plus the gap that keeps neighbors apart. */
 const LABEL_SLOT = 72;
+/** Half of the tooltip's `max-w-[220px]`, so it never spills out of the chart. */
+const TOOLTIP_HALF_WIDTH = 110;
 const PAD = { top: 12, right: 30, bottom: 28, left: 40 };
 
 /** Indexes of the X labels that fit in `width` px, always including the last point. */
@@ -193,7 +195,7 @@ export function EzLineChart({
           <div
             role="tooltip"
             className="pointer-events-none absolute top-0 z-10 w-max max-w-[220px] -translate-x-1/2 rounded-md bg-gray-600 px-2.5 py-1.5 text-[12px] text-white shadow-lg"
-            style={{ left: Math.min(Math.max(x(active), 70), width - 70) }}
+            style={{ left: Math.min(Math.max(x(active), TOOLTIP_HALF_WIDTH), width - TOOLTIP_HALF_WIDTH) }}
           >
             <p className="font-bold tabular-nums">
               {xLabels[active]}

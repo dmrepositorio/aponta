@@ -26,10 +26,10 @@ API diferente para "paridade de nome" gera custo de manutenção sem ganho real.
 Os seguintes componentes foram criados porque eram gaps reais (não tinham
 equivalente funcional no Aponta DS) — todos com testes e tokens DS:
 
-`EzActionsButton`, `EzAlertList`, `EzCalendar`, `EzChart`, `EzLineChart`, `EzChip`,
+`EzActionsButton`, `EzAlertList`, `EzCalendar`, `EzChart`, `EzChip`,
 `EzClassicComboBox`, `EzClassicInput`, `EzClassicTextArea`, `EzCollapsibleBox`,
 `EzDateTimeInput`, `EzDialog`, `EzFilter`, `EzFilterInput`, `EzForm`,
-`EzFormView`, `EzGridView`, `EzGuideNavigator`, `EzModalContainer`,
+`EzFormView`, `EzGridView`, `EzGuideNavigator`, `EzLineChart`, `EzModalContainer`,
 `EzMultiSelectionList`, `EzNumberInput`, `EzPopoverPlus`, `EzPopup`, `EzScrim`,
 `EzScroller`, `EzSearchPlus`, `EzSortableList`, `EzSplitButton`, `EzSplitPanel`,
 `EzTagInput`, `EzTextEdit`, `EzTileMedium` (único criado após auditoria

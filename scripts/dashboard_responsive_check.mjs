@@ -68,20 +68,24 @@ async function freePort() {
 
 async function startVite() {
   const port = await freePort();
-  const child = spawn('pnpm', ['--dir', 'apps/web', 'exec', 'vite', '--port', String(port), '--strictPort'], {
+  // vite direto (não via pnpm) e em grupo próprio: matar o grupo derruba só o servidor que subimos aqui.
+  const child = spawn(path.resolve('node_modules/.bin/vite'), ['--port', String(port), '--strictPort'], {
+    cwd: path.resolve('apps/web'),
     env: { ...process.env, WEB_PORT: String(port) },
     stdio: 'ignore',
+    detached: true,
   });
+  const stop = () => process.kill(-child.pid);
   const url = `http://localhost:${port}`;
   for (let attempt = 0; attempt < 120; attempt += 1) {
     try {
-      if ((await fetch(url)).ok) return { url, stop: () => child.kill() };
+      if ((await fetch(url)).ok) return { url, stop };
     } catch {
       // not up yet
     }
     await new Promise((resolve) => setTimeout(resolve, 500));
   }
-  child.kill();
+  stop();
   throw new Error('Vite did not start');
 }
 
