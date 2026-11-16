@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "phase": "green",
+  "started_at": "2026-11-15T23:28:43.609332+00:00",
+  "finished_at": "2026-11-15T23:28:49.674467+00:00",
+  "command": [
+    "pnpm",
+    "--dir",
+    "apps/web",
+    "exec",
+    "vitest",
+    "run",
+    "src/components/tickets/TicketList.test.tsx"
+  ],
+  "base_sha": "1c5dc79e6c19fbceaade0b21ee29dd5719ee8b80",
+  "head_sha": "7e401735f4fbf7604b93939cfffd6d5f8165985b",
+  "exit_code": 0,
+  "tests": {
+    "apps/web/src/components/tickets/TicketList.test.tsx": "ccebfd25886fe66a2861e46911c19443d3be4adc006502fb613aa6e62a3454f2"
+  },
+  "criteria": [
+    "AC-01",
+    "AC-02",
+    "AC-03",
+    "AC-04",
+    "AC-05",
+    "AC-06"
+  ],
+  "source_hashes": {
+    "apps/web/src/components/tickets/TicketList.test.tsx": "ccebfd25886fe66a2861e46911c19443d3be4adc006502fb613aa6e62a3454f2",
+    "apps/web/src/components/tickets/TicketList.tsx": "e60db28fe63083ded380244e3d6154ce23899ce0292adb480212bea2878aec35"
+  },
+  "log": ".delivery/evidence/DMTE-526/green.log",
+  "log_sha256": "96940c3e2701d24665159e5131581c6ee964c1b899afe206ddc2ee21d0aa8421"
+}

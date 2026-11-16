@@ -32,6 +32,7 @@ import {
   ContractDetail,
   ContractForm,
   ContractList,
+  contractApproval,
   modality,
 } from '../components/contracts/ContractViews';
 
@@ -76,9 +77,10 @@ const CONTRACT_FILTER_FIELDS: EzDynamicFilterField[] = [
     type: 'select',
     options: [
       { label: 'Aprovado', value: 'Aprovado' },
-      { label: 'Pendente', value: 'Pendente' },
+      { label: 'Rascunho', value: 'Rascunho' },
+      { label: 'Regularização pendente', value: 'Regularização pendente' },
     ],
-    getValue: (c: Contract) => (c.approved ? 'Aprovado' : 'Pendente'),
+    getValue: (c: Contract) => contractApproval(c),
   },
 ];
 
@@ -86,7 +88,7 @@ const CONTRACT_SCREEN_CONFIG_BASE_COLUMNS = [
   { id: 'contract', label: 'Contrato' },
   { id: 'organization', label: 'Empresa' },
   { id: 'modality', label: 'Modalidade' },
-  { id: 'status', label: 'Status' },
+  { id: 'situation', label: 'Situação' },
 ];
 
 const CONTRACT_SCREEN_CONFIG_FINANCIAL_COLUMNS = [
@@ -141,7 +143,11 @@ export function ContractsPage() {
     deleteFilter,
     restoreDefaults,
   } = useUserScreenConfig('contracts', {
-    grid: { columnVisibility: {}, density: 'compact' },
+    // Hora excedente e Reajuste ficam a um clique na configuração; fora do padrão para a grade caber a 1440 px.
+    grid: {
+      columnVisibility: { excessHourlyRate: false, adjustmentDate: false },
+      density: 'compact',
+    },
     form: { layout: 'CASCADE' },
     viewMode: 'GRID',
   });

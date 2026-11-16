@@ -8,6 +8,11 @@ import type {
 import { brasiliaDayStartIso } from '../../lib/billingTime';
 import { brasiliaDateString, brasiliaTimeString } from '../../lib/brasiliaTime';
 import {
+  ContractActiveTag,
+  ContractApprovalTag,
+  approvalLabel,
+} from './ContractStateTags';
+import {
   EzAlert,
   EzButton,
   EzComboBox,
@@ -55,6 +60,21 @@ export const modality = (c: Contract) =>
   commercialModalities[c.type] ||
   (c.type === 'HOURS_LIMIT' ? `Pacote: ${allowance(c) ?? '—'}h` : 'Cobertura');
 const isLegacy = (c: Contract) => !commercialModalities[c.type];
+export const contractApproval = (c: Contract) =>
+  approvalLabel({ legacy: isLegacy(c), approved: !!c.approved });
+
+// Larguras (px) das colunas de texto. A tabela da grade usa layout automático: sem um teto em px o texto
+// longo estica a coluna além do `size`. O teto é o `size` menos o padding horizontal da célula (32 px).
+const COLUMN_SIZE = { contract: 180, organization: 166, modality: 188 } as const;
+const textMaxWidth = (size: number) => ({ maxWidth: size - 32 });
+
+function TruncatedText({ value, size }: { value: string; size: number }) {
+  return (
+    <span title={value} style={textMaxWidth(size)} className="block truncate">
+      {value}
+    </span>
+  );
+}
 
 export function ContractList({
   contracts = [],
@@ -82,42 +102,58 @@ export function ContractList({
       {
         id: 'contract',
         header: 'Contrato',
+        size: COLUMN_SIZE.contract,
         accessorFn: (c) => c.name || 'Sem nome',
+        // O nome é a ação principal da linha: fica na primeira coluna de dados, sempre à vista.
+        cell: ({ row }) => {
+          const c = row.original;
+          const label = c.name || 'Sem nome';
+          return (
+            <button
+              type="button"
+              title={label}
+              aria-label={`Ver detalhes ${c.name || c.organization?.name || c.id}`}
+              onClick={() => onDetail(c.id)}
+              style={textMaxWidth(COLUMN_SIZE.contract)}
+              className="block truncate rounded-sm text-left font-medium text-brand-700 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"
+            >
+              {label}
+            </button>
+          );
+        },
       },
       {
         id: 'organization',
         header: 'Empresa',
+        size: COLUMN_SIZE.organization,
         accessorFn: (c) => c.organization?.name || '—',
+        cell: ({ getValue }) => <TruncatedText value={getValue<string>()} size={COLUMN_SIZE.organization} />,
       },
       {
         id: 'modality',
         header: 'Modalidade',
+        size: COLUMN_SIZE.modality,
         accessorFn: (c) => modality(c),
+        cell: ({ getValue }) => <TruncatedText value={getValue<string>()} size={COLUMN_SIZE.modality} />,
       },
       {
-        id: 'status',
-        header: 'Status',
-        cell: ({ row }) => {
-          const c = row.original;
-          return (
-            <>
-              <span>{c.active ? 'Ativo' : 'Inativo'}</span>
-              <span className="block text-sm">
-                {isLegacy(c)
-                  ? 'Regularização pendente'
-                  : c.approved
-                    ? 'Aprovado'
-                    : 'Rascunho'}
-              </span>
-            </>
-          );
-        },
+        id: 'situation',
+        header: 'Situação',
+        size: 300,
+        accessorFn: (c) => `${c.active ? 'Ativo' : 'Inativo'} · ${contractApproval(c)}`,
+        cell: ({ row }) => (
+          <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
+            <ContractActiveTag active={row.original.active} />
+            <ContractApprovalTag state={contractApproval(row.original)} />
+          </span>
+        ),
       },
       ...(showFinancial
         ? ([
             {
               id: 'monthlyValue',
               header: 'Valor mensal',
+              size: 156,
               cell: ({ row }) =>
                 contractMoney(
                   row.original.monthlyFeeCents != null
@@ -128,6 +164,7 @@ export function ContractList({
             {
               id: 'excessHourlyRate',
               header: 'Hora excedente',
+              size: 130,
               cell: ({ row }) =>
                 contractMoney(
                   row.original.excessHourlyRateCents == null
@@ -138,26 +175,11 @@ export function ContractList({
             {
               id: 'adjustmentDate',
               header: 'Reajuste',
+              size: 120,
               cell: ({ row }) => dateLabel(row.original.adjustmentDate),
             },
           ] as ColumnDef<Contract>[])
         : []),
-      {
-        id: 'actions',
-        header: 'Ações',
-        cell: ({ row }) => {
-          const c = row.original;
-          return (
-            <EzButton
-              variant="tertiary"
-              size="small"
-              label="Ver detalhes"
-              aria-label={`Ver detalhes ${c.name || c.organization?.name || c.id}`}
-              onClick={() => onDetail(c.id)}
-            />
-          );
-        },
-      },
     ],
     [showFinancial, onDetail],
   );
@@ -173,6 +195,7 @@ export function ContractList({
       data={contracts}
       selectable={selectable}
       onSelectionChange={onSelectionChange}
+      onRowDoubleClick={(c) => onDetail(c.id)}
       density={density}
       initialColumnVisibility={initialColumnVisibility}
     />
@@ -191,7 +214,7 @@ export function ContractDetail({
     ['Empresa', c.organization?.name || '—'],
     ['Modalidade', modality(c)],
     ['Status', c.active ? 'Ativo' : 'Inativo'],
-    ['Aprovação', c.approved ? 'Aprovado' : 'Pendente'],
+    ['Aprovação', contractApproval(c)],
     [
       'Mesas cobertas',
       c.serviceDesks?.map((desk) => desk.name).join(', ') ||
