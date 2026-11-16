@@ -52,8 +52,9 @@ export function KnowledgeArticleCard({
   const tags = article.tags ?? [];
   const hiddenTags = expanded ? 0 : Math.max(0, tags.length - COLLAPSED_TAGS);
   const visibleTags = expanded ? tags : tags.slice(0, COLLAPSED_TAGS);
-  const hasHiddenContent =
-    article.content.trim() !== '' || attachments.length > 0 || tags.length > COLLAPSED_TAGS;
+  // Corpo só de marcação vazia (`<p></p>`) não esconde nada; imagem e tabela contam como conteúdo.
+  const hasBody = excerpt !== '' || /<(img|table)\b/i.test(article.content);
+  const hasHiddenContent = hasBody || attachments.length > 0 || tags.length > COLLAPSED_TAGS;
   const bodyId = `article-body-${article.id}`;
   const updatedAt = formatUpdatedAt(article.updatedAt);
 
