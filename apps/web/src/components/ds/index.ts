@@ -50,6 +50,7 @@ export * from './EzActionsButton';
 export * from './EzAlertList';
 export * from './EzCalendar';
 export * from './EzChart';
+export * from './EzLineChart';
 export * from './EzChip';
 export * from './EzClassicComboBox';
 export * from './EzSelect';

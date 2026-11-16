@@ -1,6 +1,8 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, within } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { api } from '../lib/api';
 import { DashboardPage } from './DashboardPage';
@@ -19,8 +21,11 @@ function renderDashboard() {
     <QueryClientProvider client={queryClient}>
       {/* The "Resumo de tickets" KPIs are now <Link>s to /tickets, so a
           router context is required even though these tests never navigate. */}
-      <MemoryRouter>
-        <DashboardPage />
+      <MemoryRouter initialEntries={['/']}>
+        <Routes>
+          <Route path="/" element={<DashboardPage />} />
+          <Route path="/tickets/new" element={<p>Tela de novo ticket</p>} />
+        </Routes>
       </MemoryRouter>
     </QueryClientProvider>,
   );
@@ -66,7 +71,20 @@ describe('DashboardPage', () => {
     expect(screen.getByRole('tab', { name: 'Horas' })).toBeInTheDocument();
   });
 
-  it('shows the "Modo TV" control and a working "Ações" menu with Novo Ticket', async () => {
+  it('AC-12: shows "Modo TV" as a disabled button with "Em breve" written on screen', async () => {
+    vi.mocked(api.get).mockResolvedValue({
+      data: { openCount: 0, closedCount: 0, slaBreachedCount: 0, avgResolutionMinutes: null, byStatus: {} },
+    });
+    renderDashboard();
+
+    await screen.findByText(/bom te ver de volta/i);
+    const modoTv = screen.getByRole('button', { name: /modo tv/i });
+    expect(modoTv).toBeDisabled();
+    expect(modoTv).toHaveAttribute('aria-disabled', 'true');
+    expect(modoTv).toHaveTextContent('Em breve');
+  });
+
+  it('AC-12: "Ações > Novo Ticket" navigates inside the app without reloading the page', async () => {
     vi.mocked(api.get).mockResolvedValue({
       data: { openCount: 0, closedCount: 0, slaBreachedCount: 0, avgResolutionMinutes: null, byStatus: {} },
     });
@@ -75,11 +93,10 @@ describe('DashboardPage', () => {
     renderDashboard();
 
     await screen.findByText(/bom te ver de volta/i);
-    expect(screen.getByTitle('Em breve')).toHaveTextContent('Modo TV');
+    await user.click(screen.getByRole('button', { name: /ações/i }));
+    await user.click(screen.getByRole('menuitem', { name: /novo ticket/i }));
 
-    const acoesButton = screen.getByRole('button', { name: /ações/i });
-    await user.click(acoesButton);
-    expect(screen.getByRole('menuitem', { name: /novo ticket/i })).toBeInTheDocument();
+    expect(await screen.findByText('Tela de novo ticket')).toBeInTheDocument();
   });
 
   it('renders the Resumo de tickets KPI row from ticketSummary', async () => {
@@ -208,7 +225,7 @@ describe('DashboardPage', () => {
 
     const pieCard = within(await screen.findByTestId('card-tickets-em-andamento'));
     expect(pieCard.getByText('Joana')).toBeInTheDocument();
-    expect(pieCard.getByText('Tickets 5')).toBeInTheDocument();
+    expect(pieCard.getByText('Tickets 5 · 63%')).toBeInTheDocument();
     // No donut hole: the chart is built from <path> wedges (or a single <circle> for one slice), never a ring.
     expect(pieCard.getByRole('img', { name: /tickets em andamento/i })).toBeInTheDocument();
 
@@ -242,7 +259,7 @@ describe('DashboardPage', () => {
     expect(svg.getAttribute('class') ?? '').toContain('w-full');
   });
 
-  it('scales the "Minhas horas apontadas" line chart with responsive height classes instead of a fixed pixel height', async () => {
+  it('draws "Minhas horas apontadas" with the DS line chart, named for screen readers', async () => {
     vi.mocked(api.get).mockResolvedValue({
       data: {
         openCount: 0,
@@ -258,14 +275,14 @@ describe('DashboardPage', () => {
         },
       },
     });
+    const { userEvent } = await import('@testing-library/user-event');
+    const user = userEvent.setup();
     renderDashboard();
 
-    const horasCard = within(await screen.findByTestId('card-minhas-horas-apontadas'));
-    const svg = horasCard.getByRole('img', { name: /gráfico de linha/i });
-    expect(svg).not.toHaveAttribute('style', expect.stringContaining('height'));
-    const classes = svg.getAttribute('class') ?? '';
-    expect(classes).toContain('w-full');
-    expect(classes).toMatch(/h-\d+/);
+    await user.click(await screen.findByRole('tab', { name: 'Horas' }));
+    const horasCard = within(screen.getByTestId('card-minhas-horas-apontadas'));
+    expect(horasCard.getByRole('group', { name: /horas apontadas por dia/i })).toBeInTheDocument();
+    expect(horasCard.getByRole('button', { name: /01\/10\/2026/ })).toBeInTheDocument();
   });
 
   it('switches to Chats tab and renders chat KPI rows, departments and agents tables', async () => {
@@ -404,7 +421,7 @@ describe('DashboardPage', () => {
     expect(horasCard.getByText('40H')).toBeInTheDocument();
     expect(horasCard.getByText('120H')).toBeInTheDocument();
     expect(horasCard.getByText('160H')).toBeInTheDocument();
-    expect(horasCard.getByRole('img', { name: /gráfico de linha/i })).toBeInTheDocument();
+    expect(horasCard.getByRole('group', { name: /horas apontadas por dia/i })).toBeInTheDocument();
   });
 
   it('renders the 3-series Tickets nos últimos 30 dias line chart from real backend trend data', async () => {
@@ -421,15 +438,327 @@ describe('DashboardPage', () => {
         ],
       },
     });
-    const { userEvent } = await import('@testing-library/user-event');
-    const user = userEvent.setup();
     renderDashboard();
 
-    await user.click(await screen.findByRole('tab', { name: 'Horas' }));
-
-    const trendCard = within(screen.getByTestId('card-tickets-nos-ultimos-30-dias'));
+    const trendCard = within(await screen.findByTestId('card-tickets-nos-ultimos-30-dias'));
     expect(trendCard.getByText('Tickets criados')).toBeInTheDocument();
     expect(trendCard.getByText('Tickets fechados')).toBeInTheDocument();
     expect(trendCard.getByText('Tickets cancelados')).toBeInTheDocument();
+  });
+
+  // ---- DMTE-529 ----
+
+  const css = readFileSync(resolve(__dirname, '../styles.css'), 'utf8');
+  const hex = (token: string) => {
+    const match = css.match(new RegExp(`--color-${token}:\\s*#([0-9a-f]{6})`, 'i'));
+    if (!match) throw new Error('token not found: ' + token);
+    return match[1];
+  };
+  const luminance = (value: string) =>
+    [0, 2, 4]
+      .map((i) => parseInt(value.slice(i, i + 2), 16) / 255)
+      .map((c) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4))
+      .reduce((sum, c, i) => sum + c * [0.2126, 0.7152, 0.0722][i], 0);
+  const contrast = (a: string, b: string) => {
+    const [hi, lo] = [luminance(hex(a)), luminance(hex(b))].sort((x, y) => y - x);
+    return (hi + 0.05) / (lo + 0.05);
+  };
+
+  function fullSummary() {
+    return {
+      openCount: 5,
+      closedCount: 12,
+      slaBreachedCount: 2,
+      avgResolutionMinutes: 125,
+      byStatus: { OPEN: 3, IN_PROGRESS: 2 },
+      ticketSummary: { total: 74, mine: 4, unattended: 11, inProgress: 73, paused: 9, overdue: 72 },
+      responseDeadlines: { total: 21, today: 5, tomorrow: 6, later: 10 },
+      solutionDeadlines: { total: 31, today: 7, tomorrow: 8, later: 16 },
+      unansweredTickets: { total: 13, mine: 3 },
+      csatGeneral30d: { avg: 4.5, count: 10, satisfactionRate: 90 },
+      csatMine30d: { avg: 4.2, count: 5, satisfactionRate: 80 },
+      recentNotifications: [{ id: 'n1', protocol: 'TK-1', title: 'Novo comentário' }],
+      inProgressBreakdown: {
+        byAssignee: [{ name: 'Joana', count: 5 }],
+        byServiceDesk: [],
+        byOrganization: [],
+        byResource: [],
+      },
+      monthlyHours: {
+        targetHoursTotal: 160,
+        loggedHoursTotal: 40,
+        remainingHoursTotal: 120,
+        days: [{ day: 1, date: '2026-10-01', targetHours: 8, loggedHours: 6, remainingHours: 2 }],
+      },
+      ticketsTrend30d: [
+        { date: '2026-10-10', created: 3, closed: 1, cancelled: 0 },
+        { date: '2026-10-11', created: 2, closed: 2, cancelled: 0 },
+      ],
+      myChats: { inProgress: 1, waitingResponse: 2, avgWaitMinutes: 3, avgServiceMinutes: 18 },
+      allChats: { inProgress: 2, waitingResponse: 1, avgWaitMinutes: 5, avgServiceMinutes: 20 },
+      chatsByDepartment: [
+        { department: 'Suporte', total: 5, inProgress: 3, waitingQueue: 1, waitingResponse: 1, avgWait: '4m', avgService: '18m' },
+      ],
+      chatsByAgent: [{ name: 'Carlos', status: 'online', inProgress: 2, group: 'N1' }],
+      myAppointments: { total: 3, today: 1, week: 2, month: 5, items: [] },
+      allAppointments: { total: 30, today: 4, week: 24, month: 147, items: [] },
+    };
+  }
+
+  async function openTab(name: string) {
+    const { userEvent } = await import('@testing-library/user-event');
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole('tab', { name }));
+    return user;
+  }
+
+  /** The number element of a KPI: the sibling right after its label. */
+  function kpiValue(scope: ReturnType<typeof within>, label: string) {
+    return scope.getByText(label, { selector: 'span' }).parentElement?.children[1] as HTMLElement;
+  }
+
+  const alertIcon = 'svg.lucide-triangle-alert, svg.lucide-alert-triangle';
+
+  it('AC-02: colors every Resumo and prazo KPI by its role and keeps the alert icon only on Vencidos and Hoje', async () => {
+    vi.mocked(api.get).mockResolvedValue({ data: fullSummary() });
+    const { container } = renderDashboard();
+
+    await screen.findByTestId('card-resumo-de-tickets');
+    const resumo = card('card-resumo-de-tickets');
+    const expected: Record<string, string> = {
+      Vencidos: 'text-red-600',
+      'Não atendidos': 'text-yellow-800',
+      'Em andamento': 'text-green-600',
+      Pausados: 'text-gray-500',
+      Todos: 'text-brand-600',
+      Meus: 'text-brand-600',
+    };
+    for (const [label, token] of Object.entries(expected)) {
+      expect(kpiValue(resumo, label), label).toHaveClass(token);
+    }
+    expect(kpiValue(resumo, 'Vencidos').querySelector(alertIcon)).not.toBeNull();
+
+    for (const kind of ['Atendimento', 'Solução']) {
+      const group = within(screen.getByRole('group', { name: kind }));
+      expect(kpiValue(group, 'Hoje'), `${kind} Hoje`).toHaveClass('text-yellow-800');
+      for (const label of ['Todos', 'Amanhã', 'Depois']) {
+        expect(kpiValue(group, label), `${kind} ${label}`).toHaveClass('text-gray-500');
+      }
+      expect(kpiValue(group, 'Hoje').querySelector(alertIcon)).not.toBeNull();
+      expect(kpiValue(group, 'Amanhã').querySelector(alertIcon)).toBeNull();
+      expect(kpiValue(group, 'Depois').querySelector(alertIcon)).toBeNull();
+    }
+    // Vencidos + one Hoje per prazo row; nothing else on the tab warns.
+    expect(container.querySelectorAll(alertIcon)).toHaveLength(3);
+  });
+
+  it('AC-03: every text color class on the four tabs reaches 4.5:1 on the white card', async () => {
+    vi.mocked(api.get).mockResolvedValue({ data: fullSummary() });
+    const { container } = renderDashboard();
+    await screen.findByTestId('card-resumo-de-tickets');
+
+    const used = new Set<string>();
+    const collect = () => {
+      for (const element of Array.from(container.querySelectorAll('*'))) {
+        const hasOwnText = Array.from(element.childNodes).some((n) => n.nodeType === 3 && n.textContent?.trim());
+        if (!hasOwnText) continue;
+        const classes = element.getAttribute('class') ?? '';
+        for (const match of classes.matchAll(/\b(?:text|fill)-([a-z]+-\d+)\b/g)) {
+          used.add(match[1]);
+        }
+      }
+    };
+    collect();
+    for (const tab of ['Chats', 'Recurso', 'Horas']) {
+      await openTab(tab);
+      collect();
+    }
+
+    expect(used.size).toBeGreaterThan(3);
+    for (const token of used) {
+      expect(css.includes(`--color-${token}:`), `${token} is not a DS token`).toBe(true);
+      expect(contrast(token, 'gray-70'), token).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
+  it('AC-04: the pie shows at most 6 slices plus Outros, a full legend with number and percent, and no number inside tiny slices', async () => {
+    const people = [
+      ['Ana', 40], ['Bia', 30], ['Caio', 20], ['Duda', 10], ['Edu', 5], ['Fabi', 3], ['Gabi', 2], ['Hugo', 1], ['Iara', 1],
+    ] as const;
+    vi.mocked(api.get).mockResolvedValue({
+      data: {
+        ...fullSummary(),
+        inProgressBreakdown: {
+          byAssignee: people.map(([name, count]) => ({ name, count })),
+          byServiceDesk: [],
+          byOrganization: [],
+          byResource: [],
+        },
+      },
+    });
+    renderDashboard();
+
+    const pieCard = within(await screen.findByTestId('card-tickets-em-andamento'));
+    // 112 tickets in total: 6 named slices (Ana..Fabi) + Outros (Gabi, Hugo, Iara = 4).
+    for (const name of ['Ana', 'Bia', 'Caio', 'Duda', 'Edu', 'Fabi', 'Outros']) {
+      expect(pieCard.getByText(name)).toBeInTheDocument();
+    }
+    for (const name of ['Gabi', 'Hugo', 'Iara']) expect(pieCard.queryByText(name)).not.toBeInTheDocument();
+    expect(pieCard.getByText('Tickets 40 · 36%')).toBeInTheDocument();
+    expect(pieCard.getByText('Tickets 4 · 4%')).toBeInTheDocument();
+
+    const svg = pieCard.getByRole('img', { name: /tickets em andamento/i });
+    expect(svg.querySelectorAll('path')).toHaveLength(7);
+    // Under 4% of 112 (Fabi 3, Outros 4) a slice carries no number.
+    const texts = Array.from(svg.querySelectorAll('text'));
+    expect(texts.map((t) => t.textContent)).toEqual(['40', '30', '20', '10', '5']);
+
+    // The number is readable on its own slice (4.5:1), whatever the slice color.
+    const fillToken = (el: Element) =>
+      el.getAttribute('class')?.match(/\bfill-((?:brand|gray|green|yellow|red|petroleum)-\d+|white)\b/)?.[1] ?? '';
+    const asToken = (name: string) => (name === 'white' ? 'gray-70' : name);
+    texts.forEach((text, index) => {
+      const slice = fillToken(svg.querySelectorAll('path')[index]);
+      expect(slice, `slice ${index}`).not.toBe('');
+      expect(contrast(asToken(fillToken(text)), slice), `slice ${index}`).toBeGreaterThanOrEqual(4.5);
+    });
+  });
+
+  it('AC-04: the legend is not clipped by a fixed height', async () => {
+    vi.mocked(api.get).mockResolvedValue({ data: fullSummary() });
+    renderDashboard();
+
+    const pieCard = within(await screen.findByTestId('card-tickets-em-andamento'));
+    const row = pieCard.getByText('Joana').closest('div[class*="flex"]') as HTMLElement;
+    let node: HTMLElement | null = row;
+    while (node && node.dataset.testid !== 'card-tickets-em-andamento') {
+      expect(node.className, node.className).not.toMatch(/max-h-|overflow-y-/);
+      node = node.parentElement;
+    }
+  });
+
+  it('AC-08: the top strip leads with Vencidos linked to the overdue list and Sem resposta is read-only', async () => {
+    vi.mocked(api.get).mockResolvedValue({ data: fullSummary() });
+    renderDashboard();
+
+    await screen.findByTestId('card-resumo-de-tickets');
+    const strip = card('card-resumo-de-tickets');
+    const first = strip.getAllByRole('link')[0];
+    expect(first).toHaveAccessibleName(/vencidos/i);
+    expect(first).toHaveAttribute('href', '/tickets?overdue=true');
+    expect(kpiValue(strip, 'Vencidos').className).toMatch(/text-\[(2[4-9]|3\d)px\]/);
+    expect(kpiValue(strip, 'Sem resposta')).toHaveTextContent('13');
+    expect(strip.queryByRole('link', { name: /sem resposta/i })).not.toBeInTheDocument();
+  });
+
+  it('AC-08: attendance and solution deadlines share one card with a 2x4 table and the old cards are gone', async () => {
+    vi.mocked(api.get).mockResolvedValue({ data: fullSummary() });
+    renderDashboard();
+
+    await screen.findByTestId('card-prazos');
+    const prazos = card('card-prazos');
+    const atendimento = within(prazos.getByRole('group', { name: 'Atendimento' }));
+    expect(kpiValue(atendimento, 'Todos')).toHaveTextContent('21');
+    expect(kpiValue(atendimento, 'Hoje')).toHaveTextContent('5');
+    expect(kpiValue(atendimento, 'Amanhã')).toHaveTextContent('6');
+    expect(kpiValue(atendimento, 'Depois')).toHaveTextContent('10');
+    const solucao = within(prazos.getByRole('group', { name: 'Solução' }));
+    expect(kpiValue(solucao, 'Todos')).toHaveTextContent('31');
+    expect(kpiValue(solucao, 'Hoje')).toHaveTextContent('7');
+    expect(kpiValue(solucao, 'Amanhã')).toHaveTextContent('8');
+    expect(kpiValue(solucao, 'Depois')).toHaveTextContent('16');
+
+    expect(screen.queryByTestId('card-vencimento-de-atendimento')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('card-vencimento-de-solucao')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('card-tickets-sem-respostas')).not.toBeInTheDocument();
+  });
+
+  it('AC-09: no block appears in two tabs (Tickets has the 30-day chart and notifications, Horas only the hours)', async () => {
+    vi.mocked(api.get).mockResolvedValue({ data: fullSummary() });
+    renderDashboard();
+
+    await screen.findByTestId('card-resumo-de-tickets');
+    expect(screen.getByTestId('card-tickets-nos-ultimos-30-dias')).toBeInTheDocument();
+    expect(screen.getByTestId('card-ultimas-notificacoes')).toBeInTheDocument();
+    expect(screen.queryByTestId('card-minhas-horas-apontadas')).not.toBeInTheDocument();
+
+    await openTab('Horas');
+    expect(screen.getByTestId('card-minhas-horas-apontadas')).toBeInTheDocument();
+    expect(screen.queryByTestId('card-tickets-nos-ultimos-30-dias')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('card-ultimas-notificacoes')).not.toBeInTheDocument();
+    expect(screen.getAllByTestId(/^card-/)).toHaveLength(1);
+  });
+
+  it('AC-10: the monthly totals are 13px, share the baseline of Ontem/Hoje and may wrap', async () => {
+    vi.mocked(api.get).mockResolvedValue({ data: fullSummary() });
+    renderDashboard();
+
+    await openTab('Horas');
+    const horas = card('card-minhas-horas-apontadas');
+    for (const label of ['Apontadas', 'Faltantes', 'Meta']) {
+      const total = horas.getByText(label).parentElement as HTMLElement;
+      expect(total, label).toHaveClass('text-[13px]');
+      expect(total.parentElement, label).toHaveClass('items-baseline', 'flex-wrap');
+    }
+    const ontem = horas.getByText('Ontem').parentElement as HTMLElement;
+    expect(ontem.parentElement).toHaveClass('items-baseline', 'flex-wrap');
+    expect(horas.getByText('40H')).toBeInTheDocument();
+  });
+
+  it('AC-11: read-only KPIs have no link, hover or pointer cursor; linked KPIs share the focus ring of the Ações button', async () => {
+    vi.mocked(api.get).mockResolvedValue({ data: fullSummary() });
+    renderDashboard();
+
+    await screen.findByTestId('card-prazos');
+    const readOnly = [
+      kpiValue(within(screen.getByRole('group', { name: 'Atendimento' })), 'Hoje'),
+      kpiValue(within(screen.getByRole('group', { name: 'Solução' })), 'Depois'),
+      kpiValue(card('card-resumo-de-tickets'), 'Sem resposta'),
+    ];
+    for (const value of readOnly) {
+      const item = value.parentElement as HTMLElement;
+      expect(item.closest('a')).toBeNull();
+      expect(item.className).not.toMatch(/hover:|cursor-pointer/);
+    }
+
+    const ring = screen
+      .getByRole('button', { name: /ações/i })
+      .className.split(/\s+/)
+      .filter((c) => c.startsWith('focus-visible:'));
+    expect(ring.length).toBeGreaterThan(0);
+    for (const link of card('card-resumo-de-tickets').getAllByRole('link')) {
+      for (const cls of ring) expect(link.className, link.textContent ?? '').toContain(cls);
+    }
+  });
+
+  it('AC-12: the Chats tables do not show a sort icon they do not honor', async () => {
+    vi.mocked(api.get).mockResolvedValue({ data: fullSummary() });
+    renderDashboard();
+
+    await openTab('Chats');
+    expect(screen.getByRole('table', { name: /chats por departamentos/i })).toBeInTheDocument();
+    expect(document.querySelector('svg.lucide-arrow-up-down')).toBeNull();
+  });
+
+  it('AC-13: shows the agent status in Portuguese in the Chats table', async () => {
+    vi.mocked(api.get).mockResolvedValue({
+      data: {
+        ...fullSummary(),
+        chatsByAgent: [
+          { name: 'A1', status: 'online', inProgress: 1, group: 'N1' },
+          { name: 'A2', status: 'busy', inProgress: 1, group: 'N1' },
+          { name: 'A3', status: 'away', inProgress: 1, group: 'N1' },
+          { name: 'A4', status: 'offline', inProgress: 1, group: 'N1' },
+        ],
+      },
+    });
+    renderDashboard();
+
+    await openTab('Chats');
+    const agents = within(screen.getByTestId('card-chats-por-atendentes'));
+    for (const label of ['Online', 'Ocupado', 'Ausente', 'Offline']) {
+      expect(agents.getByText(label)).toBeInTheDocument();
+    }
+    expect(agents.queryByText('busy')).not.toBeInTheDocument();
   });
 });
