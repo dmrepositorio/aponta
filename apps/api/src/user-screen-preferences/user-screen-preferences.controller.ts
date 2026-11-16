@@ -1,4 +1,5 @@
-import { Body, Controller, Get, Param, Put, Req } from '@nestjs/common';
+import { Body, Controller, Get, Param, Put, Req, UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUserPayload } from '../tickets/decorators/current-user.decorator';
 import { ScreenPreferenceData, UserScreenPreferencesService } from './user-screen-preferences.service';
 
@@ -6,22 +7,23 @@ interface AuthenticatedRequest {
   user: CurrentUserPayload;
 }
 
-/** DMTE-527 T2 (stub neutro, sem comportamento nem guard): rotas de preferência de tela do usuário autenticado. */
+/** DMTE-527 T2: cada rota age só com o id do usuário autenticado; o formato é validado no service. */
+@UseGuards(JwtAuthGuard)
 @Controller('me/screen-preferences')
 export class UserScreenPreferencesController {
-  constructor(protected readonly preferences: UserScreenPreferencesService) {}
+  constructor(private readonly preferences: UserScreenPreferencesService) {}
 
   @Get(':screen')
-  get(@Param('screen') _screen: string, @Req() _req: AuthenticatedRequest): Promise<ScreenPreferenceData> {
-    return Promise.resolve(undefined as never);
+  get(@Param('screen') screen: string, @Req() req: AuthenticatedRequest): Promise<ScreenPreferenceData> {
+    return this.preferences.get(req.user.id, screen);
   }
 
   @Put(':screen')
   put(
-    @Param('screen') _screen: string,
-    @Body() _body: ScreenPreferenceData,
-    @Req() _req: AuthenticatedRequest,
+    @Param('screen') screen: string,
+    @Body() body: ScreenPreferenceData,
+    @Req() req: AuthenticatedRequest,
   ): Promise<ScreenPreferenceData> {
-    return Promise.resolve(undefined as never);
+    return this.preferences.put(req.user.id, screen, body);
   }
 }
