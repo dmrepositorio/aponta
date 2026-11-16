@@ -30,7 +30,7 @@ interface TicketShortcutsProps {
 }
 
 const buttonClass = (active: boolean) =>
-  `inline-flex h-[var(--control-height-compact)] min-w-0 items-center gap-2 rounded-control border px-3 text-[13px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 ${
+  `inline-flex max-sm:h-11 sm:h-[var(--control-height-compact)] min-w-0 items-center gap-2 rounded-control border px-3 text-[13px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 ${
     active
       ? 'border-brand-600 bg-brand-100/50 text-brand-700'
       : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-90'

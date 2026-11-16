@@ -113,8 +113,15 @@
      Ordenar, Configurações, busca) já convergem em 10px. Esta fatia fixa
      esses valores medidos como os tokens oficiais, em vez de inventar uma
      escala nova; a aplicação em cartões/chips/badges de outras telas da
-     aba Tickets fica para as fatias 2–6, que tocam cada superfície. */
+     aba Tickets fica para as fatias 2–6, que tocam cada superfície.
+
+     Exceção da barra de Tickets (SPEC DMTE-527, Q1): 36px, antes chamado de
+     placeholder, passa a valer como `--control-height-toolbar` só para a barra
+     da aba Tickets (título, busca, Lista/Kanban, Mesa, Ordenar, Configurações).
+     Abaixo de `sm` esses controles sobem para 44px (alvo de toque). 42px e 32px
+     seguem como únicos valores das outras telas. */
   --control-height-md: 42px;
+  --control-height-toolbar: 36px;
   --control-height-compact: 32px;
   --radius-control: 10px;
   --radius-card: 16px;

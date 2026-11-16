@@ -326,7 +326,7 @@ export function TicketList({
           <button
             type="button"
             onClick={() => setIsColumnMenuOpen((prev) => !prev)}
-            className="h-[var(--control-height-compact)] rounded-control border border-gray-200 bg-white px-3 text-[13px] font-medium text-gray-700 hover:bg-gray-90"
+            className="max-sm:h-11 sm:h-[var(--control-height-compact)] rounded-control border border-gray-200 bg-white px-3 text-[13px] font-medium text-gray-700 hover:bg-gray-90"
           >
             Exibir colunas
           </button>

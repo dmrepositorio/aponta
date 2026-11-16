@@ -27,6 +27,7 @@ export function EzSegmented<T extends string>({
   value,
   onChange,
   className,
+  size = 'default',
   'aria-label': ariaLabel,
 }: EzSegmentedProps<T>) {
   return (
@@ -34,7 +35,10 @@ export function EzSegmented<T extends string>({
       role="group"
       aria-label={ariaLabel}
       className={cn(
-        'inline-flex h-[var(--control-height-md)] shrink-0 items-center rounded-control border border-gray-200 bg-gray-90 p-1 text-[13px]',
+        'inline-flex shrink-0 items-center rounded-control border border-gray-200 bg-gray-90 p-1 text-[13px]',
+        size === 'toolbar'
+          ? 'max-sm:h-11 sm:h-[var(--control-height-toolbar)]'
+          : 'h-[var(--control-height-md)]',
         className,
       )}
     >
