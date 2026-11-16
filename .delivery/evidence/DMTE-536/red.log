@@ -1,0 +1,602 @@
+
+ RUN  v4.1.11 /home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-521-c4187c3d45b2/workdir/aponta/apps/web
+
+ ❯ |web| src/components/contracts/ContractStateTags.test.tsx (8 tests | 7 failed) 50ms
+     × uses one vocabulary: legacy wins, then approved, else draft 9ms
+     × shows Ativo and Inativo with text and an icon, differing in icon and classes, without red 22ms
+     × shows each approval state with its own text and icon, none of them red 3ms
+     × keeps Rascunho and Regularização pendente in the same warning family but apart by text and icon 3ms
+     × lets icons inherit the text color (no own text-* class) 3ms
+     × declares a token pair for every state 3ms
+     × declares the same tokens the rendered tags really use 4ms
+     ✓ reaches 4.5:1 for every text/background pair (icons inherit the text color, so they reach it too) 0ms
+ ❯ |web| src/pages/ContractsPage.test.tsx (29 tests | 7 failed) 6511ms
+     ✓ shows a loading state while contracts are being fetched 114ms
+     ✓ shows an error state when the contracts request fails 70ms
+     ✓ shows the empty state when there are no contracts 61ms
+     ✓ shows financial columns (valor mensal / reajuste) for ADMIN 241ms
+     ✓ shows financial columns for CLIENT_MASTER as well 160ms
+     ✓ hides financial columns for AGENT (masked by the backend, but double-check the UI gate too) 69ms
+     ✓ displays inactive contracts and zero money honestly 96ms
+     ✓ lets admins create with explicit excess rate and minute allowance  470ms
+     ✓ prevents non-admin management and hides detail financial data 152ms
+     ✓ opens a contract's detail as a full page (no dialog) and returns to the list via the back button 236ms
+     ✓ navigates between contracts using the toolbar Anterior/Próximo buttons 129ms
+     ✓ shows a dedicated "Novo contrato" button directly on the toolbar for ADMIN, opening the full-page form 182ms
+     ✓ lets an ADMIN select a contract and delete it via the toolbar 194ms
+     ✓ shows the backend conflict message when deleting a contract with worklogs fails 187ms
+     ✓ does not show the delete button for AGENT, who cannot manage contracts 63ms
+     ✓ renders the Sankhya standard filter drawer and screen config modal (parity with Clientes) 143ms
+     ✓ filters contracts by name or company on the client side via the filter drawer  386ms
+     ✓ filters contracts by status (Ativo/Inativo) via the filter drawer 251ms
+     ✓ filters dynamically by modality using the rule builder (Sankhya Filtros parity)  388ms
+     ✓ saves, applies, and deletes a saved filter from the drawer (Sankhya saved filters parity)  660ms
+     ✓ edits via the update command without turning zero into missing money 295ms
+     ✓ validates reversed dates before saving 120ms
+     × opens the detail from the contract name button and has no Ações column 95ms
+     × opens the detail of the row on double click 1116ms
+     × keeps Contrato and Empresa on one line with the full text in the title, and fixed column widths 67ms
+     × shows Status and Aprovação as two columns of tags with text and icon 96ms
+     × uses the same approval words in the detail 97ms
+     × filters by the same approval words, including Rascunho and Regularização pendente 227ms
+     × starts with Hora excedente and Reajuste hidden but still configurable 133ms
+
+ Test Files  2 failed (2)
+      Tests  14 failed | 23 passed (37)
+   Start at  21:40:58
+   Duration  10.08s (transform 2.24s, setup 194ms, import 3.04s, tests 6.56s, environment 896ms)
+
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 14 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |web| src/pages/ContractsPage.test.tsx > ContractsPage grid (DMTE-536) > opens the detail from the contract name button and has no Ações column
+Error: [2mexpect([22m[31melement[39m[2m).toHaveTextContent()[22m
+
+Expected element to have text content:
+[32m  Suporte mensal Sankhya ERP — Matriz e filiais (inclui sobreaviso)[39m
+Received:
+[31m  Ver detalhes[39m
+ ❯ src/pages/ContractsPage.test.tsx:661:18
+    659|
+    660|     const open = await screen.findByRole('button', { name: `Ver detalh…
+    661|     expect(open).toHaveTextContent(longName);
+       |                  ^
+    662|     expect(screen.queryByText('Ver detalhes')).not.toBeInTheDocument();
+    663|     expect(screen.queryByRole('columnheader', { name: /Ações/ })).not.…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/14]⎯
+
+ FAIL  |web| src/pages/ContractsPage.test.tsx > ContractsPage grid (DMTE-536) > opens the detail of the row on double click
+TestingLibraryElementError: Unable to find an element with the text: Mesas cobertas. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"flex flex-col h-full bg-gray-80"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex flex-col w-full bg-white border-b border-gray-200 px-6 py-4 gap-3"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center justify-between min-h-[40px]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-3"[39m
+          [36m>[39m
+            [36m<h1[39m
+              [33mclass[39m=[32m"text-[20px] font-semibold text-gray-900 leading-none m-0"[39m
+            [36m>[39m
+              [0mContratos[0m
+            [36m</h1>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-4"[39m
+          [36m/>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex-1 overflow-auto p-6"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"space-y-6"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"bg-white rounded-[10px] border border-gray-200 overflow-hidden shadow-xs flex flex-col"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center justify-between gap-3 px-3 py-1.5 bg-white border-b border-gray-200 select-none min-h-[44px]"[39m
+              [33mdata-testid[39m=[32m"ez-entity-toolbar"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center gap-1 flex-wrap"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33maria-label[39m=[32m"Painel de filtros"[39m
+                  [33mclass[39m=[32m"inline-flex items-center justify-center h-[32px] px-2.5 rounded-[6px] text-[12px] font-medium transition-colors border cursor-pointer bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:text-gray-900"[39m
+                  [33mdata-testid[39m=[32m"ez-toolbar-filter-panel-button"[39m
+                  [33mtitle[39m=[32m"Painel de filtros"[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [36m<svg[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"lucide lucide-funnel lucide-filter w-3.5 h-3.5 mr-1.5"[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mheight[39m=[32m"24"[39m
+                    [33mstroke[39m=[32m"currentColor"[39m
+                    [33mstroke-linecap[39m=[32m"round"[39m
+                    [33mstroke-linejoin[39m=[32m"round"[39m
+                    [33mstroke-width[39m=[32m"2"[39m
+                    [33mviewBox[39m=[32m"0 0 24 24"[39m
+                    [33mwidth[39m=[32m"24"[39m
+                    [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                  [36m>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z"[39m
+                    [36m/>[39m
+                  [36m</svg>[39m
+                  [0mFiltros[0m
+                [36m</button>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"w-px h-5 bg-gray-200 mx-0.5"[39m
+                [36m/>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"relative inline-flex items-center rounded-[6px] border border-gray-200 bg-white"[39m
+                [36m>[39m
+                  [36m<button[39m
+                    [33maria-label[39m=[32m"Alternar para Modo Formulário"[39m
+                    [33mclass[39m=[32m"inline-flex items-center gap-1.5 px-2.5 h-[30px] rounded-l-[5px] text-[12px] font-medium transition-colors cursor-pointer text-brand-700 bg-brand-50/50 hover:bg-brand-50"[39m
+                    [33mdata-testid[39m=[32m"ez-toolbar-mode-toggle-button"[39m
+                    [33mtitle[39m=[32m"Ver formulário do registro"[39m
+                    [33mtype[39m=[32m"button"[39m
+                  [36m>[39m
+                    [36m<svg[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"lucide lucide-layout-grid w-3.5 h-3.5 text-brand-600"[39m
+                      [33mfill[39m=[32m"none"[39m
+                      [33mheight[39m=[32m"24"[39m
+                      [33mstroke[39m=[32m"currentColor"[39m
+                      [33mstroke-linecap[39m=[32m"round"[39m
+                      [33mstroke-linejoin[39m=[32m"round"[39m
+                      [33mstroke-width[39m=[32m"2"[39m
+                      [33mviewBox[39m=[32m"0 0 24 24"[39m
+                      [33mwidth[39m=[32m"24"[39m
+                      [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                    [36m>[39m
+                      [36m<rect[39m
+                        [33mheight[39m=[32m"7"[39m
+                        [33mrx[39m=[32m"1"[39m
+                        [33mwidth[39m=[32m"7"[39m
+                        [33mx[39m=[32m"3"[39m
+                        [33my[39m=[32m"3"[39m
+                      [36m/>[39m
+                      [36m<rect[39m
+                        [33mheight[39m=[32m"7"[39m
+                        [33mrx[39m=[32m"1"[39m
+                        [33mwidth[39m=[32m"7"[39m
+                        [33mx[39m=[32m"14"[39m
+                        [33my[39m=[32m"3"[39m
+                      [36m/>[39m
+                      [36m<rect[39m
+                        [33mheight[39m=[32m"7"[39m
+                        [33mrx[39m=[32m"1"[39m
+                        [33mwidth[39m=[32m"7"[39m
+                        [33mx[39m=[32m"14"[39m
+                        [33my[39m=[32m"14"[39m
+                      [36m/>[39m
+                      [36m<rect[39m
+                        [33mheight[39m=[32m"7"[39m
+                        [33mrx[39m=[32m"1"[39m
+                        [33mwidth[39m=[32m"7"[39m
+                        [33mx[39m=[32m"3"[39m
+                        [33my[39m=[32m"14"[39m
+                      [36m/>[39m
+                    [36m</svg>[39m
+                    [36m<span>[39m
+                      [0mGrade[0m
+                    [36m</span>[39m
+                  [36m</button>[39m
+                  [36m<button[39m
+                    [33maria-expanded[39m=[32m"false"[39m
+                    [33maria-label[39m=[32m"Opções do modo de visualização"[39m
+                    [33mclass[39m=[32m"inline-flex items-center justify-center w-6 h-[30px] border-l border-gray-200 rounded-r-[5px] text-gray-500 hover:text-gray-900 hover:bg-gray-50 transition-colors cursor-p...
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"flex flex-col h-full bg-gray-80"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex flex-col w-full bg-white border-b border-gray-200 px-6 py-4 gap-3"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center justify-between min-h-[40px]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-3"[39m
+          [36m>[39m
+            [36m<h1[39m
+              [33mclass[39m=[32m"text-[20px] font-semibold text-gray-900 leading-none m-0"[39m
+            [36m>[39m
+              [0mContratos[0m
+            [36m</h1>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-4"[39m
+          [36m/>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex-1 overflow-auto p-6"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"space-y-6"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"bg-white rounded-[10px] border border-gray-200 overflow-hidden shadow-xs flex flex-col"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center justify-between gap-3 px-3 py-1.5 bg-white border-b border-gray-200 select-none min-h-[44px]"[39m
+              [33mdata-testid[39m=[32m"ez-entity-toolbar"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center gap-1 flex-wrap"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33maria-label[39m=[32m"Painel de filtros"[39m
+                  [33mclass[39m=[32m"inline-flex items-center justify-center h-[32px] px-2.5 rounded-[6px] text-[12px] font-medium transition-colors border cursor-pointer bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:text-gray-900"[39m
+                  [33mdata-testid[39m=[32m"ez-toolbar-filter-panel-button"[39m
+                  [33mtitle[39m=[32m"Painel de filtros"[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [36m<svg[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"lucide lucide-funnel lucide-filter w-3.5 h-3.5 mr-1.5"[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mheight[39m=[32m"24"[39m
+                    [33mstroke[39m=[32m"currentColor"[39m
+                    [33mstroke-linecap[39m=[32m"round"[39m
+                    [33mstroke-linejoin[39m=[32m"round"[39m
+                    [33mstroke-width[39m=[32m"2"[39m
+                    [33mviewBox[39m=[32m"0 0 24 24"[39m
+                    [33mwidth[39m=[32m"24"[39m
+                    [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                  [36m>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z"[39m
+                    [36m/>[39m
+                  [36m</svg>[39m
+                  [0mFiltros[0m
+                [36m</button>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"w-px h-5 bg-gray-200 mx-0.5"[39m
+                [36m/>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"relative inline-flex items-center rounded-[6px] border border-gray-200 bg-white"[39m
+                [36m>[39m
+                  [36m<button[39m
+                    [33maria-label[39m=[32m"Alternar para Modo Formulário"[39m
+                    [33mclass[39m=[32m"inline-flex items-center gap-1.5 px-2.5 h-[30px] rounded-l-[5px] text-[12px] font-medium transition-colors cursor-pointer text-brand-700 bg-brand-50/50 hover:bg-brand-50"[39m
+                    [33mdata-testid[39m=[32m"ez-toolbar-mode-toggle-button"[39m
+                    [33mtitle[39m=[32m"Ver formulário do registro"[39m
+                    [33mtype[39m=[32m"button"[39m
+                  [36m>[39m
+                    [36m<svg[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"lucide lucide-layout-grid w-3.5 h-3.5 text-brand-600"[39m
+                      [33mfill[39m=[32m"none"[39m
+                      [33mheight[39m=[32m"24"[39m
+                      [33mstroke[39m=[32m"currentColor"[39m
+                      [33mstroke-linecap[39m=[32m"round"[39m
+                      [33mstroke-linejoin[39m=[32m"round"[39m
+                      [33mstroke-width[39m=[32m"2"[39m
+                      [33mviewBox[39m=[32m"0 0 24 24"[39m
+                      [33mwidth[39m=[32m"24"[39m
+                      [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                    [36m>[39m
+                      [36m<rect[39m
+                        [33mheight[39m=[32m"7"[39m
+                        [33mrx[39m=[32m"1"[39m
+                        [33mwidth[39m=[32m"7"[39m
+                        [33mx[39m=[32m"3"[39m
+                        [33my[39m=[32m"3"[39m
+                      [36m/>[39m
+                      [36m<rect[39m
+                        [33mheight[39m=[32m"7"[39m
+                        [33mrx[39m=[32m"1"[39m
+                        [33mwidth[39m=[32m"7"[39m
+                        [33mx[39m=[32m"14"[39m
+                        [33my[39m=[32m"3"[39m
+                      [36m/>[39m
+                      [36m<rect[39m
+                        [33mheight[39m=[32m"7"[39m
+                        [33mrx[39m=[32m"1"[39m
+                        [33mwidth[39m=[32m"7"[39m
+                        [33mx[39m=[32m"14"[39m
+                        [33my[39m=[32m"14"[39m
+                      [36m/>[39m
+                      [36m<rect[39m
+                        [33mheight[39m=[32m"7"[39m
+                        [33mrx[39m=[32m"1"[39m
+                        [33mwidth[39m=[32m"7"[39m
+                        [33mx[39m=[32m"3"[39m
+                        [33my[39m=[32m"14"[39m
+                      [36m/>[39m
+                    [36m</svg>[39m
+                    [36m<span>[39m
+                      [0mGrade[0m
+                    [36m</span>[39m
+                  [36m</button>[39m
+                  [36m<button[39m
+                    [33maria-expanded[39m=[32m"false"[39m
+                    [33maria-label[39m=[32m"Opções do modo de visualização"[39m
+                    [33mclass[39m=[32m"inline-flex items-center justify-center w-6 h-[30px] border-l border-gray-200 rounded-r-[5px] text-gray-500 hover:text-gray-900 hover:bg-gray-50 transition-colors cursor-p...
+ ❯ waitForWrapper ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/pages/ContractsPage.test.tsx:676:25
+    674|     fireEvent.doubleClick(row as HTMLElement);
+    675|
+    676|     expect(await screen.findByText('Mesas cobertas')).toBeInTheDocumen…
+       |                         ^
+    677|     expect(screen.getByRole('heading', { name: 'Horas avulsas' })).toB…
+    678|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/14]⎯
+
+ FAIL  |web| src/pages/ContractsPage.test.tsx > ContractsPage grid (DMTE-536) > keeps Contrato and Empresa on one line with the full text in the title, and fixed column widths
+Error: [2mexpect([22m[31melement[39m[2m).toHaveClass([22m[32m[32m"truncate"[32m[39m[2m)[22m
+
+Expected the element to have class:
+[32m  truncate[39m
+Received:
+[31m  relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent text-brand-600 hover:text-brand-800 disabled:text-gray-400 disabled:bg-transparent h-[32px] text-xs px-4[39m
+ ❯ src/pages/ContractsPage.test.tsx:685:18
+    683|
+    684|     const name = await screen.findByRole('button', { name: `Ver detalh…
+    685|     expect(name).toHaveClass('truncate');
+       |                  ^
+    686|     expect(name).toHaveAttribute('title', longName);
+    687|     const company = screen.getByText(longCompany);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/14]⎯
+
+ FAIL  |web| src/pages/ContractsPage.test.tsx > ContractsPage grid (DMTE-536) > shows Status and Aprovação as two columns of tags with text and icon
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/pages/ContractsPage.test.tsx:711:65
+    709|     const headers = screen.getAllByRole('columnheader').map((header) =…
+    710|     expect(headers.some((text) => text?.includes('Status'))).toBe(true…
+    711|     expect(headers.some((text) => text?.includes('Aprovação'))).toBe(t…
+       |                                                                 ^
+    712|
+    713|     expect(screen.getAllByText('Ativo')).toHaveLength(2);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/14]⎯
+
+ FAIL  |web| src/pages/ContractsPage.test.tsx > ContractsPage grid (DMTE-536) > uses the same approval words in the detail
+Error: [2mexpect([22m[31melement[39m[2m).toHaveTextContent()[22m
+
+Expected element to have text content:
+[32m  Rascunho[39m
+Received:
+[31m  AprovaçãoPendente[39m
+ ❯ src/pages/ContractsPage.test.tsx:729:57
+    727|     fireEvent.click(await screen.findByRole('button', { name: 'Ver det…
+    728|     await screen.findByText('Mesas cobertas');
+    729|     expect(screen.getByText('Aprovação').parentElement).toHaveTextCont…
+       |                                                         ^
+    730|
+    731|     fireEvent.click(screen.getByTitle('Voltar'));
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/14]⎯
+
+ FAIL  |web| src/pages/ContractsPage.test.tsx > ContractsPage grid (DMTE-536) > filters by the same approval words, including Rascunho and Regularização pendente
+TestingLibraryElementError: Unable to find an accessible element with the role "option"
+
+There are no accessible roles. But there might be some inaccessible roles. If you wish to access them, then set the `hidden` option to `true`. Learn more about this here: https://testing-library.com/docs/dom-testing-library/api-queries#byrole
+
+Ignored nodes: comments, script, style
+[36m<select[39m
+  [33maria-hidden[39m=[32m"true"[39m
+  [33maria-label[39m=[32m"Valor"[39m
+  [33mclass[39m=[32m"sr-only"[39m
+  [33mid[39m=[32m"_r_j_"[39m
+  [33mtabindex[39m=[32m"-1"[39m
+[36m>[39m
+  [36m<option[39m
+    [33mvalue[39m=[32m""[39m
+  [36m>[39m
+    [0mSelecione…[0m
+  [36m</option>[39m
+  [36m<option[39m
+    [33mvalue[39m=[32m"Aprovado"[39m
+  [36m>[39m
+    [0mAprovado[0m
+  [36m</option>[39m
+  [36m<option[39m
+    [33mvalue[39m=[32m"Pendente"[39m
+  [36m>[39m
+    [0mPendente[0m
+  [36m</option>[39m
+[36m</select>[39m
+ ❯ Object.getElementError ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:109:15
+ ❯ src/pages/ContractsPage.test.tsx:750:35
+    748|
+    749|     const value = within(rule).getByLabelText('Valor', { selector: 'se…
+    750|     const options = within(value).getAllByRole('option').map((option) …
+       |                                   ^
+    751|     expect(options).toEqual(expect.arrayContaining(['Aprovado', 'Rascu…
+    752|     expect(options).not.toContain('Pendente');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/14]⎯
+
+ FAIL  |web| src/pages/ContractsPage.test.tsx > ContractsPage grid (DMTE-536) > starts with Hora excedente and Reajuste hidden but still configurable
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/pages/ContractsPage.test.tsx:771:74
+    769|     const headerText = () => screen.getAllByRole('columnheader').map((…
+    770|     expect(headerText().some((text) => text.includes('Valor mensal')))…
+    771|     expect(headerText().some((text) => text.includes('Hora excedente')…
+       |                                                                          ^
+    772|     expect(headerText().some((text) => text.includes('Reajuste'))).toB…
+    773|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/14]⎯
+
+ FAIL  |web| src/components/contracts/ContractStateTags.test.tsx > approvalLabel > uses one vocabulary: legacy wins, then approved, else draft
+AssertionError: expected 'Rascunho' to be 'Regularização pendente' // Object.is equality
+
+Expected: "Regularização pendente"
+Received: "Rascunho"
+
+ ❯ src/components/contracts/ContractStateTags.test.tsx:32:61
+     30| describe('approvalLabel', () => {
+     31|   it('uses one vocabulary: legacy wins, then approved, else draft', ()…
+     32|     expect(approvalLabel({ legacy: true, approved: true })).toBe('Regu…
+       |                                                             ^
+     33|     expect(approvalLabel({ legacy: true, approved: false })).toBe('Reg…
+     34|     expect(approvalLabel({ legacy: false, approved: true })).toBe('Apr…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/14]⎯
+
+ FAIL  |web| src/components/contracts/ContractStateTags.test.tsx > contract state tags > shows Ativo and Inativo with text and an icon, differing in icon and classes, without red
+TestingLibraryElementError: Unable to find an element with the text: Ativo. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<div />[39m
+ ❯ Object.getElementError ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ look src/components/contracts/ContractStateTags.test.tsx:17:34
+     15| function look(ui: ReactElement, text: string) {
+     16|   const { container, unmount } = render(ui);
+     17|   const root = within(container).getByText(text).closest('div') as HTM…
+       |                                  ^
+     18|   const icon = root.querySelector('[data-glyph]');
+     19|   const result = {
+ ❯ src/components/contracts/ContractStateTags.test.tsx:41:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/14]⎯
+
+ FAIL  |web| src/components/contracts/ContractStateTags.test.tsx > contract state tags > shows each approval state with its own text and icon, none of them red
+TestingLibraryElementError: Unable to find an element with the text: Aprovado. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<div />[39m
+ ❯ Object.getElementError ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ look src/components/contracts/ContractStateTags.test.tsx:17:34
+     15| function look(ui: ReactElement, text: string) {
+     16|   const { container, unmount } = render(ui);
+     17|   const root = within(container).getByText(text).closest('div') as HTM…
+       |                                  ^
+     18|   const icon = root.querySelector('[data-glyph]');
+     19|   const result = {
+ ❯ src/components/contracts/ContractStateTags.test.tsx:51:41
+ ❯ src/components/contracts/ContractStateTags.test.tsx:51:26
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/14]⎯
+
+ FAIL  |web| src/components/contracts/ContractStateTags.test.tsx > contract state tags > keeps Rascunho and Regularização pendente in the same warning family but apart by text and icon
+TestingLibraryElementError: Unable to find an element with the text: Rascunho. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<div />[39m
+ ❯ Object.getElementError ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ look src/components/contracts/ContractStateTags.test.tsx:17:34
+     15| function look(ui: ReactElement, text: string) {
+     16|   const { container, unmount } = render(ui);
+     17|   const root = within(container).getByText(text).closest('div') as HTM…
+       |                                  ^
+     18|   const icon = root.querySelector('[data-glyph]');
+     19|   const result = {
+ ❯ src/components/contracts/ContractStateTags.test.tsx:61:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/14]⎯
+
+ FAIL  |web| src/components/contracts/ContractStateTags.test.tsx > contract state tags > lets icons inherit the text color (no own text-* class)
+TestingLibraryElementError: Unable to find an element with the text: Aprovado. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<div />[39m
+ ❯ Object.getElementError ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ look src/components/contracts/ContractStateTags.test.tsx:17:34
+     15| function look(ui: ReactElement, text: string) {
+     16|   const { container, unmount } = render(ui);
+     17|   const root = within(container).getByText(text).closest('div') as HTM…
+       |                                  ^
+     18|   const icon = root.querySelector('[data-glyph]');
+     19|   const result = {
+ ❯ src/components/contracts/ContractStateTags.test.tsx:69:14
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/14]⎯
+
+ FAIL  |web| src/components/contracts/ContractStateTags.test.tsx > contract state tag colors > declares a token pair for every state
+AssertionError: expected [] to deeply equal [ 'active', 'approved', 'draft', …(2) ]
+
+- Expected
++ Received
+
+- [
+-   "active",
+-   "approved",
+-   "draft",
+-   "inactive",
+-   "legacy",
+- ]
++ []
+
+ ❯ src/components/contracts/ContractStateTags.test.tsx:93:57
+     91| describe('contract state tag colors', () => {
+     92|   it('declares a token pair for every state', () => {
+     93|     expect(Object.keys(contractStateTokenPairs).sort()).toEqual(
+       |                                                         ^
+     94|       ['active', 'approved', 'draft', 'inactive', 'legacy'].sort(),
+     95|     );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/14]⎯
+
+ FAIL  |web| src/components/contracts/ContractStateTags.test.tsx > contract state tag colors > declares the same tokens the rendered tags really use
+TestingLibraryElementError: Unable to find an element with the text: Ativo. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<div />[39m
+ ❯ Object.getElementError ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ look src/components/contracts/ContractStateTags.test.tsx:17:34
+     15| function look(ui: ReactElement, text: string) {
+     16|   const { container, unmount } = render(ui);
+     17|   const root = within(container).getByText(text).closest('div') as HTM…
+       |                                  ^
+     18|   const icon = root.querySelector('[data-glyph]');
+     19|   const result = {
+ ❯ src/components/contracts/ContractStateTags.test.tsx:100:15
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/14]⎯
+

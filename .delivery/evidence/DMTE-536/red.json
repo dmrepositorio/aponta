@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "phase": "red",
+  "started_at": "2026-11-16T00:40:57.331348+00:00",
+  "finished_at": "2026-11-16T00:41:08.489929+00:00",
+  "command": [
+    "pnpm",
+    "--dir",
+    "apps/web",
+    "exec",
+    "vitest",
+    "run",
+    "src/components/contracts/ContractStateTags.test.tsx",
+    "src/pages/ContractsPage.test.tsx"
+  ],
+  "base_sha": "acc58a4c2371e55241babca5538424633da242a9",
+  "head_sha": "3f7de09f9bb3f3967b035acb7adb5e4de738182c",
+  "exit_code": 1,
+  "tests": {
+    "apps/web/src/components/contracts/ContractStateTags.test.tsx": "95e380356b2933ac4ca22c75a7f83dc3769fd956eb84fac0829d3bc0086736ea",
+    "apps/web/src/pages/ContractsPage.test.tsx": "f99339e596491dc38b054a3bf7cee2e80dab4f5e27c429148c669bbdadfe96bb"
+  },
+  "criteria": [
+    "AC-01",
+    "AC-02",
+    "AC-03",
+    "AC-04",
+    "AC-05",
+    "AC-06"
+  ],
+  "source_hashes": {
+    "apps/web/src/components/contracts/ContractStateTags.test.tsx": "95e380356b2933ac4ca22c75a7f83dc3769fd956eb84fac0829d3bc0086736ea",
+    "apps/web/src/components/contracts/ContractStateTags.tsx": "99629c2ea491549416f9b290a8d8b32484144f515e5f1f6279ad4408df76c56a",
+    "apps/web/src/pages/ContractsPage.test.tsx": "f99339e596491dc38b054a3bf7cee2e80dab4f5e27c429148c669bbdadfe96bb"
+  },
+  "log": ".delivery/evidence/DMTE-536/red.log",
+  "log_sha256": "b74eb2b56090acbf149a63b88c7dcab264baa2deb94839268fbe3f5327c18658"
+}
