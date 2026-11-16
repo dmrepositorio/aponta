@@ -11,8 +11,11 @@
       "id": "AC-01",
       "description": "`scripts/check_tickets_palette.py` e `scripts/check_tickets_proportion.py` passam cobrindo `DashboardPage.tsx` e `EzLineChart.tsx`; a Dashboard não tem hex literal nem classe de paleta fora do DS; o escopo novo tem teste Python.",
       "tests": [
-        "scripts/test_check_tickets_palette.py (escopo da Dashboard e do EzLineChart)"
-      ]
+        "scripts/test_tickets_scope.py: FindTicketsFilesTest (escopo com DashboardPage.tsx e EzLineChart.tsx)",
+        "scripts/test_check_tickets_palette.py: test_main_checks_the_dashboard_and_names_it_in_the_messages e TicketsPaletteRealTreeTest (árvore real, incluindo a Dashboard)"
+      ],
+      "tdd_required": false,
+      "reason": "Checagem estática de CI em Python: o coletor aceita um único comando de teste (vitest) e não registra unittest. Os testes Python foram escritos antes do código e falharam por asserção (2 falhas) contra o escopo antigo; passam no CI com python -m unittest."
     },
     {
       "id": "AC-02",
@@ -131,6 +134,10 @@
       "EzTabs",
       "EzActionsButton",
       "EzSpinner"
-    ]
+    ],
+    "stories": [
+      "apps/web/src/components/ds/EzLineChart.stories.tsx"
+    ],
+    "reason": "Cria o EzLineChart no DS (SVG próprio, sem dependência nova) com story e testes, e reaproveita EzTabs, EzActionsButton e EzSpinner; só tokens já definidos no @theme."
   }
 }
