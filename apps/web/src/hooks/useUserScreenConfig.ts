@@ -47,7 +47,7 @@ function getStorageKey(userId: string | null | undefined, screenId: string): str
 }
 
 type Check = (v: any) => boolean;
-const isObj: Check = (v) => typeof v === 'object' && v !== null && !Array.isArray(v);
+const isObj = (v: unknown): v is Record<string, any> => typeof v === 'object' && v !== null && !Array.isArray(v);
 const isBoolMap: Check = (v) => isObj(v) && Object.values(v).every((x) => typeof x === 'boolean');
 const allValid = (table: Record<string, Check>, o: Record<string, unknown>) =>
   Object.entries(o).every(([k, v]) => Object.prototype.hasOwnProperty.call(table, k) && (v === undefined || table[k](v)));
@@ -145,7 +145,7 @@ export function useUserScreenConfig(
   const [config, setConfig] = useState<UserScreenConfig>(resolvedDefaults);
   const [isLoading, setIsLoading] = useState(true);
   const configRef = useRef(config);
-  const saveTimer = useRef<ReturnType<typeof setTimeout>>();
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(() => {
     let cancelled = false;
