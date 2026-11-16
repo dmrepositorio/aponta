@@ -1,0 +1,85 @@
+{
+  "version": 1,
+  "delivery": "DMTE-534",
+  "repository": "dmrepositorio/aponta",
+  "github_issue": 297,
+  "multica_id": "01a1e004-5f6a-7286-a0d9-6c7b363dd363",
+  "cycle": "2026-11-09/2026-11-22",
+  "tier": 2,
+  "criteria": [
+    {
+      "id": "AC-01",
+      "description": "o card de artigo, recolhido por padrão, mostra o título, a meta (tag \"Interno\" quando privado, autor e data), um trecho em texto simples sem o corpo completo, no máximo 5 tags com \"+N\" para as demais e, só quando há anexos, a contagem de anexos; não mostra \"Selecionar arquivo\", \"Anexar arquivo\" nem \"Anexos (0)\".",
+      "tests": []
+    },
+    {
+      "id": "AC-02",
+      "description": "\"Ler artigo completo\" expande o card (`aria-expanded=\"true\"`, `aria-controls` apontando para o corpo): aparecem o corpo completo como HTML real dentro de `.article-content`, todas as tags e a lista de anexos com os links de download, quando houver; \"Recolher\" volta ao estado anterior. O botão não existe quando não há nada escondido.",
+      "tests": []
+    },
+    {
+      "id": "AC-03",
+      "description": "`articleExcerpt` devolve só texto, com espaço entre blocos adjacentes, no máximo 240 caracteres cortados em limite de palavra com \"…\", e `\"\"` para HTML vazio ou só com marcação.",
+      "tests": []
+    },
+    {
+      "id": "AC-04",
+      "description": "o gerenciador de anexos (enviar e remover) aparece dentro do formulário de edição para AGENT, AGENT_MASTER e ADMIN, com os anexos do artigo editado; nenhum card mostra controle de upload ou de remoção; CLIENT e anônimo nunca veem os controles; `KnowledgeArticleAttachments` sem anexo e sem `canManage` não renderiza nada.",
+      "tests": []
+    },
+    {
+      "id": "AC-05",
+      "description": "no card, o `<h2>` fica numa linha própria (nenhuma tag, meta nem botão é irmão do título na mesma linha) e as ações Editar/Excluir ficam no rodapé em `flex-wrap`. No navegador, em 390 px e em grade de 3 colunas em 1440 px, o título ocupa a largura útil do card e nenhum botão sai do card.",
+      "tests": []
+    },
+    {
+      "id": "AC-06",
+      "description": "o cabeçalho da página tem a busca em linha própria abaixo de `md`; os chips de tag ativos ficam numa linha própria, cada um em uma única linha, e \"+ Novo artigo\" fica inteiro dentro da janela, com folga da borda. Em 390 px e 1440 px não há rolagem horizontal da página.",
+      "tests": []
+    },
+    {
+      "id": "AC-07",
+      "description": "`styles.css` define, escopadas em `.article-content`, as regras de listas (disco, decimal, aninhadas), `h1` a `h4`, `blockquote`, `a`, `table` (borda e `overflow-x: auto`), `img` (`max-width: 100%`, `max-height`) e `code`/`pre`. No navegador, com o artigo rico da auditoria: `ul` mede `list-style-type: disc`, `ol` mede `decimal`, `h2` mede 16 px com peso 600 ou mais e difere do parágrafo (14 px), a tabela de 7 colunas rola na horizontal dentro do card em 390 px sem alargar a página e a imagem de 1600 px não passa de 24 rem de altura.",
+      "tests": []
+    },
+    {
+      "id": "AC-08",
+      "description": "lista vazia com falha de consulta mostra \"Não foi possível carregar os artigos.\" com \"Tentar novamente\" (que refaz a consulta) e não mostra \"Nenhum artigo encontrado\"; pasta vazia sem filtro mostra \"Esta pasta ainda não tem artigos.\" (com \"+ Novo artigo\" só para quem autora e com o formulário fechado); busca ou tag sem resultado mostra \"Nenhum artigo encontrado para a busca atual.\" com \"Limpar busca e filtros\".",
+      "tests": []
+    },
+    {
+      "id": "AC-09",
+      "description": "\"Limpar busca e filtros\" zera a busca e as tags, a API volta a ser chamada sem `search` nem `tags`, a ordenação é mantida e o foco vai para o campo de busca.",
+      "tests": []
+    },
+    {
+      "id": "AC-10",
+      "description": "nenhum arquivo de `apps/web/src/components/ds/`, de `apps/api` nem de `apps/web-e2e` é alterado, `package.json` e `pnpm-lock.yaml` não mudam (nenhuma dependência nova), os parâmetros enviados à API não mudam, e os testes da DMTE-537 (`with a slow articles API`) passam sem edição. Os demais testes de `KnowledgePage.test.tsx` e de `KnowledgeArticleAttachments.test.tsx` só mudam onde o comportamento mudou por esta SPEC, e cada mudança é listada no PR.",
+      "tests": []
+    },
+    {
+      "id": "AC-11",
+      "description": "no navegador (Chromium, API simulada, dados fictícios, os mesmos 10 artigos do fixture da auditoria, perfil ADMIN), a altura da lista com os 10 artigos recolhidos em 1440 px fica abaixo de 50% da medida na base `ca24983` com o mesmo fixture; o resultado, as duas medidas e as capturas de 1440 px e 390 px vão no PR.",
+      "tests": []
+    }
+  ],
+  "spec": "docs/delivery/specs/DMTE-534.md",
+  "tdd": {
+    "mode": "required",
+    "red": ".delivery/evidence/DMTE-534/red.json",
+    "green": ".delivery/evidence/DMTE-534/green.json"
+  },
+  "design_system": {
+    "applicable": true,
+    "reused": [
+      "EzCardItem",
+      "EzButton",
+      "EzTag",
+      "EzEmptyCard",
+      "EzAlert",
+      "EzTextInput"
+    ],
+    "reason": "Reaproveita os componentes Ez* existentes e os tokens de cor e raio de styles.css; o estilo do corpo do artigo é uma classe escopada em styles.css, sem componente novo no DS.",
+    "exception": "Nenhum arquivo de apps/web/src/components/ds/ muda nesta entrega, então não há story nova."
+  }
+}
