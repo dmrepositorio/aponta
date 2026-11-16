@@ -458,6 +458,32 @@ describe('ServiceDesksPage', () => {
       expect(screen.getByText('Suporte')).not.toHaveClass('text-gray-500');
     });
 
+    it('mutes the +N chip on an inactive desk with 2 or more clients and keeps its tone on an active one', async () => {
+      const base = vi.mocked(api.get).getMockImplementation() as (u: string, ...r: unknown[]) => Promise<unknown>;
+      vi.mocked(api.get).mockImplementation((url: string, ...rest: unknown[]) =>
+        url === '/service-desks'
+          ? Promise.resolve({
+              data: [
+                { ...desks[0], organizations: [org('Acme Ltda'), org('Beta Ltda')] },
+                { ...desks[1], organizations: [org('Delta Ltda'), org('Eta Ltda'), org('Teta Ltda')] },
+              ],
+            })
+          : base(url, ...rest),
+      );
+      loginAs('ADMIN');
+      renderPage();
+      await screen.findByText('Suporte N1');
+
+      const activeChip = within(rowOf('Suporte N1')).getByText('+1');
+      expect(activeChip).toHaveClass('text-gray-700');
+      expect(activeChip).not.toHaveClass('text-gray-500');
+
+      const inactiveChip = within(rowOf('Financeiro')).getByText('+2');
+      expect(inactiveChip).toHaveClass('text-gray-500');
+      expect(inactiveChip).not.toHaveClass('text-gray-700');
+      expect(inactiveChip).toHaveAttribute('title', 'Delta Ltda, Eta Ltda, Teta Ltda');
+    });
+
     it('Clientes shows the first client and a +N chip with the full list in the title', async () => {
       loginAs('ADMIN');
       renderPage();
