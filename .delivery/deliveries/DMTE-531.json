@@ -73,7 +73,7 @@
   "tdd": {
     "mode": "required",
     "red": ".delivery/evidence/DMTE-531/red.json",
-    "green": ".delivery/evidence/DMTE-531/green.json"
+    "green": ".delivery/evidence/DMTE-531/green-r2.json"
   },
   "design_system": {
     "applicable": true,
