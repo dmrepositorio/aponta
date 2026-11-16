@@ -1,0 +1,284 @@
+{
+  "version": 1,
+  "delivery": "DMTE-527",
+  "repository": "dmrepositorio/aponta",
+  "github_issue": 284,
+  "multica_id": "01a1dff7-6816-7a31-975b-9f1208c7af7d",
+  "cycle": "2026-11-09/2026-11-22",
+  "tier": 2,
+  "criteria": [
+    {
+      "id": "AC-01",
+      "description": "`styles.css` define `--control-height-toolbar: 36px` sem alterar `--control-height-md` (42 px) nem `--control-height-compact` (32 px); a partir de `sm`, título (que não é controle e só acompanha a altura a partir de `sm`), busca, \"Busca avançada\", Lista/Kanban, Mesa, Ordenar e Configurações usam o token de 36 px, e atalhos, \"Exibir colunas\" e \"Agrupar por\" usam 32 px; abaixo de `sm`, os controles (exceto o título) têm `min-h-11` (44 px).",
+      "tests": [
+        "apps/web/src/components/ds/EzDesignTokens.test.tsx: AC-01: styles.css defines --control-height-toolbar as 36px",
+        "apps/web/src/components/ds/EzDesignTokens.test.tsx: AC-01: --control-height-md stays 42px and --control-height-compact stays 32px",
+        "apps/web/src/components/ds/EzDesignTokens.test.tsx: AC-01: the scale comment registers the toolbar exception with this SPEC as source",
+        "apps/web/src/components/tickets/TicketsHeader.test.tsx: AC-01: busca, Busca avançada e Lista/Kanban usam o token de 36 px a partir de sm e 44 px abaixo",
+        "apps/web/src/components/tickets/TicketsHeader.test.tsx: AC-01: nenhum controle do cabeçalho segue no token de 42 px",
+        "apps/web/src/components/tickets/TicketsHeader.test.tsx: AC-01: o título \"Tickets\" usa o token de 36 px a partir de sm",
+        "apps/web/src/components/tickets/TicketShortcuts.test.tsx: AC-01: os atalhos usam 32 px a partir de sm e no mínimo 44 px abaixo",
+        "apps/web/src/components/tickets/TicketList.test.tsx: AC-01: \"Exibir colunas\" usa 32 px a partir de sm e no mínimo 44 px abaixo",
+        "apps/web/src/components/tickets/TicketList.test.tsx: AC-01: \"Agrupar por\" usa o controle compacto (32 px a partir de sm, 44 px abaixo)",
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-01: Mesa usa 36 px a partir de sm e no mínimo 44 px abaixo",
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-01: Ordenar e Configurações usam 36 px a partir de sm e no mínimo 44 px abaixo",
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-01: \"Agrupar por\" (Configurações) usa 32 px a partir de sm e no mínimo 44 px abaixo"
+      ]
+    },
+    {
+      "id": "AC-02",
+      "description": "`EzSegmented` aceita `size` (`default` mantém 42 px; `toolbar` 36 px a partir de `sm` e 44 px abaixo), a story cobre os dois tamanhos e os outros usos do componente seguem em 42 px.",
+      "tests": [
+        "apps/web/src/components/ds/EzSegmented.test.tsx: AC-02: size=\"toolbar\" is 36 px from sm and at least 44 px below it, and no longer uses the 42 px token",
+        "apps/web/src/components/ds/EzSegmented.test.tsx: AC-02: the default size keeps the 42 px token, without the toolbar height",
+        "apps/web/src/components/ds/EzSegmented.test.tsx: AC-02: an explicit size=\"default\" is the same 42 px as no size",
+        "apps/web/src/components/ds/EzSegmented.test.tsx: AC-02: size=\"toolbar\" keeps the accessible group, aria-pressed and the click contract",
+        "apps/web/src/components/ds/EzSegmented.test.tsx: AC-02: the story file covers the default and the toolbar size"
+      ]
+    },
+    {
+      "id": "AC-03",
+      "description": "o cabeçalho quebra em linhas inteiras sem cortar controle: abaixo de 640 px busca e \"Busca avançada\" em largura total e, no Kanban, a Mesa em largura total e Ordenar e Configurações lado a lado; de 640 a 1023 px a busca em largura total embaixo do título.",
+      "tests": [
+        "apps/web/src/components/tickets/TicketsHeader.test.tsx: AC-03: a busca ocupa a largura total abaixo de lg e de 640 a 1023 px (nenhum sm:w-* diferente de full)",
+        "apps/web/src/components/tickets/TicketsHeader.test.tsx: AC-03: abaixo de 640 px \"Busca avançada\" ocupa a largura total e volta ao tamanho natural a partir de sm",
+        "apps/web/src/components/tickets/TicketsHeader.test.tsx: AC-03: abaixo de 640 px busca e \"Busca avançada\" ficam uma por linha (o pai quebra ou empilha)",
+        "apps/web/src/components/tickets/TicketsHeader.test.tsx: AC-03: título e Lista/Kanban continuam juntos na primeira linha",
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-03: abaixo de 640 px a Mesa ocupa a largura total (w-full, sem max-w-xs fixo)",
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-03: Ordenar e Configurações ficam lado a lado, num par separado da Mesa"
+      ]
+    },
+    {
+      "id": "AC-04",
+      "description": "o seletor de Mesa do Kanban tem fundo branco, borda `brand-500` e texto `brand-700` (contraste mínimo de 4,5:1 sobre o branco, tokens lidos de `styles.css`), hover e foco visíveis, e não usa `bg-brand-500`; nenhum outro controle da barra é preenchido.",
+      "tests": [
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-04: a Mesa não usa bg-brand-500 (nem fundo cheio da marca em repouso)",
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-04: a Mesa tem fundo branco e borda brand-500",
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-04: texto e seta da Mesa em brand-700, com contraste mínimo de 4,5:1 sobre o branco (tokens de styles.css)",
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-04: hover com fundo claro da marca e foco visível",
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-04: nenhum outro controle da barra é preenchido (Ordenar, Configurações)"
+      ]
+    },
+    {
+      "id": "AC-05",
+      "description": "com agrupamento por Status, o cartão não renderiza `TicketStatusTag`, o chip de SLA ocupa a linha da tag à direita do cliente e o rodapé só traz o responsável; sem SLA a linha tem só o cliente; com agrupamento por Estágio, Responsável ou Prioridade o cartão mantém a tag de status.",
+      "tests": [
+        "apps/web/src/components/tickets/TicketKanbanCard.test.tsx: AC-05: agrupado por Status, o cartão não renderiza a tag de status",
+        "apps/web/src/components/tickets/TicketKanbanCard.test.tsx: AC-05: agrupado por Status, o chip de SLA fica na linha do cliente, à direita dele",
+        "apps/web/src/components/tickets/TicketKanbanCard.test.tsx: AC-05: agrupado por Status, o rodapé só traz o responsável",
+        "apps/web/src/components/tickets/TicketKanbanCard.test.tsx: AC-05: agrupado por Status e sem SLA, a linha tem só o cliente",
+        "apps/web/src/components/tickets/TicketKanbanCard.test.tsx: AC-05: agrupado por Status, sem SLA e sem responsável, não sobra rodapé vazio",
+        "apps/web/src/components/tickets/TicketKanbanCard.test.tsx: AC-05: agrupado por stage, o cartão mantém a tag de status e o SLA no rodapé",
+        "apps/web/src/components/tickets/TicketKanbanCard.test.tsx: AC-05: agrupado por agent, o cartão mantém a tag de status e o SLA no rodapé",
+        "apps/web/src/components/tickets/TicketKanbanCard.test.tsx: AC-05: agrupado por priority, o cartão mantém a tag de status e o SLA no rodapé",
+        "apps/web/src/components/tickets/TicketKanbanCard.test.tsx: AC-05: sem agrupamento informado, o cartão mantém a tag de status (padrão de quem não passa groupBy)",
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-05: sem Mesa (agrupamento efetivo Status) nenhum cartão do quadro mostra a tag de status",
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-05: com Mesa e Agrupar por Status escolhido, o cartão também fica sem a tag de status",
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-05: agrupado por Estágio (Mesa selecionada) o cartão mantém a tag de status",
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-05: agrupado por agent o cartão mantém a tag de status",
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-05: agrupado por priority o cartão mantém a tag de status"
+      ]
+    },
+    {
+      "id": "AC-06",
+      "description": "a tag de status e a de prioridade não quebram em duas linhas (`whitespace-nowrap`), nos cartões e na Lista, sem renomear nenhum status.",
+      "tests": [
+        "apps/web/src/components/tickets/TicketList.test.tsx: AC-06: as tags de status e de prioridade da Lista não quebram em duas linhas (whitespace-nowrap)",
+        "apps/web/src/components/tickets/TicketList.test.tsx: AC-06: a Lista segue com os nomes completos dos status, sem renomear",
+        "apps/web/src/components/tickets/TicketKanbanCard.test.tsx: AC-06: as tags de status e de prioridade do cartão não quebram em duas linhas (whitespace-nowrap)",
+        "apps/web/src/components/tickets/TicketKanbanCard.test.tsx: AC-06: nenhum status é renomeado no cartão (Aguardando Aprovação por extenso)"
+      ]
+    },
+    {
+      "id": "AC-07",
+      "description": "por status, Resolvido e Fechado abrem recolhidos; com Mesa selecionada, abrem recolhidos os estágios com `isFinal`; um clique no botão de expandir (com nome acessível que contém o rótulo da coluna) expande, e outro recolhe; a coluna recolhida não aceita soltar cartão; as demais colunas abrem expandidas.",
+      "tests": [
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-07: por status, Resolvido e Fechado abrem recolhidos, com botão de nome acessível que contém o rótulo",
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-07: por status, as outras sete colunas abrem expandidas e aceitando soltar",
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-07: a coluna recolhida (Resolvido e Fechado) não aceita soltar cartão",
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-07: um clique no botão expande a coluna e outro recolhe",
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-07: a escolha do usuário prevalece: Resolvido expandido segue expandido ao reordenar o quadro",
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-07: com Mesa selecionada, abrem recolhidos só os estágios com isFinal",
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-07: com Mesa selecionada, um clique expande o estágio final e outro recolhe"
+      ]
+    },
+    {
+      "id": "AC-08",
+      "description": "a partir de `lg`, as faixas recolhidas ficam fixas na borda direita do quadro, o quadro usa `scroll-snap-type: proximity` e `scroll-padding` para as faixas, e abaixo de `lg` as faixas ficam no fim do quadro sem fixar, com colunas de 80vw (máximo 320 px); se o teste de arrastar um cartão até a borda a 1440 px falhar, vale o plano B do item 7 e a troca é registrada no PR.",
+      "tests": [
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-08: o quadro usa scroll-snap proximity (não mandatory) e scroll-padding para as faixas",
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-08: a partir de lg as faixas recolhidas ficam fixas na borda direita (sticky e inset direito)",
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-08: abaixo de lg as faixas não fixam (sticky só com o prefixo lg:)",
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-08: com Mesa selecionada, a faixa do estágio final também fixa a partir de lg",
+        "apps/web/src/components/tickets/TicketKanban.test.tsx: AC-08: as colunas expandidas não fixam e seguem com 80vw (máximo 320 px) abaixo de lg"
+      ]
+    },
+    {
+      "id": "AC-09",
+      "description": "medido em Chromium a 1440×900, 1024×768 e 390×844 com dados sintéticos (evidência técnica, não gate): alturas dos controles, ausência de quebra das tags, largura do quadro contra a área visível, faixas visíveis na borda a 1440 px e alvos de 44 px a 390 px.",
+      "tests": [
+        "Medição em Chromium (Playwright) a 1440×900, 1024×768 e 390×844 com dados sintéticos por scripts/tickets_responsive_check.mjs, com o teste de arrastar até a borda (resultado e anexos no pai Multica e no PR)"
+      ],
+      "tdd_required": false,
+      "reason": "Medição de layout em navegador real: jsdom não calcula layout nem faz arrastar de verdade. O contrato por classe de breakpoint e por token está nos testes dos ACs 01 a 08; aqui a evidência é técnica, não gate, e o aceite visual é do Alfredo."
+    },
+    {
+      "id": "AC-10",
+      "description": "a migração cria `UserScreenPreference` (único por `userId` e `screen`, `onDelete: Cascade`), é aditiva, aplica em banco isolado e não altera tabela existente.",
+      "tests": [
+        "apps/api/src/user-screen-preferences/user-screen-preferences.migration.spec.ts: AC-10: existe exatamente uma migração que cria a tabela \"UserScreenPreference\"",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.migration.spec.ts: AC-10: a tabela tem userId, screen, data (JSONB) e updatedAt",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.migration.spec.ts: AC-10: é único por (userId, screen)",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.migration.spec.ts: AC-10: a chave estrangeira para \"User\" é ON DELETE CASCADE",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.migration.spec.ts: AC-10: é aditiva: só cria a tabela nova (sem DROP, sem backfill, sem ALTER em outra tabela)",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.migration.spec.ts: AC-10: o schema.prisma tem o model com @@unique([userId, screen]) e onDelete: Cascade"
+      ]
+    },
+    {
+      "id": "AC-11",
+      "description": "`GET` e `PUT` de `/me/screen-preferences/:screen` exigem autenticação (sem token, 401), usam só o id do token, aceitam apenas as cinco telas (outra devolve 404 e não grava) e `GET` sem linha devolve preferência vazia.",
+      "tests": [
+        "apps/api/src/user-screen-preferences/user-screen-preferences.service.spec.ts: AC-11: GET sem linha devolve preferência vazia, buscando pela chave (userId, screen) do dono",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.service.spec.ts: AC-11: o PUT substitui o data inteiro daquela tela (vale a última gravação)",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.controller.spec.ts: AC-11: a rota fica atrás do JwtAuthGuard e só recebe o parâmetro :screen",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-11: sem token, GET e PUT respondem 401 e não tocam o banco",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-11: token inválido responde 401",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-11: GET sem linha devolve 200 com preferência vazia (JSON {})",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-11: a tela organizations é aceita no PUT e relida no GET",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-11: a tela contracts é aceita no PUT e relida no GET",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-11: a tela service-desks é aceita no PUT e relida no GET",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-11: a tela tickets-list é aceita no PUT e relida no GET",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-11: a tela tickets-kanban é aceita no PUT e relida no GET",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-11: a tela dashboard devolve 404 e não grava",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-11: a tela tickets devolve 404 e não grava",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-11: a tela ORGANIZATIONS devolve 404 e não grava",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-11: a tela users devolve 404 e não grava"
+      ]
+    },
+    {
+      "id": "AC-12",
+      "description": "o servidor valida o formato (limites do item 11) e devolve 400 para campo desconhecido, tipo errado, mais de 100 entradas em `collapsed`, id com mais de 64 caracteres ou corpo acima de 64 KB (400, ou 413 acima de 100 KB); um corpo válido é gravado e relido igual.",
+      "tests": [
+        "apps/api/src/user-screen-preferences/user-screen-preferences.service.spec.ts: AC-12: o que o PUT grava, o GET relê igual",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-12: um corpo válido é gravado (200) e relido igual",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-12: o PUT substitui o corpo anterior (vale a última gravação)",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-12: aceita os limites exatos (collapsed com 100 entradas, ids de 64 caracteres, 200 colunas, 50 filtros)",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-12: 400 e nada gravado para campo desconhecido na raiz",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-12: 400 e nada gravado para campo desconhecido dentro de grid",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-12: 400 e nada gravado para id de usuário no corpo",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-12: 400 e nada gravado para corpo que não é objeto (lista)",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-12: 400 e nada gravado para groupBy com tipo errado",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-12: 400 e nada gravado para groupBy com mais de 64 caracteres",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-12: 400 e nada gravado para density fora de compact/comfortable",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-12: 400 e nada gravado para columnVisibility com valor que não é booleano",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-12: 400 e nada gravado para columnVisibility com mais de 200 entradas",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-12: 400 e nada gravado para columnOrder com mais de 200 ids",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-12: 400 e nada gravado para form.layout desconhecido",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-12: 400 e nada gravado para viewMode desconhecido",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-12: 400 e nada gravado para savedFilters com mais de 50 itens",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-12: 400 e nada gravado para savedFilter com name acima de 120 caracteres",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-12: 400 e nada gravado para collapsed com valor que não é booleano",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-12: 400 e nada gravado para collapsed com mais de 100 entradas",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-12: 400 e nada gravado para collapsed com id de mais de 64 caracteres",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-12: 400 e nada gravado para collapsed que não é mapa (lista)",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-12: corpo acima de 64 KB (e abaixo do limite padrão do Express) devolve 400 e não grava",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-12: corpo perto de 64 KB, mas dentro do limite, é aceito"
+      ]
+    },
+    {
+      "id": "AC-13",
+      "description": "um usuário não lê nem grava a preferência de outro: duas contas gravam a mesma tela e cada uma lê só a sua; nenhuma rota aceita id de usuário.",
+      "tests": [
+        "apps/api/src/user-screen-preferences/user-screen-preferences.service.spec.ts: AC-13: dois usuários gravam a mesma tela e cada um lê só a sua",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.service.spec.ts: AC-13: o mesmo usuário em telas diferentes tem preferências separadas",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.controller.spec.ts: AC-13: sempre age com o id do usuário do token (req.user.id), nunca com id vindo da requisição",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.controller.spec.ts: AC-13: devolve o que o service devolve",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-13: duas contas gravam a mesma tela e cada uma lê só a sua",
+        "apps/api/src/user-screen-preferences/user-screen-preferences.integration.spec.ts: AC-13: nenhuma rota aceita id de usuário (na URL ou no corpo); só a rota por tela funciona, com o id do token"
+      ]
+    },
+    {
+      "id": "AC-14",
+      "description": "`useUserScreenConfig` mantém a assinatura para as cinco telas, lê do servidor (Kanban e Lista esperam a leitura antes de desenhar), grava cada mudança no servidor com espera de 400 ms e deixa de usar o `localStorage` depois da importação; os testes existentes das cinco telas seguem verdes.",
+      "tests": [
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-14: mantém a assinatura e lê GET /me/screen-preferences/organizations",
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-14: mantém a assinatura e lê GET /me/screen-preferences/contracts",
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-14: mantém a assinatura e lê GET /me/screen-preferences/service-desks",
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-14: mantém a assinatura e lê GET /me/screen-preferences/tickets-list",
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-14: mantém a assinatura e lê GET /me/screen-preferences/tickets-kanban",
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-14: lê do servidor antes de entregar a configuração (isLoading até a resposta)",
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-14: o que o servidor não tem fica com os padrões do chamador",
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-14: grava cada mudança no servidor (PUT) só depois de 400 ms de espera",
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-14: junta cliques seguidos em uma só gravação, com o último estado",
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-14: a mudança gravada é relida igual numa nova montagem do hook",
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-14: com a preferência no servidor, o localStorage não é lido nem escrito",
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-14: viewMode e layout do formulário mudam na hora e vão na gravação do servidor",
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-14: saveFilter e deleteFilter mudam os filtros salvos e gravam a lista no servidor",
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-14: restoreDefaults devolve a configuração aos padrões do chamador",
+        "apps/web/src/components/tickets/TicketKanban.preferences.test.tsx: AC-14: com a leitura pendente mostra o esqueleto (sem colunas); depois da resposta desenha o quadro",
+        "apps/web/src/components/tickets/TicketKanban.preferences.test.tsx: AC-14: o recolhimento não passa pelo localStorage: grava no servidor e não deixa chave no navegador"
+      ]
+    },
+    {
+      "id": "AC-15",
+      "description": "sem linha no servidor e com configuração no `localStorage` do usuário, a primeira leitura envia a configuração ao servidor, usa-a e apaga a chave só depois da gravação confirmada; conteúdo inválido no `localStorage` é descartado e a tela usa os padrões.",
+      "tests": [
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-15: sem linha no servidor e com chave no navegador, envia ao servidor e usa a configuração",
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-15: apaga a chave só depois da gravação confirmada, e o navegador deixa de ser usado",
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-15: se a gravação da importação falhar, a chave fica no navegador (nova tentativa na próxima leitura)",
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-15: importa só a chave do próprio usuário e da própria tela",
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-15: conteúdo inválido no navegador é descartado (texto que não é JSON): padrões e nada enviado",
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-15: conteúdo inválido no navegador é descartado (JSON que não é objeto): padrões e nada enviado",
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-15: conteúdo inválido no navegador é descartado (groupBy com tipo errado): padrões e nada enviado",
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-15: conteúdo inválido no navegador é descartado (campo desconhecido): padrões e nada enviado"
+      ]
+    },
+    {
+      "id": "AC-16",
+      "description": "se a leitura ou a gravação falhar, a tela abre e funciona com os padrões e as escolhas em memória, sem alerta bloqueante, e a próxima mudança tenta gravar de novo.",
+      "tests": [
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-16: se a leitura falhar, usa os padrões, sai do carregamento e não alerta",
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-16: depois de uma leitura que falhou, a mudança fica em memória e tenta gravar",
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-16: se a gravação falhar, a escolha continua em memória, sem alerta, e a próxima mudança grava de novo",
+        "apps/web/src/components/tickets/TicketKanban.preferences.test.tsx: AC-16: se a leitura falhar, o quadro abre com os padrões, sem alerta, e a escolha fica em memória",
+        "apps/web/src/components/tickets/TicketKanban.preferences.test.tsx: AC-16: se a gravação falhar, a escolha continua, sem alerta, e a próxima mudança tenta gravar de novo"
+      ]
+    },
+    {
+      "id": "AC-17",
+      "description": "o recolhimento de cada coluna do Kanban é salvo e relido por usuário no mapa `collapsed`; coluna sem entrada usa o padrão do AC-07; id de estágio inexistente é ignorado; o recolhimento de um usuário não afeta o de outro.",
+      "tests": [
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-17: lê o mapa collapsed do servidor e não inventa entrada para as demais colunas",
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-17: setColumnCollapsed grava só o que o usuário mexeu, em 400 ms",
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-17: o recolhimento de um usuário não afeta o de outro",
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-17: ao trocar de usuário no mesmo hook, lê a preferência do novo usuário",
+        "apps/web/src/components/tickets/TicketKanban.preferences.test.tsx: AC-17: o mapa do servidor vence o padrão; coluna sem entrada usa o padrão (Resolvido e Fechado recolhidos)",
+        "apps/web/src/components/tickets/TicketKanban.preferences.test.tsx: AC-17: expandir Resolvido e recolher Aberto grava só o que o usuário mexeu, com espera de 400 ms",
+        "apps/web/src/components/tickets/TicketKanban.preferences.test.tsx: AC-17: o recolhimento gravado é relido igual ao abrir o Kanban de novo",
+        "apps/web/src/components/tickets/TicketKanban.preferences.test.tsx: AC-17: com Mesa selecionada, o mapa vale por estágio e o id de estágio inexistente é ignorado",
+        "apps/web/src/components/tickets/TicketKanban.preferences.test.tsx: AC-17: com Mesa selecionada e sem entrada no mapa, o estágio final abre recolhido (padrão do AC-07)",
+        "apps/web/src/components/tickets/TicketKanban.preferences.test.tsx: AC-17: o recolhimento de um usuário não afeta o de outro"
+      ]
+    }
+  ],
+  "spec": "docs/delivery/specs/DMTE-527.md",
+  "tdd": {
+    "mode": "required",
+    "red": ".delivery/evidence/DMTE-527/red.json",
+    "green": ".delivery/evidence/DMTE-527/green.json"
+  },
+  "design_system": {
+    "applicable": true,
+    "reused": [
+      "EzSegmented",
+      "EzSelect",
+      "EzTag",
+      "EzAvatar",
+      "EzSlaChip"
+    ],
+    "reason": "Reaproveita os componentes do DS da aba Tickets e os tokens do @theme; único token novo é --control-height-toolbar (36 px), exceção registrada na escala de altura de styles.css com esta SPEC e o Q1 como fonte, sem alterar --control-height-md (42 px) nem --control-height-compact (32 px). EzSegmented ganha a opção size (default mantém 42 px; toolbar 36 px a partir de sm e 44 px abaixo), com story e teste. O seletor de Mesa passa a usar o contorno do EzSelect em brand-500/brand-700 sem variante nova no DS.",
+    "stories": [
+      "apps/web/src/components/ds/EzSegmented.stories.tsx"
+    ]
+  }
+}

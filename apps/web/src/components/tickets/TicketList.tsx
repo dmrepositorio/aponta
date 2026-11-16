@@ -227,7 +227,7 @@ export function TicketList({
   const role = useAuthStore((state) => state.user?.role);
   const isStaff = role === 'ADMIN' || role === 'AGENT_MASTER' || role === 'AGENT';
   const columns = isStaff ? COLUMNS : COLUMNS.filter((col) => !col.staffOnly);
-  const { config, setGroupBy, setColumnVisibility } = useUserScreenConfig('tickets-list', {
+  const { config, isLoading: isConfigLoading, setGroupBy, setColumnVisibility } = useUserScreenConfig('tickets-list', {
     groupBy: 'none',
     grid: { columnVisibility: DEFAULT_COLUMN_VISIBILITY, density: 'compact' },
   });
@@ -253,7 +253,8 @@ export function TicketList({
     });
   };
 
-  if (isLoading) {
+  // O "Agrupar por" mudaria a lista já desenhada: espera a leitura da preferência.
+  if (isLoading || (isConfigLoading && !isError)) {
     return (
       <div className="flex justify-center py-8">
         <EzSpinner label="Carregando chamados…" />
@@ -326,7 +327,7 @@ export function TicketList({
           <button
             type="button"
             onClick={() => setIsColumnMenuOpen((prev) => !prev)}
-            className="h-[var(--control-height-compact)] rounded-control border border-gray-200 bg-white px-3 text-[13px] font-medium text-gray-700 hover:bg-gray-90"
+            className="max-sm:h-11 sm:h-[var(--control-height-compact)] rounded-control border border-gray-200 bg-white px-3 text-[13px] font-medium text-gray-700 hover:bg-gray-90"
           >
             Exibir colunas
           </button>

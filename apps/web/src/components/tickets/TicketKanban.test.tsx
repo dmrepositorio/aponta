@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {
   act,
@@ -15,12 +17,13 @@ import type { Ticket } from '../../hooks/useTickets';
 import type { DeskStage } from '../MesaStagesEditor';
 import { useAuthStore } from '../../stores/authStore';
 import { api } from '../../lib/api';
-import { EzSelect } from '../ds/EzSelect';
 import { TicketKanban } from './TicketKanban';
+import { classTokens, classesUpTo, heightContractProblems } from '../../test-utils/controlHeight';
 
 vi.mock('../../lib/api', () => ({
   api: {
     get: vi.fn(),
+    put: vi.fn(),
     patch: vi.fn(),
   },
 }));
@@ -135,19 +138,27 @@ const deskStages = [stageN1, stageN2, stageAguardandoCliente];
 
 const serviceDesks = [{ id: 'desk-1', name: 'Suporte N1' }];
 
-/** Mocks `api.get` to answer both the always-on `/service-desks` list (for
- * the Mesa dropdown) and the per-mesa `/service-desks/:id/stages` call. */
+/** Mocks `api.get` to answer the always-on `/service-desks` list (for the
+ * Mesa dropdown), the per-mesa `/service-desks/:id/stages` call and, since
+ * DMTE-527 AC-14, the screen preference (`{}` = no row: every default applies);
+ * the PUT of the preference succeeds. */
 function mockApiGet(stages: DeskStage[] = deskStages) {
   vi.mocked(api.get).mockImplementation((url: string) => {
     if (url === '/service-desks')
       return Promise.resolve({ data: serviceDesks });
     if (url === '/service-desks/desk-1/stages')
       return Promise.resolve({ data: stages });
+    if (url === '/me/screen-preferences/tickets-kanban')
+      return Promise.resolve({ data: {} });
     return Promise.reject(new Error(`Unexpected GET ${url}`));
   });
+  vi.mocked(api.put).mockImplementation((_url: string, body: unknown) =>
+    Promise.resolve({ data: body }),
+  );
 }
 
-function renderKanban(props: {
+/** O quadro só desenha depois da leitura da preferência (AC-14): sem Mesa, espera as colunas; com Mesa, o teste espera os estágios. */
+async function renderKanban(props: {
   tickets: Ticket[];
   isLoading: boolean;
   isError: boolean;
@@ -156,14 +167,35 @@ function renderKanban(props: {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
-  return render(
+  const view = render(
     <QueryClientProvider client={queryClient}>
       <MemoryRouter>
         <TicketKanban {...props} />
       </MemoryRouter>
     </QueryClientProvider>,
   );
+  if (!props.isLoading && !props.isError && !props.initialServiceDeskId) {
+    await screen.findAllByTestId('kanban-column');
+  }
+  return view;
 }
+
+const mesaCombobox = () => screen.getByRole('combobox', { name: 'Mesa' });
+const sortButton = () => screen.getByRole('button', { name: 'Ordenar' });
+const configButton = () => screen.getByRole('button', { name: 'Configurações' });
+const board = () => screen.getByTestId('kanban-board');
+/** Linha da barra: o primeiro ancestral do seletor de Mesa que também traz o Ordenar. */
+const toolbarRow = () => {
+  let node: Element | null = mesaCombobox();
+  while (node && !node.contains(sortButton())) node = node.parentElement;
+  return node as Element;
+};
+/** A faixa recolhida: o botão de expandir, pelo nome acessível que contém o rótulo da coluna (AC-07). */
+const stripButton = (name: RegExp) => {
+  const button = screen.queryByRole('button', { name });
+  expect(button).toBeInTheDocument();
+  return button as HTMLElement;
+};
 
 describe('TicketKanban', () => {
   beforeEach(() => {
@@ -179,11 +211,13 @@ describe('TicketKanban', () => {
     );
     vi.mocked(api.patch).mockReset();
     vi.mocked(api.get).mockReset();
+    vi.mocked(api.put).mockReset();
+    mockApiGet();
   });
 
   describe('fallback por status (nenhuma mesa selecionada)', () => {
-    it('DMTE-458: board is a snap-scroll container and columns are fluid (no fixed 290px)', () => {
-      renderKanban({ tickets: [baseTicket], isLoading: false, isError: false });
+    it('DMTE-458: board is a snap-scroll container and columns are fluid (no fixed 290px)', async () => {
+      await renderKanban({ tickets: [baseTicket], isLoading: false, isError: false });
 
       const board = screen.getByTestId('kanban-board');
       expect(board.className).toContain('overflow-x-auto');
@@ -198,22 +232,22 @@ describe('TicketKanban', () => {
       }
     });
 
-    it('shows a skeleton loading state with every column label while isLoading', () => {
-      renderKanban({ tickets: [], isLoading: true, isError: false });
+    it('shows a skeleton loading state with every column label while isLoading', async () => {
+      await renderKanban({ tickets: [], isLoading: true, isError: false });
 
       expect(screen.getByText('Carregando...')).toBeInTheDocument();
       expect(screen.getByText('Aberto')).toBeInTheDocument();
       expect(screen.getByText('Fechado')).toBeInTheDocument();
     });
 
-    it('shows an error message when isError is true', () => {
-      renderKanban({ tickets: [], isLoading: false, isError: true });
+    it('shows an error message when isError is true', async () => {
+      await renderKanban({ tickets: [], isLoading: false, isError: true });
       expect(screen.getByRole('alert')).toHaveTextContent(
         /falha ao carregar os chamados/i,
       );
     });
 
-    it('groups tickets into their matching status column with correct counts', () => {
+    it('groups tickets into their matching status column with correct counts', async () => {
       const tickets = [
         baseTicket,
         {
@@ -229,7 +263,7 @@ describe('TicketKanban', () => {
           status: 'OPEN' as const,
         },
       ];
-      renderKanban({ tickets, isLoading: false, isError: false });
+      await renderKanban({ tickets, isLoading: false, isError: false });
 
       expect(screen.getByText(/AP-2026-0001/)).toBeInTheDocument();
       expect(screen.getByText(/AP-2026-0002/)).toBeInTheDocument();
@@ -244,8 +278,8 @@ describe('TicketKanban', () => {
       expect(abertoColumn).toHaveTextContent('2');
     });
 
-    it('DMTE-490 AC-05: has an Aguardando Sankhya column right after Aguardando Terceiros and groups its tickets there', () => {
-      renderKanban({
+    it('DMTE-490 AC-05: has an Aguardando Sankhya column right after Aguardando Terceiros and groups its tickets there', async () => {
+      await renderKanban({
         tickets: [{ ...baseTicket, id: 't9', protocol: 'AP-2026-0009', status: 'PENDING_SANKHYA' }],
         isLoading: false,
         isError: false,
@@ -266,8 +300,8 @@ describe('TicketKanban', () => {
       expect(screen.getByText(/AP-2026-0009/)).toBeInTheDocument();
     });
 
-    it('renders an empty column (count 0) when there are no tickets for that status', () => {
-      renderKanban({ tickets: [], isLoading: false, isError: false });
+    it('renders an empty column (count 0) when there are no tickets for that status', async () => {
+      await renderKanban({ tickets: [], isLoading: false, isError: false });
 
       const abertoHeading = screen
         .getAllByText('Aberto')
@@ -277,8 +311,8 @@ describe('TicketKanban', () => {
       expect(abertoColumn).toHaveTextContent('0');
     });
 
-    it('does nothing when a card is dropped outside any column (no destination)', () => {
-      renderKanban({ tickets: [baseTicket], isLoading: false, isError: false });
+    it('does nothing when a card is dropped outside any column (no destination)', async () => {
+      await renderKanban({ tickets: [baseTicket], isLoading: false, isError: false });
 
       capturedOnDragEnd!({
         destination: null,
@@ -293,8 +327,8 @@ describe('TicketKanban', () => {
       expect(api.patch).not.toHaveBeenCalled();
     });
 
-    it('does nothing when a card is dropped back in the same column', () => {
-      renderKanban({ tickets: [baseTicket], isLoading: false, isError: false });
+    it('does nothing when a card is dropped back in the same column', async () => {
+      await renderKanban({ tickets: [baseTicket], isLoading: false, isError: false });
 
       capturedOnDragEnd!({
         destination: { droppableId: 'OPEN', index: 1 },
@@ -313,7 +347,7 @@ describe('TicketKanban', () => {
       vi.mocked(api.patch).mockResolvedValue({
         data: { ...baseTicket, status: 'IN_PROGRESS' },
       });
-      renderKanban({ tickets: [baseTicket], isLoading: false, isError: false });
+      await renderKanban({ tickets: [baseTicket], isLoading: false, isError: false });
 
       capturedOnDragEnd!({
         destination: { droppableId: 'IN_PROGRESS', index: 0 },
@@ -334,7 +368,7 @@ describe('TicketKanban', () => {
 
     it('rolls back the optimistic update when the status-update API call fails', async () => {
       vi.mocked(api.patch).mockRejectedValue(new Error('network error'));
-      renderKanban({ tickets: [baseTicket], isLoading: false, isError: false });
+      await renderKanban({ tickets: [baseTicket], isLoading: false, isError: false });
 
       capturedOnDragEnd!({
         destination: { droppableId: 'IN_PROGRESS', index: 0 },
@@ -353,7 +387,7 @@ describe('TicketKanban', () => {
       // previous query cache without throwing.
     });
 
-    it('disables drop targets and card dragging for CLIENT role users', () => {
+    it('disables drop targets and card dragging for CLIENT role users', async () => {
       useAuthStore.setState({
         token: 'tok',
         user: {
@@ -363,7 +397,7 @@ describe('TicketKanban', () => {
           organizationId: null,
         },
       });
-      renderKanban({ tickets: [baseTicket], isLoading: false, isError: false });
+      await renderKanban({ tickets: [baseTicket], isLoading: false, isError: false });
 
       // Component still renders normally for clients; isDropDisabled/isDragDisabled
       // are passed down to the (mocked) Droppable/Draggable render props, which we
@@ -374,7 +408,7 @@ describe('TicketKanban', () => {
 
     it('does not fetch mesa stages when no mesa is selected (fetches only the Mesa dropdown list)', async () => {
       mockApiGet();
-      renderKanban({ tickets: [baseTicket], isLoading: false, isError: false });
+      await renderKanban({ tickets: [baseTicket], isLoading: false, isError: false });
 
       await waitFor(() => {
         expect(api.get).toHaveBeenCalledWith('/service-desks');
@@ -384,21 +418,19 @@ describe('TicketKanban', () => {
   });
 
   describe('colapsar colunas e abrir novo ticket (TiFlux parity)', () => {
-    it('shows a collapse toggle and an "Abrir novo ticket" link on every column by default (fallback por status)', () => {
-      renderKanban({ tickets: [baseTicket], isLoading: false, isError: false });
+    it('shows a collapse toggle and an "Abrir novo ticket" link on every expanded column (fallback por status; Resolvido e Fechado abrem recolhidos, DMTE-527 AC-07)', async () => {
+      await renderKanban({ tickets: [baseTicket], isLoading: false, isError: false });
 
-      expect(screen.getAllByTestId(/^collapse-column-/).length).toBeGreaterThan(
-        0,
-      );
+      expect(screen.getAllByTestId(/^collapse-column-/)).toHaveLength(7);
       const newTicketLinks = screen.getAllByRole('link', {
         name: /abrir novo ticket/i,
       });
-      expect(newTicketLinks.length).toBeGreaterThan(0);
+      expect(newTicketLinks).toHaveLength(7);
       expect(newTicketLinks[0]).toHaveAttribute('href', '/tickets/new');
     });
 
-    it('collapsing a status column hides its ticket list and disables it as a drop target; expanding restores it', () => {
-      renderKanban({ tickets: [baseTicket], isLoading: false, isError: false });
+    it('collapsing a status column hides its ticket list and disables it as a drop target; expanding restores it', async () => {
+      await renderKanban({ tickets: [baseTicket], isLoading: false, isError: false });
 
       fireEvent.click(screen.getByTestId('collapse-column-OPEN'));
 
@@ -407,24 +439,24 @@ describe('TicketKanban', () => {
       expect(screen.queryByText(/AP-2026-0001/)).not.toBeInTheDocument();
       expect(capturedDroppables['OPEN'].isDropDisabled).toBe(true);
 
-      fireEvent.click(screen.getByTestId('expand-column'));
+      fireEvent.click(stripButton(/Aberto/));
 
       expect(screen.getByText(/AP-2026-0001/)).toBeInTheDocument();
       expect(capturedDroppables['OPEN'].isDropDisabled).toBe(false);
     });
 
     it('DMTE-496 AC-01: a coluna recolhida tem a altura mínima da expandida e acompanha o quadro, por status e por estágio', async () => {
-      renderKanban({ tickets: [baseTicket], isLoading: false, isError: false });
+      await renderKanban({ tickets: [baseTicket], isLoading: false, isError: false });
 
       const expandedClass = screen.getAllByTestId('kanban-column')[0].className;
       expect(expandedClass).toContain('min-h-[500px]');
       fireEvent.click(screen.getByTestId('collapse-column-OPEN'));
-      const collapsedByStatus = screen.getByTestId('expand-column').parentElement;
-      expect(collapsedByStatus).toHaveClass('min-h-[500px]', 'self-stretch');
+      const collapsedByStatus = classTokens(classesUpTo(stripButton(/Aberto/), board()));
+      expect(collapsedByStatus).toEqual(expect.arrayContaining(['min-h-[500px]', 'self-stretch']));
 
       cleanup();
       mockApiGet();
-      renderKanban({
+      await renderKanban({
         tickets: [{ ...baseTicket, stageId: 's-n1' }],
         isLoading: false,
         isError: false,
@@ -434,11 +466,11 @@ describe('TicketKanban', () => {
         expect(screen.getByText('N1')).toBeInTheDocument();
       });
       fireEvent.click(screen.getByTestId('collapse-column-s-n1'));
-      const collapsedByStage = screen.getByTestId('expand-column').parentElement;
-      expect(collapsedByStage).toHaveClass('min-h-[500px]', 'self-stretch');
+      const collapsedByStage = classTokens(classesUpTo(stripButton(/N1/), board()));
+      expect(collapsedByStage).toEqual(expect.arrayContaining(['min-h-[500px]', 'self-stretch']));
     });
 
-    it('does not show "Abrir novo ticket" for CLIENT role users', () => {
+    it('does not show "Abrir novo ticket" for CLIENT role users', async () => {
       useAuthStore.setState({
         token: 'tok',
         user: {
@@ -448,7 +480,7 @@ describe('TicketKanban', () => {
           organizationId: null,
         },
       });
-      renderKanban({ tickets: [], isLoading: false, isError: false });
+      await renderKanban({ tickets: [], isLoading: false, isError: false });
 
       expect(
         screen.queryByRole('link', { name: /abrir novo ticket/i }),
@@ -457,7 +489,7 @@ describe('TicketKanban', () => {
 
     it('collapsing a stage column (mesa selecionada) hides its ticket list and disables it as a drop target', async () => {
       mockApiGet();
-      renderKanban({
+      await renderKanban({
         tickets: [{ ...baseTicket, stageId: 's-n1' }],
         isLoading: false,
         isError: false,
@@ -478,7 +510,7 @@ describe('TicketKanban', () => {
   describe('seletor de Mesa dedicado (TiFlux parity)', () => {
     it('lists service desks in the Mesa dropdown and switches to stage-grouped columns on selection, without needing initialServiceDeskId', async () => {
       mockApiGet();
-      renderKanban({
+      await renderKanban({
         tickets: [{ ...baseTicket, stageId: 's-n1' }],
         isLoading: false,
         isError: false,
@@ -555,7 +587,7 @@ describe('TicketKanban', () => {
 
     it('fetches the mesa stages via GET /service-desks/:id/stages', async () => {
       mockApiGet();
-      renderKanban({
+      await renderKanban({
         tickets: [ticketAt('s-n1')],
         isLoading: false,
         isError: false,
@@ -574,7 +606,7 @@ describe('TicketKanban', () => {
         ticketAt('s-n2', { id: 't2', protocol: 'AP-0002' }),
         ticketAt('s-n1', { id: 't3', protocol: 'AP-0003' }),
       ];
-      renderKanban({
+      await renderKanban({
         tickets,
         isLoading: false,
         isError: false,
@@ -604,7 +636,7 @@ describe('TicketKanban', () => {
         ticketAt(null, { id: 't1' }),
         ticketAt('stage-from-another-desk', { id: 't2' }),
       ];
-      renderKanban({
+      await renderKanban({
         tickets,
         isLoading: false,
         isError: false,
@@ -630,7 +662,7 @@ describe('TicketKanban', () => {
     it("allows dragging an unstaged ticket straight to the mesa's initial stage", async () => {
       mockApiGet();
       vi.mocked(api.patch).mockResolvedValue({ data: ticketAt('s-n1') });
-      renderKanban({
+      await renderKanban({
         tickets: [ticketAt(null, { id: 't1' })],
         isLoading: false,
         isError: false,
@@ -662,7 +694,7 @@ describe('TicketKanban', () => {
 
     it('blocks dragging an unstaged ticket to a non-initial stage', async () => {
       mockApiGet();
-      renderKanban({
+      await renderKanban({
         tickets: [ticketAt(null, { id: 't1' })],
         isLoading: false,
         isError: false,
@@ -696,7 +728,7 @@ describe('TicketKanban', () => {
     it('calls PATCH /tickets/:id/stage (not /status) when dropping into an allowed next stage', async () => {
       mockApiGet();
       vi.mocked(api.patch).mockResolvedValue({ data: ticketAt('s-n2') });
-      renderKanban({
+      await renderKanban({
         tickets: [ticketAt('s-n1')],
         isLoading: false,
         isError: false,
@@ -728,7 +760,7 @@ describe('TicketKanban', () => {
 
     it('blocks the drop and shows an error when the destination stage is not in transitionToIds', async () => {
       mockApiGet();
-      renderKanban({
+      await renderKanban({
         tickets: [ticketAt('s-n1')],
         isLoading: false,
         isError: false,
@@ -762,7 +794,7 @@ describe('TicketKanban', () => {
 
     it('does nothing when a card is dropped back in its own stage column', async () => {
       mockApiGet();
-      renderKanban({
+      await renderKanban({
         tickets: [ticketAt('s-n1')],
         isLoading: false,
         isError: false,
@@ -790,7 +822,7 @@ describe('TicketKanban', () => {
 
     it('dims (disables) columns unreachable from the dragged card while dragging', async () => {
       mockApiGet();
-      renderKanban({
+      await renderKanban({
         tickets: [ticketAt('s-n1')],
         isLoading: false,
         isError: false,
@@ -828,7 +860,7 @@ describe('TicketKanban', () => {
           data: { message: 'Transição de estágio não permitida' },
         },
       });
-      renderKanban({
+      await renderKanban({
         tickets: [ticketAt('s-n1')],
         isLoading: false,
         isError: false,
@@ -867,7 +899,7 @@ describe('TicketKanban', () => {
 
     it('shows an informational alert when the mesa has no stages configured', async () => {
       mockApiGet([]);
-      renderKanban({
+      await renderKanban({
         tickets: [],
         isLoading: false,
         isError: false,
@@ -889,9 +921,9 @@ describe('TicketKanban', () => {
       { ...baseTicket, id: 't3', protocol: 'AP-2026-0003', title: 'C ticket', agentId: null },
     ];
 
-    it('AC-04: keeps Mesa, responsáveis, Ordenar and Configurações in one toolbar row, in that order', () => {
+    it('AC-04: keeps Mesa, responsáveis, Ordenar and Configurações in one toolbar row, in that order', async () => {
       mockApiGet();
-      renderKanban({ tickets: ticketsWithAgents, isLoading: false, isError: false });
+      await renderKanban({ tickets: ticketsWithAgents, isLoading: false, isError: false });
 
       const controls = [
         screen.getByTestId('kanban-mesa-select'),
@@ -899,7 +931,9 @@ describe('TicketKanban', () => {
         screen.getByRole('button', { name: /ordenar/i }),
         screen.getByRole('button', { name: /configurações/i }),
       ];
-      const row = controls[0].closest('.max-w-xs')!.parentElement!;
+      // Mesa, avatares, Ordenar e Configurações dividem o mesmo contêiner (a barra pode quebrar em linhas, DMTE-527 AC-03).
+      let row: Element = controls[0];
+      while (!controls.every((control) => row.contains(control))) row = row.parentElement as Element;
       controls.forEach((control) => expect(row).toContainElement(control));
       controls.slice(1).forEach((control, index) => {
         expect(
@@ -908,16 +942,16 @@ describe('TicketKanban', () => {
       });
     });
 
-    it('Limpar ordenação is not red', () => {
+    it('Limpar ordenação is not red', async () => {
       mockApiGet();
-      renderKanban({ tickets: ticketsWithAgents, isLoading: false, isError: false });
+      await renderKanban({ tickets: ticketsWithAgents, isLoading: false, isError: false });
       fireEvent.click(screen.getByRole('button', { name: 'Ordenar' }));
       expect(screen.getByRole('button', { name: 'Limpar ordenação' }).className).not.toMatch(/red-/);
     });
 
-    it('renders one avatar per distinct agent present in the tickets', () => {
+    it('renders one avatar per distinct agent present in the tickets', async () => {
       mockApiGet();
-      renderKanban({ tickets: ticketsWithAgents, isLoading: false, isError: false });
+      await renderKanban({ tickets: ticketsWithAgents, isLoading: false, isError: false });
 
       expect(screen.getByRole('button', { name: /filtrar por ana costa/i })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /filtrar por bruno dias/i })).toBeInTheDocument();
@@ -925,7 +959,7 @@ describe('TicketKanban', () => {
 
     it('clicking an avatar filters the board to that agent\'s tickets (toggle, multi-select)', async () => {
       mockApiGet();
-      renderKanban({ tickets: ticketsWithAgents, isLoading: false, isError: false });
+      await renderKanban({ tickets: ticketsWithAgents, isLoading: false, isError: false });
 
       expect(screen.getByText(/AP-2026-0001/)).toBeInTheDocument();
       expect(screen.getByText(/AP-2026-0002/)).toBeInTheDocument();
@@ -942,7 +976,7 @@ describe('TicketKanban', () => {
 
     it('opens "Ordenar", sorts cards by Título asc/desc, and "Limpar" restores the original order', async () => {
       mockApiGet();
-      renderKanban({ tickets: ticketsWithAgents, isLoading: false, isError: false });
+      await renderKanban({ tickets: ticketsWithAgents, isLoading: false, isError: false });
 
       function openColumnContainer(): HTMLElement {
         const heading = screen.getByRole('heading', { name: 'Aberto' });
@@ -970,7 +1004,7 @@ describe('TicketKanban', () => {
 
     it('"Configurações" lets the user group by Responsável instead of Status/Estágio', async () => {
       mockApiGet();
-      renderKanban({ tickets: ticketsWithAgents, isLoading: false, isError: false });
+      await renderKanban({ tickets: ticketsWithAgents, isLoading: false, isError: false });
 
       fireEvent.click(screen.getByRole('button', { name: 'Configurações' }));
       fireEvent.change(screen.getByLabelText(/agrupar por/i, { selector: 'select' }), { target: { value: 'agent' } });
@@ -984,7 +1018,7 @@ describe('TicketKanban', () => {
 
     it('"Configurações" lets the user group by Prioridade', async () => {
       mockApiGet();
-      renderKanban({ tickets: ticketsWithAgents, isLoading: false, isError: false });
+      await renderKanban({ tickets: ticketsWithAgents, isLoading: false, isError: false });
 
       fireEvent.click(screen.getByRole('button', { name: 'Configurações' }));
       fireEvent.change(screen.getByLabelText(/agrupar por/i, { selector: 'select' }), { target: { value: 'priority' } });
@@ -992,13 +1026,13 @@ describe('TicketKanban', () => {
       expect(screen.getByRole('heading', { name: 'Alta' })).toBeInTheDocument();
     });
 
-    it('RODADA 2 ("Exibir campos", D6c): "Configurações" lets the user toggle optional card fields, persisted like "Agrupar por"', () => {
+    it('RODADA 2 ("Exibir campos", D6c): "Configurações" lets the user toggle optional card fields, persisted like "Agrupar por"', async () => {
       mockApiGet();
       const ticketsWithOrg = ticketsWithAgents.map((t) => ({
         ...t,
         requester: { id: 'r1', name: 'Maria', email: 'maria@x.com', organizationId: 'org-1', organization: { id: 'org-1', name: 'Acme Corp' } },
       }));
-      renderKanban({ tickets: ticketsWithOrg, isLoading: false, isError: false });
+      await renderKanban({ tickets: ticketsWithOrg, isLoading: false, isError: false });
 
       // Responsável (agent) is visible by default: one "Ana Costa" avatar in
       // the D6a filter row, another on her ticket's card.
@@ -1028,9 +1062,9 @@ describe('TicketKanban', () => {
     const pressEscape = (target: Element = document.body) =>
       fireEvent.keyDown(target, { key: 'Escape' });
 
-    beforeEach(() => {
+    beforeEach(async () => {
       mockApiGet();
-      renderKanban({ tickets, isLoading: false, isError: false });
+      await renderKanban({ tickets, isLoading: false, isError: false });
     });
 
     it('DMTE-497 AC-01: Esc fecha o painel de Ordenar e o foco volta ao botão', () => {
@@ -1131,60 +1165,308 @@ describe('TicketKanban', () => {
       }
     });
   });
+});
 
-  describe('DMTE-498: seletor de mesa com a cor do Novo Ticket', () => {
-    // jsdom não compila Tailwind: a cor é conferida pelas classes de token, por
-    // token inteiro. A caixa do controle é o pai do combobox; o div que envolve o
-    // EzSelect (`max-w-xs`) carrega as variantes que pintam a caixa e o botão.
-    const BOX = '[&_div:has(>[role=combobox])]';
-    const mesaCombobox = () => screen.getByRole('combobox', { name: 'Mesa' });
-    const mesaClasses = () =>
-      (mesaCombobox().closest('.max-w-xs') as HTMLElement).className.split(/\s+/);
+describe('DMTE-527 ticket 1: tela de Tickets proporcional e responsiva (Kanban)', () => {
+  const openTicket: Ticket = { ...baseTicket, id: 't1', protocol: 'AP-2026-0001', title: 'Aberto um' };
+  const resolvedTicket: Ticket = {
+    ...baseTicket,
+    id: 't2',
+    protocol: 'AP-2026-0002',
+    title: 'Resolvido um',
+    status: 'RESOLVED',
+  };
+  const closedTicket: Ticket = {
+    ...baseTicket,
+    id: 't3',
+    protocol: 'AP-2026-0003',
+    title: 'Fechado um',
+    status: 'CLOSED',
+  };
+  const finalStageTicket: Ticket = {
+    ...baseTicket,
+    id: 't4',
+    protocol: 'AP-2026-0004',
+    title: 'Aguardando um',
+    stageId: 's-aguardando-cliente',
+  };
+  const statusTickets = [openTicket, resolvedTicket, closedTicket];
+  const stageTickets = [{ ...baseTicket, stageId: 's-n1' }, finalStageTicket];
 
-    beforeEach(() => {
-      mockApiGet();
-      renderKanban({ tickets: [baseTicket], isLoading: false, isError: false });
+  const css = readFileSync(resolve(__dirname, '../../styles.css'), 'utf8');
+  const hex = (token: string) => {
+    const match = css.match(new RegExp(`--color-${token}:\\s*#([0-9a-f]{6})`, 'i'));
+    if (!match) throw new Error('token not found: ' + token);
+    return match[1];
+  };
+  const luminance = (value: string) =>
+    [0, 2, 4]
+      .map((i) => parseInt(value.slice(i, i + 2), 16) / 255)
+      .map((c) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4))
+      .reduce((sum, c, i) => sum + c * [0.2126, 0.7152, 0.0722][i], 0);
+  const contrast = (a: string, b: string) => {
+    const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+    return (hi + 0.05) / (lo + 0.05);
+  };
+
+  /** O item da Mesa na linha: o ancestral do seletor cujo pai é a linha. */
+  const mesaItem = () => {
+    let node: Element = mesaCombobox();
+    while (node.parentElement && node.parentElement !== toolbarRow()) node = node.parentElement;
+    return node;
+  };
+  const mesaClasses = () => classesUpTo(mesaCombobox(), toolbarRow());
+  const stripClasses = (name: RegExp) => classesUpTo(stripButton(name), board());
+
+  beforeEach(() => {
+    localStorage.clear();
+    useAuthStore.setState({ token: null, user: null });
+    capturedOnDragStart = null;
+    capturedOnDragEnd = null;
+    Object.keys(capturedDroppables).forEach((key) => delete capturedDroppables[key]);
+    Object.keys(capturedDraggables).forEach((key) => delete capturedDraggables[key]);
+    vi.mocked(api.patch).mockReset();
+    vi.mocked(api.get).mockReset();
+    vi.mocked(api.put).mockReset();
+    mockApiGet();
+  });
+
+  describe('AC-01: altura por faixa na barra do Kanban', () => {
+    beforeEach(async () => {
+      await renderKanban({ tickets: statusTickets, isLoading: false, isError: false });
     });
 
-    it('DMTE-498 AC-01: a caixa do seletor de mesa tem fundo e borda brand-500, texto e chevron gray-70', () => {
-      expect(mesaClasses()).toEqual(
-        expect.arrayContaining([
-          `${BOX}:bg-brand-500`,
-          `${BOX}:border-brand-500`,
-          '[&_[role=combobox]]:text-gray-70',
-          '[&_[role=combobox]_svg]:text-gray-70',
-        ]),
-      );
+    it('AC-01: Mesa usa 36 px a partir de sm e no mínimo 44 px abaixo', () => {
+      expect(heightContractProblems(mesaClasses(), 'toolbar')).toEqual([]);
     });
 
-    it('DMTE-498 AC-02: no hover a caixa do seletor de mesa passa a brand-700', () => {
-      expect(mesaClasses()).toEqual(
-        expect.arrayContaining([`${BOX}:hover:bg-brand-700`, `${BOX}:hover:border-brand-700`]),
-      );
+    it('AC-01: Ordenar e Configurações usam 36 px a partir de sm e no mínimo 44 px abaixo', () => {
+      expect(heightContractProblems(sortButton().className, 'toolbar')).toEqual([]);
+      expect(heightContractProblems(configButton().className, 'toolbar')).toEqual([]);
     });
 
-    it('DMTE-498 AC-03: um EzSelect fora do seletor de mesa segue com a caixa bg-white', () => {
-      render(
-        <EzSelect aria-label="Outro seletor" defaultValue="a">
-          <option value="a">A</option>
-        </EzSelect>,
-      );
-      const outro = screen.getByRole('combobox', { name: 'Outro seletor' });
-      expect(outro.parentElement?.className).toContain('bg-white');
-      expect(outro.closest('.max-w-xs')).toBeNull();
-      expect(outro.parentElement?.className).not.toContain('brand-500');
-      // No Kanban o EzSelect é o mesmo: a caixa continua bg-white no DS e só a variante do wrapper a repinta.
+    it('AC-01: "Agrupar por" (Configurações) usa 32 px a partir de sm e no mínimo 44 px abaixo', () => {
+      fireEvent.click(configButton());
+      const box = screen.getByRole('combobox', { name: 'Agrupar por' }).parentElement as HTMLElement;
+      expect(heightContractProblems(box.className, 'compact')).toEqual([]);
+    });
+  });
+
+  describe('AC-03: a barra do Kanban quebra em linhas inteiras', () => {
+    beforeEach(async () => {
+      await renderKanban({ tickets: statusTickets, isLoading: false, isError: false });
+    });
+
+    it('AC-03: abaixo de 640 px a Mesa ocupa a largura total (w-full, sem max-w-xs fixo)', () => {
+      const tokens = classTokens(mesaItem().className);
+      expect(tokens).toContain('w-full');
+      expect(tokens).not.toContain('max-w-xs');
+    });
+
+    it('AC-03: Ordenar e Configurações ficam lado a lado, num par separado da Mesa', () => {
+      const pair = sortButton().parentElement?.parentElement as HTMLElement;
+      expect(pair).toBe(configButton().parentElement?.parentElement);
+      expect(pair).not.toBe(toolbarRow());
+      expect(pair.contains(mesaCombobox())).toBe(false);
+    });
+  });
+
+  describe('AC-04: seletor de Mesa em contorno', () => {
+    beforeEach(async () => {
+      await renderKanban({ tickets: statusTickets, isLoading: false, isError: false });
+    });
+
+    it('AC-04: a Mesa não usa bg-brand-500 (nem fundo cheio da marca em repouso)', () => {
+      const solid = classTokens(mesaClasses()).filter((token) => /(^|:)bg-brand-(500|600|700)$/.test(token) && !token.includes('hover:'));
+      expect(solid).toEqual([]);
+    });
+
+    it('AC-04: a Mesa tem fundo branco e borda brand-500', () => {
       expect(mesaCombobox().parentElement?.className).toContain('bg-white');
+      const tokens = classTokens(mesaClasses());
+      expect(tokens.some((token) => token.endsWith('border-brand-500') && !token.includes('hover:'))).toBe(true);
     });
 
-    it('DMTE-498 AC-04: com foco a caixa do seletor de mesa mostra o anel brand-200 do Novo Ticket', () => {
-      expect(mesaClasses()).toEqual(
-        expect.arrayContaining([
-          `${BOX}:focus-within:ring-4`,
-          `${BOX}:focus-within:ring-brand-200`,
-          `${BOX}:focus-within:ring-offset-2`,
-        ]),
-      );
+    it('AC-04: texto e seta da Mesa em brand-700, com contraste mínimo de 4,5:1 sobre o branco (tokens de styles.css)', () => {
+      const tokens = classTokens(mesaClasses());
+      expect(tokens.some((token) => token.endsWith('text-brand-700') && !token.includes('hover:'))).toBe(true);
+      expect(tokens.filter((token) => token.endsWith('text-gray-70'))).toEqual([]);
+      expect(contrast(hex('brand-700'), 'ffffff')).toBeGreaterThanOrEqual(4.5);
+    });
+
+    it('AC-04: hover com fundo claro da marca e foco visível', () => {
+      const tokens = classTokens(mesaClasses());
+      expect(tokens.some((token) => /hover:bg-brand-(50|100)(\/\d+)?$/.test(token))).toBe(true);
+      expect(tokens.some((token) => /focus-within:ring|focus-visible:ring/.test(token))).toBe(true);
+    });
+
+    it('AC-04: nenhum outro controle da barra é preenchido (Ordenar, Configurações)', () => {
+      for (const control of [sortButton(), configButton()]) {
+        expect(control).toHaveClass('bg-white');
+        expect(control.className).not.toMatch(/(^|\s)bg-brand-(500|600|700)/);
+      }
+    });
+  });
+
+  describe('AC-05: cartão sem a tag de status quando agrupado por Status', () => {
+    const statusTags = (container: HTMLElement) => container.querySelectorAll('[data-ticket-tag="status"]');
+
+    it('AC-05: sem Mesa (agrupamento efetivo Status) nenhum cartão do quadro mostra a tag de status', async () => {
+      const { container } = await renderKanban({ tickets: statusTickets, isLoading: false, isError: false });
+      expect(screen.getByText(/AP-2026-0001/)).toBeInTheDocument();
+      expect(statusTags(container)).toHaveLength(0);
+    });
+
+    it('AC-05: com Mesa e Agrupar por Status escolhido, o cartão também fica sem a tag de status', async () => {
+      const { container } = await renderKanban({
+        tickets: stageTickets,
+        isLoading: false,
+        isError: false,
+        initialServiceDeskId: 'desk-1',
+      });
+      await waitFor(() => expect(screen.getByText('N1')).toBeInTheDocument());
+      fireEvent.click(configButton());
+      fireEvent.change(screen.getByLabelText(/agrupar por/i, { selector: 'select' }), { target: { value: 'status' } });
+      expect(screen.getByRole('heading', { name: 'Aberto' })).toBeInTheDocument();
+      expect(statusTags(container)).toHaveLength(0);
+    });
+
+    it('AC-05: agrupado por Estágio (Mesa selecionada) o cartão mantém a tag de status', async () => {
+      const { container } = await renderKanban({
+        tickets: [stageTickets[0]],
+        isLoading: false,
+        isError: false,
+        initialServiceDeskId: 'desk-1',
+      });
+      await waitFor(() => expect(screen.getByText('N1')).toBeInTheDocument());
+      expect(statusTags(container)).toHaveLength(1);
+    });
+
+    it.each(['agent', 'priority'] as const)('AC-05: agrupado por %s o cartão mantém a tag de status', async (groupBy) => {
+      const { container } = await renderKanban({ tickets: [openTicket], isLoading: false, isError: false });
+      fireEvent.click(configButton());
+      fireEvent.change(screen.getByLabelText(/agrupar por/i, { selector: 'select' }), { target: { value: groupBy } });
+      expect(statusTags(container)).toHaveLength(1);
+    });
+  });
+
+  describe('AC-07: colunas finais abrem recolhidas', () => {
+    it('AC-07: por status, Resolvido e Fechado abrem recolhidos, com botão de nome acessível que contém o rótulo', async () => {
+      await renderKanban({ tickets: statusTickets, isLoading: false, isError: false });
+      expect(screen.queryByRole('button', { name: /Resolvido/ })).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /Fechado/ })).toBeInTheDocument();
+      expect(screen.queryByText(/AP-2026-0002/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/AP-2026-0003/)).not.toBeInTheDocument();
+    });
+
+    it('AC-07: por status, as outras sete colunas abrem expandidas e aceitando soltar', async () => {
+      await renderKanban({ tickets: statusTickets, isLoading: false, isError: false });
+      expect(screen.getAllByTestId('kanban-column')).toHaveLength(7);
+      expect(screen.getByText(/AP-2026-0001/)).toBeInTheDocument();
+      expect(capturedDroppables['OPEN'].isDropDisabled).toBe(false);
+      expect(capturedDroppables['PENDING_SANKHYA'].isDropDisabled).toBe(false);
+    });
+
+    it('AC-07: a coluna recolhida (Resolvido e Fechado) não aceita soltar cartão', async () => {
+      await renderKanban({ tickets: statusTickets, isLoading: false, isError: false });
+      expect(capturedDroppables['RESOLVED'].isDropDisabled).toBe(true);
+      expect(capturedDroppables['CLOSED'].isDropDisabled).toBe(true);
+    });
+
+    it('AC-07: um clique no botão expande a coluna e outro recolhe', async () => {
+      await renderKanban({ tickets: statusTickets, isLoading: false, isError: false });
+
+      fireEvent.click(stripButton(/Resolvido/));
+      expect(screen.getByText(/AP-2026-0002/)).toBeInTheDocument();
+      expect(capturedDroppables['RESOLVED'].isDropDisabled).toBe(false);
+      expect(screen.getAllByTestId('kanban-column')).toHaveLength(8);
+
+      fireEvent.click(screen.getByTestId('collapse-column-RESOLVED'));
+      expect(screen.queryByText(/AP-2026-0002/)).not.toBeInTheDocument();
+      expect(capturedDroppables['RESOLVED'].isDropDisabled).toBe(true);
+      stripButton(/Resolvido/);
+    });
+
+    it('AC-07: a escolha do usuário prevalece: Resolvido expandido segue expandido ao reordenar o quadro', async () => {
+      await renderKanban({ tickets: statusTickets, isLoading: false, isError: false });
+      fireEvent.click(stripButton(/Resolvido/));
+      fireEvent.click(sortButton());
+      fireEvent.click(screen.getByRole('button', { name: 'Título' }));
+      expect(screen.getByText(/AP-2026-0002/)).toBeInTheDocument();
+      stripButton(/Fechado/);
+    });
+
+    it('AC-07: com Mesa selecionada, abrem recolhidos só os estágios com isFinal', async () => {
+      await renderKanban({ tickets: stageTickets, isLoading: false, isError: false, initialServiceDeskId: 'desk-1' });
+      await waitFor(() => expect(screen.getByText('N1')).toBeInTheDocument());
+
+      expect(screen.queryByRole('button', { name: /Aguardando Cliente/ })).toBeInTheDocument();
+      expect(screen.queryByText(/AP-2026-0004/)).not.toBeInTheDocument();
+      expect(capturedDroppables['s-aguardando-cliente'].isDropDisabled).toBe(true);
+
+      expect(screen.getByTestId('collapse-column-s-n1')).toBeInTheDocument();
+      expect(screen.getByTestId('collapse-column-s-n2')).toBeInTheDocument();
+      expect(capturedDroppables['s-n2'].isDropDisabled).toBe(false);
+    });
+
+    it('AC-07: com Mesa selecionada, um clique expande o estágio final e outro recolhe', async () => {
+      await renderKanban({ tickets: stageTickets, isLoading: false, isError: false, initialServiceDeskId: 'desk-1' });
+      await waitFor(() => expect(screen.getByText('N1')).toBeInTheDocument());
+
+      fireEvent.click(stripButton(/Aguardando Cliente/));
+      expect(screen.getByText(/AP-2026-0004/)).toBeInTheDocument();
+      fireEvent.click(screen.getByTestId('collapse-column-s-aguardando-cliente'));
+      expect(screen.queryByText(/AP-2026-0004/)).not.toBeInTheDocument();
+      expect(capturedDroppables['s-aguardando-cliente'].isDropDisabled).toBe(true);
+    });
+  });
+
+  describe('AC-08: faixas fixas, encaixe e colunas de 80vw', () => {
+    it('AC-08: o quadro usa scroll-snap proximity (não mandatory) e scroll-padding para as faixas', async () => {
+      await renderKanban({ tickets: statusTickets, isLoading: false, isError: false });
+      const tokens = classTokens(board().className);
+      expect(tokens).toContain('snap-x');
+      expect(tokens).toContain('snap-proximity');
+      expect(tokens).not.toContain('snap-mandatory');
+      expect(tokens).not.toContain('lg:snap-none');
+      expect(tokens.some((token) => /(^|:)scroll-p[rxlt]?-/.test(token))).toBe(true);
+    });
+
+    it('AC-08: a partir de lg as faixas recolhidas ficam fixas na borda direita (sticky e inset direito)', async () => {
+      await renderKanban({ tickets: statusTickets, isLoading: false, isError: false });
+      for (const name of [/Resolvido/, /Fechado/]) {
+        const tokens = classTokens(stripClasses(name));
+        expect(tokens).toContain('lg:sticky');
+        expect(tokens.some((token) => /^lg:right-/.test(token))).toBe(true);
+      }
+    });
+
+    it('AC-08: abaixo de lg as faixas não fixam (sticky só com o prefixo lg:)', async () => {
+      await renderKanban({ tickets: statusTickets, isLoading: false, isError: false });
+      for (const name of [/Resolvido/, /Fechado/]) {
+        const tokens = classTokens(stripClasses(name));
+        expect(tokens.filter((token) => /(^|:)sticky$/.test(token) && !token.startsWith('lg:'))).toEqual([]);
+        expect(tokens).toContain('lg:sticky');
+      }
+    });
+
+    it('AC-08: com Mesa selecionada, a faixa do estágio final também fixa a partir de lg', async () => {
+      await renderKanban({ tickets: stageTickets, isLoading: false, isError: false, initialServiceDeskId: 'desk-1' });
+      await waitFor(() => expect(screen.getByText('N1')).toBeInTheDocument());
+      const tokens = classTokens(stripClasses(/Aguardando Cliente/));
+      expect(tokens).toContain('lg:sticky');
+      expect(tokens.some((token) => /^lg:right-/.test(token))).toBe(true);
+    });
+
+    it('AC-08: as colunas expandidas não fixam e seguem com 80vw (máximo 320 px) abaixo de lg', async () => {
+      await renderKanban({ tickets: statusTickets, isLoading: false, isError: false });
+      for (const column of screen.getAllByTestId('kanban-column')) {
+        const tokens = classTokens(column.className);
+        expect(tokens.filter((token) => token.includes('sticky'))).toEqual([]);
+        expect(tokens).toContain('w-[80vw]');
+        expect(tokens).toContain('max-w-[320px]');
+        expect(tokens).toContain('lg:max-w-none');
+      }
     });
   });
 });

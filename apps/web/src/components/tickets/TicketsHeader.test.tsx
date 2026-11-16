@@ -2,6 +2,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { TicketsHeader } from './TicketsHeader';
+import { classTokens, classesUpTo, heightContractProblems } from '../../test-utils/controlHeight';
 
 function renderHeader(props: Partial<Parameters<typeof TicketsHeader>[0]> = {}) {
   const defaultProps: Parameters<typeof TicketsHeader>[0] = {
@@ -69,5 +70,65 @@ describe('TicketsHeader (D3)', () => {
 
     await user.click(screen.getByRole('button', { name: 'Busca avançada' }));
     expect(onOpenAdvancedSearch).toHaveBeenCalled();
+  });
+});
+
+describe('TicketsHeader: escala de altura e quebra em telas estreitas (DMTE-527 ticket 1)', () => {
+  const search = () => screen.getByLabelText(/buscar/i);
+  const advanced = () => screen.getByRole('button', { name: 'Busca avançada' });
+  const commonAncestor = (a: Element, b: Element) => {
+    let node: Element | null = a;
+    while (node && !node.contains(b)) node = node.parentElement;
+    return node as Element;
+  };
+
+  it('AC-01: busca, Busca avançada e Lista/Kanban usam o token de 36 px a partir de sm e 44 px abaixo', () => {
+    const { container } = renderHeader();
+    const root = container.parentElement;
+    expect(heightContractProblems(classesUpTo(search(), root), 'toolbar')).toEqual([]);
+    expect(heightContractProblems(classesUpTo(advanced(), root), 'toolbar')).toEqual([]);
+    const group = screen.getByRole('group', { name: /visualização/i });
+    expect(heightContractProblems(classesUpTo(group, root), 'toolbar')).toEqual([]);
+  });
+
+  it('AC-01: nenhum controle do cabeçalho segue no token de 42 px', () => {
+    const { container } = renderHeader();
+    for (const control of [search(), advanced(), screen.getByRole('group', { name: /visualização/i })]) {
+      expect(control.className).not.toContain('--control-height-md');
+    }
+    expect(container.innerHTML).not.toContain('--control-height-md');
+  });
+
+  it('AC-01: o título "Tickets" usa o token de 36 px a partir de sm', () => {
+    renderHeader();
+    expect(
+      heightContractProblems(screen.getByRole('heading', { name: 'Tickets' }).className, 'toolbar', { touchFloor: false }),
+    ).toEqual([]);
+  });
+
+  it('AC-03: a busca ocupa a largura total abaixo de lg e de 640 a 1023 px (nenhum sm:w-* diferente de full)', () => {
+    const { container } = renderHeader();
+    const tokens = classTokens(classesUpTo(search(), container.parentElement));
+    expect(tokens).toContain('w-full');
+    expect(tokens.filter((token) => /^sm:w-/.test(token) && token !== 'sm:w-full')).toEqual([]);
+  });
+
+  it('AC-03: abaixo de 640 px "Busca avançada" ocupa a largura total e volta ao tamanho natural a partir de sm', () => {
+    renderHeader();
+    const tokens = classTokens(advanced().className);
+    expect(tokens).toContain('w-full');
+    expect(tokens).toContain('sm:w-auto');
+  });
+
+  it('AC-03: abaixo de 640 px busca e "Busca avançada" ficam uma por linha (o pai quebra ou empilha)', () => {
+    renderHeader();
+    const parent = commonAncestor(search(), advanced());
+    expect(classTokens(parent.className).filter((token) => /^(flex-col|flex-wrap|grid)$/.test(token))).not.toEqual([]);
+  });
+
+  it('AC-03: título e Lista/Kanban continuam juntos na primeira linha', () => {
+    renderHeader();
+    const title = screen.getByRole('heading', { name: 'Tickets' });
+    expect(commonAncestor(title, screen.getByRole('group', { name: /visualização/i })).contains(search())).toBe(false);
   });
 });

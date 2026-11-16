@@ -35,6 +35,21 @@ export const ListaKanban: Story = {
   },
 };
 
+const listaKanban = [
+  { value: 'list', label: 'Lista' },
+  { value: 'kanban', label: 'Kanban' },
+];
+
+/** `default` (42 px) e `toolbar` (36 px a partir de `sm`, 44 px abaixo), lado a lado. */
+export const Tamanhos: Story = {
+  render: () => (
+    <div className="flex items-center gap-4">
+      <EzSegmented aria-label="Visualização padrão" size="default" value="list" onChange={() => undefined} options={listaKanban} />
+      <EzSegmented aria-label="Visualização da barra" size="toolbar" value="list" onChange={() => undefined} options={listaKanban} />
+    </div>
+  ),
+};
+
 export const ComOpcaoDesabilitada: Story = {
   args: {
     'aria-label': 'Visualização',

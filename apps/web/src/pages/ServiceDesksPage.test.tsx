@@ -10,6 +10,7 @@ import { ServiceDesksPage } from './ServiceDesksPage';
 vi.mock('../lib/api', () => ({
   api: {
     get: vi.fn(),
+    put: vi.fn(),
     post: vi.fn(),
     patch: vi.fn(),
     delete: vi.fn(),
@@ -201,7 +202,8 @@ describe('ServiceDesksPage', () => {
     expect(
       screen.getByText(/não tem permissão/i),
     ).toBeInTheDocument();
-    expect(api.get).not.toHaveBeenCalled();
+    // Só a preferência de tela do próprio usuário é lida (DMTE-527 T2); nenhum dado de Mesa.
+    expect(vi.mocked(api.get).mock.calls.every(([url]) => url === '/me/screen-preferences/service-desks')).toBe(true);
   });
 
   it('shows Portuguese labels for ticket sections instead of database keys', async () => {

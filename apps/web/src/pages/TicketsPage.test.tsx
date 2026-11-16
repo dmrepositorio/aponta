@@ -11,6 +11,7 @@ import { TicketsPage } from './TicketsPage';
 vi.mock('../lib/api', () => ({
   api: {
     get: vi.fn(),
+    put: vi.fn(),
   },
 }));
 
@@ -54,6 +55,7 @@ const tickets = [
 
 function mockApiGet(ticketData: unknown[] = tickets) {
   vi.mocked(api.get).mockImplementation((url: string) => {
+    if (url.startsWith('/me/screen-preferences/')) return Promise.resolve({ data: {} });
     if (url === '/service-desks') {
       return Promise.resolve({ data: serviceDesks });
     }
@@ -143,10 +145,12 @@ describe('TicketsPage', () => {
     mockApiGet([]);
     renderDashboard();
 
+    // DMTE-527 T2: o Kanban espera a leitura da preferência; o esqueleto também tem o título da coluna, então espera o quadro.
+    await screen.findAllByTestId('kanban-column');
     expect(await screen.findByRole('heading', { name: 'Aberto' })).toBeInTheDocument();
   });
 
-  it('should render a Kanban card per ticket with protocol, title and status tag (D7)', async () => {
+  it('should render a Kanban card per ticket with protocol and title, without the status tag the column already shows (D7, DMTE-527 AC-05)', async () => {
     mockApiGet();
     renderDashboard();
 
@@ -155,14 +159,14 @@ describe('TicketsPage', () => {
     expect(firstCard).not.toBeNull();
     const first = within(firstCard as HTMLElement);
     expect(first.getByText('#AP-000001')).toBeInTheDocument();
-    expect(first.getByText('Aberto')).toBeInTheDocument();
+    expect(first.queryByText('Aberto')).not.toBeInTheDocument();
 
     const secondTitle = screen.getByText('VPN access request');
     const secondCard = secondTitle.closest('li');
     expect(secondCard).not.toBeNull();
     const second = within(secondCard as HTMLElement);
     expect(second.getByText('#AP-000002')).toBeInTheDocument();
-    expect(second.getByText('Em Andamento')).toBeInTheDocument();
+    expect(second.queryByText('Em Andamento')).not.toBeInTheDocument();
   });
 
   it('should show an error state when the tickets request fails', async () => {
@@ -184,6 +188,8 @@ describe('TicketsPage', () => {
     const user = userEvent.setup();
     renderDashboard();
 
+    // DMTE-527 T2: o Kanban espera a leitura da preferência; o esqueleto também tem o título da coluna, então espera o quadro.
+    await screen.findAllByTestId('kanban-column');
     expect(await screen.findByRole('heading', { name: 'Aberto' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Kanban' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Kanban' })).toHaveAttribute('aria-pressed', 'true');
@@ -389,7 +395,7 @@ describe('TicketsPage', () => {
       expect(screen.queryByRole('group', { name: /filtros ativos/i })).not.toBeInTheDocument(),
     );
     await waitFor(() => {
-      const ticketCalls = vi.mocked(api.get).mock.calls.filter(([url]) => String(url).includes('/tickets'));
+      const ticketCalls = vi.mocked(api.get).mock.calls.filter(([url]) => url === '/tickets');
       expect(ticketCalls.length).toBeGreaterThan(0);
       expect((ticketCalls[ticketCalls.length - 1][1] as { params: Record<string, unknown> }).params.status).toBeUndefined();
     });
@@ -691,6 +697,8 @@ describe('TicketsPage', () => {
       loginAs('ADMIN');
       mockTickets();
       const first = renderDashboard(['/?view=kanban']);
+      // DMTE-527 T2: o Kanban espera a leitura da preferência; o esqueleto também tem o título da coluna, então espera o quadro.
+      await screen.findAllByTestId('kanban-column');
       expect(await screen.findByRole('heading', { name: 'Aberto' })).toBeInTheDocument();
       expect(screen.queryByRole('button', { name: /^Tickets fechados/ })).not.toBeInTheDocument();
       expect(screen.queryByRole('button', { name: /^Autorizações/ })).not.toBeInTheDocument();

@@ -211,3 +211,81 @@ describe('TicketKanbanCard (D7)', () => {
     expect(screen.queryByText(/atualizado em/i)).not.toBeInTheDocument();
   });
 });
+
+describe('TicketKanbanCard por agrupamento (DMTE-527 ticket 1)', () => {
+  const withSla = { ...baseTicket, responseSlaStatus: 'ON_TRACK', resolveSlaStatus: 'AT_RISK' } as Ticket;
+  type GroupBy = NonNullable<Parameters<typeof TicketKanbanCard>[0]['groupBy']>;
+  const renderGrouped = (ticket: Ticket, groupBy?: GroupBy, tagField?: 'status' | 'priority') =>
+    render(
+      <MemoryRouter>
+        <TicketKanbanCard ticket={ticket} groupBy={groupBy} tagField={tagField} />
+      </MemoryRouter>,
+    );
+  /** A linha da tag é a que traz o nome do cliente. */
+  const tagRow = () => screen.getByText('Acme Corporation').parentElement as HTMLElement;
+  const slaChips = () => screen.getAllByLabelText(/^(Resposta|Resolução):/);
+
+  it('AC-05: agrupado por Status, o cartão não renderiza a tag de status', () => {
+    const { container } = renderGrouped(withSla, 'status');
+    expect(container.querySelector('[data-ticket-tag="status"]')).toBeNull();
+    expect(screen.queryByText('Aberto')).not.toBeInTheDocument();
+  });
+
+  it('AC-05: agrupado por Status, o chip de SLA fica na linha do cliente, à direita dele', () => {
+    renderGrouped(withSla, 'status');
+    const row = tagRow();
+    const client = screen.getByText('Acme Corporation');
+    for (const chip of slaChips()) {
+      expect(row).toContainElement(chip);
+      expect(client.compareDocumentPosition(chip) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    }
+  });
+
+  it('AC-05: agrupado por Status, o rodapé só traz o responsável', () => {
+    renderGrouped(withSla, 'status');
+    const footer = screen.getByTestId('kanban-card-footer');
+    expect(footer).toContainElement(screen.getByText('JP'));
+    expect(footer.querySelector('[aria-label^="Resposta"], [aria-label^="Resolução"]')).toBeNull();
+  });
+
+  it('AC-05: agrupado por Status e sem SLA, a linha tem só o cliente', () => {
+    renderGrouped(baseTicket, 'status');
+    const row = tagRow();
+    expect(row.textContent).toBe('Acme Corporation');
+    expect(row.querySelector('[aria-label], [data-ticket-tag]')).toBeNull();
+  });
+
+  it('AC-05: agrupado por Status, sem SLA e sem responsável, não sobra rodapé vazio', () => {
+    renderGrouped({ ...baseTicket, agent: null, agentId: null }, 'status');
+    expect(screen.queryByTestId('kanban-card-footer')).not.toBeInTheDocument();
+  });
+
+  it.each(['stage', 'agent', 'priority'] as const)(
+    'AC-05: agrupado por %s, o cartão mantém a tag de status e o SLA no rodapé',
+    (groupBy) => {
+      const { container } = renderGrouped(withSla, groupBy);
+      expect(container.querySelector('[data-ticket-tag="status"]')).toHaveTextContent('Aberto');
+      const footer = screen.getByTestId('kanban-card-footer');
+      for (const chip of slaChips()) expect(footer).toContainElement(chip);
+      expect(tagRow()).toContainElement(container.querySelector('[data-ticket-tag="status"]') as HTMLElement);
+    },
+  );
+
+  it('AC-05: sem agrupamento informado, o cartão mantém a tag de status (padrão de quem não passa groupBy)', () => {
+    const { container } = renderGrouped(baseTicket);
+    expect(container.querySelector('[data-ticket-tag="status"]')).toHaveTextContent('Aberto');
+  });
+
+  it('AC-06: as tags de status e de prioridade do cartão não quebram em duas linhas (whitespace-nowrap)', () => {
+    const { container, unmount } = renderGrouped(baseTicket, 'stage');
+    expect(container.querySelector('[data-ticket-tag="status"]')).toHaveClass('whitespace-nowrap');
+    unmount();
+    const priority = renderGrouped(baseTicket, 'stage', 'priority');
+    expect(priority.container.querySelector('[data-ticket-tag="priority"]')).toHaveClass('whitespace-nowrap');
+  });
+
+  it('AC-06: nenhum status é renomeado no cartão (Aguardando Aprovação por extenso)', () => {
+    renderGrouped({ ...baseTicket, status: 'PENDING_APPROVAL' }, 'stage');
+    expect(screen.getByText('Aguardando Aprovação')).toBeInTheDocument();
+  });
+});

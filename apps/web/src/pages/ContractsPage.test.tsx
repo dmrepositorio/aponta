@@ -16,6 +16,7 @@ import { ContractsPage } from './ContractsPage';
 vi.mock('../lib/api', () => ({
   api: {
     get: vi.fn(),
+    put: vi.fn(),
     post: vi.fn(),
     delete: vi.fn(),
   },
@@ -69,8 +70,7 @@ describe('ContractsPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     useAuthStore.setState({ token: null, user: null });
-    // The filter/screen-config tests below exercise useUserScreenConfig's
-    // localStorage-backed saved filters; keep each test isolated.
+    // The screen-config tests below exercise useUserScreenConfig; keep each test isolated.
     localStorage.clear();
   });
 
@@ -777,8 +777,16 @@ describe('ContractsPage grid (DMTE-536)', () => {
 
     // A grade lê a visibilidade só ao montar; o que o usuário liga fica salvo para a próxima abertura.
     await user.click(screen.getByTestId('ez-screen-config-toggle-excessHourlyRate'));
-    const saved = JSON.parse(localStorage.getItem('aponta_screen_config_u-1_contracts') ?? '{}');
-    expect(saved.grid.columnVisibility.excessHourlyRate).toBe(true);
+    // DMTE-527 T2: a preferência é gravada no servidor (mockGrid devolve lista para qualquer GET: vira padrões).
+    await waitFor(() =>
+      expect(api.put).toHaveBeenCalledWith(
+        '/me/screen-preferences/contracts',
+        expect.objectContaining({
+          grid: expect.objectContaining({ columnVisibility: expect.objectContaining({ excessHourlyRate: true }) }),
+        }),
+      ),
+    );
+    expect(localStorage.getItem('aponta_screen_config_u-1_contracts')).toBeNull();
   });
 
   it('DMTE-541 AC-08: the filter panel sits in a positioned container so it can overlay the grid below xl', async () => {

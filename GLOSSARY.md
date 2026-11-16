@@ -67,3 +67,15 @@ _Avoid_: Aba de estado, preset
 **Autorização**:
 Ticket em Aguardando Aprovação, que um perfil administrativo ou MASTER precisa liberar antes de seguir.
 _Avoid_: Aprovação pendente
+
+**Coluna recolhida**:
+Coluna do Kanban de Tickets reduzida a uma faixa estreita com o nome e a contagem, que não aceita cartão solto sobre ela; o usuário a expande com um clique.
+_Avoid_: Coluna oculta, coluna escondida
+
+**Coluna final**:
+Coluna do Kanban em que o ticket já terminou: Resolvido e Fechado por status, ou um estágio marcado como final na mesa.
+_Avoid_: Última coluna
+
+**Preferência de tela**:
+Escolha de apresentação de um usuário numa tela (agrupar por, campos visíveis, colunas recolhidas); vale para aquele usuário em qualquer navegador.
+_Avoid_: Configuração local, personalização

@@ -1,12 +1,46 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, useLocation } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { api } from '../../lib/api';
 import { useAuthStore } from '../../stores/authStore';
 import type { Ticket } from '../../hooks/useTickets';
 import { TicketList } from './TicketList';
+import { heightContractProblems } from '../../test-utils/controlHeight';
+
+// DMTE-527 AC-14: a preferência de tela vem do servidor (GET/PUT /me/screen-preferences/tickets-list).
+vi.mock('../../lib/api', () => ({
+  api: {
+    get: vi.fn(),
+    put: vi.fn(),
+  },
+}));
+
+const PREF_URL = '/me/screen-preferences/tickets-list';
+/** Servidor falso: a preferência gravada (PUT) é a que o GET devolve; `{}` quando não há linha. */
+let serverPreference: unknown = {};
+beforeEach(() => {
+  serverPreference = {};
+  vi.mocked(api.get).mockReset();
+  vi.mocked(api.put).mockReset();
+  vi.mocked(api.get).mockImplementation((async (url: string) => {
+    if (url === PREF_URL) return { data: serverPreference };
+    throw new Error(`Unexpected GET ${url}`);
+  }) as never);
+  vi.mocked(api.put).mockImplementation((async (url: string, body: unknown) => {
+    if (url === PREF_URL) serverPreference = body;
+    return { data: body };
+  }) as never);
+});
+/** A gravação no servidor espera 400 ms (AC-14); dá tempo antes de remontar a tela. */
+const waitForSave = () => act(() => new Promise<void>((done) => setTimeout(done, 450)));
+
+/** A tela só desenha depois da leitura da preferência: espera os controles (ausentes no esqueleto e no erro). */
+async function waitForList(props: { isLoading?: boolean; isError?: boolean }) {
+  if (!props.isLoading && !props.isError) await screen.findByRole('button', { name: /exibir colunas/i });
+}
 
 const ticketA: Ticket = {
   id: 't1',
@@ -51,17 +85,19 @@ const ticketB: Ticket = {
   },
 };
 
-function renderList(props: Partial<Parameters<typeof TicketList>[0]> = {}) {
+async function renderList(props: Partial<Parameters<typeof TicketList>[0]> = {}) {
   const defaults: Parameters<typeof TicketList>[0] = {
     tickets: [ticketA, ticketB],
     isLoading: false,
     isError: false,
   };
-  return render(
+  const view = render(
     <MemoryRouter>
       <TicketList {...defaults} {...props} />
     </MemoryRouter>,
   );
+  await waitForList({ ...defaults, ...props });
+  return view;
 }
 
 describe('TicketList (D5: Lista agrupável)', () => {
@@ -73,29 +109,29 @@ describe('TicketList (D5: Lista agrupável)', () => {
     });
   });
 
-  it('shows a loading indicator when isLoading is true', () => {
-    renderList({ tickets: [], isLoading: true });
+  it('shows a loading indicator when isLoading is true', async () => {
+    await renderList({ tickets: [], isLoading: true });
     expect(screen.getByRole('status')).toHaveTextContent(/carregando chamados/i);
   });
 
-  it('shows an error message when isError is true', () => {
-    renderList({ tickets: [], isError: true });
+  it('shows an error message when isError is true', async () => {
+    await renderList({ tickets: [], isError: true });
     expect(screen.getByRole('alert')).toHaveTextContent(/falha ao carregar os chamados/i);
   });
 
-  it('shows an empty-state message when there are no tickets', () => {
-    renderList({ tickets: [] });
+  it('shows an empty-state message when there are no tickets', async () => {
+    await renderList({ tickets: [] });
     expect(screen.getByText(/nenhum chamado encontrado/i)).toBeInTheDocument();
   });
 
-  it('renders status and priority with the new tags', () => {
-    const { container } = renderList();
+  it('renders status and priority with the new tags', async () => {
+    const { container } = await renderList();
     expect(container.querySelectorAll('[data-ticket-tag="status"] [data-glyph]')).toHaveLength(2);
     expect(container.querySelectorAll('[data-ticket-tag="priority"] [data-glyph^="bars-"]')).toHaveLength(2);
   });
 
-  it('renders the default columns: Número, Título, Cliente, Origem, Prioridade, Status, Estágio (AC6)', () => {
-    renderList();
+  it('renders the default columns: Número, Título, Cliente, Origem, Prioridade, Status, Estágio (AC6)', async () => {
+    await renderList();
     const headerRow = screen.getAllByRole('columnheader');
     const headerLabels = headerRow.map((h) => h.textContent);
     for (const label of ['Número', 'Título', 'Cliente', 'Origem', 'Prioridade', 'Status', 'Estágio']) {
@@ -105,13 +141,13 @@ describe('TicketList (D5: Lista agrupável)', () => {
     expect(headerLabels.some((h) => h?.includes('Responsável'))).toBe(false);
   });
 
-  it('DMTE-490 AC-05: shows the Aguardando Sankhya label for a ticket in that status', () => {
-    renderList({ tickets: [{ ...ticketA, status: 'PENDING_SANKHYA' }] });
+  it('DMTE-490 AC-05: shows the Aguardando Sankhya label for a ticket in that status', async () => {
+    await renderList({ tickets: [{ ...ticketA, status: 'PENDING_SANKHYA' }] });
     expect(screen.getByText('Aguardando Sankhya')).toBeInTheDocument();
   });
 
-  it('renders a row per ticket with its data, ungrouped by default', () => {
-    renderList();
+  it('renders a row per ticket with its data, ungrouped by default', async () => {
+    await renderList();
     expect(screen.getByText('AP-2026-0001')).toBeInTheDocument();
     expect(screen.getByText('Printer broken')).toBeInTheDocument();
     expect(screen.getByText('Acme')).toBeInTheDocument();
@@ -119,7 +155,7 @@ describe('TicketList (D5: Lista agrupável)', () => {
 
   it('groups by the chosen field, with a collapsible group row showing a count (AC6)', async () => {
     const user = userEvent.setup();
-    renderList();
+    await renderList();
 
     await user.selectOptions(screen.getByLabelText(/agrupar por/i, { selector: 'select' }), 'organization');
 
@@ -135,7 +171,7 @@ describe('TicketList (D5: Lista agrupável)', () => {
 
   it('AC-09: the group header exposes aria-expanded and flips it when toggled', async () => {
     const user = userEvent.setup();
-    renderList();
+    await renderList();
 
     await user.selectOptions(screen.getByLabelText(/agrupar por/i, { selector: 'select' }), 'organization');
     const header = screen.getByRole('button', { name: /Acme \(1\)/ });
@@ -152,7 +188,7 @@ describe('TicketList (D5: Lista agrupável)', () => {
 
   it('"Nenhum" removes grouping and shows every row flat', async () => {
     const user = userEvent.setup();
-    renderList();
+    await renderList();
 
     await user.selectOptions(screen.getByLabelText(/agrupar por/i, { selector: 'select' }), 'organization');
     await user.selectOptions(screen.getByLabelText(/agrupar por/i, { selector: 'select' }), 'none');
@@ -163,7 +199,7 @@ describe('TicketList (D5: Lista agrupável)', () => {
 
   it('toggles an optional column on via "Exibir colunas" and it persists after remount (D5 persistence)', async () => {
     const user = userEvent.setup();
-    const { unmount } = renderList();
+    const { unmount } = await renderList();
 
     await user.click(screen.getByRole('button', { name: /exibir colunas/i }));
     await user.click(screen.getByRole('checkbox', { name: /responsável/i }));
@@ -172,8 +208,9 @@ describe('TicketList (D5: Lista agrupável)', () => {
       true,
     );
 
+    await waitForSave();
     unmount();
-    renderList();
+    await renderList();
     expect(screen.getAllByRole('columnheader').some((h) => h.textContent?.includes('Responsável'))).toBe(
       true,
     );
@@ -181,7 +218,7 @@ describe('TicketList (D5: Lista agrupável)', () => {
 
   it('shows the R1 warning when grouping with more than one page of results', async () => {
     const user = userEvent.setup();
-    renderList({ totalPages: 3 });
+    await renderList({ totalPages: 3 });
 
     await user.selectOptions(screen.getByLabelText(/agrupar por/i, { selector: 'select' }), 'organization');
 
@@ -191,7 +228,7 @@ describe('TicketList (D5: Lista agrupável)', () => {
   it('clicking a sortable column header calls onSortChange, toggling direction on repeated clicks', async () => {
     const onSortChange = vi.fn();
     const user = userEvent.setup();
-    renderList({ onSortChange });
+    await renderList({ onSortChange });
 
     await user.click(screen.getByRole('button', { name: 'Título' }));
     expect(onSortChange).toHaveBeenCalledWith('title', 'asc');
@@ -209,8 +246,8 @@ describe('TicketList (D5: Lista agrupável)', () => {
     const columnNames = ['E-mail do solicitante', 'Telefone do solicitante', 'Ramal do solicitante', 'Grupo de recursos'];
     const headers = () => screen.queryAllByRole('columnheader').map((h) => h.textContent ?? '');
 
-    it('AC-01: keeps "Agrupar por" and "Exibir colunas" next to the empty state, with no table', () => {
-      renderList({ tickets: [] });
+    it('AC-01: keeps "Agrupar por" and "Exibir colunas" next to the empty state, with no table', async () => {
+      await renderList({ tickets: [] });
 
       expect(screen.getByLabelText(/agrupar por/i, { selector: 'select' })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /exibir colunas/i })).toBeInTheDocument();
@@ -220,30 +257,31 @@ describe('TicketList (D5: Lista agrupável)', () => {
 
     it('AC-02: with an empty list, the column menu lists every column and a toggle persists for the next non-empty render', async () => {
       const user = userEvent.setup();
-      const first = renderList({ tickets: [] });
+      const first = await renderList({ tickets: [] });
 
       await user.click(screen.getByRole('button', { name: /exibir colunas/i }));
       expect(screen.getAllByRole('checkbox')).toHaveLength(14 + columnNames.length);
       await user.click(screen.getByRole('checkbox', { name: /responsável/i }));
+      await waitForSave();
       first.unmount();
 
-      renderList();
+      await renderList();
       expect(headers().some((h) => h.includes('Responsável'))).toBe(true);
     });
 
-    it('AC-03: loading and error states still render without the controls', () => {
-      const loading = renderList({ tickets: [], isLoading: true });
+    it('AC-03: loading and error states still render without the controls', async () => {
+      const loading = await renderList({ tickets: [], isLoading: true });
       expect(screen.queryByRole('button', { name: /exibir colunas/i })).not.toBeInTheDocument();
       loading.unmount();
 
-      renderList({ tickets: [], isError: true });
+      await renderList({ tickets: [], isError: true });
       expect(screen.queryByRole('button', { name: /exibir colunas/i })).not.toBeInTheDocument();
       expect(screen.queryByLabelText(/agrupar por/i, { selector: 'select' })).not.toBeInTheDocument();
     });
 
     it('AC-04: offers the four new columns hidden by default and shows their values (or "—") once enabled', async () => {
       const user = userEvent.setup();
-      renderList({ tickets: [ticketWithContact, ticketB] });
+      await renderList({ tickets: [ticketWithContact, ticketB] });
 
       expect(headers().some((h) => columnNames.includes(h))).toBe(false);
       await user.click(screen.getByRole('button', { name: /exibir colunas/i }));
@@ -267,12 +305,10 @@ describe('TicketList (D5: Lista agrupável)', () => {
       expect(second).toContain('joao@beta.com');
     });
 
-    it('AC-04: a configuration saved before the new columns existed keeps them hidden', () => {
-      localStorage.setItem(
-        'aponta_screen_config_u1_tickets-list',
-        JSON.stringify({ grid: { columnVisibility: { number: true, title: true, agent: true }, density: 'compact' } }),
-      );
-      renderList({ tickets: [ticketWithContact] });
+    it('AC-04: a configuration saved before the new columns existed keeps them hidden', async () => {
+      // AC-14/AC-15: a configuração salva vem do servidor (não mais do localStorage).
+      serverPreference = { grid: { columnVisibility: { number: true, title: true, agent: true }, density: 'compact' } };
+      await renderList({ tickets: [ticketWithContact] });
 
       expect(headers().some((h) => h.includes('Responsável'))).toBe(true);
       expect(headers().some((h) => columnNames.includes(h))).toBe(false);
@@ -281,7 +317,7 @@ describe('TicketList (D5: Lista agrupável)', () => {
     it('AC-06: without a known role the phone and extension columns are not offered', async () => {
       useAuthStore.setState({ user: null });
       const user = userEvent.setup();
-      renderList();
+      await renderList();
 
       await user.click(screen.getByRole('button', { name: /exibir colunas/i }));
       expect(screen.queryByRole('checkbox', { name: 'Telefone do solicitante' })).not.toBeInTheDocument();
@@ -291,7 +327,7 @@ describe('TicketList (D5: Lista agrupável)', () => {
 
     it('AC-01: the page-grouping note is not shown when the list is empty', async () => {
       const user = userEvent.setup();
-      renderList({ tickets: [], totalPages: 3 });
+      await renderList({ tickets: [], totalPages: 3 });
 
       await user.selectOptions(screen.getByLabelText(/agrupar por/i, { selector: 'select' }), 'organization');
 
@@ -301,7 +337,7 @@ describe('TicketList (D5: Lista agrupável)', () => {
     it.each(['ADMIN', 'AGENT_MASTER', 'AGENT'])('AC-06: %s sees the phone and extension columns in the menu', async (role) => {
       useAuthStore.setState({ user: { sub: 'u1', email: 'a@x.com', role, organizationId: null } as any });
       const user = userEvent.setup();
-      renderList();
+      await renderList();
 
       await user.click(screen.getByRole('button', { name: /exibir colunas/i }));
       expect(screen.getByRole('checkbox', { name: 'Telefone do solicitante' })).toBeInTheDocument();
@@ -311,7 +347,7 @@ describe('TicketList (D5: Lista agrupável)', () => {
     it.each(['CLIENT', 'CLIENT_MASTER'])('AC-06: %s does not get the phone and extension columns, and keeps the others', async (role) => {
       useAuthStore.setState({ user: { sub: 'u1', email: 'a@x.com', role, organizationId: 'org-1' } as any });
       const user = userEvent.setup();
-      renderList();
+      await renderList();
 
       await user.click(screen.getByRole('button', { name: /exibir colunas/i }));
       expect(screen.queryByRole('checkbox', { name: 'Telefone do solicitante' })).not.toBeInTheDocument();
@@ -330,13 +366,15 @@ describe('DMTE-526: abrir a linha por teclado e nova aba, e estado da ordenaçã
     visits.push(location.pathname);
     return <div data-testid="location-probe">{location.pathname}</div>;
   }
-  function renderWithProbe(props: Partial<Parameters<typeof TicketList>[0]> = {}) {
-    return render(
+  async function renderWithProbe(props: Partial<Parameters<typeof TicketList>[0]> = {}) {
+    const view = render(
       <MemoryRouter>
         <TicketList tickets={[ticketA, ticketB]} isLoading={false} isError={false} {...props} />
         <LocationProbe />
       </MemoryRouter>,
     );
+    await waitForList(props);
+    return view;
   }
   const protocolLink = (protocol: string) => screen.getByRole('link', { name: protocol });
   const headerOf = (name: string) => screen.getByRole('columnheader', { name });
@@ -353,7 +391,7 @@ describe('DMTE-526: abrir a linha por teclado e nova aba, e estado da ordenaçã
 
   it('AC-01: the Número cell is a link to the ticket, focusable, and Enter opens it', async () => {
     const user = userEvent.setup();
-    renderWithProbe();
+    await renderWithProbe();
 
     const link = protocolLink('AP-2026-0001');
     expect(link).toHaveAttribute('href', '/tickets/t1');
@@ -367,8 +405,8 @@ describe('DMTE-526: abrir a linha por teclado e nova aba, e estado da ordenaçã
     expect(screen.getByTestId('location-probe')).toHaveTextContent('/tickets/t1');
   });
 
-  it('AC-02: a plain click opens the ticket once; Ctrl, Meta, Shift and middle click are left to the browser', () => {
-    renderWithProbe();
+  it('AC-02: a plain click opens the ticket once; Ctrl, Meta, Shift and middle click are left to the browser', async () => {
+    await renderWithProbe();
     const link = protocolLink('AP-2026-0001');
     const before = visits.length;
 
@@ -387,7 +425,7 @@ describe('DMTE-526: abrir a linha por teclado e nova aba, e estado da ordenaçã
 
   it('AC-03: clicking another cell still opens the ticket, and the group header does not', async () => {
     const user = userEvent.setup();
-    renderWithProbe();
+    await renderWithProbe();
     await user.click(screen.getByText('Email down'));
     expect(screen.getByTestId('location-probe')).toHaveTextContent('/tickets/t2');
 
@@ -400,7 +438,7 @@ describe('DMTE-526: abrir a linha por teclado e nova aba, e estado da ordenaçã
 
   it('AC-04: only the sorted column carries aria-sort and a direction arrow, and both follow the clicks', async () => {
     const user = userEvent.setup();
-    renderWithProbe({ sortBy: 'title', sortDir: 'desc' });
+    await renderWithProbe({ sortBy: 'title', sortDir: 'desc' });
 
     expect(headerOf('Título')).toHaveAttribute('aria-sort', 'descending');
     const sorted = screen.getAllByRole('columnheader').filter((th) => th.hasAttribute('aria-sort'));
@@ -418,13 +456,13 @@ describe('DMTE-526: abrir a linha por teclado e nova aba, e estado da ordenaçã
     expect(headerOf('Título').querySelector('svg')).toBeNull();
   });
 
-  it('AC-04: without sortBy no header has aria-sort', () => {
-    renderWithProbe();
+  it('AC-04: without sortBy no header has aria-sort', async () => {
+    await renderWithProbe();
     expect(screen.getAllByRole('columnheader').some((th) => th.hasAttribute('aria-sort'))).toBe(false);
   });
 
-  it('AC-05: the row uses the grid-row-hover token and the controls show a focus ring', () => {
-    renderWithProbe();
+  it('AC-05: the row uses the grid-row-hover token and the controls show a focus ring', async () => {
+    await renderWithProbe();
     const row = protocolLink('AP-2026-0001').closest('tr') as HTMLElement;
     expect(row).toHaveClass('hover:bg-grid-row-hover', 'focus-within:bg-grid-row-hover');
     expect(row).not.toHaveClass('hover:bg-gray-80');
@@ -433,8 +471,8 @@ describe('DMTE-526: abrir a linha por teclado e nova aba, e estado da ordenaçã
     }
   });
 
-  it('AC-06: the protocol link text reaches 4.5:1 over white and over grid-row-hover', () => {
-    renderWithProbe();
+  it('AC-06: the protocol link text reaches 4.5:1 over white and over grid-row-hover', async () => {
+    await renderWithProbe();
     const css = readFileSync(resolve(__dirname, '../../styles.css'), 'utf8');
     const hex = (token: string) => {
       const match = css.match(new RegExp(`--color-${token}:\\s*#([0-9a-f]{6})`, 'i'));
@@ -457,5 +495,44 @@ describe('DMTE-526: abrir a linha por teclado e nova aba, e estado da ordenaçã
     const text = hex(textToken as string);
     expect(contrast(text, 'ffffff')).toBeGreaterThanOrEqual(4.5);
     expect(contrast(text, hex('grid-row-hover'))).toBeGreaterThanOrEqual(4.5);
+  });
+});
+
+describe('DMTE-527 ticket 1: Lista com altura por faixa e tags sem quebra', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    useAuthStore.setState({
+      token: null,
+      user: { sub: 'u1', email: 'a@x.com', role: 'ADMIN', organizationId: null } as any,
+    });
+  });
+
+  it('AC-01: "Exibir colunas" usa 32 px a partir de sm e no mínimo 44 px abaixo', async () => {
+    await renderList();
+    expect(heightContractProblems(screen.getByRole('button', { name: 'Exibir colunas' }).className, 'compact')).toEqual([]);
+  });
+
+  it('AC-01: "Agrupar por" usa o controle compacto (32 px a partir de sm, 44 px abaixo)', async () => {
+    await renderList();
+    const box = screen.getByRole('combobox', { name: 'Agrupar por' }).parentElement as HTMLElement;
+    expect(heightContractProblems(box.className, 'compact')).toEqual([]);
+  });
+
+  it('AC-06: as tags de status e de prioridade da Lista não quebram em duas linhas (whitespace-nowrap)', async () => {
+    const { container } = await renderList();
+    const tags = container.querySelectorAll('[data-ticket-tag]');
+    expect(tags.length).toBe(4);
+    tags.forEach((tag) => expect(tag).toHaveClass('whitespace-nowrap'));
+  });
+
+  it('AC-06: a Lista segue com os nomes completos dos status, sem renomear', async () => {
+    await renderList({
+      tickets: [
+        { ...ticketA, status: 'PENDING_APPROVAL' },
+        { ...ticketB, status: 'PENDING_SANKHYA' },
+      ],
+    });
+    expect(screen.getByText('Aguardando Aprovação')).toBeInTheDocument();
+    expect(screen.getByText('Aguardando Sankhya')).toBeInTheDocument();
   });
 });

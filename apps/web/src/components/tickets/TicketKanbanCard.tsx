@@ -24,6 +24,8 @@ interface TicketKanbanCardProps {
   /** D6 Configurações "Tag": Status (padrão) ou Prioridade. */
   tagField?: 'status' | 'priority';
   visibleFields?: TicketKanbanCardVisibleFields;
+  /** Agrupamento efetivo do quadro; por `status` o cartão não repete a tag de status. */
+  groupBy?: 'stage' | 'status' | 'agent' | 'priority';
 }
 
 function formatCardDate(value: string | null | undefined): string | null {
@@ -50,6 +52,7 @@ export function TicketKanbanCard({
   ticket,
   tagField = 'status',
   visibleFields,
+  groupBy,
 }: TicketKanbanCardProps) {
   const openInTab = useOpenInTab();
   const now = new Date();
@@ -62,6 +65,24 @@ export function TicketKanbanCard({
   const showUpdatedAt = visibleFields?.updatedAt === true;
   const hasSlaBadges =
     showSla && Boolean(ticket.responseSlaStatus || ticket.resolveSlaStatus);
+  // Agrupado por Status a coluna já diz o status: a tag some e o SLA sobe para a linha dela.
+  const statusIsColumn = groupBy === 'status' && tagField !== 'priority';
+  const slaChips = hasSlaBadges && (
+    <div className="flex flex-wrap gap-1">
+      <EzSlaChip
+        kind="response"
+        status={ticket.responseSlaStatus}
+        deadline={effectiveDeadline(ticket.responseDeadline, ticket, now)}
+        now={now}
+      />
+      <EzSlaChip
+        kind="resolve"
+        status={ticket.resolveSlaStatus}
+        deadline={effectiveDeadline(ticket.resolveDeadline, ticket, now)}
+        now={now}
+      />
+    </div>
+  );
   const createdAtLabel = showCreatedAt ? formatCardDate(ticket.createdAt) : null;
   const updatedAtLabel = showUpdatedAt ? formatCardDate(ticket.updatedAt) : null;
 
@@ -114,6 +135,8 @@ export function TicketKanbanCard({
           </span>
           {tagField === 'priority' ? (
             <TicketPriorityTag priority={ticket.priority} />
+          ) : statusIsColumn ? (
+            slaChips
           ) : (
             <TicketStatusTag status={ticket.status} />
           )}
@@ -126,31 +149,14 @@ export function TicketKanbanCard({
           </div>
         )}
 
-        {(hasSlaBadges || (showAgent && ticket.agent)) && (
+        {((hasSlaBadges && !statusIsColumn) || (showAgent && ticket.agent)) && (
           <div
             data-testid="kanban-card-footer"
             className="mt-2 flex items-center justify-between gap-2"
           >
-            <div className="flex flex-wrap gap-1">
-              {hasSlaBadges && (
-                <>
-                  <EzSlaChip
-                    kind="response"
-                    status={ticket.responseSlaStatus}
-                    deadline={effectiveDeadline(ticket.responseDeadline, ticket, now)}
-                    now={now}
-                  />
-                  <EzSlaChip
-                    kind="resolve"
-                    status={ticket.resolveSlaStatus}
-                    deadline={effectiveDeadline(ticket.resolveDeadline, ticket, now)}
-                    now={now}
-                  />
-                </>
-              )}
-            </div>
+            {!statusIsColumn && slaChips}
             {showAgent && ticket.agent && (
-              <EzAvatar name={ticket.agent.name} size={24} className="ring-2 ring-white" />
+              <EzAvatar name={ticket.agent.name} size={24} className="ml-auto ring-2 ring-white" />
             )}
           </div>
         )}

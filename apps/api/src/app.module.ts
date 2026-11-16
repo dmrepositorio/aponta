@@ -28,6 +28,7 @@ import { ApiTokensModule } from './api-tokens/api-tokens.module';
 import { HealthModule } from './health/health.module';
 import { FeatureFlagsModule } from './feature-flags/feature-flags.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { UserScreenPreferencesModule } from './user-screen-preferences/user-screen-preferences.module';
 import { WorklogsModule } from './worklogs/worklogs.module';
 import { AgendaModule } from './agenda/agenda.module';
 import { PermissionGroupsModule } from './permission-groups/permission-groups.module';
@@ -100,6 +101,7 @@ import { LoggerModule } from 'nestjs-pino';
     HealthModule,
     FeatureFlagsModule,
     NotificationsModule,
+    UserScreenPreferencesModule,
     WorklogsModule,
     AgendaModule,
     PermissionGroupsModule,

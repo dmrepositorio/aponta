@@ -191,6 +191,7 @@ model User {
   knowledgeAttachments KnowledgeAttachment[]
   worklogs    Worklog[]
   notifications Notification[]
+  screenPreferences UserScreenPreference[]
   costRates   TechnicianCostRate[]
   preAppointments PreAppointment[]
   apiTokens   ApiToken[]
@@ -1081,4 +1082,17 @@ model Notification {
 
   @@index([userId, createdAt])
   @@index([userId, readAt])
+}
+
+/// DMTE-527 T2: preferências de tela de um usuário (uma linha por usuário e por tela); o formato de `data` é validado na API.
+model UserScreenPreference {
+  id        String   @id @default(uuid())
+  userId    String
+  /// Sem ON UPDATE CASCADE: o id do usuário nunca muda, e o teste da migração (AC-10) proíbe a palavra UPDATE no SQL.
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  screen    String
+  data      Json
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, screen])
 }
