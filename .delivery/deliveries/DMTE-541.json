@@ -10,72 +10,121 @@
     {
       "id": "AC-01",
       "description": "o nome de cada cliente na grade é um botão com o nome acessível `Abrir cadastro de <nome>` que abre o modo formulário por clique e por Enter; o ícone `ExternalLink` não existe; clicar no nome não abre input de edição.",
-      "tests": []
+      "tests": [
+        "apps/web/src/pages/OrganizationsPage.test.tsx: AC-01: the name is a button that opens the registration by click and by Enter, with no edit input and no external-link icon"
+      ]
     },
     {
       "id": "AC-02",
       "description": "Razão Social e CPF/CNPJ continuam editáveis por clique; quando o PATCH falha, aparece um `EzAlert` de erro com o motivo e a célula volta ao valor anterior; quando dá certo, nenhum aviso de sucesso aparece.",
-      "tests": []
+      "tests": [
+        "apps/web/src/pages/OrganizationsPage.test.tsx: AC-02: Razão Social stays editable by click, and a failed PATCH shows the reason and the cell keeps the previous value",
+        "apps/web/src/pages/OrganizationsPage.test.tsx: AC-02: a failed PATCH without a message from the API still shows a visible error",
+        "apps/web/src/pages/OrganizationsPage.test.tsx: AC-02: a successful PATCH shows no notice"
+      ]
     },
     {
       "id": "AC-03",
       "description": "o status é somente leitura (sem `<button>`, sem ação ao clicar), mostra `EzTag` com texto e ícone (Ativo verde com check; Inativo cinza com traço), sem `emerald-*` nem `red-*`; o mesmo componente é usado em Clientes, Usuários e Contratos; todo par texto/fundo tem contraste mínimo de 4,5:1 lido de `styles.css`.",
-      "tests": []
+      "tests": [
+        "apps/web/src/components/ActiveTag.test.tsx: ActiveTag (DMTE-541 AC-03)",
+        "apps/web/src/pages/OrganizationsPage.test.tsx: AC-03: the status is read-only text with an icon, no raw emerald, and clicking it does not save",
+        "apps/web/src/pages/UsersPage.test.tsx: DMTE-541 AC-03: the status in the list is the shared tag, text plus icon, no raw emerald",
+        "apps/web/src/components/contracts/ContractStateTags.test.tsx: contract state tag colors"
+      ]
     },
     {
       "id": "AC-04",
       "description": "o cabeçalho da coluna de contagem é \"Usuários\", alinhado à direita e com `tabular-nums`; o rótulo da numeração é \"#\"; a palavra \"Código\" não aparece como cabeçalho na grade de Clientes.",
-      "tests": []
+      "tests": [
+        "apps/web/src/pages/OrganizationsPage.test.tsx: AC-04: the count column is \"Usuários\", right-aligned with tabular numbers, and the row numbering is \"#\""
+      ]
     },
     {
       "id": "AC-05",
       "description": "`formatCpf` devolve 000.000.000-00 para 11 dígitos e o valor original para outro tamanho; a grade e o resumo do formulário mostram o CPF mascarado e o CNPJ continua mascarado.",
-      "tests": []
+      "tests": [
+        "apps/web/src/lib/documents.test.ts: formatCpf",
+        "apps/web/src/pages/OrganizationsPage.test.tsx: AC-05: the CPF shows masked in the grid and in the registration summary, and the CNPJ stays masked"
+      ]
     },
     {
       "id": "AC-06",
       "description": "`EzEntityGrid` tem uma opção de linha única com reticências e `title` do texto inteiro, desligada por padrão (com a opção desligada o markup é igual ao atual); Clientes a liga para Nome e Razão Social, com larguras fixas.",
-      "tests": []
+      "tests": [
+        "apps/web/src/components/ds/EzEntityGrid.test.tsx: AC-06: a column with meta.truncate renders a single line with ellipsis and the full text in title",
+        "apps/web/src/components/ds/EzEntityGrid.test.tsx: AC-06: with the option off the markup stays the same (no truncate, title or max width)",
+        "apps/web/src/pages/OrganizationsPage.test.tsx: AC-06: Nome and Razão Social are one line with ellipsis and the full text in title; other columns are not truncated"
+      ]
     },
     {
       "id": "AC-07",
       "description": "o checkbox de seleção do cabeçalho e o de cada linha, e os checkboxes de filtro de coluna e de configuração, têm `accent-brand-600`.",
-      "tests": []
+      "tests": [
+        "apps/web/src/components/ds/EzEntityGrid.test.tsx: AC-07: the select-all and per-row checkboxes use the brand accent color",
+        "apps/web/src/components/ds/EzEntityGrid.test.tsx: AC-07: the column filter and column configurator checkboxes use the brand accent color"
+      ]
     },
     {
       "id": "AC-08",
       "description": "`EzFilterDrawer` renderiza como sobreposição abaixo de `xl` (classes de posição e camada declaradas) e ao lado da grade a partir de `xl`; Esc e o botão de fechar continuam fechando; Clientes, Mesa e Contratos usam o mesmo comportamento sem lógica nova nas páginas.",
-      "tests": []
+      "tests": [
+        "apps/web/src/components/ds/EzFilterDrawer.test.tsx: EzFilterDrawer responsive placement (DMTE-541 AC-08)",
+        "apps/web/src/pages/OrganizationsPage.test.tsx: AC-08: the filter panel sits in a positioned container so it can overlay the grid below xl",
+        "apps/web/src/pages/ServiceDesksPage.test.tsx: DMTE-541 AC-08: the filter panel sits in a positioned container so it can overlay the grid below xl",
+        "apps/web/src/pages/ContractsPage.test.tsx: DMTE-541 AC-08: the filter panel sits in a positioned container so it can overlay the grid below xl"
+      ]
     },
     {
       "id": "AC-09",
       "description": "`EzPageHeader` tem padding vertical de 8 px, altura mínima de 32 px e padding horizontal de 16 px abaixo de `sm` e 24 px a partir dele (classes declaradas); as 7 páginas continuam renderizando título, botão de voltar e ações.",
-      "tests": []
+      "tests": [
+        "apps/web/src/components/ds/EzPageLayout.test.tsx: DMTE-541 AC-09: is compact (8px vertical padding, 32px minimum row, 16px side padding below sm and 24px from sm)",
+        "apps/web/src/components/ds/EzPageLayout.test.tsx: DMTE-541 AC-09: keeps the back button, the actions and the page body padding"
+      ]
     },
     {
       "id": "AC-10",
       "description": "quando a rota atual não está entre as abas, o `TabBar` mostra uma aba extra, ativa (`aria-selected`), com o título do menu lateral, sem botão de fechar; ela não é gravada no `sessionStorage` e some ao navegar; a aba \"Tickets\" e as abas abertas se comportam como hoje.",
-      "tests": []
+      "tests": [
+        "apps/web/src/components/layout/TabBar.test.tsx: DMTE-541 AC-10"
+      ]
     },
     {
       "id": "AC-11",
       "description": "o formulário do cliente tem as abas Geral, Usuários, Recursos, Relacionamentos e Faturamento, com \"Geral\" aberta por padrão; \"Geral\" mostra Razão Social, Nome Fantasia, Perfil, Endereços e Contatos; \"Usuários\" mostra só os usuários vinculados e o botão Adicionar/Remover de cada um.",
-      "tests": []
+      "tests": [
+        "apps/web/src/pages/OrganizationsPage.test.tsx: AC-11: the registration has the tabs Geral, Usuários, Recursos, Relacionamentos and Faturamento, with Geral open",
+        "apps/web/src/pages/OrganizationsPage.test.tsx: AC-11: Geral shows Razão Social, Nome Fantasia, Perfil, Endereços and Contatos, and not the linked users",
+        "apps/web/src/pages/OrganizationsPage.test.tsx: AC-11: Usuários shows only the linked users with Adicionar/Remover, and none of the Geral content"
+      ]
     },
     {
       "id": "AC-12",
       "description": "abaixo de 640 px a grade de Clientes esconde \"#\" e a seleção (classes de breakpoint declaradas) e mostra Nome e Status; a toolbar da grade rola em uma linha; os botões da toolbar têm altura e largura mínimas de 44 px abaixo de 640 px e mantêm o tamanho atual a partir daí.",
-      "tests": []
+      "tests": [
+        "apps/web/src/components/ds/EzEntityGrid.test.tsx: AC-12: compactBelowSm hides the row number and selection columns below 640 px, off by default",
+        "apps/web/src/components/ds/EzEntityToolbar.test.tsx: EzEntityToolbar on phones (DMTE-541 AC-12)",
+        "apps/web/src/pages/OrganizationsPage.test.tsx: AC-12: below 640 px the grid hides # and the selection plus Razão Social and CPF/CNPJ, keeping Nome and Status"
+      ]
     },
     {
       "id": "AC-13",
       "description": "em Chromium, a 1440×900, 1024×768 e 390×844: a página de Clientes não tem rolagem horizontal; as linhas da grade têm a mesma altura; o painel de filtros aberto abaixo de `xl` não estreita a grade; as páginas Mesa e Contratos, com o painel aberto, e as 7 páginas do cabeçalho compacto não têm rolagem horizontal. Evidência técnica com capturas antes e depois; jsdom não mede layout, e o aceite visual é do Alfredo.",
-      "tests": []
+      "tests": [
+        "Medição em Chromium (Playwright) a 1440×900, 1024×768 e 390×844 com capturas antes e depois (resultado e anexos no pai Multica e no PR)"
+      ],
+      "tdd_required": false,
+      "reason": "Medição de layout em navegador real: jsdom não calcula layout. O comportamento por classe de breakpoint está nos testes dos ACs 08, 09 e 12; aqui a evidência é técnica e o aceite visual é do Alfredo."
     },
     {
       "id": "AC-14",
       "description": "sem mudança de API, schema ou regra; `docs/architecture/03-sankhya-ds-parity.md` registra as mudanças de DS (`EzFilterDrawer`, `EzEntityGrid`, `EzEntityToolbar`, `EzPageLayout`); `EzEntityGrid` e `EzPageLayout` têm story atualizada; `EzFilterDrawer` não tem story hoje e o manifesto registra a exceção.",
-      "tests": []
+      "tests": [
+        "git diff --stat do PR sem apps/api e sem prisma; docs/architecture/03-sankhya-ds-parity.md e as stories (leitura do diff)"
+      ],
+      "tdd_required": false,
+      "reason": "Critério de ausência de mudança de API/schema e de documentação do DS: conferido pelo diff, sem comportamento novo a testar."
     }
   ],
   "spec": "docs/delivery/specs/DMTE-541.md",

@@ -117,4 +117,17 @@ describe('UsersPage', () => {
     expect(within(tabs).getByText(/perfil/i)).toBeInTheDocument();
     expect(within(tabs).getByText(/segurança/i)).toBeInTheDocument();
   });
+
+  it('DMTE-541 AC-03: the status in the list is the shared tag, text plus icon, no raw emerald', async () => {
+    const { container } = renderUsersPage();
+
+    const on = (await screen.findByText('Ativo')).closest('div') as HTMLElement;
+    const off = screen.getByText('Inativo').closest('div') as HTMLElement;
+    expect(on.querySelector('[data-glyph]')).not.toBeNull();
+    expect(off.querySelector('[data-glyph]')).not.toBeNull();
+    expect(on.querySelector('[data-glyph]')?.getAttribute('data-glyph')).not.toBe(
+      off.querySelector('[data-glyph]')?.getAttribute('data-glyph'),
+    );
+    expect(container.innerHTML).not.toMatch(/emerald-/);
+  });
 });

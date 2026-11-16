@@ -888,3 +888,76 @@ describe('EzEntityGrid duplo clique na linha (DMTE-462 T5)', () => {
     expect(() => fireEvent.doubleClick(screen.getByText('Impressora não liga'))).not.toThrow();
   });
 });
+
+describe('EzEntityGrid DMTE-541', () => {
+  const truncating: ColumnDef<Ticket>[] = [
+    { accessorKey: 'id', header: 'ID' },
+    { accessorKey: 'title', header: 'Título', size: 180, meta: { truncate: true } },
+  ];
+
+  it('AC-06: a column with meta.truncate renders a single line with ellipsis and the full text in title', () => {
+    render(<EzEntityGrid columns={truncating} data={data} />);
+
+    const cell = screen.getByText('Impressora não liga').closest('td') as HTMLElement;
+    expect(cell).toHaveClass('truncate');
+    expect(cell).toHaveAttribute('title', 'Impressora não liga');
+    expect(cell).toHaveStyle({ maxWidth: '180px' });
+    // a coluna sem a opção segue como antes
+    const plain = screen.getByText('1').closest('td') as HTMLElement;
+    expect(plain).not.toHaveClass('truncate');
+    expect(plain).not.toHaveAttribute('title');
+  });
+
+  it('AC-06: with the option off the markup stays the same (no truncate, title or max width)', () => {
+    render(<EzEntityGrid columns={columns} data={data} />);
+
+    const cell = screen.getByText('Impressora não liga').closest('td') as HTMLElement;
+    expect(cell).not.toHaveClass('truncate');
+    expect(cell).not.toHaveAttribute('title');
+    expect(cell.style.maxWidth).toBe('');
+  });
+
+  it('AC-07: the select-all and per-row checkboxes use the brand accent color', () => {
+    render(<EzEntityGrid columns={columns} data={data} selectable />);
+
+    expect(screen.getByRole('checkbox', { name: 'Selecionar todas as linhas' })).toHaveClass('accent-brand-600');
+    for (const box of screen.getAllByRole('checkbox', { name: 'Selecionar linha' })) {
+      expect(box).toHaveClass('accent-brand-600');
+    }
+  });
+
+  it('AC-07: the column filter and column configurator checkboxes use the brand accent color', async () => {
+    const user = userEvent.setup();
+    render(<EzEntityGrid columns={columns} data={data} />);
+
+    await user.click(screen.getByTestId('ez-grid-column-filter-priority'));
+    expect(screen.getByTestId('ez-grid-column-filter-select-all')).toHaveClass('accent-brand-600');
+    expect(screen.getByTestId('ez-grid-column-filter-item-Alta')).toHaveClass('accent-brand-600');
+    await user.keyboard('{Escape}');
+
+    await user.click(screen.getByTestId('ez-grid-corner-menu-button'));
+    await user.click(screen.getByTestId('ez-grid-corner-configure-columns'));
+    expect(screen.getByTestId('ez-grid-config-toggle-priority')).toHaveClass('accent-brand-600');
+  });
+
+  it('AC-12: compactBelowSm hides the row number and selection columns below 640 px, off by default', () => {
+    const { rerender } = render(
+      <EzEntityGrid columns={columns} data={data} selectable showRowNumbers compactBelowSm />,
+    );
+    const hidden = (text: string | RegExp) => {
+      const headers = screen.getAllByRole('columnheader');
+      return headers.filter((h) => (typeof text === 'string' ? h.textContent === text : text.test(h.textContent ?? '')));
+    };
+    for (const th of hidden('#')) expect(th).toHaveClass('hidden', 'sm:table-cell');
+    const rowNumberCell = screen.getAllByTestId('ez-grid-row-number')[0].closest('td') as HTMLElement;
+    expect(rowNumberCell).toHaveClass('hidden', 'sm:table-cell');
+    const selectCell = screen.getAllByRole('checkbox', { name: 'Selecionar linha' })[0].closest('td') as HTMLElement;
+    expect(selectCell).toHaveClass('hidden', 'sm:table-cell');
+    const dataCell = screen.getByText('Impressora não liga').closest('td') as HTMLElement;
+    expect(dataCell).not.toHaveClass('hidden');
+
+    rerender(<EzEntityGrid columns={columns} data={data} selectable showRowNumbers />);
+    expect(screen.getAllByTestId('ez-grid-row-number')[0].closest('td')).not.toHaveClass('hidden');
+    expect(screen.getAllByRole('checkbox', { name: 'Selecionar linha' })[0].closest('td')).not.toHaveClass('hidden');
+  });
+});

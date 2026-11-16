@@ -780,4 +780,17 @@ describe('ContractsPage grid (DMTE-536)', () => {
     const saved = JSON.parse(localStorage.getItem('aponta_screen_config_u-1_contracts') ?? '{}');
     expect(saved.grid.columnVisibility.excessHourlyRate).toBe(true);
   });
+
+  it('DMTE-541 AC-08: the filter panel sits in a positioned container so it can overlay the grid below xl', async () => {
+    vi.mocked(api.get).mockResolvedValue({ data: contracts });
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    renderPage();
+
+    await screen.findByText('Empresa A');
+    await user.click(screen.getByTestId('ez-toolbar-filter-panel-button'));
+    const drawer = screen.getByTestId('ez-filter-drawer');
+    expect(drawer.parentElement).toHaveClass('relative');
+    expect(drawer).toHaveClass('absolute', 'xl:relative');
+  });
 });

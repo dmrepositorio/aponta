@@ -169,6 +169,11 @@ export type EzEntityGridProps<T> = Omit<HTMLAttributes<HTMLDivElement>, 'childre
    */
   rowNumberLabel?: string;
   /**
+   * Hides the row number and selection columns below 640 px so the data columns fit a phone.
+   * @default false
+   */
+  compactBelowSm?: boolean;
+  /**
    * Enables zebra striping on alternating rows (Sankhya parity).
    * @default true
    */

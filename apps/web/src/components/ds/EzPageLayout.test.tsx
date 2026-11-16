@@ -30,6 +30,34 @@ describe('EzPageLayout & EzPageHeader', () => {
       expect(screen.getByText('New')).toBeInTheDocument();
     });
 
+    it('DMTE-541 AC-09: is compact (8px vertical padding, 32px minimum row, 16px side padding below sm and 24px from sm)', () => {
+      render(<EzPageHeader title="Home" data-testid="header-root" />);
+      const root = screen.getByTestId('header-root');
+      expect(root).toHaveClass('py-2', 'px-4', 'sm:px-6');
+      expect(root.className).not.toMatch(/(^|\s)py-4(\s|$)/);
+      expect(root.className).not.toMatch(/(^|\s)px-6(\s|$)/);
+      const row = screen.getByRole('heading', { name: 'Home' }).closest('div[class*="min-h"]') as HTMLElement;
+      expect(row).toHaveClass('min-h-[32px]');
+      expect(row.className).not.toContain('min-h-[40px]');
+    });
+
+    it('DMTE-541 AC-09: keeps the back button, the actions and the page body padding', async () => {
+      const onBack = vi.fn();
+      const user = userEvent.setup();
+      render(
+        <EzPageLayout
+          header={<EzPageHeader title="Home" showBackButton onBack={onBack} actions={<button>Nova</button>} />}
+          data-testid="layout-root"
+        >
+          <div data-testid="body">corpo</div>
+        </EzPageLayout>
+      );
+      expect(screen.getByRole('button', { name: 'Nova' })).toBeInTheDocument();
+      await user.click(screen.getByTitle('Voltar'));
+      expect(onBack).toHaveBeenCalledTimes(1);
+      expect(screen.getByTestId('body').parentElement).toHaveClass('p-6');
+    });
+
     it('renders back button when showBackButton is true and calls onBack', async () => {
       const mockBack = vi.fn();
       const user = userEvent.setup();
