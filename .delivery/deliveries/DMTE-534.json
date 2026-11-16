@@ -21,6 +21,7 @@
       "tests": [
         "apps/web/src/pages/KnowledgePage.test.tsx: expands and collapses the card, revealing the full body, every tag and the attachments",
         "apps/web/src/pages/KnowledgePage.test.tsx: offers no expand button when nothing is hidden",
+        "apps/web/src/pages/KnowledgePage.test.tsx: offers no expand button when the body is only empty markup",
         "apps/web/src/pages/KnowledgePage.test.tsx: renders article content as real HTML, not escaped text"
       ]
     },
@@ -116,8 +117,8 @@
   "spec": "docs/delivery/specs/DMTE-534.md",
   "tdd": {
     "mode": "required",
-    "red": ".delivery/evidence/DMTE-534/red.json",
-    "green": ".delivery/evidence/DMTE-534/green.json"
+    "red": ".delivery/evidence/DMTE-534/red-r2.json",
+    "green": ".delivery/evidence/DMTE-534/green-r2.json"
   },
   "design_system": {
     "applicable": true,

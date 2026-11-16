@@ -827,6 +827,27 @@ describe('KnowledgePage', () => {
       expect(screen.queryByRole('button', { name: /ler artigo completo/i })).not.toBeInTheDocument();
     });
 
+    it('offers no expand button when the body is only empty markup', async () => {
+      mockArticles([
+        { id: 'a-markup', title: 'Corpo vazio', content: '<p></p>', visibility: 'PUBLIC', tags: ['x'], attachments: [] },
+        {
+          id: 'a-image',
+          title: 'Só imagem',
+          content: '<p><img src="/uploads/a.png" alt="Captura"></p>',
+          visibility: 'PUBLIC',
+          tags: [],
+          attachments: [],
+        },
+      ]);
+      loginAs('anonymous');
+      const user = userEvent.setup();
+      renderPage();
+      await openSupportFolder_(user, 'Corpo vazio');
+
+      expect(within(cardOf('Corpo vazio')).queryByRole('button', { name: /ler artigo completo/i })).not.toBeInTheDocument();
+      expect(within(cardOf('Só imagem')).getByRole('button', { name: /ler artigo completo/i })).toBeInTheDocument();
+    });
+
     it('keeps the title on its own line, with the tag, meta and actions outside its row', async () => {
       loginAs('ADMIN');
       const user = userEvent.setup();

@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 // O `?raw` de CSS volta vazio no vitest; lê o arquivo direto do disco.
-const css = readFileSync(resolve(import.meta.dirname, '../../styles.css'), 'utf8');
+const css = readFileSync(resolve(__dirname, '../../styles.css'), 'utf8');
 
 function rule(selector: string): string {
   const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
