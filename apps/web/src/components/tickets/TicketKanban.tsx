@@ -358,7 +358,13 @@ export function TicketKanban({
   // selected — falls back to "Status" otherwise (same as the pre-D6c
   // behavior), so switching Mesa off never leaves the board stuck on an
   // ungroupable dimension.
-  const { config: kanbanConfig, setGroupBy, setColumnVisibility } = useUserScreenConfig('tickets-kanban', {
+  const {
+    config: kanbanConfig,
+    isLoading: isConfigLoading,
+    setGroupBy,
+    setColumnVisibility,
+    setColumnCollapsed,
+  } = useUserScreenConfig('tickets-kanban', {
     groupBy: 'stage',
     grid: { columnVisibility: DEFAULT_KANBAN_FIELD_VISIBILITY, density: 'compact' },
   });
@@ -430,13 +436,13 @@ export function TicketKanban({
   // TiFlux parity: columns (status or stage) can be individually collapsed
   // to a thin strip, independent of which mesa/mode is active. Keyed by
   // column id, so the map is naturally shared across both render modes.
-  // DMTE-527: guarda só a escolha do usuário (em memória); coluna sem entrada
-  // usa o padrão (Resolvido, Fechado e estágios finais recolhidos).
-  const [collapseChoices, setCollapseChoices] = useState<Record<string, boolean>>({});
+  // DMTE-527: guarda só a escolha do usuário (no servidor, mapa `collapsed`); coluna sem
+  // entrada usa o padrão (Resolvido, Fechado e estágios finais recolhidos) e id de coluna que
+  // não existe mais nunca entra na conta, porque só as colunas desenhadas são consultadas.
   const isColumnCollapsed = (columnId: string, byDefault: boolean) =>
-    collapseChoices[columnId] ?? byDefault;
+    kanbanConfig.collapsed[columnId] ?? byDefault;
   const toggleColumnCollapsed = (columnId: string, collapsed: boolean) =>
-    setCollapseChoices((prev) => ({ ...prev, [columnId]: !collapsed }));
+    setColumnCollapsed(columnId, !collapsed);
 
   const {
     data: stages = [],
@@ -713,7 +719,8 @@ export function TicketKanban({
     </div>
   );
 
-  if (isLoading) {
+  // O recolhimento e o "Agrupar por" mudariam o quadro já desenhado: espera a leitura da preferência.
+  if (isLoading || (isConfigLoading && !isError)) {
     return (
       <div className="space-y-3">
         {mesaSelector}
