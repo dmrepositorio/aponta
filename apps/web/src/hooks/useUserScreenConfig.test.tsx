@@ -175,6 +175,59 @@ describe('useUserScreenConfig no servidor (DMTE-527 T2)', () => {
       expect(setItem).not.toHaveBeenCalled();
       expect(localStorage.getItem(storageKey('user-123', 'tickets-list'))).toBe(stale);
     });
+
+    // Cobertura que o teste antigo (localStorage, removido) dava e continua valendo, agora contra o servidor.
+    it('AC-14: viewMode e layout do formulário mudam na hora e vão na gravação do servidor', async () => {
+      fakeServer();
+      const { result } = await renderLoaded('contracts');
+      expect(result.current.config.viewMode).toBe('GRID');
+
+      act(() => {
+        result.current.setViewMode('FORM');
+        result.current.setFormLayout('SIDE_BY_SIDE');
+      });
+      expect(result.current.config.viewMode).toBe('FORM');
+      expect(result.current.config.form.layout).toBe('SIDE_BY_SIDE');
+      await advance(400);
+      expect(vi.mocked(api.put)).toHaveBeenCalledWith(
+        urlOf('contracts'),
+        expect.objectContaining({ viewMode: 'FORM', form: expect.objectContaining({ layout: 'SIDE_BY_SIDE' }) }),
+      );
+    });
+
+    it('AC-14: saveFilter e deleteFilter mudam os filtros salvos e gravam a lista no servidor', async () => {
+      fakeServer();
+      const { result } = await renderLoaded('service-desks');
+
+      act(() => result.current.saveFilter('Filtro VIP', { status: 'ACTIVE', search: 'VIP' }));
+      expect(result.current.config.savedFilters).toHaveLength(1);
+      expect(result.current.config.savedFilters[0].name).toBe('Filtro VIP');
+      await advance(400);
+      expect(vi.mocked(api.put)).toHaveBeenLastCalledWith(
+        urlOf('service-desks'),
+        expect.objectContaining({
+          savedFilters: [expect.objectContaining({ name: 'Filtro VIP', criteria: { status: 'ACTIVE', search: 'VIP' } })],
+        }),
+      );
+
+      const filterId = result.current.config.savedFilters[0].id;
+      act(() => result.current.deleteFilter(filterId));
+      expect(result.current.config.savedFilters).toHaveLength(0);
+      await advance(400);
+      expect(vi.mocked(api.put)).toHaveBeenLastCalledWith(
+        urlOf('service-desks'),
+        expect.objectContaining({ savedFilters: [] }),
+      );
+    });
+
+    it('AC-14: restoreDefaults devolve a configuração aos padrões do chamador', async () => {
+      fakeServer({ 'user-123|contracts': { form: { layout: 'SIDE_BY_SIDE' } } });
+      const { result } = await renderLoaded('contracts', { form: { layout: 'CASCADE' } });
+      expect(result.current.config.form.layout).toBe('SIDE_BY_SIDE');
+
+      act(() => result.current.restoreDefaults());
+      expect(result.current.config.form.layout).toBe('CASCADE');
+    });
   });
 
   describe('AC-15: importação única do localStorage', () => {

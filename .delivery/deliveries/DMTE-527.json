@@ -212,6 +212,9 @@
         "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-14: junta cliques seguidos em uma só gravação, com o último estado",
         "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-14: a mudança gravada é relida igual numa nova montagem do hook",
         "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-14: com a preferência no servidor, o localStorage não é lido nem escrito",
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-14: viewMode e layout do formulário mudam na hora e vão na gravação do servidor",
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-14: saveFilter e deleteFilter mudam os filtros salvos e gravam a lista no servidor",
+        "apps/web/src/hooks/useUserScreenConfig.test.tsx: AC-14: restoreDefaults devolve a configuração aos padrões do chamador",
         "apps/web/src/components/tickets/TicketKanban.preferences.test.tsx: AC-14: com a leitura pendente mostra o esqueleto (sem colunas); depois da resposta desenha o quadro",
         "apps/web/src/components/tickets/TicketKanban.preferences.test.tsx: AC-14: o recolhimento não passa pelo localStorage: grava no servidor e não deixa chave no navegador"
       ]
