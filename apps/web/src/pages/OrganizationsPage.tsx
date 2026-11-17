@@ -124,6 +124,12 @@ function apiErrorMessage(err: unknown, fallback: string): string {
   return message && (response?.status ?? 0) < 500 ? message : fallback;
 }
 
+/** DMTE-559: 409 do cadastro/edição de CNPJ (ou CPF) repetido vira pop-up; devolve a mensagem da API ou null. */
+function duplicateDocumentMessage(err: unknown): string | null {
+  const response = (err as { response?: { status?: number; data?: { message?: string } } }).response;
+  return response?.status === 409 && response.data?.message ? response.data.message : null;
+}
+
 const orgFormSchema = z.object({
   name: z.string().trim().min(1, 'Nome é obrigatório'),
   legalName: z.string().trim().optional(),
@@ -143,6 +149,12 @@ const orgFormSchema = z.object({
   ).optional(),
   billingMethod: z.string().optional(),
   billingNotes: z.string().trim().optional(),
+}).superRefine((values, ctx) => {
+  // DMTE-559: CNPJ obrigatório no cadastro de empresa (PF informa CPF).
+  if (values.documentType === 'CPF') return;
+  const digits = (values.cnpj ?? '').replace(/\D/g, '');
+  if (digits.length === 14) return;
+  ctx.addIssue({ code: 'custom', path: ['cnpj'], message: digits ? 'CNPJ deve ter 14 dígitos' : 'CNPJ é obrigatório' });
 });
 
 type OrgFormValues = z.infer<typeof orgFormSchema>;
@@ -265,6 +277,8 @@ export function OrganizationsPage() {
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [inlineError, setInlineError] = useState<string | null>(null);
   const [createError, setCreateError] = useState<string | null>(null);
+  const [duplicateDocument, setDuplicateDocument] = useState<string | null>(null);
+  const duplicateTitle = `${duplicateDocument?.includes('CPF') ? 'CPF' : 'CNPJ'} já cadastrado`;
   const [focusedIndex, setFocusedIndex] = useState(0);
 
   // Modal para cadastro automático via CNPJ (Sankhya / Receita Federal)
@@ -383,7 +397,11 @@ export function OrganizationsPage() {
       setMode('list');
       openDetail(data.id);
     },
-    onError: (err) => setCreateError(apiErrorMessage(err, 'Não foi possível cadastrar o cliente. Tente novamente.')),
+    onError: (err) => {
+      const duplicate = duplicateDocumentMessage(err);
+      if (duplicate) setDuplicateDocument(duplicate);
+      else setCreateError(apiErrorMessage(err, 'Não foi possível cadastrar o cliente. Tente novamente.'));
+    },
   });
 
   const updateOrgMutation = useMutation({
@@ -441,6 +459,11 @@ export function OrganizationsPage() {
       }
     },
     onError: (err) => {
+      const duplicate = duplicateDocumentMessage(err);
+      if (duplicate) {
+        setDuplicateDocument(duplicate);
+        return;
+      }
       const message = (err as { response?: { data?: { message?: string } } }).response?.data?.message;
       setInlineError(message ?? 'Não foi possível salvar a alteração.');
     },
@@ -1167,6 +1190,8 @@ className="isolate flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll
                             label="CNPJ"
                             placeholder="00.000.000/0000-00"
                             disabled={isCnpjDataLocked}
+                            hasError={!!errors.cnpj}
+                            message={errors.cnpj?.message}
                             {...register('cnpj')}
                           />
                         </div>
@@ -1862,6 +1887,25 @@ className="isolate flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll
           initialTab={screenConfigInitialTab}
         />
       )}
+
+      {/* DMTE-559: CNPJ/CPF repetido bloqueia o cadastro e avisa em pop-up */}
+      <EzModal
+        isOpen={duplicateDocument !== null}
+        onClose={() => setDuplicateDocument(null)}
+        title={duplicateTitle}
+        aria-label={duplicateTitle}
+        maxWidth="sm"
+        trapFocus
+        footer={
+          <div className="flex justify-end">
+            <EzButton variant="primary" size="small" autoFocus onClick={() => setDuplicateDocument(null)}>
+              Entendi
+            </EzButton>
+          </div>
+        }
+      >
+        <p className="p-1 text-sm text-gray-700">{duplicateDocument} Confira o número digitado ou use o cadastro existente.</p>
+      </EzModal>
 
       {/* Modal: Cadastrar Parceiro por CNPJ (Sankhya / Receita Federal parity) */}
       <EzModal

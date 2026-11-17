@@ -1,6 +1,6 @@
-import { IsString, IsNotEmpty, IsOptional, IsEnum, IsBoolean, IsInt, Min, Max } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsEnum, IsBoolean, IsInt, Min, Max, Matches, ValidateIf } from 'class-validator';
 import { DocumentType } from '@prisma/client';
-import { BlankToUndefined } from './blank-document.transform';
+import { BlankToUndefined, CNPJ_MESSAGE, CnpjDigitsOrUndefined } from './blank-document.transform';
 
 export class CreateOrganizationDto {
   @IsString()
@@ -11,9 +11,10 @@ export class CreateOrganizationDto {
   @IsString()
   legalName?: string;
 
-  @IsOptional()
-  @IsString()
-  @BlankToUndefined()
+  // DMTE-559: obrigatório, salvo cliente PF (CPF) que não informa CNPJ.
+  @ValidateIf((o) => o.documentType !== DocumentType.CPF || o.cnpj !== undefined)
+  @Matches(/^\d{14}$/, { message: CNPJ_MESSAGE })
+  @CnpjDigitsOrUndefined()
   cnpj?: string;
 
   /** Tiflux-parity: documento único PF (CPF) além do CNPJ já existente (gap #1 do #49, issue #56). */

@@ -8,3 +8,13 @@ const blankTo = (empty: undefined | null) =>
 export const BlankToUndefined = () => blankTo(undefined);
 /** Atualização: documento em branco = limpar o documento. */
 export const BlankToNull = () => blankTo(null);
+
+// DMTE-559: o CNPJ é obrigatório e fica só com dígitos (a coluna @unique compara o texto exato).
+export const CNPJ_MESSAGE = 'CNPJ é obrigatório e deve ter 14 dígitos.';
+const digitsOnly = (empty: undefined | '') =>
+  Transform(({ value }) => (typeof value === 'string' ? value.replace(/\D/g, '') || empty : value));
+
+/** Criação: sem dígitos = não informado (obrigatório para cliente CNPJ). */
+export const CnpjDigitsOrUndefined = () => digitsOnly(undefined);
+/** Atualização: sem dígitos continua '' e é recusado, para o CNPJ não ser limpo. */
+export const CnpjDigits = () => digitsOnly('');

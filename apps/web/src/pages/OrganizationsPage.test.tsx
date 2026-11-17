@@ -263,9 +263,10 @@ describe('OrganizationsPage', { timeout: 15000 }, () => {
       });
     }
 
+    // DMTE-559: o 409 de CNPJ repetido agora abre pop-up (ver OrganizationsPage.update-error.test.tsx, AC-08).
     it('shows the API message in an alert when the server refuses the new client', async () => {
       vi.mocked(api.post).mockRejectedValue({
-        response: { status: 409, data: { message: 'Já existe um cliente com este CNPJ.' } },
+        response: { status: 400, data: { message: 'billingDueDay must not be greater than 31' } },
       });
       loginAs('ADMIN');
       const user = userEvent.setup();
@@ -273,10 +274,11 @@ describe('OrganizationsPage', { timeout: 15000 }, () => {
       await openManualForm(user);
 
       await user.type(screen.getByLabelText(/nome fantasia/i), 'Empresa D');
+      await user.type(screen.getByLabelText(/cnpj/i), '19131243000197');
       await user.click(screen.getByRole('button', { name: /cadastrar/i }));
 
       const alert = await screen.findByRole('alert');
-      expect(alert).toHaveTextContent('Já existe um cliente com este CNPJ.');
+      expect(alert).toHaveTextContent('billingDueDay must not be greater than 31');
       // continua no formulário, com o que o usuário digitou
       expect(screen.getByLabelText(/nome fantasia/i)).toHaveValue('Empresa D');
     });
@@ -289,6 +291,7 @@ describe('OrganizationsPage', { timeout: 15000 }, () => {
       await openManualForm(user);
 
       await user.type(screen.getByLabelText(/nome fantasia/i), 'Empresa D');
+      await user.type(screen.getByLabelText(/cnpj/i), '19131243000197');
       await user.click(screen.getByRole('button', { name: /cadastrar/i }));
 
       expect(await screen.findByRole('alert')).toHaveTextContent(/não foi possível cadastrar o cliente/i);
@@ -302,6 +305,7 @@ describe('OrganizationsPage', { timeout: 15000 }, () => {
       await openManualForm(user);
 
       await user.type(screen.getByLabelText(/nome fantasia/i), 'Empresa D');
+      await user.type(screen.getByLabelText(/cnpj/i), '19131243000197');
       await user.click(screen.getByRole('button', { name: /cadastrar/i }));
 
       await waitFor(() => {

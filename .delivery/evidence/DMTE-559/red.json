@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "phase": "red",
+  "started_at": "2026-11-17T18:27:30.335249+00:00",
+  "finished_at": "2026-11-17T18:34:46.993521+00:00",
+  "command": [
+    "pnpm",
+    "nx",
+    "run-many",
+    "-t",
+    "test",
+    "-p",
+    "web",
+    "api",
+    "--skip-nx-cache"
+  ],
+  "base_sha": "35b982f7db2d478d2e8359ca5e601c2fbf3655e8",
+  "head_sha": "35b982f7db2d478d2e8359ca5e601c2fbf3655e8",
+  "exit_code": 1,
+  "tests": {
+    "apps/api/src/organizations/dto/organization-document.dto.spec.ts": "8e4f8146e18bdfc74b7da128f228f1612f0936f87c418fa31999a636cb16e507",
+    "apps/api/src/organizations/organizations.cnpj-unico.spec.ts": "df90738ca23e1dce204f3fd8d21b7ff50f6cb7e7ae642b5f84166753cc2f83de",
+    "apps/api/src/organizations/organizations.service.spec.ts": "473500c6a00224edbfc6ff6ce3bce2649bb64e7c952311ab6983e4c053c55ef4",
+    "apps/web/src/pages/OrganizationsPage.update-error.test.tsx": "c34ecd75eea82f592c5f80eb2d57667ce9826dc6f68ef75b707660d3b2608e25",
+    "apps/web/src/pages/OrganizationsPage.test.tsx": "268a77a23e67c01d0097c6265a93104e0c16205e0961fbef5552331aa98a1477"
+  },
+  "criteria": [
+    "AC-01",
+    "AC-02",
+    "AC-03",
+    "AC-04",
+    "AC-05",
+    "AC-06",
+    "AC-07",
+    "AC-08",
+    "AC-09"
+  ],
+  "source_hashes": {
+    "apps/api/src/organizations/dto/organization-document.dto.spec.ts": "8e4f8146e18bdfc74b7da128f228f1612f0936f87c418fa31999a636cb16e507",
+    "apps/api/src/organizations/organizations.cnpj-unico.spec.ts": "df90738ca23e1dce204f3fd8d21b7ff50f6cb7e7ae642b5f84166753cc2f83de",
+    "apps/api/src/organizations/organizations.service.spec.ts": "473500c6a00224edbfc6ff6ce3bce2649bb64e7c952311ab6983e4c053c55ef4",
+    "apps/web/src/pages/OrganizationsPage.test.tsx": "268a77a23e67c01d0097c6265a93104e0c16205e0961fbef5552331aa98a1477",
+    "apps/web/src/pages/OrganizationsPage.update-error.test.tsx": "c34ecd75eea82f592c5f80eb2d57667ce9826dc6f68ef75b707660d3b2608e25"
+  },
+  "log": ".delivery/evidence/DMTE-559/red.log",
+  "log_sha256": "129bce613371f3f7f9957a34a5c48dc435089c4b93576563d70f80c95dcb8fa0"
+}

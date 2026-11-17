@@ -1,0 +1,98 @@
+{
+  "version": 1,
+  "delivery": "DMTE-559",
+  "repository": "dmrepositorio/aponta",
+  "github_issue": 333,
+  "multica_id": "01a1eaa0-38a3-7b1f-84c9-895f4b4e420a",
+  "cycle": "2026-11-09/2026-11-22",
+  "tier": 2,
+  "criteria": [
+    {
+      "id": "AC-01",
+      "description": "`CreateOrganizationDto` sem `cnpj` (ou `cnpj` em branco), com `documentType` CNPJ ou ausente, é recusado com a mensagem \"CNPJ é obrigatório e deve ter 14 dígitos.\".",
+      "tests": [
+        "apps/api/src/organizations/dto/organization-document.dto.spec.ts: AC-01: recusa o cadastro sem a chave cnpj",
+        "apps/api/src/organizations/dto/organization-document.dto.spec.ts: AC-01: recusa o cadastro com cnpj em branco",
+        "apps/api/src/organizations/dto/organization-document.dto.spec.ts: AC-01: recusa o cadastro com documentType CNPJ e cnpj vazio"
+      ]
+    },
+    {
+      "id": "AC-02",
+      "description": "`CreateOrganizationDto` e `UpdateOrganizationDto` com `cnpj` pontuado (`19.131.243/0001-97`) entregam só os 14 dígitos; com menos ou mais de 14 dígitos são recusados com a mesma mensagem.",
+      "tests": [
+        "apps/api/src/organizations/dto/organization-document.dto.spec.ts: AC-02: entrega só os 14 dígitos de um cnpj pontuado, na criação e na edição",
+        "apps/api/src/organizations/dto/organization-document.dto.spec.ts: AC-02: recusa o cnpj 1913124300019, que não tem 14 dígitos",
+        "apps/api/src/organizations/dto/organization-document.dto.spec.ts: AC-02: recusa o cnpj 191312430001970, que não tem 14 dígitos",
+        "apps/api/src/organizations/dto/organization-document.dto.spec.ts: AC-02: recusa o cnpj 12345678, que não tem 14 dígitos"
+      ]
+    },
+    {
+      "id": "AC-03",
+      "description": "`UpdateOrganizationDto` com `cnpj` em branco é recusado (não limpa o CNPJ); sem a chave `cnpj` é aceito.",
+      "tests": [
+        "apps/api/src/organizations/dto/organization-document.dto.spec.ts: AC-03: recusa cnpj em branco na edição (não limpa) e aceita a edição sem a chave cnpj"
+      ]
+    },
+    {
+      "id": "AC-04",
+      "description": "criar cliente PF (`documentType` CPF) sem `cnpj` é aceito.",
+      "tests": [
+        "apps/api/src/organizations/dto/organization-document.dto.spec.ts: AC-04: aceita cliente PF sem cnpj e mantém o cpf em branco como não informado"
+      ]
+    },
+    {
+      "id": "AC-05",
+      "description": "`OrganizationsService.create` com CNPJ já usado por outro cliente, gravado em dígitos ou pontuado, lança `ConflictException` \"Já existe um cliente com este CNPJ.\" e não chama `organization.create`.",
+      "tests": [
+        "apps/api/src/organizations/organizations.cnpj-unico.spec.ts: AC-05: recusa o cadastro com 409 quando o CNPJ de outro cliente está gravado em dígitos",
+        "apps/api/src/organizations/organizations.cnpj-unico.spec.ts: AC-05: recusa o cadastro com 409 quando o CNPJ de outro cliente está gravado em pontuado",
+        "apps/api/src/organizations/organizations.cnpj-unico.spec.ts: AC-05: cadastra quando nenhum cliente tem o CNPJ"
+      ]
+    },
+    {
+      "id": "AC-06",
+      "description": "`OrganizationsService.update` com CNPJ de outro cliente lança o mesmo `ConflictException`; o cliente que já tem esse CNPJ pode salvá-lo de novo sem conflito.",
+      "tests": [
+        "apps/api/src/organizations/organizations.cnpj-unico.spec.ts: AC-06: recusa a edição com 409 quando o CNPJ é de outro cliente",
+        "apps/api/src/organizations/organizations.cnpj-unico.spec.ts: AC-06: o próprio cliente salva o CNPJ que já tem, e a edição sem cnpj não consulta duplicidade"
+      ]
+    },
+    {
+      "id": "AC-07",
+      "description": "no cadastro manual, com tipo CNPJ e o campo vazio, a página mostra \"CNPJ é obrigatório\" no campo e não envia `POST /organizations`.",
+      "tests": [
+        "apps/web/src/pages/OrganizationsPage.update-error.test.tsx: AC-07: com o CNPJ vazio mostra a mensagem no campo e não envia o cadastro"
+      ]
+    },
+    {
+      "id": "AC-08",
+      "description": "quando `POST /organizations` responde 409, a página abre um pop-up (`role=\"dialog\"`) com o título \"CNPJ já cadastrado\" e a mensagem da API; fechá-lo mantém o formulário preenchido.",
+      "tests": [
+        "apps/web/src/pages/OrganizationsPage.update-error.test.tsx: AC-08: quando o cadastro volta 409 abre o pop-up e o formulário continua preenchido"
+      ]
+    },
+    {
+      "id": "AC-09",
+      "description": "quando o `PATCH /organizations/:id` da edição direta do CNPJ na grade responde 409, a página abre o mesmo pop-up.",
+      "tests": [
+        "apps/web/src/pages/OrganizationsPage.update-error.test.tsx: AC-09: quando a edição direta do CNPJ na grade volta 409 abre o mesmo pop-up"
+      ]
+    }
+  ],
+  "spec": "docs/delivery/specs/DMTE-559.md",
+  "tdd": {
+    "mode": "required",
+    "red": ".delivery/evidence/DMTE-559/red-r2.json",
+    "green": ".delivery/evidence/DMTE-559/green-r2.json"
+  },
+  "design_system": {
+    "applicable": true,
+    "reused": [
+      "EzModal",
+      "EzButton",
+      "EzTextInput"
+    ],
+    "reason": "Pop-up de CNPJ repetido com EzModal (trapFocus, aria-label, botão com foco) e mensagem de campo vazio no EzTextInput (hasError/message); nenhum componente, prop ou token novo.",
+    "exception": "Nenhum arquivo de apps/web/src/components/ds/ muda nesta entrega, então não há story nova."
+  }
+}
