@@ -53,7 +53,7 @@ describe('OrganizationsPage: falha ao salvar a edição de um cliente (DMTE-554)
 });
 
 describe('OrganizationsPage: mensagem do cadastro e documento no payload (DMTE-554, code-review)', () => {
-  async function submitManualForm(fill: (user: ReturnType<typeof userEvent.setup>) => Promise<void>) {
+  async function submitManualForm(fill?: (user: ReturnType<typeof userEvent.setup>) => Promise<void>) {
     const user = userEvent.setup();
     render(
       <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
@@ -67,7 +67,7 @@ describe('OrganizationsPage: mensagem do cadastro e documento no payload (DMTE-5
     await user.click(screen.getByRole('menuitem', { name: /cadastrar manualmente/i }));
     await screen.findByText('Nova Empresa');
     await user.type(screen.getByLabelText(/nome fantasia/i), 'Empresa D');
-    await fill(user);
+    await fill?.(user);
     await user.click(screen.getByRole('button', { name: /cadastrar/i }));
   }
 
@@ -86,7 +86,7 @@ describe('OrganizationsPage: mensagem do cadastro e documento no payload (DMTE-5
   it('shows the pt-BR message, not the raw "Internal server error", when the API answers 500', async () => {
     vi.mocked(api.post).mockRejectedValue({ response: { status: 500, data: { statusCode: 500, message: 'Internal server error' } } });
 
-    await submitManualForm(async () => {});
+    await submitManualForm();
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Não foi possível cadastrar o cliente. Tente novamente.');
   });
@@ -96,7 +96,7 @@ describe('OrganizationsPage: mensagem do cadastro e documento no payload (DMTE-5
       response: { status: 400, data: { message: ['billingDueDay must not be greater than 31', 'name should not be empty'] } },
     });
 
-    await submitManualForm(async () => {});
+    await submitManualForm();
 
     const alert = await screen.findByRole('alert');
     expect(alert).toHaveTextContent('billingDueDay must not be greater than 31 name should not be empty');
