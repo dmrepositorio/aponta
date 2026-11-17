@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "phase": "green",
+  "started_at": "2026-11-17T21:48:39.619915+00:00",
+  "finished_at": "2026-11-17T21:49:08.799226+00:00",
+  "command": [
+    "pnpm",
+    "--dir",
+    "apps/web",
+    "exec",
+    "vitest",
+    "run",
+    "src/pages/VaultPage.test.tsx"
+  ],
+  "base_sha": "ca109a3ddc317e67db7f254c3745d93d5d5a7595",
+  "head_sha": "415fe962a80e038f9cb638ecc250365f2df2f9d3",
+  "exit_code": 0,
+  "tests": {
+    "apps/web/src/pages/VaultPage.test.tsx": "2036b13c13c05edb7a812c52b9bfacbb5c4ca8eaff8dc508e9974f5682f45ff7"
+  },
+  "criteria": [
+    "AC-01",
+    "AC-02",
+    "AC-03",
+    "AC-04",
+    "AC-05",
+    "AC-06",
+    "AC-07",
+    "AC-08",
+    "AC-11"
+  ],
+  "source_hashes": {
+    "apps/web/src/hooks/useVault.ts": "5936ed7635a5f9f02093fc91e8638ce28d1bc39b350daa41e711f0c8ae70173b",
+    "apps/web/src/pages/VaultPage.test.tsx": "2036b13c13c05edb7a812c52b9bfacbb5c4ca8eaff8dc508e9974f5682f45ff7",
+    "apps/web/src/pages/VaultPage.tsx": "e51a155a3d649252a80440107da8567e197ade809396acadf0bad05c82c46bd2",
+    "scripts/vault_actions_check.mjs": "36b2be70d3ca75f571c7d51e3c0ae1604046415dcd7b0521a47edf81c99a8509"
+  },
+  "log": ".delivery/evidence/DMTE-544/green-r4.log",
+  "log_sha256": "a9ea909e11d178320caae238c3f19688259ec063fccc0784616f7243d5670269"
+}
