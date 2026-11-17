@@ -1,8 +1,8 @@
 {
   "version": 1,
   "phase": "red",
-  "started_at": "2026-11-17T14:50:29.737073+00:00",
-  "finished_at": "2026-11-17T14:56:20.064933+00:00",
+  "started_at": "2026-11-17T15:07:37.253001+00:00",
+  "finished_at": "2026-11-17T15:14:40.276509+00:00",
   "command": [
     "pnpm",
     "nx",
@@ -14,8 +14,8 @@
     "api",
     "--skip-nx-cache"
   ],
-  "base_sha": "9cba9563637b6d0e0eb76c34ff39ef0afcc079af",
-  "head_sha": "e0f410d790478130d68930bd005deee9ab046bf1",
+  "base_sha": "b458addcd74f82ebc31650f167c6e23db0a69119",
+  "head_sha": "2b0209cfda882b09dcf69c708cd402b8700783d7",
   "exit_code": 1,
   "tests": {
     "apps/web/src/pages/UsersPage.test.tsx": "8788c4a441f9a8cde3c98dc267e818c0c96f213a456fce5c02910da2811953fc",
@@ -88,5 +88,5 @@
     "apps/web/src/pages/UsersPage.test.tsx": "8788c4a441f9a8cde3c98dc267e818c0c96f213a456fce5c02910da2811953fc"
   },
   "log": ".delivery/evidence/DMTE-550/red.log",
-  "log_sha256": "dc89e6c3e416f32b0158da951dd8c6a66f9ea04fd29cd32b08c87e6aad6ced6d"
+  "log_sha256": "a7ee173e78df73c9ce2bb9cab24f461f9b42a405826cb945d1c3a0402055c3ed"
 }
