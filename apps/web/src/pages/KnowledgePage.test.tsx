@@ -982,6 +982,70 @@ describe('KnowledgePage', () => {
       expect(screen.queryByText('Não foi possível carregar os artigos.')).not.toBeInTheDocument();
     });
 
+    describe('when the refresh fails with a cached list (DMTE-548)', () => {
+      const STALE = /Não foi possível atualizar os artigos/;
+
+      async function openFolderThenFailRefresh(cached: unknown[] = articles) {
+        let fail = false;
+        let current: unknown[] = cached;
+        mockArticles(() => (fail ? Promise.reject(new Error('boom')) : current));
+        loginAs('CLIENT');
+        const user = userEvent.setup();
+        renderPage();
+        await waitFor(() => expect(screen.getByText('Suporte')).toBeInTheDocument());
+        await user.click(screen.getByText('Suporte'));
+        await waitFor(() => expect(screen.getByTestId('knowledge-articles')).toBeInTheDocument());
+        await waitFor(() => expect(screen.queryByText(/Carregando artigos/)).not.toBeInTheDocument());
+
+        fail = true;
+        // Volta de foco da janela: o refetch real do React Query, com a mesma chave.
+        fireEvent(window, new Event('visibilitychange'));
+        const alert = await screen.findByRole('alert');
+        return {
+          user,
+          alert,
+          recover: (next: unknown[]) => {
+            fail = false;
+            current = next;
+          },
+        };
+      }
+
+      it('keeps the cached list under a stale-list warning when a refetch fails', async () => {
+        const { alert } = await openFolderThenFailRefresh();
+
+        expect(alert).toHaveTextContent(STALE);
+        expect(alert).toHaveTextContent(/pode estar desatualizada/);
+        expect(within(alert).getByRole('button', { name: 'Tentar novamente' })).toBeInTheDocument();
+        expect(screen.getByText('Como abrir um chamado')).toBeInTheDocument();
+        expect(screen.queryByText('Não foi possível carregar os artigos.')).not.toBeInTheDocument();
+        const list = screen.getByTestId('knowledge-articles');
+        expect(
+          alert.compareDocumentPosition(list) & Node.DOCUMENT_POSITION_FOLLOWING,
+        ).toBeTruthy();
+      });
+
+      it('replaces the list and drops the warning when "Tentar novamente" succeeds', async () => {
+        const { user, alert, recover } = await openFolderThenFailRefresh();
+        recover([{ ...articles[0], id: 'article-new', title: 'Artigo atualizado' }]);
+
+        await user.click(within(alert).getByRole('button', { name: 'Tentar novamente' }));
+
+        expect(await screen.findByText('Artigo atualizado')).toBeInTheDocument();
+        expect(screen.queryByText('Como abrir um chamado')).not.toBeInTheDocument();
+        expect(screen.queryByText(STALE)).not.toBeInTheDocument();
+        expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+      });
+
+      it('shows the load error, not the stale-list warning, when the cached list is empty', async () => {
+        const { alert } = await openFolderThenFailRefresh([]);
+
+        expect(alert).toHaveTextContent('Não foi possível carregar os artigos.');
+        expect(screen.queryByText(STALE)).not.toBeInTheDocument();
+        expect(screen.queryByText('Esta pasta ainda não tem artigos.')).not.toBeInTheDocument();
+      });
+    });
+
     describe('proportion, focus and color semantics (DMTE-535)', () => {
       const tagged = {
         id: 'article-tagged',
@@ -1047,7 +1111,7 @@ describe('KnowledgePage', () => {
 
       it('gives the clickable tag, the filter remove button and the view toggles the DS focus ring', async () => {
         const user = await openAs('ADMIN');
-        const ring = ['focus-visible:ring-4', 'focus-visible:ring-brand-200', 'focus-visible:ring-offset-2'];
+        const ring = ['ez-focus'];
         const card = cardOf('Artigo com tags');
 
         const tag = within(card).getByRole('button', { name: /#senha/ });

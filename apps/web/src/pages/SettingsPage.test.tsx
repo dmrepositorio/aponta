@@ -201,8 +201,7 @@ describe('SettingsPage: auditoria de interface (DMTE-524)', () => {
     const link = await screen.findByRole('link', { name: /minha conta/i });
 
     expect(link.closest('.overflow-hidden')).not.toBeNull();
-    expect(link.className).toContain('focus-visible:ring-2');
-    expect(link.className).toContain('focus-visible:ring-brand-200');
+    expect(link.className).toContain('ez-focus-inset');
     expect(link.className).toContain('active:bg-gray-100');
   });
 

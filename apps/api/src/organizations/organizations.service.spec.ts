@@ -1,4 +1,5 @@
 import { ConflictException, NotFoundException } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { OrganizationsService } from './organizations.service';
 
 describe('OrganizationsService', () => {
@@ -94,6 +95,32 @@ describe('OrganizationsService', () => {
         },
       });
       expect(result).toEqual({ id: 'org-1', ...dto });
+    });
+
+    // DMTE-554: cnpj e cpf são @unique; a violação virava 500 e o formulário não mostrava nada.
+    it.each([
+      ['cnpj', 'Já existe um cliente com este CNPJ.'],
+      ['cpf', 'Já existe um cliente com este CPF.'],
+    ])('answers 409 with a readable message when the %s is already registered (DMTE-554)', async (field, message) => {
+      mockPrisma.organization.create.mockRejectedValue(
+        new Prisma.PrismaClientKnownRequestError('Unique constraint failed', {
+          code: 'P2002',
+          clientVersion: '7.8.0',
+          meta: { target: [field] },
+        }),
+      );
+
+      const error = await service.create({ name: 'Dup', [field]: '123' } as any).catch((e) => e);
+
+      expect(error).toBeInstanceOf(ConflictException);
+      expect(error.message).toBe(message);
+    });
+
+    it('keeps unexpected database errors as they are (DMTE-554)', async () => {
+      const boom = new Error('connection lost');
+      mockPrisma.organization.create.mockRejectedValue(boom);
+
+      await expect(service.create({ name: 'X' } as any)).rejects.toBe(boom);
     });
 
     it('does not call organization.update when there are no auto-share articles', async () => {
@@ -204,6 +231,22 @@ describe('OrganizationsService', () => {
         data: { name: 'New Name' },
       });
       expect(result).toEqual({ id: 'org-1', name: 'New Name' });
+    });
+
+    it('answers 409 with a readable message when the new cnpj belongs to another client (DMTE-554)', async () => {
+      mockPrisma.organization.findUnique.mockResolvedValue({ id: 'org-1', users: [] });
+      mockPrisma.organization.update.mockRejectedValue(
+        new Prisma.PrismaClientKnownRequestError('Unique constraint failed', {
+          code: 'P2002',
+          clientVersion: '7.8.0',
+          meta: { target: ['cnpj'] },
+        }),
+      );
+
+      const error = await service.update('org-1', { cnpj: '123' } as any).catch((e) => e);
+
+      expect(error).toBeInstanceOf(ConflictException);
+      expect(error.message).toBe('Já existe um cliente com este CNPJ.');
     });
 
     it('updates quarterly billing and billing preferences', async () => {

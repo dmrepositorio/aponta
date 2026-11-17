@@ -165,6 +165,7 @@ export function KnowledgePage() {
     [catalogItems]
   );
 
+  const hasCachedList = !!articles?.length;
   const totalPages = Math.max(1, Math.ceil((articles?.length ?? 0) / PAGE_SIZE));
   const pagedArticles = useMemo(
     () => (articles ?? []).slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
@@ -596,6 +597,18 @@ export function KnowledgePage() {
           <EzSpinner label="Carregando artigos..." />
         </div>
       )}
+      {isError && !isLoading && hasCachedList && (
+        <EzAlert
+          variant="warning"
+          action={
+            <EzButton type="button" variant="secondary" size="small" onClick={() => void refetch()}>
+              Tentar novamente
+            </EzButton>
+          }
+        >
+          Não foi possível atualizar os artigos. A lista abaixo pode estar desatualizada.
+        </EzAlert>
+      )}
       <div
         data-testid="knowledge-articles"
         data-view-mode={viewMode}
@@ -619,7 +632,7 @@ export function KnowledgePage() {
         ))}
       </div>
 
-      {isError && !isLoading && (
+      {isError && !isLoading && !hasCachedList && (
         <div className="flex flex-col items-start gap-3">
           <EzAlert variant="error">Não foi possível carregar os artigos.</EzAlert>
           <EzButton type="button" variant="secondary" size="small" onClick={() => void refetch()}>

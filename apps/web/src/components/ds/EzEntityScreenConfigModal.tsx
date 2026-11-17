@@ -130,7 +130,7 @@ export function EzEntityScreenConfigModal({
                   placeholder="Pesquisar colunas..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full pl-8 pr-3 py-1.5 text-[12px] rounded-[6px] border border-gray-200 focus:outline-none focus:ring-2 focus:ring-brand-200 focus:border-brand-500"
+                  className="w-full pl-8 pr-3 py-1.5 text-[12px] rounded-[6px] border border-gray-200 focus:border-brand-500 ez-focus"
                 />
               </div>
 
@@ -151,7 +151,7 @@ export function EzEntityScreenConfigModal({
                           checked={c.isVisible}
                           data-testid={`ez-screen-config-toggle-${c.id}`}
                           onChange={() => onToggleColumn(c.id)}
-                          className="w-4 h-4 rounded border-gray-300 text-brand-600 focus:ring-brand-200 cursor-pointer"
+                          className="w-4 h-4 rounded border-gray-300 text-brand-600 cursor-pointer ez-focus"
                         />
                         <span className={cn('text-gray-800 font-medium', !c.isVisible && 'text-gray-400 line-through')}>
                           {c.label}

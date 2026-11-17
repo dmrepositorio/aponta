@@ -152,7 +152,7 @@ function KpiRow({ items, layout = 'wrap' }: { items: KpiItem[]; layout?: keyof t
               key={item.label}
               to={item.to}
               className={cn(
-                'flex min-h-11 flex-col gap-1.5 rounded-md -m-1 p-1 transition-colors cursor-pointer hover:bg-gray-80 outline-none focus-visible:ring-4 focus-visible:ring-brand-200 lg:min-h-0',
+                'flex min-h-11 flex-col gap-1.5 rounded-md -m-1 p-1 transition-colors cursor-pointer hover:bg-gray-80 lg:min-h-0 ez-focus',
                 span,
               )}
             >

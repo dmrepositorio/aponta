@@ -57,6 +57,8 @@ export function KnowledgeArticleCard({
   // Corpo só de marcação vazia (`<p></p>`) não esconde nada; imagem e tabela contam como conteúdo.
   const hasBody = excerpt !== '' || /<(img|table)\b/i.test(article.content);
   const hasHiddenContent = hasBody || attachments.length > 0 || tags.length > COLLAPSED_TAGS;
+  // Uma edição pode esvaziar o que estava escondido: sem o botão não há como recolher, então volta recolhido.
+  if (expanded && !hasHiddenContent) setExpanded(false);
   const bodyId = `article-body-${article.id}`;
   const updatedAt = formatUpdatedAt(article.updatedAt);
 

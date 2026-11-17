@@ -1,3 +1,4 @@
+import { type ReactNode, useEffect, useId, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { cn } from './utils';
 import { EzButton } from './EzButton';
@@ -11,10 +12,32 @@ export interface EzDialogProps {
   onConfirm: () => void;
   onCancel: () => void;
   variant?: 'info' | 'danger' | 'warning';
+  /** Conteúdo extra abaixo da mensagem (lista, detalhes). */
+  children?: ReactNode;
+  confirmLabel?: string;
+  cancelLabel?: string;
+  confirmDisabled?: boolean;
 }
 
-export function EzDialog({ open, title, message, onConfirm, onCancel, variant = 'info' }: EzDialogProps) {
+export function EzDialog({
+  open,
+  title,
+  message,
+  onConfirm,
+  onCancel,
+  variant = 'info',
+  children,
+  confirmLabel = 'Confirmar',
+  cancelLabel = 'Cancelar',
+  confirmDisabled = false,
+}: EzDialogProps) {
   useEscapeLayer(onCancel, open);
+  const titleId = useId();
+  const cancelRef = useRef<HTMLButtonElement>(null);
+  // Ação destrutiva abre com o foco na ação segura.
+  useEffect(() => {
+    if (open && variant === 'danger') cancelRef.current?.focus();
+  }, [open, variant]);
 
   if (!open) return null;
 
@@ -29,20 +52,23 @@ export function EzDialog({ open, title, message, onConfirm, onCancel, variant = 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
       <div className="fixed inset-0 bg-gray-900/60" onClick={onCancel} />
-      <div role="dialog" aria-modal="true" className="relative w-full max-w-sm rounded-[24px] bg-white shadow-2xl">
+      <div role="dialog" aria-modal="true" aria-labelledby={titleId} className="relative w-full max-w-sm rounded-[24px] bg-white shadow-2xl">
         <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
           <div className="flex items-center gap-2">
             <Icon className={iconClass} />
-            <span className="text-[16px] font-semibold text-gray-900">{title}</span>
+            <span id={titleId} className="text-[16px] font-semibold text-gray-900">{title}</span>
           </div>
-          <button onClick={onCancel} aria-label="Fechar" className="rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-700">
+          <button onClick={onCancel} aria-label="Fechar diálogo" className="rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-700 ez-focus">
             <X className="h-4 w-4" />
           </button>
         </div>
-        <div className="px-6 py-4 text-[14px] text-gray-700">{message}</div>
+        <div className="px-6 py-4 text-[14px] text-gray-700">
+          <p>{message}</p>
+          {children}
+        </div>
         <div className="flex items-center justify-end gap-3 border-t border-gray-100 bg-gray-90/50 px-6 py-4 rounded-b-[24px]">
-          <EzButton variant="secondary" label="Cancelar" onClick={onCancel} />
-          <EzButton variant="primary" label="Confirmar" onClick={onConfirm} />
+          <EzButton ref={cancelRef} variant="secondary" label={cancelLabel} onClick={onCancel} />
+          <EzButton variant="primary" label={confirmLabel} onClick={onConfirm} disabled={confirmDisabled} />
         </div>
       </div>
     </div>,

@@ -64,7 +64,7 @@ export const EzPopoverPlus = forwardRef<HTMLDivElement, EzPopoverPlusProps>(
               <button
                 onClick={onClose}
                 aria-label="Fechar"
-                className="p-1 -mr-1 rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-200 shrink-0"
+                className="p-1 -mr-1 rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors shrink-0 ez-focus"
               >
                 <X className="w-4 h-4" />
               </button>

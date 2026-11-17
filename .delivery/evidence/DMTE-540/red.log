@@ -1,0 +1,2116 @@
+
+ RUN  v4.1.11 /home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/apps/web
+
+ ❯ |web| src/components/ds/EzDialog.test.tsx (5 tests | 2 failed) 782ms
+     ✓ renders nothing when closed 199ms
+     ✓ calls onConfirm when confirm button clicked 239ms
+     ✓ applies danger icon color class 26ms
+     × renders children, custom labels and a disabled confirm, and keeps the defaults 54ms
+     × focuses Cancelar when the danger dialog opens and names the dialog by its title 239ms
+ ❯ |web| src/components/ds/EzButton.test.tsx (6 tests | 1 failed) 310ms
+     ✓ renders the label correctly 162ms
+     ✓ renders primary variant by default and applies brand color 17ms
+     ✓ renders secondary variant 13ms
+     ✓ renders disabled state correctly 16ms
+     ✓ renders as icon-only when label is omitted but icon is passed 31ms
+     × uses the shared focus token instead of the brand-200 ring 65ms
+ ❯ |web| src/components/ds/focusToken.guard.test.ts (1 test | 1 failed) 86ms
+     × no production source keeps the brand-200 focus ring 84ms
+ ❯ |web| src/pages/ContractsPage.test.tsx (38 tests | 7 failed) 28834ms
+     ✓ shows a loading state while contracts are being fetched  436ms
+     ✓ shows an error state when the contracts request fails  343ms
+     ✓ shows the empty state when there are no contracts  303ms
+     ✓ shows financial columns (valor mensal / reajuste) for ADMIN  682ms
+     ✓ shows financial columns for CLIENT_MASTER as well  408ms
+     ✓ hides financial columns for AGENT (masked by the backend, but double-check the UI gate too)  329ms
+     ✓ displays inactive contracts and zero money honestly 180ms
+     ✓ lets admins create with explicit excess rate and minute allowance  1125ms
+     ✓ prevents non-admin management and hides detail financial data  415ms
+     ✓ opens a contract's detail as a full page (no dialog) and returns to the list via the back button  927ms
+     ✓ navigates between contracts using the toolbar Anterior/Próximo buttons 222ms
+     ✓ shows a dedicated "Novo contrato" button directly on the toolbar for ADMIN, opening the full-page form  489ms
+     × asks for confirmation in a DS dialog that names the contract before deleting 1631ms
+     × lists up to five contract names and counts the rest 1778ms
+     × cancels the deletion without calling the API 1588ms
+     × lists each failed contract with its own message and keeps only the failed ones selected 1430ms
+     × retries only the contracts that failed 1430ms
+     × disables Confirmar while the deletion is running 1198ms
+     × disables the toolbar delete button while a contract form is open 442ms
+     ✓ does not show the delete button for AGENT, who cannot manage contracts 130ms
+     ✓ renders the Sankhya standard filter drawer and screen config modal (parity with Clientes)  1048ms
+     ✓ filters contracts by name or company on the client side via the filter drawer  1407ms
+     ✓ filters contracts by status (Ativo/Inativo) via the filter drawer  560ms
+     ✓ filters dynamically by modality using the rule builder (Sankhya Filtros parity)  1630ms
+     ✓ saves, applies, and deletes a saved filter from the drawer (Sankhya saved filters parity)  1805ms
+     ✓ edits via the update command without turning zero into missing money  988ms
+     ✓ validates reversed dates before saving  459ms
+     ✓ opens the detail from the contract name button and has no Ações column  812ms
+     ✓ opens the detail of the row on double click  510ms
+     ✓ keeps Contrato and Empresa on one line with the full text in the title, and fixed column widths 207ms
+     ✓ shows Ativo/Inativo and the approval state as tags with text and icon in one Situação column  301ms
+     ✓ uses the same approval words in the detail  513ms
+     ✓ filters by the same approval words, including Rascunho and Regularização pendente  576ms
+     ✓ starts with Hora excedente and Reajuste hidden but still configurable  1068ms
+     ✓ DMTE-541 AC-08: the filter panel sits in a positioned container so it can overlay the grid below xl  427ms
+     ✓ moves focus to the validation alert and scrolls it into view when the form is invalid  367ms
+     ✓ moves focus to the alert with the API message when saving fails 224ms
+     ✓ moves focus again on every failed attempt, even with the same message  422ms
+
+ Test Files  4 failed (4)
+      Tests  11 failed | 39 passed (50)
+   Start at  10:14:08
+   Duration  39.23s (transform 6.20s, setup 955ms, import 11.64s, tests 30.01s, environment 5.48s)
+
+Error: Not implemented: window.confirm
+    at module.exports (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/node_modules/.pnpm/jsdom@22.1.0_supports-color@7.2.0/node_modules/jsdom/lib/jsdom/browser/not-implemented.js:9:17)
+    at /home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/node_modules/.pnpm/jsdom@22.1.0_supports-color@7.2.0/node_modules/jsdom/lib/jsdom/browser/Window.js:897:7
+    at bound  (file:///home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/node_modules/.pnpm/@vitest+spy@4.1.11/node_modules/@vitest/spy/dist/index.js:332:34)
+    at handleDelete (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/apps/web/src/pages/ContractsPage.tsx:202:17)
+    at executeDispatch (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:20804:9)
+    at runWithFiberInDEV (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:1048:13)
+    at processDispatchQueue (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:20854:19)
+    at /home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:21423:9
+    at batchedUpdates$1 (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:3437:40)
+    at dispatchEventForPluginEventSystem (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:21008:7) undefined
+Error: Not implemented: window.confirm
+    at module.exports (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/node_modules/.pnpm/jsdom@22.1.0_supports-color@7.2.0/node_modules/jsdom/lib/jsdom/browser/not-implemented.js:9:17)
+    at /home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/node_modules/.pnpm/jsdom@22.1.0_supports-color@7.2.0/node_modules/jsdom/lib/jsdom/browser/Window.js:897:7
+    at bound  (file:///home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/node_modules/.pnpm/@vitest+spy@4.1.11/node_modules/@vitest/spy/dist/index.js:332:34)
+    at handleDelete (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/apps/web/src/pages/ContractsPage.tsx:202:17)
+    at executeDispatch (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:20804:9)
+    at runWithFiberInDEV (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:1048:13)
+    at processDispatchQueue (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:20854:19)
+    at /home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:21423:9
+    at batchedUpdates$1 (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:3437:40)
+    at dispatchEventForPluginEventSystem (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:21008:7) undefined
+Error: Not implemented: window.confirm
+    at module.exports (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/node_modules/.pnpm/jsdom@22.1.0_supports-color@7.2.0/node_modules/jsdom/lib/jsdom/browser/not-implemented.js:9:17)
+    at /home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/node_modules/.pnpm/jsdom@22.1.0_supports-color@7.2.0/node_modules/jsdom/lib/jsdom/browser/Window.js:897:7
+    at bound  (file:///home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/node_modules/.pnpm/@vitest+spy@4.1.11/node_modules/@vitest/spy/dist/index.js:332:34)
+    at handleDelete (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/apps/web/src/pages/ContractsPage.tsx:202:17)
+    at executeDispatch (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:20804:9)
+    at runWithFiberInDEV (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:1048:13)
+    at processDispatchQueue (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:20854:19)
+    at /home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:21423:9
+    at batchedUpdates$1 (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:3437:40)
+    at dispatchEventForPluginEventSystem (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:21008:7) undefined
+Error: Not implemented: window.confirm
+    at module.exports (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/node_modules/.pnpm/jsdom@22.1.0_supports-color@7.2.0/node_modules/jsdom/lib/jsdom/browser/not-implemented.js:9:17)
+    at /home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/node_modules/.pnpm/jsdom@22.1.0_supports-color@7.2.0/node_modules/jsdom/lib/jsdom/browser/Window.js:897:7
+    at bound  (file:///home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/node_modules/.pnpm/@vitest+spy@4.1.11/node_modules/@vitest/spy/dist/index.js:332:34)
+    at handleDelete (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/apps/web/src/pages/ContractsPage.tsx:202:17)
+    at executeDispatch (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:20804:9)
+    at runWithFiberInDEV (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:1048:13)
+    at processDispatchQueue (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:20854:19)
+    at /home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:21423:9
+    at batchedUpdates$1 (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:3437:40)
+    at dispatchEventForPluginEventSystem (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:21008:7) undefined
+Error: Not implemented: window.confirm
+    at module.exports (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/node_modules/.pnpm/jsdom@22.1.0_supports-color@7.2.0/node_modules/jsdom/lib/jsdom/browser/not-implemented.js:9:17)
+    at /home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/node_modules/.pnpm/jsdom@22.1.0_supports-color@7.2.0/node_modules/jsdom/lib/jsdom/browser/Window.js:897:7
+    at bound  (file:///home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/node_modules/.pnpm/@vitest+spy@4.1.11/node_modules/@vitest/spy/dist/index.js:332:34)
+    at handleDelete (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/apps/web/src/pages/ContractsPage.tsx:202:17)
+    at executeDispatch (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:20804:9)
+    at runWithFiberInDEV (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:1048:13)
+    at processDispatchQueue (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:20854:19)
+    at /home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:21423:9
+    at batchedUpdates$1 (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:3437:40)
+    at dispatchEventForPluginEventSystem (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:21008:7) undefined
+Error: Not implemented: window.confirm
+    at module.exports (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/node_modules/.pnpm/jsdom@22.1.0_supports-color@7.2.0/node_modules/jsdom/lib/jsdom/browser/not-implemented.js:9:17)
+    at /home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/node_modules/.pnpm/jsdom@22.1.0_supports-color@7.2.0/node_modules/jsdom/lib/jsdom/browser/Window.js:897:7
+    at bound  (file:///home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/node_modules/.pnpm/@vitest+spy@4.1.11/node_modules/@vitest/spy/dist/index.js:332:34)
+    at handleDelete (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/apps/web/src/pages/ContractsPage.tsx:202:17)
+    at executeDispatch (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:20804:9)
+    at runWithFiberInDEV (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:1048:13)
+    at processDispatchQueue (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:20854:19)
+    at /home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:21423:9
+    at batchedUpdates$1 (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:3437:40)
+    at dispatchEventForPluginEventSystem (/home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-540-57a823d065d5/workdir/aponta/node_modules/.pnpm/react-dom@19.3.0_react@19.3.0/node_modules/react-dom/cjs/react-dom-client.development.js:21008:7) undefined
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 11 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |web| src/pages/ContractsPage.test.tsx > ContractsPage > asks for confirmation in a DS dialog that names the contract before deleting
+TestingLibraryElementError: Unable to find role="dialog"
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"flex flex-col h-full bg-gray-80"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex flex-col w-full bg-white border-b border-gray-200 px-4 py-2 sm:px-6 gap-3"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center justify-between min-h-[32px]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-3"[39m
+          [36m>[39m
+            [36m<h1[39m
+              [33mclass[39m=[32m"text-[20px] font-semibold text-gray-900 leading-none m-0"[39m
+            [36m>[39m
+              [0mContratos[0m
+            [36m</h1>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-4"[39m
+          [36m/>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex-1 overflow-auto p-6"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"space-y-6"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"bg-white rounded-[10px] border border-gray-200 overflow-hidden shadow-xs flex flex-col"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center gap-3 px-3 py-1.5 bg-white border-b border-gray-200 select-none min-h-[44px] max-sm:flex-col max-sm:items-stretch max-sm:gap-0 max-sm:px-0"[39m
+              [33mdata-testid[39m=[32m"ez-entity-toolbar"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center justify-between gap-3 max-sm:overflow-x-auto max-sm:px-3 sm:contents"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center gap-1 flex-wrap max-sm:flex-nowrap shrink-0 sm:shrink"[39m
+                [36m>[39m
+                  [36m<button[39m
+                    [33maria-label[39m=[32m"Painel de filtros"[39m
+                    [33mclass[39m=[32m"max-sm:min-h-11 max-sm:min-w-11 inline-flex items-center justify-center h-[32px] px-2.5 rounded-[6px] text-[12px] font-medium transition-colors border cursor-pointer bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:text-gray-900"[39m
+                    [33mdata-testid[39m=[32m"ez-toolbar-filter-panel-button"[39m
+                    [33mtitle[39m=[32m"Painel de filtros"[39m
+                    [33mtype[39m=[32m"button"[39m
+                  [36m>[39m
+                    [36m<svg[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"lucide lucide-funnel lucide-filter w-3.5 h-3.5 mr-1.5"[39m
+                      [33mfill[39m=[32m"none"[39m
+                      [33mheight[39m=[32m"24"[39m
+                      [33mstroke[39m=[32m"currentColor"[39m
+                      [33mstroke-linecap[39m=[32m"round"[39m
+                      [33mstroke-linejoin[39m=[32m"round"[39m
+                      [33mstroke-width[39m=[32m"2"[39m
+                      [33mviewBox[39m=[32m"0 0 24 24"[39m
+                      [33mwidth[39m=[32m"24"[39m
+                      [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                    [36m>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z"[39m
+                      [36m/>[39m
+                    [36m</svg>[39m
+                    [0mFiltros[0m
+                  [36m</button>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"w-px h-5 bg-gray-200 mx-0.5"[39m
+                  [36m/>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"relative inline-flex items-center rounded-[6px] border border-gray-200 bg-white"[39m
+                  [36m>[39m
+                    [36m<button[39m
+                      [33maria-label[39m=[32m"Alternar para Modo Formulário"[39m
+                      [33mclass[39m=[32m"max-sm:min-h-11 max-sm:min-w-11 inline-flex items-center gap-1.5 px-2.5 h-[30px] rounded-l-[5px] text-[12px] font-medium transition-colors cursor-pointer text-brand-700 bg-brand-50/50 hover:bg-brand-50"[39m
+                      [33mdata-testid[39m=[32m"ez-toolbar-mode-toggle-button"[39m
+                      [33mtitle[39m=[32m"Ver formulário do registro"[39m
+                      [33mtype[39m=[32m"button"[39m
+                    [36m>[39m
+                      [36m<svg[39m
+                        [33maria-hidden[39m=[32m"true"[39m
+                        [33mclass[39m=[32m"lucide lucide-layout-grid w-3.5 h-3.5 text-brand-600"[39m
+                        [33mfill[39m=[32m"none"[39m
+                        [33mheight[39m=[32m"24"[39m
+                        [33mstroke[39m=[32m"currentColor"[39m
+                        [33mstroke-linecap[39m=[32m"round"[39m
+                        [33mstroke-linejoin[39m=[32m"round"[39m
+                        [33mstroke-width[39m=[32m"2"[39m
+                        [33mviewBox[39m=[32m"0 0 24 24"[39m
+                        [33mwidth[39m=[32m"24"[39m
+                        [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                      [36m>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"7"[39m
+                          [33mx[39m=[32m"3"[39m
+                          [33my[39m=[32m"3"[39m
+                        [36m/>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"7"[39m
+                          [33mx[39m=[32m"14"[39m
+                          [33my[39m=[32m"3"[39m
+                        [36m/>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"7"[39m
+                          [33mx[39m=[32m"14"[39m
+                          [33my[39m=[32m"14"[39m
+                        [36m/>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"7"[39m
+                          [33mx[39m=[32m"3"[39m
+                          [33my[39m=[32m"14"[39m
+                        [36m/>[39m
+                      [36m</svg>[39m
+                      [36m<span>...
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"flex flex-col h-full bg-gray-80"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex flex-col w-full bg-white border-b border-gray-200 px-4 py-2 sm:px-6 gap-3"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center justify-between min-h-[32px]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-3"[39m
+          [36m>[39m
+            [36m<h1[39m
+              [33mclass[39m=[32m"text-[20px] font-semibold text-gray-900 leading-none m-0"[39m
+            [36m>[39m
+              [0mContratos[0m
+            [36m</h1>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-4"[39m
+          [36m/>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex-1 overflow-auto p-6"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"space-y-6"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"bg-white rounded-[10px] border border-gray-200 overflow-hidden shadow-xs flex flex-col"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center gap-3 px-3 py-1.5 bg-white border-b border-gray-200 select-none min-h-[44px] max-sm:flex-col max-sm:items-stretch max-sm:gap-0 max-sm:px-0"[39m
+              [33mdata-testid[39m=[32m"ez-entity-toolbar"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center justify-between gap-3 max-sm:overflow-x-auto max-sm:px-3 sm:contents"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center gap-1 flex-wrap max-sm:flex-nowrap shrink-0 sm:shrink"[39m
+                [36m>[39m
+                  [36m<button[39m
+                    [33maria-label[39m=[32m"Painel de filtros"[39m
+                    [33mclass[39m=[32m"max-sm:min-h-11 max-sm:min-w-11 inline-flex items-center justify-center h-[32px] px-2.5 rounded-[6px] text-[12px] font-medium transition-colors border cursor-pointer bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:text-gray-900"[39m
+                    [33mdata-testid[39m=[32m"ez-toolbar-filter-panel-button"[39m
+                    [33mtitle[39m=[32m"Painel de filtros"[39m
+                    [33mtype[39m=[32m"button"[39m
+                  [36m>[39m
+                    [36m<svg[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"lucide lucide-funnel lucide-filter w-3.5 h-3.5 mr-1.5"[39m
+                      [33mfill[39m=[32m"none"[39m
+                      [33mheight[39m=[32m"24"[39m
+                      [33mstroke[39m=[32m"currentColor"[39m
+                      [33mstroke-linecap[39m=[32m"round"[39m
+                      [33mstroke-linejoin[39m=[32m"round"[39m
+                      [33mstroke-width[39m=[32m"2"[39m
+                      [33mviewBox[39m=[32m"0 0 24 24"[39m
+                      [33mwidth[39m=[32m"24"[39m
+                      [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                    [36m>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z"[39m
+                      [36m/>[39m
+                    [36m</svg>[39m
+                    [0mFiltros[0m
+                  [36m</button>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"w-px h-5 bg-gray-200 mx-0.5"[39m
+                  [36m/>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"relative inline-flex items-center rounded-[6px] border border-gray-200 bg-white"[39m
+                  [36m>[39m
+                    [36m<button[39m
+                      [33maria-label[39m=[32m"Alternar para Modo Formulário"[39m
+                      [33mclass[39m=[32m"max-sm:min-h-11 max-sm:min-w-11 inline-flex items-center gap-1.5 px-2.5 h-[30px] rounded-l-[5px] text-[12px] font-medium transition-colors cursor-pointer text-brand-700 bg-brand-50/50 hover:bg-brand-50"[39m
+                      [33mdata-testid[39m=[32m"ez-toolbar-mode-toggle-button"[39m
+                      [33mtitle[39m=[32m"Ver formulário do registro"[39m
+                      [33mtype[39m=[32m"button"[39m
+                    [36m>[39m
+                      [36m<svg[39m
+                        [33maria-hidden[39m=[32m"true"[39m
+                        [33mclass[39m=[32m"lucide lucide-layout-grid w-3.5 h-3.5 text-brand-600"[39m
+                        [33mfill[39m=[32m"none"[39m
+                        [33mheight[39m=[32m"24"[39m
+                        [33mstroke[39m=[32m"currentColor"[39m
+                        [33mstroke-linecap[39m=[32m"round"[39m
+                        [33mstroke-linejoin[39m=[32m"round"[39m
+                        [33mstroke-width[39m=[32m"2"[39m
+                        [33mviewBox[39m=[32m"0 0 24 24"[39m
+                        [33mwidth[39m=[32m"24"[39m
+                        [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                      [36m>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"7"[39m
+                          [33mx[39m=[32m"3"[39m
+                          [33my[39m=[32m"3"[39m
+                        [36m/>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"7"[39m
+                          [33mx[39m=[32m"14"[39m
+                          [33my[39m=[32m"3"[39m
+                        [36m/>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"7"[39m
+                          [33mx[39m=[32m"14"[39m
+                          [33my[39m=[32m"14"[39m
+                        [36m/>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"7"[39m
+                          [33mx[39m=[32m"3"[39m
+                          [33my[39m=[32m"14"[39m
+                        [36m/>[39m
+                      [36m</svg>[39m
+                      [36m<span>...
+ ❯ waitForWrapper ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ openDeleteDialog src/pages/ContractsPage.test.tsx:332:19
+    330|     }
+    331|     await user.click(screen.getByTestId('ez-toolbar-delete-button'));
+    332|     return screen.findByRole('dialog');
+       |                   ^
+    333|   };
+    334|
+ ❯ src/pages/ContractsPage.test.tsx:344:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/11]⎯
+
+ FAIL  |web| src/pages/ContractsPage.test.tsx > ContractsPage > lists up to five contract names and counts the rest
+TestingLibraryElementError: Unable to find role="dialog"
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"flex flex-col h-full bg-gray-80"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex flex-col w-full bg-white border-b border-gray-200 px-4 py-2 sm:px-6 gap-3"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center justify-between min-h-[32px]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-3"[39m
+          [36m>[39m
+            [36m<h1[39m
+              [33mclass[39m=[32m"text-[20px] font-semibold text-gray-900 leading-none m-0"[39m
+            [36m>[39m
+              [0mContratos[0m
+            [36m</h1>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-4"[39m
+          [36m/>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex-1 overflow-auto p-6"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"space-y-6"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"bg-white rounded-[10px] border border-gray-200 overflow-hidden shadow-xs flex flex-col"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center gap-3 px-3 py-1.5 bg-white border-b border-gray-200 select-none min-h-[44px] max-sm:flex-col max-sm:items-stretch max-sm:gap-0 max-sm:px-0"[39m
+              [33mdata-testid[39m=[32m"ez-entity-toolbar"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center justify-between gap-3 max-sm:overflow-x-auto max-sm:px-3 sm:contents"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center gap-1 flex-wrap max-sm:flex-nowrap shrink-0 sm:shrink"[39m
+                [36m>[39m
+                  [36m<button[39m
+                    [33maria-label[39m=[32m"Painel de filtros"[39m
+                    [33mclass[39m=[32m"max-sm:min-h-11 max-sm:min-w-11 inline-flex items-center justify-center h-[32px] px-2.5 rounded-[6px] text-[12px] font-medium transition-colors border cursor-pointer bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:text-gray-900"[39m
+                    [33mdata-testid[39m=[32m"ez-toolbar-filter-panel-button"[39m
+                    [33mtitle[39m=[32m"Painel de filtros"[39m
+                    [33mtype[39m=[32m"button"[39m
+                  [36m>[39m
+                    [36m<svg[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"lucide lucide-funnel lucide-filter w-3.5 h-3.5 mr-1.5"[39m
+                      [33mfill[39m=[32m"none"[39m
+                      [33mheight[39m=[32m"24"[39m
+                      [33mstroke[39m=[32m"currentColor"[39m
+                      [33mstroke-linecap[39m=[32m"round"[39m
+                      [33mstroke-linejoin[39m=[32m"round"[39m
+                      [33mstroke-width[39m=[32m"2"[39m
+                      [33mviewBox[39m=[32m"0 0 24 24"[39m
+                      [33mwidth[39m=[32m"24"[39m
+                      [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                    [36m>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z"[39m
+                      [36m/>[39m
+                    [36m</svg>[39m
+                    [0mFiltros[0m
+                  [36m</button>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"w-px h-5 bg-gray-200 mx-0.5"[39m
+                  [36m/>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"relative inline-flex items-center rounded-[6px] border border-gray-200 bg-white"[39m
+                  [36m>[39m
+                    [36m<button[39m
+                      [33maria-label[39m=[32m"Alternar para Modo Formulário"[39m
+                      [33mclass[39m=[32m"max-sm:min-h-11 max-sm:min-w-11 inline-flex items-center gap-1.5 px-2.5 h-[30px] rounded-l-[5px] text-[12px] font-medium transition-colors cursor-pointer text-brand-700 bg-brand-50/50 hover:bg-brand-50"[39m
+                      [33mdata-testid[39m=[32m"ez-toolbar-mode-toggle-button"[39m
+                      [33mtitle[39m=[32m"Ver formulário do registro"[39m
+                      [33mtype[39m=[32m"button"[39m
+                    [36m>[39m
+                      [36m<svg[39m
+                        [33maria-hidden[39m=[32m"true"[39m
+                        [33mclass[39m=[32m"lucide lucide-layout-grid w-3.5 h-3.5 text-brand-600"[39m
+                        [33mfill[39m=[32m"none"[39m
+                        [33mheight[39m=[32m"24"[39m
+                        [33mstroke[39m=[32m"currentColor"[39m
+                        [33mstroke-linecap[39m=[32m"round"[39m
+                        [33mstroke-linejoin[39m=[32m"round"[39m
+                        [33mstroke-width[39m=[32m"2"[39m
+                        [33mviewBox[39m=[32m"0 0 24 24"[39m
+                        [33mwidth[39m=[32m"24"[39m
+                        [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                      [36m>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"7"[39m
+                          [33mx[39m=[32m"3"[39m
+                          [33my[39m=[32m"3"[39m
+                        [36m/>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"7"[39m
+                          [33mx[39m=[32m"14"[39m
+                          [33my[39m=[32m"3"[39m
+                        [36m/>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"7"[39m
+                          [33mx[39m=[32m"14"[39m
+                          [33my[39m=[32m"14"[39m
+                        [36m/>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"7"[39m
+                          [33mx[39m=[32m"3"[39m
+                          [33my[39m=[32m"14"[39m
+                        [36m/>[39m
+                      [36m</svg>[39m
+                      [36m<span>...
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"flex flex-col h-full bg-gray-80"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex flex-col w-full bg-white border-b border-gray-200 px-4 py-2 sm:px-6 gap-3"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center justify-between min-h-[32px]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-3"[39m
+          [36m>[39m
+            [36m<h1[39m
+              [33mclass[39m=[32m"text-[20px] font-semibold text-gray-900 leading-none m-0"[39m
+            [36m>[39m
+              [0mContratos[0m
+            [36m</h1>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-4"[39m
+          [36m/>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex-1 overflow-auto p-6"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"space-y-6"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"bg-white rounded-[10px] border border-gray-200 overflow-hidden shadow-xs flex flex-col"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center gap-3 px-3 py-1.5 bg-white border-b border-gray-200 select-none min-h-[44px] max-sm:flex-col max-sm:items-stretch max-sm:gap-0 max-sm:px-0"[39m
+              [33mdata-testid[39m=[32m"ez-entity-toolbar"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center justify-between gap-3 max-sm:overflow-x-auto max-sm:px-3 sm:contents"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center gap-1 flex-wrap max-sm:flex-nowrap shrink-0 sm:shrink"[39m
+                [36m>[39m
+                  [36m<button[39m
+                    [33maria-label[39m=[32m"Painel de filtros"[39m
+                    [33mclass[39m=[32m"max-sm:min-h-11 max-sm:min-w-11 inline-flex items-center justify-center h-[32px] px-2.5 rounded-[6px] text-[12px] font-medium transition-colors border cursor-pointer bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:text-gray-900"[39m
+                    [33mdata-testid[39m=[32m"ez-toolbar-filter-panel-button"[39m
+                    [33mtitle[39m=[32m"Painel de filtros"[39m
+                    [33mtype[39m=[32m"button"[39m
+                  [36m>[39m
+                    [36m<svg[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"lucide lucide-funnel lucide-filter w-3.5 h-3.5 mr-1.5"[39m
+                      [33mfill[39m=[32m"none"[39m
+                      [33mheight[39m=[32m"24"[39m
+                      [33mstroke[39m=[32m"currentColor"[39m
+                      [33mstroke-linecap[39m=[32m"round"[39m
+                      [33mstroke-linejoin[39m=[32m"round"[39m
+                      [33mstroke-width[39m=[32m"2"[39m
+                      [33mviewBox[39m=[32m"0 0 24 24"[39m
+                      [33mwidth[39m=[32m"24"[39m
+                      [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                    [36m>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z"[39m
+                      [36m/>[39m
+                    [36m</svg>[39m
+                    [0mFiltros[0m
+                  [36m</button>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"w-px h-5 bg-gray-200 mx-0.5"[39m
+                  [36m/>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"relative inline-flex items-center rounded-[6px] border border-gray-200 bg-white"[39m
+                  [36m>[39m
+                    [36m<button[39m
+                      [33maria-label[39m=[32m"Alternar para Modo Formulário"[39m
+                      [33mclass[39m=[32m"max-sm:min-h-11 max-sm:min-w-11 inline-flex items-center gap-1.5 px-2.5 h-[30px] rounded-l-[5px] text-[12px] font-medium transition-colors cursor-pointer text-brand-700 bg-brand-50/50 hover:bg-brand-50"[39m
+                      [33mdata-testid[39m=[32m"ez-toolbar-mode-toggle-button"[39m
+                      [33mtitle[39m=[32m"Ver formulário do registro"[39m
+                      [33mtype[39m=[32m"button"[39m
+                    [36m>[39m
+                      [36m<svg[39m
+                        [33maria-hidden[39m=[32m"true"[39m
+                        [33mclass[39m=[32m"lucide lucide-layout-grid w-3.5 h-3.5 text-brand-600"[39m
+                        [33mfill[39m=[32m"none"[39m
+                        [33mheight[39m=[32m"24"[39m
+                        [33mstroke[39m=[32m"currentColor"[39m
+                        [33mstroke-linecap[39m=[32m"round"[39m
+                        [33mstroke-linejoin[39m=[32m"round"[39m
+                        [33mstroke-width[39m=[32m"2"[39m
+                        [33mviewBox[39m=[32m"0 0 24 24"[39m
+                        [33mwidth[39m=[32m"24"[39m
+                        [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                      [36m>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"7"[39m
+                          [33mx[39m=[32m"3"[39m
+                          [33my[39m=[32m"3"[39m
+                        [36m/>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"7"[39m
+                          [33mx[39m=[32m"14"[39m
+                          [33my[39m=[32m"3"[39m
+                        [36m/>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"7"[39m
+                          [33mx[39m=[32m"14"[39m
+                          [33my[39m=[32m"14"[39m
+                        [36m/>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"7"[39m
+                          [33mx[39m=[32m"3"[39m
+                          [33my[39m=[32m"14"[39m
+                        [36m/>[39m
+                      [36m</svg>[39m
+                      [36m<span>...
+ ❯ waitForWrapper ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ openDeleteDialog src/pages/ContractsPage.test.tsx:332:19
+    330|     }
+    331|     await user.click(screen.getByTestId('ez-toolbar-delete-button'));
+    332|     return screen.findByRole('dialog');
+       |                   ^
+    333|   };
+    334|
+ ❯ src/pages/ContractsPage.test.tsx:367:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/11]⎯
+
+ FAIL  |web| src/pages/ContractsPage.test.tsx > ContractsPage > cancels the deletion without calling the API
+TestingLibraryElementError: Unable to find role="dialog"
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"flex flex-col h-full bg-gray-80"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex flex-col w-full bg-white border-b border-gray-200 px-4 py-2 sm:px-6 gap-3"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center justify-between min-h-[32px]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-3"[39m
+          [36m>[39m
+            [36m<h1[39m
+              [33mclass[39m=[32m"text-[20px] font-semibold text-gray-900 leading-none m-0"[39m
+            [36m>[39m
+              [0mContratos[0m
+            [36m</h1>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-4"[39m
+          [36m/>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex-1 overflow-auto p-6"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"space-y-6"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"bg-white rounded-[10px] border border-gray-200 overflow-hidden shadow-xs flex flex-col"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center gap-3 px-3 py-1.5 bg-white border-b border-gray-200 select-none min-h-[44px] max-sm:flex-col max-sm:items-stretch max-sm:gap-0 max-sm:px-0"[39m
+              [33mdata-testid[39m=[32m"ez-entity-toolbar"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center justify-between gap-3 max-sm:overflow-x-auto max-sm:px-3 sm:contents"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center gap-1 flex-wrap max-sm:flex-nowrap shrink-0 sm:shrink"[39m
+                [36m>[39m
+                  [36m<button[39m
+                    [33maria-label[39m=[32m"Painel de filtros"[39m
+                    [33mclass[39m=[32m"max-sm:min-h-11 max-sm:min-w-11 inline-flex items-center justify-center h-[32px] px-2.5 rounded-[6px] text-[12px] font-medium transition-colors border cursor-pointer bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:text-gray-900"[39m
+                    [33mdata-testid[39m=[32m"ez-toolbar-filter-panel-button"[39m
+                    [33mtitle[39m=[32m"Painel de filtros"[39m
+                    [33mtype[39m=[32m"button"[39m
+                  [36m>[39m
+                    [36m<svg[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"lucide lucide-funnel lucide-filter w-3.5 h-3.5 mr-1.5"[39m
+                      [33mfill[39m=[32m"none"[39m
+                      [33mheight[39m=[32m"24"[39m
+                      [33mstroke[39m=[32m"currentColor"[39m
+                      [33mstroke-linecap[39m=[32m"round"[39m
+                      [33mstroke-linejoin[39m=[32m"round"[39m
+                      [33mstroke-width[39m=[32m"2"[39m
+                      [33mviewBox[39m=[32m"0 0 24 24"[39m
+                      [33mwidth[39m=[32m"24"[39m
+                      [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                    [36m>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z"[39m
+                      [36m/>[39m
+                    [36m</svg>[39m
+                    [0mFiltros[0m
+                  [36m</button>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"w-px h-5 bg-gray-200 mx-0.5"[39m
+                  [36m/>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"relative inline-flex items-center rounded-[6px] border border-gray-200 bg-white"[39m
+                  [36m>[39m
+                    [36m<button[39m
+                      [33maria-label[39m=[32m"Alternar para Modo Formulário"[39m
+                      [33mclass[39m=[32m"max-sm:min-h-11 max-sm:min-w-11 inline-flex items-center gap-1.5 px-2.5 h-[30px] rounded-l-[5px] text-[12px] font-medium transition-colors cursor-pointer text-brand-700 bg-brand-50/50 hover:bg-brand-50"[39m
+                      [33mdata-testid[39m=[32m"ez-toolbar-mode-toggle-button"[39m
+                      [33mtitle[39m=[32m"Ver formulário do registro"[39m
+                      [33mtype[39m=[32m"button"[39m
+                    [36m>[39m
+                      [36m<svg[39m
+                        [33maria-hidden[39m=[32m"true"[39m
+                        [33mclass[39m=[32m"lucide lucide-layout-grid w-3.5 h-3.5 text-brand-600"[39m
+                        [33mfill[39m=[32m"none"[39m
+                        [33mheight[39m=[32m"24"[39m
+                        [33mstroke[39m=[32m"currentColor"[39m
+                        [33mstroke-linecap[39m=[32m"round"[39m
+                        [33mstroke-linejoin[39m=[32m"round"[39m
+                        [33mstroke-width[39m=[32m"2"[39m
+                        [33mviewBox[39m=[32m"0 0 24 24"[39m
+                        [33mwidth[39m=[32m"24"[39m
+                        [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                      [36m>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"7"[39m
+                          [33mx[39m=[32m"3"[39m
+                          [33my[39m=[32m"3"[39m
+                        [36m/>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"7"[39m
+                          [33mx[39m=[32m"14"[39m
+                          [33my[39m=[32m"3"[39m
+                        [36m/>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"7"[39m
+                          [33mx[39m=[32m"14"[39m
+                          [33my[39m=[32m"14"[39m
+                        [36m/>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"7"[39m
+                          [33mx[39m=[32m"3"[39m
+                          [33my[39m=[32m"14"[39m
+                        [36m/>[39m
+                      [36m</svg>[39m
+                      [36m<span>...
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"flex flex-col h-full bg-gray-80"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex flex-col w-full bg-white border-b border-gray-200 px-4 py-2 sm:px-6 gap-3"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center justify-between min-h-[32px]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-3"[39m
+          [36m>[39m
+            [36m<h1[39m
+              [33mclass[39m=[32m"text-[20px] font-semibold text-gray-900 leading-none m-0"[39m
+            [36m>[39m
+              [0mContratos[0m
+            [36m</h1>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-4"[39m
+          [36m/>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex-1 overflow-auto p-6"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"space-y-6"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"bg-white rounded-[10px] border border-gray-200 overflow-hidden shadow-xs flex flex-col"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center gap-3 px-3 py-1.5 bg-white border-b border-gray-200 select-none min-h-[44px] max-sm:flex-col max-sm:items-stretch max-sm:gap-0 max-sm:px-0"[39m
+              [33mdata-testid[39m=[32m"ez-entity-toolbar"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center justify-between gap-3 max-sm:overflow-x-auto max-sm:px-3 sm:contents"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center gap-1 flex-wrap max-sm:flex-nowrap shrink-0 sm:shrink"[39m
+                [36m>[39m
+                  [36m<button[39m
+                    [33maria-label[39m=[32m"Painel de filtros"[39m
+                    [33mclass[39m=[32m"max-sm:min-h-11 max-sm:min-w-11 inline-flex items-center justify-center h-[32px] px-2.5 rounded-[6px] text-[12px] font-medium transition-colors border cursor-pointer bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:text-gray-900"[39m
+                    [33mdata-testid[39m=[32m"ez-toolbar-filter-panel-button"[39m
+                    [33mtitle[39m=[32m"Painel de filtros"[39m
+                    [33mtype[39m=[32m"button"[39m
+                  [36m>[39m
+                    [36m<svg[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"lucide lucide-funnel lucide-filter w-3.5 h-3.5 mr-1.5"[39m
+                      [33mfill[39m=[32m"none"[39m
+                      [33mheight[39m=[32m"24"[39m
+                      [33mstroke[39m=[32m"currentColor"[39m
+                      [33mstroke-linecap[39m=[32m"round"[39m
+                      [33mstroke-linejoin[39m=[32m"round"[39m
+                      [33mstroke-width[39m=[32m"2"[39m
+                      [33mviewBox[39m=[32m"0 0 24 24"[39m
+                      [33mwidth[39m=[32m"24"[39m
+                      [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                    [36m>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z"[39m
+                      [36m/>[39m
+                    [36m</svg>[39m
+                    [0mFiltros[0m
+                  [36m</button>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"w-px h-5 bg-gray-200 mx-0.5"[39m
+                  [36m/>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"relative inline-flex items-center rounded-[6px] border border-gray-200 bg-white"[39m
+                  [36m>[39m
+                    [36m<button[39m
+                      [33maria-label[39m=[32m"Alternar para Modo Formulário"[39m
+                      [33mclass[39m=[32m"max-sm:min-h-11 max-sm:min-w-11 inline-flex items-center gap-1.5 px-2.5 h-[30px] rounded-l-[5px] text-[12px] font-medium transition-colors cursor-pointer text-brand-700 bg-brand-50/50 hover:bg-brand-50"[39m
+                      [33mdata-testid[39m=[32m"ez-toolbar-mode-toggle-button"[39m
+                      [33mtitle[39m=[32m"Ver formulário do registro"[39m
+                      [33mtype[39m=[32m"button"[39m
+                    [36m>[39m
+                      [36m<svg[39m
+                        [33maria-hidden[39m=[32m"true"[39m
+                        [33mclass[39m=[32m"lucide lucide-layout-grid w-3.5 h-3.5 text-brand-600"[39m
+                        [33mfill[39m=[32m"none"[39m
+                        [33mheight[39m=[32m"24"[39m
+                        [33mstroke[39m=[32m"currentColor"[39m
+                        [33mstroke-linecap[39m=[32m"round"[39m
+                        [33mstroke-linejoin[39m=[32m"round"[39m
+                        [33mstroke-width[39m=[32m"2"[39m
+                        [33mviewBox[39m=[32m"0 0 24 24"[39m
+                        [33mwidth[39m=[32m"24"[39m
+                        [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                      [36m>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"7"[39m
+                          [33mx[39m=[32m"3"[39m
+                          [33my[39m=[32m"3"[39m
+                        [36m/>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"7"[39m
+                          [33mx[39m=[32m"14"[39m
+                          [33my[39m=[32m"3"[39m
+                        [36m/>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"7"[39m
+                          [33mx[39m=[32m"14"[39m
+                          [33my[39m=[32m"14"[39m
+                        [36m/>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"7"[39m
+                          [33mx[39m=[32m"3"[39m
+                          [33my[39m=[32m"14"[39m
+                        [36m/>[39m
+                      [36m</svg>[39m
+                      [36m<span>...
+ ❯ waitForWrapper ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ openDeleteDialog src/pages/ContractsPage.test.tsx:332:19
+    330|     }
+    331|     await user.click(screen.getByTestId('ez-toolbar-delete-button'));
+    332|     return screen.findByRole('dialog');
+       |                   ^
+    333|   };
+    334|
+ ❯ src/pages/ContractsPage.test.tsx:380:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/11]⎯
+
+ FAIL  |web| src/pages/ContractsPage.test.tsx > ContractsPage > lists each failed contract with its own message and keeps only the failed ones selected
+TestingLibraryElementError: Unable to find role="dialog"
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"flex flex-col h-full bg-gray-80"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex flex-col w-full bg-white border-b border-gray-200 px-4 py-2 sm:px-6 gap-3"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center justify-between min-h-[32px]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-3"[39m
+          [36m>[39m
+            [36m<h1[39m
+              [33mclass[39m=[32m"text-[20px] font-semibold text-gray-900 leading-none m-0"[39m
+            [36m>[39m
+              [0mContratos[0m
+            [36m</h1>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-4"[39m
+          [36m/>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex-1 overflow-auto p-6"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"space-y-6"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"bg-white rounded-[10px] border border-gray-200 overflow-hidden shadow-xs flex flex-col"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center gap-3 px-3 py-1.5 bg-white border-b border-gray-200 select-none min-h-[44px] max-sm:flex-col max-sm:items-stretch max-sm:gap-0 max-sm:px-0"[39m
+              [33mdata-testid[39m=[32m"ez-entity-toolbar"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center justify-between gap-3 max-sm:overflow-x-auto max-sm:px-3 sm:contents"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center gap-1 flex-wrap max-sm:flex-nowrap shrink-0 sm:shrink"[39m
+                [36m>[39m
+                  [36m<button[39m
+                    [33maria-label[39m=[32m"Painel de filtros"[39m
+                    [33mclass[39m=[32m"max-sm:min-h-11 max-sm:min-w-11 inline-flex items-center justify-center h-[32px] px-2.5 rounded-[6px] text-[12px] font-medium transition-colors border cursor-pointer bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:text-gray-900"[39m
+                    [33mdata-testid[39m=[32m"ez-toolbar-filter-panel-button"[39m
+                    [33mtitle[39m=[32m"Painel de filtros"[39m
+                    [33mtype[39m=[32m"button"[39m
+                  [36m>[39m
+                    [36m<svg[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"lucide lucide-funnel lucide-filter w-3.5 h-3.5 mr-1.5"[39m
+                      [33mfill[39m=[32m"none"[39m
+                      [33mheight[39m=[32m"24"[39m
+                      [33mstroke[39m=[32m"currentColor"[39m
+                      [33mstroke-linecap[39m=[32m"round"[39m
+                      [33mstroke-linejoin[39m=[32m"round"[39m
+                      [33mstroke-width[39m=[32m"2"[39m
+                      [33mviewBox[39m=[32m"0 0 24 24"[39m
+                      [33mwidth[39m=[32m"24"[39m
+                      [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                    [36m>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z"[39m
+                      [36m/>[39m
+                    [36m</svg>[39m
+                    [0mFiltros[0m
+                  [36m</button>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"w-px h-5 bg-gray-200 mx-0.5"[39m
+                  [36m/>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"relative inline-flex items-center rounded-[6px] border border-gray-200 bg-white"[39m
+                  [36m>[39m
+                    [36m<button[39m
+                      [33maria-label[39m=[32m"Alternar para Modo Formulário"[39m
+                      [33mclass[39m=[32m"max-sm:min-h-11 max-sm:min-w-11 inline-flex items-center gap-1.5 px-2.5 h-[30px] rounded-l-[5px] text-[12px] font-medium transition-colors cursor-pointer text-brand-700 bg-brand-50/50 hover:bg-brand-50"[39m
+                      [33mdata-testid[39m=[32m"ez-toolbar-mode-toggle-button"[39m
+                      [33mtitle[39m=[32m"Ver formulário do registro"[39m
+                      [33mtype[39m=[32m"button"[39m
+                    [36m>[39m
+                      [36m<svg[39m
+                        [33maria-hidden[39m=[32m"true"[39m
+                        [33mclass[39m=[32m"lucide lucide-layout-grid w-3.5 h-3.5 text-brand-600"[39m
+                        [33mfill[39m=[32m"none"[39m
+                        [33mheight[39m=[32m"24"[39m
+                        [33mstroke[39m=[32m"currentColor"[39m
+                        [33mstroke-linecap[39m=[32m"round"[39m
+                        [33mstroke-linejoin[39m=[32m"round"[39m
+                        [33mstroke-width[39m=[32m"2"[39m
+                        [33mviewBox[39m=[32m"0 0 24 24"[39m
+                        [33mwidth[39m=[32m"24"[39m
+                        [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                      [36m>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"7"[39m
+                          [33mx[39m=[32m"3"[39m
+                          [33my[39m=[32m"3"[39m
+                        [36m/>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"7"[39m
+                          [33mx[39m=[32m"14"[39m
+                          [33my[39m=[32m"3"[39m
+                        [36m/>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"7"[39m
+                          [33mx[39m=[32m"14"[39m
+                          [33my[39m=[32m"14"[39m
+                        [36m/>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"7"[39m
+                          [33mx[39m=[32m"3"[39m
+                          [33my[39m=[32m"14"[39m
+                        [36m/>[39m
+                      [36m</svg>[39m
+                      [36m<span>...
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"flex flex-col h-full bg-gray-80"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex flex-col w-full bg-white border-b border-gray-200 px-4 py-2 sm:px-6 gap-3"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center justify-between min-h-[32px]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-3"[39m
+          [36m>[39m
+            [36m<h1[39m
+              [33mclass[39m=[32m"text-[20px] font-semibold text-gray-900 leading-none m-0"[39m
+            [36m>[39m
+              [0mContratos[0m
+            [36m</h1>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-4"[39m
+          [36m/>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex-1 overflow-auto p-6"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"space-y-6"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"bg-white rounded-[10px] border border-gray-200 overflow-hidden shadow-xs flex flex-col"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center gap-3 px-3 py-1.5 bg-white border-b border-gray-200 select-none min-h-[44px] max-sm:flex-col max-sm:items-stretch max-sm:gap-0 max-sm:px-0"[39m
+              [33mdata-testid[39m=[32m"ez-entity-toolbar"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center justify-between gap-3 max-sm:overflow-x-auto max-sm:px-3 sm:contents"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center gap-1 flex-wrap max-sm:flex-nowrap shrink-0 sm:shrink"[39m
+                [36m>[39m
+                  [36m<button[39m
+                    [33maria-label[39m=[32m"Painel de filtros"[39m
+                    [33mclass[39m=[32m"max-sm:min-h-11 max-sm:min-w-11 inline-flex items-center justify-center h-[32px] px-2.5 rounded-[6px] text-[12px] font-medium transition-colors border cursor-pointer bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:text-gray-900"[39m
+                    [33mdata-testid[39m=[32m"ez-toolbar-filter-panel-button"[39m
+                    [33mtitle[39m=[32m"Painel de filtros"[39m
+                    [33mtype[39m=[32m"button"[39m
+                  [36m>[39m
+                    [36m<svg[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"lucide lucide-funnel lucide-filter w-3.5 h-3.5 mr-1.5"[39m
+                      [33mfill[39m=[32m"none"[39m
+                      [33mheight[39m=[32m"24"[39m
+                      [33mstroke[39m=[32m"currentColor"[39m
+                      [33mstroke-linecap[39m=[32m"round"[39m
+                      [33mstroke-linejoin[39m=[32m"round"[39m
+                      [33mstroke-width[39m=[32m"2"[39m
+                      [33mviewBox[39m=[32m"0 0 24 24"[39m
+                      [33mwidth[39m=[32m"24"[39m
+                      [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                    [36m>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z"[39m
+                      [36m/>[39m
+                    [36m</svg>[39m
+                    [0mFiltros[0m
+                  [36m</button>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"w-px h-5 bg-gray-200 mx-0.5"[39m
+                  [36m/>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"relative inline-flex items-center rounded-[6px] border border-gray-200 bg-white"[39m
+                  [36m>[39m
+                    [36m<button[39m
+                      [33maria-label[39m=[32m"Alternar para Modo Formulário"[39m
+                      [33mclass[39m=[32m"max-sm:min-h-11 max-sm:min-w-11 inline-flex items-center gap-1.5 px-2.5 h-[30px] rounded-l-[5px] text-[12px] font-medium transition-colors cursor-pointer text-brand-700 bg-brand-50/50 hover:bg-brand-50"[39m
+                      [33mdata-testid[39m=[32m"ez-toolbar-mode-toggle-button"[39m
+                      [33mtitle[39m=[32m"Ver formulário do registro"[39m
+                      [33mtype[39m=[32m"button"[39m
+                    [36m>[39m
+                      [36m<svg[39m
+                        [33maria-hidden[39m=[32m"true"[39m
+                        [33mclass[39m=[32m"lucide lucide-layout-grid w-3.5 h-3.5 text-brand-600"[39m
+                        [33mfill[39m=[32m"none"[39m
+                        [33mheight[39m=[32m"24"[39m
+                        [33mstroke[39m=[32m"currentColor"[39m
+                        [33mstroke-linecap[39m=[32m"round"[39m
+                        [33mstroke-linejoin[39m=[32m"round"[39m
+                        [33mstroke-width[39m=[32m"2"[39m
+                        [33mviewBox[39m=[32m"0 0 24 24"[39m
+                        [33mwidth[39m=[32m"24"[39m
+                        [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                      [36m>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"7"[39m
+                          [33mx[39m=[32m"3"[39m
+                          [33my[39m=[32m"3"[39m
+                        [36m/>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"7"[39m
+                          [33mx[39m=[32m"14"[39m
+                          [33my[39m=[32m"3"[39m
+                        [36m/>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"7"[39m
+                          [33mx[39m=[32m"14"[39m
+                          [33my[39m=[32m"14"[39m
+                        [36m/>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"7"[39m
+                          [33mx[39m=[32m"3"[39m
+                          [33my[39m=[32m"14"[39m
+                        [36m/>[39m
+                      [36m</svg>[39m
+                      [36m<span>...
+ ❯ waitForWrapper ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ openDeleteDialog src/pages/ContractsPage.test.tsx:332:19
+    330|     }
+    331|     await user.click(screen.getByTestId('ez-toolbar-delete-button'));
+    332|     return screen.findByRole('dialog');
+       |                   ^
+    333|   };
+    334|
+ ❯ src/pages/ContractsPage.test.tsx:402:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/11]⎯
+
+ FAIL  |web| src/pages/ContractsPage.test.tsx > ContractsPage > retries only the contracts that failed
+TestingLibraryElementError: Unable to find role="dialog"
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"flex flex-col h-full bg-gray-80"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex flex-col w-full bg-white border-b border-gray-200 px-4 py-2 sm:px-6 gap-3"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center justify-between min-h-[32px]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-3"[39m
+          [36m>[39m
+            [36m<h1[39m
+              [33mclass[39m=[32m"text-[20px] font-semibold text-gray-900 leading-none m-0"[39m
+            [36m>[39m
+              [0mContratos[0m
+            [36m</h1>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-4"[39m
+          [36m/>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex-1 overflow-auto p-6"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"space-y-6"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"bg-white rounded-[10px] border border-gray-200 overflow-hidden shadow-xs flex flex-col"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center gap-3 px-3 py-1.5 bg-white border-b border-gray-200 select-none min-h-[44px] max-sm:flex-col max-sm:items-stretch max-sm:gap-0 max-sm:px-0"[39m
+              [33mdata-testid[39m=[32m"ez-entity-toolbar"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center justify-between gap-3 max-sm:overflow-x-auto max-sm:px-3 sm:contents"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center gap-1 flex-wrap max-sm:flex-nowrap shrink-0 sm:shrink"[39m
+                [36m>[39m
+                  [36m<button[39m
+                    [33maria-label[39m=[32m"Painel de filtros"[39m
+                    [33mclass[39m=[32m"max-sm:min-h-11 max-sm:min-w-11 inline-flex items-center justify-center h-[32px] px-2.5 rounded-[6px] text-[12px] font-medium transition-colors border cursor-pointer bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:text-gray-900"[39m
+                    [33mdata-testid[39m=[32m"ez-toolbar-filter-panel-button"[39m
+                    [33mtitle[39m=[32m"Painel de filtros"[39m
+                    [33mtype[39m=[32m"button"[39m
+                  [36m>[39m
+                    [36m<svg[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"lucide lucide-funnel lucide-filter w-3.5 h-3.5 mr-1.5"[39m
+                      [33mfill[39m=[32m"none"[39m
+                      [33mheight[39m=[32m"24"[39m
+                      [33mstroke[39m=[32m"currentColor"[39m
+                      [33mstroke-linecap[39m=[32m"round"[39m
+                      [33mstroke-linejoin[39m=[32m"round"[39m
+                      [33mstroke-width[39m=[32m"2"[39m
+                      [33mviewBox[39m=[32m"0 0 24 24"[39m
+                      [33mwidth[39m=[32m"24"[39m
+                      [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                    [36m>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z"[39m
+                      [36m/>[39m
+                    [36m</svg>[39m
+                    [0mFiltros[0m
+                  [36m</button>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"w-px h-5 bg-gray-200 mx-0.5"[39m
+                  [36m/>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"relative inline-flex items-center rounded-[6px] border border-gray-200 bg-white"[39m
+                  [36m>[39m
+                    [36m<button[39m
+                      [33maria-label[39m=[32m"Alternar para Modo Formulário"[39m
+                      [33mclass[39m=[32m"max-sm:min-h-11 max-sm:min-w-11 inline-flex items-center gap-1.5 px-2.5 h-[30px] rounded-l-[5px] text-[12px] font-medium transition-colors cursor-pointer text-brand-700 bg-brand-50/50 hover:bg-brand-50"[39m
+                      [33mdata-testid[39m=[32m"ez-toolbar-mode-toggle-button"[39m
+                      [33mtitle[39m=[32m"Ver formulário do registro"[39m
+                      [33mtype[39m=[32m"button"[39m
+                    [36m>[39m
+                      [36m<svg[39m
+                        [33maria-hidden[39m=[32m"true"[39m
+                        [33mclass[39m=[32m"lucide lucide-layout-grid w-3.5 h-3.5 text-brand-600"[39m
+                        [33mfill[39m=[32m"none"[39m
+                        [33mheight[39m=[32m"24"[39m
+                        [33mstroke[39m=[32m"currentColor"[39m
+                        [33mstroke-linecap[39m=[32m"round"[39m
+                        [33mstroke-linejoin[39m=[32m"round"[39m
+                        [33mstroke-width[39m=[32m"2"[39m
+                        [33mviewBox[39m=[32m"0 0 24 24"[39m
+                        [33mwidth[39m=[32m"24"[39m
+                        [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                      [36m>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"7"[39m
+                          [33mx[39m=[32m"3"[39m
+                          [33my[39m=[32m"3"[39m
+                        [36m/>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"7"[39m
+                          [33mx[39m=[32m"14"[39m
+                          [33my[39m=[32m"3"[39m
+                        [36m/>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"7"[39m
+                          [33mx[39m=[32m"14"[39m
+                          [33my[39m=[32m"14"[39m
+                        [36m/>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"7"[39m
+                          [33mx[39m=[32m"3"[39m
+                          [33my[39m=[32m"14"[39m
+                        [36m/>[39m
+                      [36m</svg>[39m
+                      [36m<span>...
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"flex flex-col h-full bg-gray-80"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex flex-col w-full bg-white border-b border-gray-200 px-4 py-2 sm:px-6 gap-3"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center justify-between min-h-[32px]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-3"[39m
+          [36m>[39m
+            [36m<h1[39m
+              [33mclass[39m=[32m"text-[20px] font-semibold text-gray-900 leading-none m-0"[39m
+            [36m>[39m
+              [0mContratos[0m
+            [36m</h1>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-4"[39m
+          [36m/>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex-1 overflow-auto p-6"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"space-y-6"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"bg-white rounded-[10px] border border-gray-200 overflow-hidden shadow-xs flex flex-col"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center gap-3 px-3 py-1.5 bg-white border-b border-gray-200 select-none min-h-[44px] max-sm:flex-col max-sm:items-stretch max-sm:gap-0 max-sm:px-0"[39m
+              [33mdata-testid[39m=[32m"ez-entity-toolbar"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center justify-between gap-3 max-sm:overflow-x-auto max-sm:px-3 sm:contents"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center gap-1 flex-wrap max-sm:flex-nowrap shrink-0 sm:shrink"[39m
+                [36m>[39m
+                  [36m<button[39m
+                    [33maria-label[39m=[32m"Painel de filtros"[39m
+                    [33mclass[39m=[32m"max-sm:min-h-11 max-sm:min-w-11 inline-flex items-center justify-center h-[32px] px-2.5 rounded-[6px] text-[12px] font-medium transition-colors border cursor-pointer bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:text-gray-900"[39m
+                    [33mdata-testid[39m=[32m"ez-toolbar-filter-panel-button"[39m
+                    [33mtitle[39m=[32m"Painel de filtros"[39m
+                    [33mtype[39m=[32m"button"[39m
+                  [36m>[39m
+                    [36m<svg[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"lucide lucide-funnel lucide-filter w-3.5 h-3.5 mr-1.5"[39m
+                      [33mfill[39m=[32m"none"[39m
+                      [33mheight[39m=[32m"24"[39m
+                      [33mstroke[39m=[32m"currentColor"[39m
+                      [33mstroke-linecap[39m=[32m"round"[39m
+                      [33mstroke-linejoin[39m=[32m"round"[39m
+                      [33mstroke-width[39m=[32m"2"[39m
+                      [33mviewBox[39m=[32m"0 0 24 24"[39m
+                      [33mwidth[39m=[32m"24"[39m
+                      [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                    [36m>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z"[39m
+                      [36m/>[39m
+                    [36m</svg>[39m
+                    [0mFiltros[0m
+                  [36m</button>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"w-px h-5 bg-gray-200 mx-0.5"[39m
+                  [36m/>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"relative inline-flex items-center rounded-[6px] border border-gray-200 bg-white"[39m
+                  [36m>[39m
+                    [36m<button[39m
+                      [33maria-label[39m=[32m"Alternar para Modo Formulário"[39m
+                      [33mclass[39m=[32m"max-sm:min-h-11 max-sm:min-w-11 inline-flex items-center gap-1.5 px-2.5 h-[30px] rounded-l-[5px] text-[12px] font-medium transition-colors cursor-pointer text-brand-700 bg-brand-50/50 hover:bg-brand-50"[39m
+                      [33mdata-testid[39m=[32m"ez-toolbar-mode-toggle-button"[39m
+                      [33mtitle[39m=[32m"Ver formulário do registro"[39m
+                      [33mtype[39m=[32m"button"[39m
+                    [36m>[39m
+                      [36m<svg[39m
+                        [33maria-hidden[39m=[32m"true"[39m
+                        [33mclass[39m=[32m"lucide lucide-layout-grid w-3.5 h-3.5 text-brand-600"[39m
+                        [33mfill[39m=[32m"none"[39m
+                        [33mheight[39m=[32m"24"[39m
+                        [33mstroke[39m=[32m"currentColor"[39m
+                        [33mstroke-linecap[39m=[32m"round"[39m
+                        [33mstroke-linejoin[39m=[32m"round"[39m
+                        [33mstroke-width[39m=[32m"2"[39m
+                        [33mviewBox[39m=[32m"0 0 24 24"[39m
+                        [33mwidth[39m=[32m"24"[39m
+                        [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                      [36m>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"7"[39m
+                          [33mx[39m=[32m"3"[39m
+                          [33my[39m=[32m"3"[39m
+                        [36m/>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"7"[39m
+                          [33mx[39m=[32m"14"[39m
+                          [33my[39m=[32m"3"[39m
+                        [36m/>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"7"[39m
+                          [33mx[39m=[32m"14"[39m
+                          [33my[39m=[32m"14"[39m
+                        [36m/>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"7"[39m
+                          [33mx[39m=[32m"3"[39m
+                          [33my[39m=[32m"14"[39m
+                        [36m/>[39m
+                      [36m</svg>[39m
+                      [36m<span>...
+ ❯ waitForWrapper ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ openDeleteDialog src/pages/ContractsPage.test.tsx:332:19
+    330|     }
+    331|     await user.click(screen.getByTestId('ez-toolbar-delete-button'));
+    332|     return screen.findByRole('dialog');
+       |                   ^
+    333|   };
+    334|
+ ❯ src/pages/ContractsPage.test.tsx:429:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/11]⎯
+
+ FAIL  |web| src/pages/ContractsPage.test.tsx > ContractsPage > disables Confirmar while the deletion is running
+TestingLibraryElementError: Unable to find role="dialog"
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"flex flex-col h-full bg-gray-80"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex flex-col w-full bg-white border-b border-gray-200 px-4 py-2 sm:px-6 gap-3"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center justify-between min-h-[32px]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-3"[39m
+          [36m>[39m
+            [36m<h1[39m
+              [33mclass[39m=[32m"text-[20px] font-semibold text-gray-900 leading-none m-0"[39m
+            [36m>[39m
+              [0mContratos[0m
+            [36m</h1>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-4"[39m
+          [36m/>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex-1 overflow-auto p-6"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"space-y-6"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"bg-white rounded-[10px] border border-gray-200 overflow-hidden shadow-xs flex flex-col"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center gap-3 px-3 py-1.5 bg-white border-b border-gray-200 select-none min-h-[44px] max-sm:flex-col max-sm:items-stretch max-sm:gap-0 max-sm:px-0"[39m
+              [33mdata-testid[39m=[32m"ez-entity-toolbar"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center justify-between gap-3 max-sm:overflow-x-auto max-sm:px-3 sm:contents"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center gap-1 flex-wrap max-sm:flex-nowrap shrink-0 sm:shrink"[39m
+                [36m>[39m
+                  [36m<button[39m
+                    [33maria-label[39m=[32m"Painel de filtros"[39m
+                    [33mclass[39m=[32m"max-sm:min-h-11 max-sm:min-w-11 inline-flex items-center justify-center h-[32px] px-2.5 rounded-[6px] text-[12px] font-medium transition-colors border cursor-pointer bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:text-gray-900"[39m
+                    [33mdata-testid[39m=[32m"ez-toolbar-filter-panel-button"[39m
+                    [33mtitle[39m=[32m"Painel de filtros"[39m
+                    [33mtype[39m=[32m"button"[39m
+                  [36m>[39m
+                    [36m<svg[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"lucide lucide-funnel lucide-filter w-3.5 h-3.5 mr-1.5"[39m
+                      [33mfill[39m=[32m"none"[39m
+                      [33mheight[39m=[32m"24"[39m
+                      [33mstroke[39m=[32m"currentColor"[39m
+                      [33mstroke-linecap[39m=[32m"round"[39m
+                      [33mstroke-linejoin[39m=[32m"round"[39m
+                      [33mstroke-width[39m=[32m"2"[39m
+                      [33mviewBox[39m=[32m"0 0 24 24"[39m
+                      [33mwidth[39m=[32m"24"[39m
+                      [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                    [36m>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z"[39m
+                      [36m/>[39m
+                    [36m</svg>[39m
+                    [0mFiltros[0m
+                  [36m</button>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"w-px h-5 bg-gray-200 mx-0.5"[39m
+                  [36m/>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"relative inline-flex items-center rounded-[6px] border border-gray-200 bg-white"[39m
+                  [36m>[39m
+                    [36m<button[39m
+                      [33maria-label[39m=[32m"Alternar para Modo Formulário"[39m
+                      [33mclass[39m=[32m"max-sm:min-h-11 max-sm:min-w-11 inline-flex items-center gap-1.5 px-2.5 h-[30px] rounded-l-[5px] text-[12px] font-medium transition-colors cursor-pointer text-brand-700 bg-brand-50/50 hover:bg-brand-50"[39m
+                      [33mdata-testid[39m=[32m"ez-toolbar-mode-toggle-button"[39m
+                      [33mtitle[39m=[32m"Ver formulário do registro"[39m
+                      [33mtype[39m=[32m"button"[39m
+                    [36m>[39m
+                      [36m<svg[39m
+                        [33maria-hidden[39m=[32m"true"[39m
+                        [33mclass[39m=[32m"lucide lucide-layout-grid w-3.5 h-3.5 text-brand-600"[39m
+                        [33mfill[39m=[32m"none"[39m
+                        [33mheight[39m=[32m"24"[39m
+                        [33mstroke[39m=[32m"currentColor"[39m
+                        [33mstroke-linecap[39m=[32m"round"[39m
+                        [33mstroke-linejoin[39m=[32m"round"[39m
+                        [33mstroke-width[39m=[32m"2"[39m
+                        [33mviewBox[39m=[32m"0 0 24 24"[39m
+                        [33mwidth[39m=[32m"24"[39m
+                        [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                      [36m>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"7"[39m
+                          [33mx[39m=[32m"3"[39m
+                          [33my[39m=[32m"3"[39m
+                        [36m/>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"7"[39m
+                          [33mx[39m=[32m"14"[39m
+                          [33my[39m=[32m"3"[39m
+                        [36m/>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"7"[39m
+                          [33mx[39m=[32m"14"[39m
+                          [33my[39m=[32m"14"[39m
+                        [36m/>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"7"[39m
+                          [33mx[39m=[32m"3"[39m
+                          [33my[39m=[32m"14"[39m
+                        [36m/>[39m
+                      [36m</svg>[39m
+                      [36m<span>...
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"flex flex-col h-full bg-gray-80"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex flex-col w-full bg-white border-b border-gray-200 px-4 py-2 sm:px-6 gap-3"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center justify-between min-h-[32px]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-3"[39m
+          [36m>[39m
+            [36m<h1[39m
+              [33mclass[39m=[32m"text-[20px] font-semibold text-gray-900 leading-none m-0"[39m
+            [36m>[39m
+              [0mContratos[0m
+            [36m</h1>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-4"[39m
+          [36m/>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex-1 overflow-auto p-6"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"space-y-6"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"bg-white rounded-[10px] border border-gray-200 overflow-hidden shadow-xs flex flex-col"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center gap-3 px-3 py-1.5 bg-white border-b border-gray-200 select-none min-h-[44px] max-sm:flex-col max-sm:items-stretch max-sm:gap-0 max-sm:px-0"[39m
+              [33mdata-testid[39m=[32m"ez-entity-toolbar"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center justify-between gap-3 max-sm:overflow-x-auto max-sm:px-3 sm:contents"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center gap-1 flex-wrap max-sm:flex-nowrap shrink-0 sm:shrink"[39m
+                [36m>[39m
+                  [36m<button[39m
+                    [33maria-label[39m=[32m"Painel de filtros"[39m
+                    [33mclass[39m=[32m"max-sm:min-h-11 max-sm:min-w-11 inline-flex items-center justify-center h-[32px] px-2.5 rounded-[6px] text-[12px] font-medium transition-colors border cursor-pointer bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:text-gray-900"[39m
+                    [33mdata-testid[39m=[32m"ez-toolbar-filter-panel-button"[39m
+                    [33mtitle[39m=[32m"Painel de filtros"[39m
+                    [33mtype[39m=[32m"button"[39m
+                  [36m>[39m
+                    [36m<svg[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"lucide lucide-funnel lucide-filter w-3.5 h-3.5 mr-1.5"[39m
+                      [33mfill[39m=[32m"none"[39m
+                      [33mheight[39m=[32m"24"[39m
+                      [33mstroke[39m=[32m"currentColor"[39m
+                      [33mstroke-linecap[39m=[32m"round"[39m
+                      [33mstroke-linejoin[39m=[32m"round"[39m
+                      [33mstroke-width[39m=[32m"2"[39m
+                      [33mviewBox[39m=[32m"0 0 24 24"[39m
+                      [33mwidth[39m=[32m"24"[39m
+                      [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                    [36m>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z"[39m
+                      [36m/>[39m
+                    [36m</svg>[39m
+                    [0mFiltros[0m
+                  [36m</button>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"w-px h-5 bg-gray-200 mx-0.5"[39m
+                  [36m/>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"relative inline-flex items-center rounded-[6px] border border-gray-200 bg-white"[39m
+                  [36m>[39m
+                    [36m<button[39m
+                      [33maria-label[39m=[32m"Alternar para Modo Formulário"[39m
+                      [33mclass[39m=[32m"max-sm:min-h-11 max-sm:min-w-11 inline-flex items-center gap-1.5 px-2.5 h-[30px] rounded-l-[5px] text-[12px] font-medium transition-colors cursor-pointer text-brand-700 bg-brand-50/50 hover:bg-brand-50"[39m
+                      [33mdata-testid[39m=[32m"ez-toolbar-mode-toggle-button"[39m
+                      [33mtitle[39m=[32m"Ver formulário do registro"[39m
+                      [33mtype[39m=[32m"button"[39m
+                    [36m>[39m
+                      [36m<svg[39m
+                        [33maria-hidden[39m=[32m"true"[39m
+                        [33mclass[39m=[32m"lucide lucide-layout-grid w-3.5 h-3.5 text-brand-600"[39m
+                        [33mfill[39m=[32m"none"[39m
+                        [33mheight[39m=[32m"24"[39m
+                        [33mstroke[39m=[32m"currentColor"[39m
+                        [33mstroke-linecap[39m=[32m"round"[39m
+                        [33mstroke-linejoin[39m=[32m"round"[39m
+                        [33mstroke-width[39m=[32m"2"[39m
+                        [33mviewBox[39m=[32m"0 0 24 24"[39m
+                        [33mwidth[39m=[32m"24"[39m
+                        [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                      [36m>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"7"[39m
+                          [33mx[39m=[32m"3"[39m
+                          [33my[39m=[32m"3"[39m
+                        [36m/>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"7"[39m
+                          [33mx[39m=[32m"14"[39m
+                          [33my[39m=[32m"3"[39m
+                        [36m/>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"7"[39m
+                          [33mx[39m=[32m"14"[39m
+                          [33my[39m=[32m"14"[39m
+                        [36m/>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"7"[39m
+                          [33mx[39m=[32m"3"[39m
+                          [33my[39m=[32m"14"[39m
+                        [36m/>[39m
+                      [36m</svg>[39m
+                      [36m<span>...
+ ❯ waitForWrapper ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ openDeleteDialog src/pages/ContractsPage.test.tsx:332:19
+    330|     }
+    331|     await user.click(screen.getByTestId('ez-toolbar-delete-button'));
+    332|     return screen.findByRole('dialog');
+       |                   ^
+    333|   };
+    334|
+ ❯ src/pages/ContractsPage.test.tsx:459:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/11]⎯
+
+ FAIL  |web| src/pages/ContractsPage.test.tsx > ContractsPage > disables the toolbar delete button while a contract form is open
+Error: [2mexpect([22m[31melement[39m[2m).toBeDisabled()[22m
+
+Received element is not disabled:
+  [31m<button
+  aria-label="Excluir"
+  class="max-sm:min-h-11 max-sm:min-w-11 inline-flex items-center justify-center h-[32px] w-[32px] rounded-[6px] border transition-colors border-red-200 text-red-600 hover:bg-red-50 cursor-pointer"
+  data-testid="ez-toolbar-delete-button"
+  title="Excluir 1 selecionado(s)"
+  type="button"
+/>[39m
+ ❯ src/pages/ContractsPage.test.tsx:490:60
+    488|       expect(screen.getByTestId('ez-toolbar-record-count')).toHaveText…
+    489|     });
+    490|     expect(screen.getByTestId('ez-toolbar-delete-button')).toBeDisable…
+       |                                                            ^
+    491|   });
+    492|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/11]⎯
+
+ FAIL  |web| src/components/ds/EzButton.test.tsx > EzButton > uses the shared focus token instead of the brand-200 ring
+Error: [2mexpect([22m[31melement[39m[2m).toHaveClass([22m[32m[32m"ez-focus"[32m[39m[2m)[22m
+
+Expected the element to have class:
+[32m  ez-focus[39m
+Received:
+[31m  relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-brand-500 text-gray-70 border border-brand-500 hover:bg-brand-700 hover:border-brand-700 disabled:bg-gray-400 disabled:border-gray-400 disabled:text-gray-70 h-[42px] text-sm px-4[39m
+ ❯ src/components/ds/EzButton.test.tsx:40:20
+     38|     const { container } = render(<EzButton label="Foco" />);
+     39|     const button = container.firstChild as HTMLElement;
+     40|     expect(button).toHaveClass('ez-focus');
+       |                    ^
+     41|     expect(button.className).not.toContain('ring-brand-200');
+     42|     expect(button.className).not.toContain('ring-offset');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/11]⎯
+
+ FAIL  |web| src/components/ds/EzDialog.test.tsx > EzDialog > renders children, custom labels and a disabled confirm, and keeps the defaults
+TestingLibraryElementError: Unable to find an element with the text: Contrato 1. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div />[39m
+  [36m<div[39m
+    [33mclass[39m=[32m"fixed inset-0 z-50 flex items-center justify-center px-4"[39m
+  [36m>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"fixed inset-0 bg-gray-900/60"[39m
+    [36m/>[39m
+    [36m<div[39m
+      [33maria-modal[39m=[32m"true"[39m
+      [33mclass[39m=[32m"relative w-full max-w-sm rounded-[24px] bg-white shadow-2xl"[39m
+      [33mrole[39m=[32m"dialog"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center justify-between border-b border-gray-100 px-6 py-4"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center gap-2"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-info h-5 w-5 shrink-0 text-brand-600"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<circle[39m
+              [33mcx[39m=[32m"12"[39m
+              [33mcy[39m=[32m"12"[39m
+              [33mr[39m=[32m"10"[39m
+            [36m/>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M12 16v-4"[39m
+            [36m/>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M12 8h.01"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"text-[16px] font-semibold text-gray-900"[39m
+          [36m>[39m
+            [0mT[0m
+          [36m</span>[39m
+        [36m</div>[39m
+        [36m<button[39m
+          [33maria-label[39m=[32m"Fechar"[39m
+          [33mclass[39m=[32m"rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-700"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-x h-4 w-4"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M18 6 6 18"[39m
+            [36m/>[39m
+            [36m<path[39m
+              [33md[39m=[32m"m6 6 12 12"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+        [36m</button>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"px-6 py-4 text-[14px] text-gray-700"[39m
+      [36m>[39m
+        [0mM[0m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center justify-end gap-3 border-t border-gray-100 bg-gray-90/50 px-6 py-4 rounded-b-[24px]"[39m
+      [36m>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent text-brand-600 border border-gray-200 hover:bg-gray-80 hover:border-gray-90 disabled:bg-gray-80 disabled:border-gray-200 disabled:text-gray-400 h-[42px] text-sm px-4"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"relative z-10 flex items-center gap-2"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"font-medium"[39m
+            [36m>[39m
+              [0mCancelar[0m
+            [36m</span>[39m
+          [36m</div>[39m
+        [36m</button>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-brand-500 text-gray-70 border border-brand-500 hover:bg-brand-700 hover:border-brand-700 disabled:bg-gray-400 disabled:border-gray-400 disabled:text-gray-70 h-[42px] text-sm px-4"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"relative z-10 flex items-center gap-2"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"font-normal"[39m
+            [36m>[39m
+              [0mConfirmar[0m
+            [36m</span>[39m
+          [36m</div>[39m
+        [36m</button>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/components/ds/EzDialog.test.tsx:31:19
+     29|       </EzDialog>
+     30|     );
+     31|     expect(screen.getByText('Contrato 1')).toBeInTheDocument();
+       |                   ^
+     32|     expect(screen.getByRole('button', { name: 'Confirmar' })).toBeEnab…
+     33|     expect(screen.getByRole('button', { name: 'Cancelar' })).toBeInThe…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/11]⎯
+
+ FAIL  |web| src/components/ds/EzDialog.test.tsx > EzDialog > focuses Cancelar when the danger dialog opens and names the dialog by its title
+Error: [2mexpect([22m[31melement[39m[2m).toHaveFocus()[22m
+
+Expected element with focus:
+  [32m<button
+  class="relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent text-brand-600 border border-gray-200 hover:bg-gray-80 hover:border-gray-90 disabled:bg-gray-80 disabled:border-gray-200 disabled:text-gray-400 h-[42px] text-sm px-4"
+>
+  <div
+    class="relative z-10 flex items-center gap-2"
+  >
+    <span
+      class="font-medium"
+    >
+      Cancelar
+    </span>
+  </div>
+</button>[39m
+Received element with focus:
+  [31m<body>
+  <div />
+  <div
+    class="fixed inset-0 z-50 flex items-center justify-center px-4"
+  >
+    <div
+      class="fixed inset-0 bg-gray-900/60"
+    />
+    <div
+      aria-modal="true"
+      class="relative w-full max-w-sm rounded-[24px] bg-white shadow-2xl"
+      role="dialog"
+    >
+      <div
+        class="flex items-center justify-between border-b border-gray-100 px-6 py-4"
+      >
+        <div
+          class="flex items-center gap-2"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-triangle-alert lucide-alert-triangle h-5 w-5 shrink-0 text-red-600"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"
+            />
+            <path
+              d="M12 9v4"
+            />
+            <path
+              d="M12 17h.01"
+            />
+          </svg>
+          <span
+            class="text-[16px] font-semibold text-gray-900"
+          >
+            Excluir contrato
+          </span>
+        </div>
+        <button
+          aria-label="Fechar"
+          class="rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-700"
+        >
+          <svg
+            aria-hidden="true"
+            class="lucide lucide-x h-4 w-4"
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M18 6 6 18"
+            />
+            <path
+              d="m6 6 12 12"
+            />
+          </svg>
+        </button>
+      </div>
+      <div
+        class="px-6 py-4 text-[14px] text-gray-700"
+      >
+        M
+      </div>
+      <div
+        class="flex items-center justify-end gap-3 border-t border-gray-100 bg-gray-90/50 px-6 py-4 rounded-b-[24px]"
+      >
+        <button
+          class="relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent text-brand-600 border border-gray-200 hover:bg-gray-80 hover:border-gray-90 disabled:bg-gray-80 disabled:border-gray-200 disabled:text-gray-400 h-[42px] text-sm px-4"
+        >
+          <div
+            class="relative z-10 flex items-center gap-2"
+          >
+            <span
+              class="font-medium"
+            >
+              Cancelar
+            </span>
+          </div>
+        </button>
+        <button
+          class="relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-brand-500 text-gray-70 border border-brand-500 hover:bg-brand-700 hover:border-brand-700 disabled:bg-gray-400 disabled:border-gray-400 disabled:text-gray-70 h-[42px] text-sm px-4"
+        >
+          <div
+            class="relative z-10 flex items-center gap-2"
+          >
+            <span
+              class="font-normal"
+            >
+              Confirmar
+            </span>
+          </div>
+        </button>
+      </div>
+    </div>
+  </div>
+</body>[39m
+ ❯ src/components/ds/EzDialog.test.tsx:55:62
+     53|       <EzDialog open variant="danger" title="Excluir contrato" message…
+     54|     );
+     55|     expect(screen.getByRole('button', { name: 'Cancelar' })).toHaveFoc…
+       |                                                              ^
+     56|     expect(screen.getByRole('dialog', { name: 'Excluir contrato' })).t…
+     57|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/11]⎯
+
+ FAIL  |web| src/components/ds/focusToken.guard.test.ts > focus ring token (DMTE-540) > no production source keeps the brand-200 focus ring
+AssertionError: expected [ …(28) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "components/ds/EzActionsButton.tsx",
++   "components/ds/EzAdvancedSearch.tsx",
++   "components/ds/EzButton.tsx",
++   "components/ds/EzCalendar.tsx",
++   "components/ds/EzChip.tsx",
++   "components/ds/EzCollapsibleBox.tsx",
++   "components/ds/EzDropdown.tsx",
++   "components/ds/EzEntityGrid.tsx",
++   "components/ds/EzEntityScreenConfigModal.tsx",
++   "components/ds/EzFilterBar.tsx",
++   "components/ds/EzGuideNavigator.tsx",
++   "components/ds/EzLayoutFormConfig.tsx",
++   "components/ds/EzList.tsx",
++   "components/ds/EzListItem.tsx",
++   "components/ds/EzModal.tsx",
++   "components/ds/EzModalContainer.tsx",
++   "components/ds/EzMultiSelectionList.tsx",
++   "components/ds/EzPopoverPlus.tsx",
++   "components/ds/EzRadioButton.tsx",
++   "components/ds/EzSearchPlus.tsx",
++   "components/ds/EzTaskbar.tsx",
++   "components/ds/EzTextInput.tsx",
++   "components/ds/EzToast.tsx",
++   "components/knowledge/knowledgeStyles.ts",
++   "components/tickets/TicketFormMode.tsx",
++   "pages/CreateTicketPage.tsx",
++   "pages/DashboardPage.tsx",
++   "pages/SettingsPage.tsx",
++ ]
+
+ ❯ src/components/ds/focusToken.guard.test.ts:21:66
+     19|       /focus(-visible)?:ring-brand-200/.test(readFileSync(file, 'utf8'…
+     20|     );
+     21|     expect(offenders.map((file) => file.slice(root.length + 1))).toEqu…
+       |                                                                  ^
+     22|   });
+     23| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/11]⎯
+
