@@ -1,4 +1,4 @@
-import { Body, CallHandler, Controller, ExecutionContext, Get, NestInterceptor, Optional, Patch, Post, Request, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, CallHandler, Controller, ExecutionContext, Get, NestInterceptor, Optional, Patch, Post, Request, UnauthorizedException, UseGuards, UseInterceptors } from '@nestjs/common';
 import { Role } from '@prisma/client';
 import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
@@ -10,6 +10,8 @@ import { UpdateProfileDto } from '../users/dto/update-profile.dto';
 import { PasswordFlowService } from '../users/password-flow.service';
 import { PasswordFlowFlagGuard } from '../users/password-flow-flag.guard';
 import { ForgotPasswordDto, SetPasswordDto } from '../users/dto/password-flow.dto';
+import { TwoFactorService } from '../two-factor/two-factor.service';
+import { LoginTwoFactorDto } from '../two-factor/two-factor.dto';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
@@ -38,6 +40,7 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly usersService: UsersService,
     private readonly permissionsService: PermissionsService,
+    private readonly twoFactor: TwoFactorService,
     // @Optional: os testes que montam só o AuthController (sem e-mail nem flag) seguem construindo; em produção o UsersModule sempre o provê.
     @Optional() private readonly passwordFlow?: PasswordFlowService,
   ) {}
@@ -46,7 +49,17 @@ export class AuthController {
   @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @Post('login')
   async login(@Request() req: AuthenticatedRequest) {
-    return this.authService.login(req.user);
+    // Quem ativou o segundo fator recebe um desafio no lugar do JWT (DMTE-551).
+    return (await this.twoFactor.challengeFor(req.user)) ?? this.authService.login(req.user);
+  }
+
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @Post('login/2fa')
+  async loginTwoFactor(@Body() dto: LoginTwoFactorDto) {
+    const userId = await this.twoFactor.completeChallenge(dto.challengeToken, dto.code);
+    const user = await this.usersService.findById(userId);
+    if (!user) throw new UnauthorizedException('Código inválido.');
+    return this.authService.login(this.usersService.toSafeUser(user));
   }
 
   @Throttle({ default: { limit: 5, ttl: 60_000 } })

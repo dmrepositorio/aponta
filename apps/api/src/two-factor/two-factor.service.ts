@@ -1,12 +1,14 @@
-import { createCipheriv, createDecipheriv, createHash, randomBytes } from 'crypto';
+import { createCipheriv, createDecipheriv, createHash, createHmac, randomBytes, timingSafeEqual } from 'crypto';
 import {
   BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
   ServiceUnavailableException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { ThrottlerException } from '@nestjs/throttler';
 import * as bcrypt from 'bcryptjs';
 import { FeatureFlagsService } from '../feature-flags/feature-flags.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -15,6 +17,9 @@ import { base32Encode, generateSecret, verifyTotp } from './totp';
 export const TWO_FACTOR_FLAG = 'autenticacao-dois-fatores';
 const RECOVERY_CODE_COUNT = 10;
 const INVALID = 'Senha ou código inválido.';
+const CHALLENGE_TTL_MS = 5 * 60_000;
+const ATTEMPT_LIMIT = 5;
+const ATTEMPT_WINDOW_MS = 60_000;
 
 const sha256 = (text: string) => createHash('sha256').update(text).digest('hex');
 /** Código de recuperação sem traço e em maiúsculas, para comparar com o hash guardado. */
@@ -78,6 +83,27 @@ export class TwoFactorService {
     await this.remove(userId);
   }
 
+  /** Quem tem segundo fator ativo não recebe o JWT: recebe um desafio de curta duração, que só serve para `completeChallenge`. */
+  async challengeFor(user: { id: string; passwordVersion: number }): Promise<{ twoFactorRequired: true; challengeToken: string } | null> {
+    if (!(await this.isEnabled(user.id))) return null;
+    const payload = Buffer.from(JSON.stringify({ u: user.id, pv: user.passwordVersion ?? 0, exp: Date.now() + CHALLENGE_TTL_MS })).toString('base64url');
+    return { twoFactorRequired: true, challengeToken: `${payload}.${this.sign(payload)}` };
+  }
+
+  /** Confere o desafio e o código; devolve o id do usuário quando os dois valem. Qualquer falha é 401 sem dizer o motivo. */
+  async completeChallenge(challengeToken: string, code: string): Promise<string> {
+    const claims = this.readChallenge(challengeToken);
+    if (!claims) throw new UnauthorizedException('Sessão de login expirada. Entre de novo.');
+    this.countAttempt(claims.u);
+    const user = await this.prisma.user.findUnique({ where: { id: claims.u } });
+    const record = await this.prisma.userTwoFactor.findUnique({ where: { userId: claims.u } });
+    // Senha trocada depois do desafio (versão diferente) ou conta inativada: o desafio não vale mais.
+    if (!user || !user.active || (user.passwordVersion ?? 0) !== claims.pv || !record?.enabled || !(await this.consumeCode(record, code))) {
+      throw new UnauthorizedException('Código inválido.');
+    }
+    return user.id;
+  }
+
   /** Apaga o segundo fator e os códigos de recuperação do usuário. */
   async remove(userId: string): Promise<void> {
     await this.prisma.$transaction(async (tx) => {
@@ -99,6 +125,37 @@ export class TwoFactorService {
       data: { usedAt: new Date() },
     });
     return claimed.count === 1;
+  }
+
+  private sign(payload: string): string {
+    const secret = `${this.config.get<string>('JWT_SECRET') ?? ''}:2fa-challenge`;
+    return createHmac('sha256', secret).update(payload).digest('base64url');
+  }
+
+  private readChallenge(token: string): { u: string; pv: number } | null {
+    const [payload, signature, extra] = token.split('.');
+    if (!payload || !signature || extra !== undefined) return null;
+    const expected = Buffer.from(this.sign(payload));
+    const given = Buffer.from(signature);
+    if (expected.length !== given.length || !timingSafeEqual(expected, given)) return null;
+    try {
+      const claims = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8'));
+      return typeof claims.u === 'string' && typeof claims.pv === 'number' && claims.exp > Date.now() ? claims : null;
+    } catch {
+      return null;
+    }
+  }
+
+  // shortcut: contador em memória, por processo (como o do "esqueci minha senha"); com mais de uma instância, mover para Redis.
+  private readonly attempts = new Map<string, { count: number; resetAt: number }>();
+
+  private countAttempt(userId: string): void {
+    const now = Date.now();
+    for (const [key, entry] of this.attempts) if (entry.resetAt <= now) this.attempts.delete(key);
+    const entry = this.attempts.get(userId) ?? { count: 0, resetAt: now + ATTEMPT_WINDOW_MS };
+    entry.count += 1;
+    this.attempts.set(userId, entry);
+    if (entry.count > ATTEMPT_LIMIT) throw new ThrottlerException();
   }
 
   private assertFlag(): void {

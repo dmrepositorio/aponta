@@ -15,3 +15,13 @@ export class DisableTwoFactorDto {
   @MaxLength(32)
   code!: string;
 }
+
+export class LoginTwoFactorDto {
+  @IsString()
+  @MaxLength(512)
+  challengeToken!: string;
+
+  @IsString()
+  @MaxLength(32)
+  code!: string;
+}
