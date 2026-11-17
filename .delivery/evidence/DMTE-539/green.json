@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "phase": "green",
+  "started_at": "2026-11-17T00:50:26.403806+00:00",
+  "finished_at": "2026-11-17T00:50:40.750190+00:00",
+  "command": [
+    "pnpm",
+    "--dir",
+    "apps/web",
+    "exec",
+    "vitest",
+    "run",
+    "src/pages/ContractsPage.test.tsx"
+  ],
+  "base_sha": "374023f6872baa42e6dd2e686fefaede4302f042",
+  "head_sha": "33691f1685375fbb73af8dec9f9aceac8b6b834a",
+  "exit_code": 0,
+  "tests": {
+    "apps/web/src/pages/ContractsPage.test.tsx": "630dcd418f8b28147eff812fb0ab58af0ca5a716fa3987a1fcc0092b1e5dafd0"
+  },
+  "criteria": [
+    "AC-01",
+    "AC-02",
+    "AC-03"
+  ],
+  "source_hashes": {
+    "apps/web/src/components/contracts/ContractViews.tsx": "c3cc301910afc35d4d06b5bbd33fba2164857a2b3dd7c2428babbe24e2c30187",
+    "apps/web/src/pages/ContractsPage.test.tsx": "630dcd418f8b28147eff812fb0ab58af0ca5a716fa3987a1fcc0092b1e5dafd0"
+  },
+  "log": ".delivery/evidence/DMTE-539/green.log",
+  "log_sha256": "d683db2bfe7de1d44211032c15fb6ec6085e4a79f6a9a9269714e069d35111fc"
+}
