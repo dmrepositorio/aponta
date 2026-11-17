@@ -1,65 +1,64 @@
 
  RUN  v4.1.11 /home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-548-fa2f3cf3bd60/workdir/aponta/apps/web
 
- ❯ |web| src/components/knowledge/KnowledgeArticleCard.test.tsx (2 tests | 2 failed) 491ms
-     × collapses back when an update removes everything that was hidden, never staying expanded without the button 198ms
-     × stays collapsed when the hidden content comes back after the update 288ms
- ❯ |web| src/pages/KnowledgePage.test.tsx (50 tests | 2 failed) 8573ms
-     ✓ shows the folders grid first, not the article list 105ms
-     ✓ opens a folder and lists only its articles, filtered by folderId 180ms
-     ✓ shows a breadcrumb back to the folders grid once inside a folder 212ms
-     ✓ does not show the new-article form or edit/delete buttons to a CLIENT 144ms
-     ✓ shows the Interno badge only for a PRIVATE article (visibility-based, not the old isPublic) 55ms
-     ✓ defaults a new article to "Público" and hides the Compartilhar button  347ms
-     ✓ shows the Compartilhar button once "Privado" is selected, and opens the sharing dialog  325ms
-     ✓ shows the new-article form to an AGENT and creates a PUBLIC article inside the open folder  891ms
-     ✓ selects an agent group and a client in the share dialog, and sends them (plus auto-share) in the create payload  973ms
-     ✓ allows an AGENT to update an existing article, pre-populating the access type and sharing lists  595ms
-     ✓ allows filtering by search keyword and tag inside a folder 95ms
-     ✓ allows selecting more than one tag at once (OR filter) 116ms
-     ✓ shows the author and last-updated date on each article 40ms
-     ✓ sends the chosen sort order to the API 34ms
-     ✓ toggles between list and grid view modes 68ms
-     ✓ paginates articles beyond the first page 107ms
-     ✓ allows deleting an article 103ms
-     ✓ renders article content as real HTML, not escaped text 58ms
-     ✓ shows the attachment count only for articles that have attachments, and the links once expanded 99ms
-     ✓ never shows attachment upload controls to a CLIENT, not even when the card is expanded 119ms
-     ✓ keeps upload and remove out of the cards and manages attachments inside the edit form 258ms
-     ✓ shows no attachment manager in the new-article form 119ms
-     ✓ loads the edit form with EzRichText pre-filled with the existing article content 115ms
-       ✓ keeps the search field mounted, with its text and focus, while typing against a slow API  368ms
-       ✓ keeps the header and shows the loading state only in the list area while a folder opens 185ms
-       ✓ sends the full typed search to the API and lists the result of that query  451ms
-       ✓ collapses the card to title, meta, a plain-text excerpt, five tags and the attachment count 55ms
-       ✓ expands and collapses the card, revealing the full body, every tag and the attachments 103ms
-       ✓ offers no expand button when nothing is hidden 38ms
-       ✓ offers no expand button when the body is only empty markup 38ms
-       ✓ keeps the title on its own line, with the tag, meta and actions outside its row 59ms
-       ✓ puts the active tag filters in their own row, apart from the search and the new-article button 82ms
-       ✓ tells an empty folder apart from a search, offering to create the first article to authors 130ms
-       ✓ shows readers an empty folder without a create action 35ms
-       ✓ offers "Limpar busca e filtros" when a search finds nothing, and clearing resets search and tags but keeps the sort 141ms
-       ✓ also offers to clear when only a tag filter finds nothing 93ms
-       ✓ shows a retryable error, not the empty message, when the query fails 61ms
-         × keeps the cached list under a stale-list warning when a refetch fails 82ms
-         × replaces the list and drops the warning when "Tentar novamente" succeeds 55ms
-         ✓ keeps the header and sort rows on the control height token, with no loose radius 67ms
-         ✓ keeps the Compartilhar button at the height of the access combo 181ms
-         ✓ aligns the card text actions with the card content, without the DS side padding 56ms
-         ✓ uses the legible primary on the primary actions of the screen 240ms
-         ✓ gives the clickable tag, the filter remove button and the view toggles the DS focus ring 97ms
-         ✓ marks the active tag filter with aria-pressed and a decorative check, not only a color 148ms
-         ✓ shows Interno as a classification (petroleum with a lock), not as a yellow alert 46ms
-         ✓ keeps "+ Novo artigo" on screen, disabled, while the form is open, and focuses the title 207ms
-         ✓ focuses the title when the edit form opens from a card 99ms
-         ✓ aligns "+ Novo item de catálogo" to the start of the form as a DS tertiary button 145ms
-         ✓ asks for confirmation in a dialog before deleting, and cancel or Escape keep the article 142ms
+ ✓ |web| src/components/knowledge/KnowledgeArticleCard.test.tsx (2 tests) 322ms
+ ❯ |web| src/pages/KnowledgePage.test.tsx (51 tests | 1 failed) 8437ms
+     ✓ shows the folders grid first, not the article list 115ms
+     ✓ opens a folder and lists only its articles, filtered by folderId 162ms
+     ✓ shows a breadcrumb back to the folders grid once inside a folder 156ms
+     ✓ does not show the new-article form or edit/delete buttons to a CLIENT 102ms
+     ✓ shows the Interno badge only for a PRIVATE article (visibility-based, not the old isPublic) 51ms
+     ✓ defaults a new article to "Público" and hides the Compartilhar button 288ms
+     ✓ shows the Compartilhar button once "Privado" is selected, and opens the sharing dialog  353ms
+     ✓ shows the new-article form to an AGENT and creates a PUBLIC article inside the open folder  896ms
+     ✓ selects an agent group and a client in the share dialog, and sends them (plus auto-share) in the create payload  1155ms
+     ✓ allows an AGENT to update an existing article, pre-populating the access type and sharing lists  620ms
+     ✓ allows filtering by search keyword and tag inside a folder 104ms
+     ✓ allows selecting more than one tag at once (OR filter) 110ms
+     ✓ shows the author and last-updated date on each article 34ms
+     ✓ sends the chosen sort order to the API 36ms
+     ✓ toggles between list and grid view modes 67ms
+     ✓ paginates articles beyond the first page 102ms
+     ✓ allows deleting an article 105ms
+     ✓ renders article content as real HTML, not escaped text 50ms
+     ✓ shows the attachment count only for articles that have attachments, and the links once expanded 72ms
+     ✓ never shows attachment upload controls to a CLIENT, not even when the card is expanded 143ms
+     ✓ keeps upload and remove out of the cards and manages attachments inside the edit form 222ms
+     ✓ shows no attachment manager in the new-article form 100ms
+     ✓ loads the edit form with EzRichText pre-filled with the existing article content 117ms
+       ✓ keeps the search field mounted, with its text and focus, while typing against a slow API  351ms
+       ✓ keeps the header and shows the loading state only in the list area while a folder opens 184ms
+       ✓ sends the full typed search to the API and lists the result of that query  443ms
+       ✓ collapses the card to title, meta, a plain-text excerpt, five tags and the attachment count 63ms
+       ✓ expands and collapses the card, revealing the full body, every tag and the attachments 104ms
+       ✓ offers no expand button when nothing is hidden 41ms
+       ✓ offers no expand button when the body is only empty markup 46ms
+       ✓ keeps the title on its own line, with the tag, meta and actions outside its row 70ms
+       ✓ puts the active tag filters in their own row, apart from the search and the new-article button 85ms
+       ✓ tells an empty folder apart from a search, offering to create the first article to authors 137ms
+       ✓ shows readers an empty folder without a create action 54ms
+       ✓ offers "Limpar busca e filtros" when a search finds nothing, and clearing resets search and tags but keeps the sort 148ms
+       ✓ also offers to clear when only a tag filter finds nothing 89ms
+       ✓ shows a retryable error, not the empty message, when the query fails 59ms
+         ✓ keeps the cached list under a stale-list warning when a refetch fails 61ms
+         ✓ replaces the list and drops the warning when "Tentar novamente" succeeds 71ms
+         × shows the load error, not the stale-list warning, when the cached list is empty 45ms
+         ✓ keeps the header and sort rows on the control height token, with no loose radius 68ms
+         ✓ keeps the Compartilhar button at the height of the access combo 157ms
+         ✓ aligns the card text actions with the card content, without the DS side padding 46ms
+         ✓ uses the legible primary on the primary actions of the screen 219ms
+         ✓ gives the clickable tag, the filter remove button and the view toggles the DS focus ring 89ms
+         ✓ marks the active tag filter with aria-pressed and a decorative check, not only a color 98ms
+         ✓ shows Interno as a classification (petroleum with a lock), not as a yellow alert 31ms
+         ✓ keeps "+ Novo artigo" on screen, disabled, while the form is open, and focuses the title 178ms
+         ✓ focuses the title when the edit form opens from a card 78ms
+         ✓ aligns "+ Novo item de catálogo" to the start of the form as a DS tertiary button 133ms
+         ✓ asks for confirmation in a dialog before deleting, and cancel or Escape keep the article 117ms
 
- Test Files  2 failed (2)
-      Tests  4 failed | 48 passed (52)
-   Start at  01:37:42
-   Duration  12.19s (transform 3.27s, setup 273ms, import 5.31s, tests 9.06s, environment 1.27s)
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 52 passed (53)
+   Start at  01:44:33
+   Duration  11.53s (transform 3.20s, setup 181ms, import 4.76s, tests 8.76s, environment 879ms)
 
 stderr | src/pages/KnowledgePage.test.tsx > KnowledgePage > defaults a new article to "Público" and hides the Compartilhar button
 [tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues.
@@ -104,474 +103,22 @@ stderr | src/pages/KnowledgePage.test.tsx > KnowledgePage > article card, header
 [tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues.
 
 
-⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
 
- FAIL  |web| src/components/knowledge/KnowledgeArticleCard.test.tsx > KnowledgeArticleCard > collapses back when an update removes everything that was hidden, never staying expanded without the button
-AssertionError: expected <div id="article-body-a-1" …(1)>…(1)</div> to be null
-
-- Expected:
-null
-
-+ Received:
-<div
-  class="article-content"
-  id="article-body-a-1"
->
-  <p />
-</div>
-
- ❯ src/components/knowledge/KnowledgeArticleCard.test.tsx:61:56
-     59|
-     60|     expect(screen.queryByText('Corpo completo do artigo')).not.toBeInT…
-     61|     expect(document.querySelector('.article-content')).toBeNull();
-       |                                                        ^
-     62|     expect(screen.queryByRole('link', { name: /manual\.pdf/i })).not.t…
-     63|     expect(screen.queryByRole('button', { name: /recolher/i })).not.to…
-
-⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
-
- FAIL  |web| src/components/knowledge/KnowledgeArticleCard.test.tsx > KnowledgeArticleCard > stays collapsed when the hidden content comes back after the update
-TestingLibraryElementError: Unable to find an accessible element with the role "button" and name `/ler artigo completo/i`
-
-Here are the accessible roles:
-
-  article:
-
-  Name "":
-  [36m<article[39m
-    [33mclass[39m=[32m"flex min-w-0"[39m
-  [36m/>[39m
-
-  --------------------------------------------------
-  heading:
-
-  Name "Artigo longo":
-  [36m<h2[39m
-    [33mclass[39m=[32m"break-words text-[18px] font-semibold text-gray-900"[39m
-  [36m/>[39m
-
-  Name "Anexos (1)":
-  [36m<h3[39m
-    [33mclass[39m=[32m"text-sm font-semibold text-gray-900"[39m
-  [36m/>[39m
-
-  --------------------------------------------------
-  paragraph:
-
-  Name "":
-  [36m<p />[39m
-
-  --------------------------------------------------
-  button:
-
-  Name "#t1":
-  [36m<button[39m
-    [33maria-pressed[39m=[32m"false"[39m
-    [33mclass[39m=[32m"rounded-full outline-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2"[39m
-    [33mtitle[39m=[32m"Filtrar por t1"[39m
-    [33mtype[39m=[32m"button"[39m
-  [36m/>[39m
-
-  Name "#t2":
-  [36m<button[39m
-    [33maria-pressed[39m=[32m"false"[39m
-    [33mclass[39m=[32m"rounded-full outline-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2"[39m
-    [33mtitle[39m=[32m"Filtrar por t2"[39m
-    [33mtype[39m=[32m"button"[39m
-  [36m/>[39m
-
-  Name "#t3":
-  [36m<button[39m
-    [33maria-pressed[39m=[32m"false"[39m
-    [33mclass[39m=[32m"rounded-full outline-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2"[39m
-    [33mtitle[39m=[32m"Filtrar por t3"[39m
-    [33mtype[39m=[32m"button"[39m
-  [36m/>[39m
-
-  Name "#t4":
-  [36m<button[39m
-    [33maria-pressed[39m=[32m"false"[39m
-    [33mclass[39m=[32m"rounded-full outline-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2"[39m
-    [33mtitle[39m=[32m"Filtrar por t4"[39m
-    [33mtype[39m=[32m"button"[39m
-  [36m/>[39m
-
-  Name "#t5":
-  [36m<button[39m
-    [33maria-pressed[39m=[32m"false"[39m
-    [33mclass[39m=[32m"rounded-full outline-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2"[39m
-    [33mtitle[39m=[32m"Filtrar por t5"[39m
-    [33mtype[39m=[32m"button"[39m
-  [36m/>[39m
-
-  Name "#t6":
-  [36m<button[39m
-    [33maria-pressed[39m=[32m"false"[39m
-    [33mclass[39m=[32m"rounded-full outline-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2"[39m
-    [33mtitle[39m=[32m"Filtrar por t6"[39m
-    [33mtype[39m=[32m"button"[39m
-  [36m/>[39m
-
-  Name "#t7":
-  [36m<button[39m
-    [33maria-pressed[39m=[32m"false"[39m
-    [33mclass[39m=[32m"rounded-full outline-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2"[39m
-    [33mtitle[39m=[32m"Filtrar por t7"[39m
-    [33mtype[39m=[32m"button"[39m
-  [36m/>[39m
-
-  Name "Recolher":
-  [36m<button[39m
-    [33maria-controls[39m=[32m"article-body-a-1"[39m
-    [33maria-expanded[39m=[32m"true"[39m
-    [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent text-brand-600 hover:text-brand-800 disabled:text-gray-400 disabled:bg-transparent h-[32px] text-xs px-0"[39m
-    [33mtype[39m=[32m"button"[39m
-  [36m/>[39m
-
-  --------------------------------------------------
-  list:
-
-  Name "":
-  [36m<ul[39m
-    [33mclass[39m=[32m"space-y-2"[39m
-  [36m/>[39m
-
-  --------------------------------------------------
-  listitem:
-
-  Name "":
-  [36m<li[39m
-    [33mclass[39m=[32m"flex items-center justify-between gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm"[39m
-  [36m/>[39m
-
-  --------------------------------------------------
-  link:
-
-  Name "manual.pdf":
-  [36m<a[39m
-    [33mclass[39m=[32m"flex min-w-0 items-center gap-2 truncate text-brand-600 hover:underline"[39m
-    [33mhref[39m=[32m"/uploads/manual.pdf"[39m
-    [33mrel[39m=[32m"noreferrer"[39m
-    [33mtarget[39m=[32m"_blank"[39m
-  [36m/>[39m
-
-  --------------------------------------------------
-
-Ignored nodes: comments, script, style
-[36m<body>[39m
-  [36m<div>[39m
-    [36m<article[39m
-      [33mclass[39m=[32m"flex min-w-0"[39m
-    [36m>[39m
-      [36m<div[39m
-        [33mclass[39m=[32m"flex flex-col w-full bg-white rounded-[16px] border border-gray-100 transition-all min-w-0 gap-2 p-4"[39m
-      [36m>[39m
-        [36m<div[39m
-          [33mclass[39m=[32m"min-w-0"[39m
-        [36m>[39m
-          [36m<h2[39m
-            [33mclass[39m=[32m"break-words text-[18px] font-semibold text-gray-900"[39m
-          [36m>[39m
-            [0mArtigo longo[0m
-          [36m</h2>[39m
-        [36m</div>[39m
-        [36m<div[39m
-          [33mclass[39m=[32m"flex flex-wrap items-center gap-x-3 gap-y-1"[39m
-        [36m>[39m
-          [36m<span[39m
-            [33mclass[39m=[32m"inline-flex items-center gap-1 text-xs text-gray-500"[39m
-          [36m>[39m
-            [36m<svg[39m
-              [33maria-hidden[39m=[32m"true"[39m
-              [33mclass[39m=[32m"lucide lucide-paperclip h-3.5 w-3.5"[39m
-              [33mfill[39m=[32m"none"[39m
-              [33mheight[39m=[32m"24"[39m
-              [33mstroke[39m=[32m"currentColor"[39m
-              [33mstroke-linecap[39m=[32m"round"[39m
-              [33mstroke-linejoin[39m=[32m"round"[39m
-              [33mstroke-width[39m=[32m"2"[39m
-              [33mviewBox[39m=[32m"0 0 24 24"[39m
-              [33mwidth[39m=[32m"24"[39m
-              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
-            [36m>[39m
-              [36m<path[39m
-                [33md[39m=[32m"m16 6-8.414 8.586a2 2 0 0 0 2.829 2.829l8.414-8.586a4 4 0 1 0-5.657-5.657l-8.379 8.551a6 6 0 1 0 8.485 8.485l8.379-8.551"[39m
-              [36m/>[39m
-            [36m</svg>[39m
-            [36m<span>[39m
-              [0m1[0m
-              [0m [0m
-              [0manexo[0m
-            [36m</span>[39m
-          [36m</span>[39m
-        [36m</div>[39m
-        [36m<div[39m
-          [33mclass[39m=[32m"article-content"[39m
-          [33mid[39m=[32m"article-body-a-1"[39m
-        [36m>[39m
-          [36m<p>[39m
-            [0mCorpo completo do artigo[0m
-          [36m</p>[39m
-        [36m</div>[39m
-        [36m<div[39m
-          [33mclass[39m=[32m"flex flex-wrap gap-2"[39m
-        [36m>[39m
-          [36m<button[39m
-            [33maria-pressed[39m=[32m"false"[39m
-            [33mclass[39m=[32m"rounded-full outline-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2"[39m
-            [33mtitle[39m=[32m"Filtrar por t1"[39m
-            [33mtype[39m=[32m"button"[39m
-          [36m>[39m
-            [36m<div[39m
-              [33mclass[39m=[32m"inline-flex items-center justify-center rounded-[24px] px-2.5 py-1 min-w-[32px] min-h-[24px] text-[12px] font-medium leading-none select-none transition-colors border bg-gray-90 text-gray-700 border-gray-200"[39m
-            [36m>[39m
-              [36m<span>[39m
-                [0m#t1[0m
-              [36m</span>[39m
-            [36m</div>[39m
-          [36m</button>[39m
-          [36m<button[39m
-            [33maria-pressed[39m=[32m"false"[39m
-            [33mclass[39m=[32m"rounded-full outline-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2"[39m
-            [33mtitle[39m=[32m"Filtrar por t2"[39m
-            [33mtype[39m=[32m"button"[39m
-          [36m>[39m
-            [36m<div[39m
-              [33mclass[39m=[32m"inline-flex items-center justify-center rounded-[24px] px-2.5 py-1 min-w-[32px] min-h-[24px] text-[12px] font-medium leading-none select-none transition-colors border bg-gray-90 text-gray-700 border-gray-200"[39m
-            [36m>[39m
-              [36m<span>[39m
-                [0m#t2[0m
-              [36m</span>[39m
-            [36m</div>[39m
-          [36m</button>[39m
-          [36m<button[39m
-            [33maria-pressed[39m=[32m"false"[39m
-            [33mclass[39m=[32m"rounded-full outline-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2"[39m
-            [33mtitle[39m=[32m"Filtrar por t3"[39m
-            [33mtype[39m=[32m"button"[39m
-          [36m>[39m
-            [36m<div[39m
-              [33mclass[39m=[32m"inline-flex items-center justify-center rounded-[24px] px-2.5 py-1 min-w-[32px] min-h-[24px] text-[12px] font-medium leading-none select-none transition-colors border bg-gray-90 text-gray-700 border-gray-200"[39m
-            [36m>[39m
-              [36m<span>[39m
-                [0m#t3[0m
-              [36m</span>[39m
-            [36m</div>[39m
-          [36m</button>[39m
-          [36m<button[39m
-            [33maria-pressed[39m=[32m"false"[39m
-            [33mclass[39m=[32m"rounded-full outline-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2"[39m
-            [33mtitle[39m=[32m"Filtrar por t4"[39m
-            [33mtype[39m=[32m"button"[39m
-          [36m>[39m
-            [36m<div[39m
-              [33mclass[39m=[32m"inline-flex items-center justify-center rounded-[24px] px-2.5 py-1 min-w-[32px] min-h-[24px] text-[12px] font-medium leading-none select-none transition-colors border bg-gray-90 text-gray-700 border-gray-200"[39m
-            [36m>[39m
-              [36m<span>[39m
-                [0m#t4[0m
-              [36m</span>[39m
-            [36m</div>[39m
-          [36m</button>[39m
-          [36m<button[39m
-            [33maria-pressed[39m=[32m"false"[39m
-            [33mclass[39m=[32m"rounded-full outline-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2"[39m
-            [33mtitle[39m=[32m"Filtrar por t5"[39m
-            [33mtype[39m=[32m"button"[39m
-          [36m>[39m
-            [36m<div[39m
-              [33mclass[39m=[32m"inline-flex items-center justify-center rounded-[24px] px-2.5 py-1 min-w-[32px] min-h-[24px] text-[12px] font-medium leading-none select-none transition-colors border bg-gray-90 text-gray-700 border-gray-200"[39m
-            [36m>[39m
-              [36m<span>[39m
-                [0m#t5[0m
-              [36m</span>[39m
-            [36m</div>[39m
-          [36m</button>[39m
-          [36m<button[39m
-            [33maria-pressed[39m=[32m"false"[39m
-            [33mclass[39m=[32m"rounded-full outline-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2"[39m
-            [33mtitle[39m=[32m"Filtrar por t6"[39m
-            [33mtype[39m=[32m"button"[39m
-          [36m>[39m
-            [36m<div[39m
-              [33mclass[39m=[32m"inline-flex items-center justify-center rounded-[24px] px-2.5 py-1 min-w-[32px] min-h-[24px] text-[12px] font-medium leading-none select-none transition-colors border bg-gray-90 text-gray-700 border-gray-200"[39m
-            [36m>[39m
-              [36m<span>[39m
-                [0m#t6[0m
-              [36m</span>[39m
-            [36m</div>[39m
-          [36m</button>[39m
-          [36m<button[39m
-            [33maria-pressed[39m=[32m"false"[39m
-            [33mclass[39m=[32m"rounded-full outline-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2"[39m
-            [33mtitle[39m=[32m"Filtrar por t7"[39m
-            [33mtype[39m=[32m"button"[39m
-          [36m>[39m
-            [36m<div[39m
-              [33mclass[39m=[32m"inline-flex items-center justify-center rounded-[24px] px-2.5 py-1 min-w-[32px] min-h-[24px] text-[12px] font-medium leading-none select-none transition-colors border bg-gray-90 text-gray-700 border-gray-200"[39m
-            [36m>[39m
-              [36m<span>[39m
-                [0m#t7[0m
-              [36m</span>[39m
-            [36m</div>[39m
-          [36m</button>[39m
-        [36m</div>[39m
-        [36m<section[39m
-          [33mclass[39m=[32m"space-y-3 rounded-lg border border-gray-200 bg-white p-4"[39m
-        [36m>[39m
-          [36m<h3[39m
-            [33mclass[39m=[32m"text-sm font-semibold text-gray-900"[39m
-          [36m>[39m
-            [0mAnexos ([0m
-            [0m1[0m
-            [0m)[0m
-          [36m</h3>[39m
-          [36m<ul[39m
-            [33mclass[39m=[32m"space-y-2"[39m
-          [36m>[39m
-            [36m<li[39m
-              [33mclass[39m=[32m"flex items-center justify-between gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm"[39m
-            [36m>[39m
-              [36m<a[39m
-                [33mclass[39m=[32m"flex min-w-0 items-center gap-2 truncate text-brand-600 hover:underline"[39m
-                [33mhref[39m=[32m"/uploads/manual.pdf"[39m
-                [33mrel[39m=[32m"noreferrer"[39m
-                [33mtarget[39m=[32m"_blank"[39m
-              [36m>[39m
-                [36m<span[39m
-                  [33maria-hidden[39m=[32m"true"[39m
-                [36m>[39m
-                  [0m📄[0m
-                [36m</span>[39m
-                [36m<span[39m
-                  [33mclass[39m=[32m"truncate"[39m
-                [36m>[39m
-                  [0mmanual.pdf[0m
-                [36m</span>[39m
-              [36m</a>[39m
-            [36m</li>[39m
-          [36m</ul>[39m
-        [36m</section>[39m
-        [36m<div[39m
-          [33mclass[39m=[32m"flex flex-wrap items-center gap-x-4 gap-y-1 pt-1"[39m
-        [36m>[39m
-          [36m<button[39m
-            [33maria-controls[39m=[32m"article-body-a-1"[39m
-            [33maria-expanded[39m=[32m"true"[39m
-            [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent text-brand-600 hover:text-brand-800 disabled:text-gray-400 disabled:bg-transparent h-[32px] text-xs px-0"[39m
-            [33mtype[39m=[32m"button"[39m
-          [36m>[39m
-            [36m<div[39m
-              [33mclass[39m=[32m"relative z-10 flex items-center gap-2"[39m
-            [36m>[39m
-              [36m<span[39m
-                [33mclass[39m=[32m"font-medium"[39m
-              [36m>[39m
-                [0mRecolher[0m
-              [36m</span>[39m
-            [36m</div>[39m
-          [36m</button>[39m
-        [36m</div>[39m
-      [36m</div>[39m
-    [36m</article>[39m
-  [36m</div>[39m
-[36m</body>[39m
- ❯ Object.getElementError ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/config.js:37:19
- ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
- ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
- ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
- ❯ src/components/knowledge/KnowledgeArticleCard.test.tsx:74:19
-     72|     rerender(full);
-     73|
-     74|     expect(screen.getByRole('button', { name: /ler artigo completo/i }…
-       |                   ^
-     75|       'aria-expanded',
-     76|       'false',
-
-⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
-
- FAIL  |web| src/pages/KnowledgePage.test.tsx > KnowledgePage > article card, header and empty states > when the refresh fails with a cached list (DMTE-548) > keeps the cached list under a stale-list warning when a refetch fails
+ FAIL  |web| src/pages/KnowledgePage.test.tsx > KnowledgePage > article card, header and empty states > when the refresh fails with a cached list (DMTE-548) > shows the load error, not the stale-list warning, when the cached list is empty
 Error: [2mexpect([22m[31melement[39m[2m).toHaveTextContent()[22m
 
 Expected element to have text content:
-[32m  /Não foi possível atualizar os artigos/[39m
+[32m  Não foi possível carregar os artigos.[39m
 Received:
-[31m  Não foi possível carregar os artigos.[39m
- ❯ src/pages/KnowledgePage.test.tsx:1008:23
-    1006|         const { alert } = await openFolderThenFailRefresh();
-    1007|
-    1008|         expect(alert).toHaveTextContent(STALE);
+[31m  Não foi possível atualizar os artigos. A lista abaixo pode estar desatualizada.Tentar novamente[39m
+ ❯ src/pages/KnowledgePage.test.tsx:1043:23
+    1041|         const { alert } = await openFolderThenFailRefresh([]);
+    1042|
+    1043|         expect(alert).toHaveTextContent('Não foi possível carregar os …
        |                       ^
-    1009|         expect(alert).toHaveTextContent(/pode estar desatualizada/);
-    1010|         expect(within(alert).getByRole('button', { name: 'Tentar novam…
+    1044|         expect(screen.queryByText(STALE)).not.toBeInTheDocument();
+    1045|         expect(screen.queryByText('Esta pasta ainda não tem artigos.')…
 
-⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
-
- FAIL  |web| src/pages/KnowledgePage.test.tsx > KnowledgePage > article card, header and empty states > when the refresh fails with a cached list (DMTE-548) > replaces the list and drops the warning when "Tentar novamente" succeeds
-TestingLibraryElementError: Unable to find an accessible element with the role "button" and name "Tentar novamente"
-
-There are no accessible roles. But there might be some inaccessible roles. If you wish to access them, then set the `hidden` option to `true`. Learn more about this here: https://testing-library.com/docs/dom-testing-library/api-queries#byrole
-
-Ignored nodes: comments, script, style
-[36m<div[39m
-  [33mclass[39m=[32m"relative flex w-full flex-col sm:flex-row sm:items-start gap-3 p-4 rounded-[12px] border transition-colors bg-red-100 border-red-200 text-red-800"[39m
-  [33mrole[39m=[32m"alert"[39m
-[36m>[39m
-  [36m<div[39m
-    [33mclass[39m=[32m"shrink-0 mt-0.5 text-red-600"[39m
-  [36m>[39m
-    [36m<svg[39m
-      [33maria-hidden[39m=[32m"true"[39m
-      [33mclass[39m=[32m"lucide lucide-circle-alert lucide-alert-circle w-5 h-5"[39m
-      [33mfill[39m=[32m"none"[39m
-      [33mheight[39m=[32m"24"[39m
-      [33mstroke[39m=[32m"currentColor"[39m
-      [33mstroke-linecap[39m=[32m"round"[39m
-      [33mstroke-linejoin[39m=[32m"round"[39m
-      [33mstroke-width[39m=[32m"2"[39m
-      [33mviewBox[39m=[32m"0 0 24 24"[39m
-      [33mwidth[39m=[32m"24"[39m
-      [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
-    [36m>[39m
-      [36m<circle[39m
-        [33mcx[39m=[32m"12"[39m
-        [33mcy[39m=[32m"12"[39m
-        [33mr[39m=[32m"10"[39m
-      [36m/>[39m
-      [36m<line[39m
-        [33mx1[39m=[32m"12"[39m
-        [33mx2[39m=[32m"12"[39m
-        [33my1[39m=[32m"8"[39m
-        [33my2[39m=[32m"12"[39m
-      [36m/>[39m
-      [36m<line[39m
-        [33mx1[39m=[32m"12"[39m
-        [33mx2[39m=[32m"12.01"[39m
-        [33my1[39m=[32m"16"[39m
-        [33my2[39m=[32m"16"[39m
-      [36m/>[39m
-    [36m</svg>[39m
-  [36m</div>[39m
-  [36m<div[39m
-    [33mclass[39m=[32m"flex flex-1 flex-col gap-1"[39m
-  [36m>[39m
-    [36m<div[39m
-      [33mclass[39m=[32m"text-[14px] leading-relaxed font-medium"[39m
-    [36m>[39m
-      [0mNão foi possível carregar os artigos.[0m
-    [36m</div>[39m
-  [36m</div>[39m
-[36m</div>[39m
- ❯ Object.getElementError ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/config.js:37:19
- ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
- ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
- ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
- ❯ src/pages/KnowledgePage.test.tsx:1023:40
-    1021|         restore();
-    1022|
-    1023|         await user.click(within(alert).getByRole('button', { name: 'Te…
-       |                                        ^
-    1024|
-    1025|         await waitFor(() => expect(screen.queryByText(STALE)).not.toBe…
-
-⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
 
