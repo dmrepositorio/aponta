@@ -38,6 +38,7 @@ describe('CNPJ/CPF nos DTOs de cliente (DMTE-554, DMTE-559)', () => {
 
   it('AC-03: recusa cnpj em branco na edição (não limpa) e aceita a edição sem a chave cnpj', async () => {
     expect(await messageOf(run(UpdateOrganizationDto, { cnpj: ' ' }))).toContain(CNPJ_MESSAGE);
+    expect(await messageOf(run(UpdateOrganizationDto, { cnpj: null }))).toContain(CNPJ_MESSAGE);
 
     const dto = await run(UpdateOrganizationDto, { name: 'Novo nome' });
     expect(dto.cnpj).toBeUndefined();

@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsOptional, IsEnum, IsBoolean, IsInt, Min, Max, Matches } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsEnum, IsBoolean, IsInt, Min, Max, Matches, ValidateIf } from 'class-validator';
 import { DocumentType } from '@prisma/client';
 import { BlankToNull, CNPJ_MESSAGE, CnpjDigits } from './blank-document.transform';
 
@@ -12,7 +12,8 @@ export class UpdateOrganizationDto {
   @IsString()
   legalName?: string;
 
-  @IsOptional()
+  // ValidateIf no lugar de IsOptional: este deixaria passar `null`, que limparia o CNPJ.
+  @ValidateIf((o) => o.cnpj !== undefined)
   @Matches(/^\d{14}$/, { message: CNPJ_MESSAGE })
   @CnpjDigits()
   cnpj?: string;
