@@ -1,8 +1,8 @@
 {
   "version": 1,
   "phase": "green",
-  "started_at": "2026-11-17T16:02:50.599822+00:00",
-  "finished_at": "2026-11-17T16:03:00.839426+00:00",
+  "started_at": "2026-11-17T16:30:39.975578+00:00",
+  "finished_at": "2026-11-17T16:30:53.528668+00:00",
   "command": [
     "pnpm",
     "nx",
@@ -15,7 +15,7 @@
     "src/mail/mail.service.pending.spec.ts"
   ],
   "base_sha": "627972ad6a0378afa8e70cbc7add279c10b304e0",
-  "head_sha": "4cda7fca3289ea03c6deb779c2649d0bbc70b4a8",
+  "head_sha": "86f0b63efc464cc5d80380165c2fa50de54cccfc",
   "exit_code": 0,
   "tests": {
     "apps/api/src/users/email-case.http.spec.ts": "0c292d979aa7ac199cd22a48bc944633ff095f754fd6b8055376d1fcd662ab92",
@@ -103,6 +103,7 @@
     "apps/api/src/users/users.service.spec.ts": "2f20f09e44b89dd006d2ec1c10d9ee34c334d00d3487f32565ebb019c8ada020",
     "apps/api/src/users/users.service.ts": "83a41656027f961c897ff4be3d065fa010839e43a9f3c86b91728ee5812978ce",
     "apps/api/tsconfig.app.json": "2d188bd32f490d52e7e67c16a115f381529ff86cf3e4b6717eeb69514720b7a1",
+    "apps/web-e2e/src/users-permissions.spec.ts": "2a7144fe7457465660781a0384d46a30fd7b14f16317be6634d04b74da985342",
     "apps/web/nginx.conf": "77b7250d619d1442ed7ae92d7528b10ad76b5041025622d0b19d28c138224731",
     "apps/web/src/App.tsx": "19e1c3786e62efdcd8268a4af5104b9f1e5970561bf7ef50f41f2d7eefe609aa",
     "apps/web/src/components/ActiveTag.test.tsx": "471d0d5ee4e42f3f923ef990bbf11e375673d226072cc1d1b37fbaef96486000",
@@ -121,5 +122,5 @@
     "scripts/users_responsive_check.mjs": "633c536589592b0306285bc5c5c0c8c0a4c75568c44e32fc50e964a12d0dc70e"
   },
   "log": ".delivery/evidence/DMTE-550/green-r2.log",
-  "log_sha256": "1175ef4221dcaaf80185a944c6a0d12dcd9079d12b61726ddb01da47a15bfe2d"
+  "log_sha256": "5a088a74ab8fd1553a1d6092f8d57791ca2eb3770ed64add7cec3acf3f388901"
 }
