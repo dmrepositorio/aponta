@@ -1,8 +1,8 @@
 {
   "version": 1,
   "phase": "green",
-  "started_at": "2026-11-17T19:27:03.142401+00:00",
-  "finished_at": "2026-11-17T19:27:32.575789+00:00",
+  "started_at": "2026-11-17T21:15:31.777348+00:00",
+  "finished_at": "2026-11-17T21:16:08.061963+00:00",
   "command": [
     "pnpm",
     "nx",
@@ -14,7 +14,7 @@
     "src/auth/password-policy.http.spec.ts"
   ],
   "base_sha": "35b982f7db2d478d2e8359ca5e601c2fbf3655e8",
-  "head_sha": "e129fedaea13115af2b55924aeb4c01cbb3ae3cd",
+  "head_sha": "e134f9daf2a9141dbd346df1c5ec50b96934b6b5",
   "exit_code": 0,
   "tests": {
     "apps/api/src/auth/password-policy.spec.ts": "68265bb08e1e0bd95bbf601124865ade65c7d470c152c68942402aa20346b48e",
@@ -43,7 +43,7 @@
     "apps/api/src/auth/jwt.strategy.spec.ts": "002312fd2703cc348252690d5a9cbfd6cab4b9cb8b4b6d806c48e3f980c6802a",
     "apps/api/src/auth/jwt.strategy.ts": "dbae406f4b9e0156ef14df04949b99fd2a7b730879e282c4eae187bed7d49952",
     "apps/api/src/auth/password-policy.http.spec.ts": "dd4082e876781dc50995b3ce54cd6c1c04300baaed24a95dae673ab15bef8a8b",
-    "apps/api/src/auth/password-policy.max.http.spec.ts": "3a901cf0986822e9290d7752428e1d251e7b7f474b2e0a9bb018e6a621041574",
+    "apps/api/src/auth/password-policy.max.http.spec.ts": "fa3694ef51005b93a412f8172a5cb855bb76da57a62271b2b819263f9f2937bf",
     "apps/api/src/auth/password-policy.spec.ts": "68265bb08e1e0bd95bbf601124865ade65c7d470c152c68942402aa20346b48e",
     "apps/api/src/auth/password-policy.ts": "708f1e6ab69d6d1cf9a2066401d233fc807beb44e17f13fa2f53ae0be1362621",
     "apps/api/src/auth/password-version.http.spec.ts": "76887eaee7871983db7f03ff3789a5298ecbae82db68bca1f976a15c5f21c74a",
@@ -87,6 +87,7 @@
     "apps/api/src/users/users.module.ts": "7e619e6905c916d8299b7fe1bb20f1d4e24d5c80bcf0e2f91e0d874d6b7de216",
     "apps/api/src/users/users.service.spec.ts": "ce1cede0d98c6ed115ca158f74314f8bfe3afe7277e30b2cbc0ed366a535cac6",
     "apps/api/src/users/users.service.ts": "f24907ba0b2c2e75980bbc2b1949ac97b28d107b0137224714c6f6f83d92486b",
+    "apps/web-e2e/src/auth.spec.ts": "597fc586a9240f7f7387be8b52d0d11b6703c74063b55ade2af7c10082f0c68d",
     "apps/web/src/components/PasswordRules.test.tsx": "1d5c2fbc52559a8c21d6bc31cf6def7c5d64d395b40beac2a48c9b8c6e5c09db",
     "apps/web/src/components/PasswordRules.tsx": "a55206d0b4fb8b6119ec17d808b1bd9c8c666c6b67193c51381b556e6d15faeb",
     "apps/web/src/components/TwoFactorSection.test.tsx": "881b19e459156e3b46ab45a9d35c5114995948f083996d625f1867b94f3dd438",
@@ -109,5 +110,5 @@
     "pnpm-lock.yaml": "4932d82ece9d563113e6e47dc0f9885aca0db9661ad74bf6db5c711a01f976a1"
   },
   "log": ".delivery/evidence/DMTE-551/green.log",
-  "log_sha256": "9d03d6163bd9bbecc5579bbff79889045ab45c3fc70c778820d38aa91ad4cc0f"
+  "log_sha256": "aa5fe1b8d9a88d7bb3daaaa561bbe1186d8be293a64dd64c68c3552d8cd31bdd"
 }

@@ -13,5 +13,5 @@
 [1mTest Suites: [22m[1m[32m2 passed[39m[22m, 2 total
 [1mTests:       [22m[1m[32m21 passed[39m[22m, 21 total
 [1mSnapshots:   [22m0 total
-[1mTime:[22m        [1m[33m9.444 s[39m[22m
+[1mTime:[22m        17.992 s
 [2mRan all test suites[22m[2m within paths[22m "src/auth/password-policy.spec.ts", "src/auth/password-policy.http.spec.ts"[2m.[22m
