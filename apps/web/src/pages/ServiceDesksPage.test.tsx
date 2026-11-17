@@ -22,6 +22,10 @@ const serviceDesks = [
     id: 'sd-1',
     name: 'Suporte N1',
     createdAt: '2026-09-29T10:00:00.000Z',
+    priorities: [
+      { id: 'p1', ticketPriority: 'HIGH', label: 'Alta', enabled: true },
+      { id: 'p2', ticketPriority: 'LOW', label: 'Baixa', enabled: false },
+    ],
     ticketSections: [
       { id: 's1', key: 'GENERAL_INFO', enabled: true, sortOrder: 0 },
       { id: 's2', key: 'WORKLOGS', enabled: true, sortOrder: 1 },
@@ -609,5 +613,256 @@ describe('ServiceDesksPage', () => {
       'Revisão',
       'Expediente',
     ]);
+  });
+});
+
+describe('DMTE-533: um só modelo de salvamento, com retorno', () => {
+  const PENDING = 'Alterações não salvas nesta aba.';
+
+  async function openDesk(tab?: string) {
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    vi.mocked(api.patch).mockResolvedValue({ data: {} });
+    renderPage();
+    await screen.findByText('Suporte N1');
+    await user.click(screen.getByText('Suporte N1'));
+    await screen.findByRole('tab', { name: 'Informações básicas' });
+    if (tab) await user.click(screen.getByRole('tab', { name: tab }));
+    return user;
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockApiGet();
+    useAuthStore.setState({ token: null, user: null });
+  });
+
+  it('AC-07: Parâmetros groups the 9 flags in 3 themed fieldsets and keeps the payload keys', async () => {
+    const user = await openDesk('Parâmetros');
+    const groups = screen.getAllByRole('group');
+    expect(groups.map((group) => within(group).getByText(/^(Geral|SLA|Revisão e avaliação)$/).textContent)).toEqual([
+      'Geral',
+      'SLA',
+      'Revisão e avaliação',
+    ]);
+    const labelsOf = (index: number) =>
+      within(groups[index]).getAllByRole('checkbox').map((box) => box.closest('label')?.textContent);
+    expect(labelsOf(0)).toEqual([
+      'Interação com outras mesas',
+      'Permitir cancelar ticket',
+      "Mostrar o catálogo ao abrir (permite 'não catalogado')",
+      'Abertura só por atendentes',
+    ]);
+    expect(labelsOf(1)).toEqual([
+      'Controle de SLA',
+      'Permitir adicionar horas ao SLA',
+      'Permitir parar e retomar o SLA',
+    ]);
+    expect(labelsOf(2)).toEqual(['Fluxo de revisão', 'Avaliação']);
+
+    await user.click(screen.getByRole('button', { name: 'Salvar' }));
+    await waitFor(() => expect(api.patch).toHaveBeenCalled());
+    expect(Object.keys(vi.mocked(api.patch).mock.calls[0][1] as object).sort()).toEqual(
+      [
+        'allowAddSlaHours',
+        'allowCancelTicket',
+        'allowCrossDeskInteraction',
+        'allowPauseResumeSla',
+        'catalogRequiredOnOpen',
+        'evaluationEnabled',
+        'openByAgentsOnly',
+        'reviewFlowEnabled',
+        'slaControlEnabled',
+      ].sort(),
+    );
+  });
+
+  it('AC-04, AC-05: an unsaved flag shows the pending line and asks before leaving the tab; Cancelar keeps it, Confirmar discards it', async () => {
+    const user = await openDesk('Parâmetros');
+    expect(screen.queryByText(PENDING)).not.toBeInTheDocument();
+
+    await user.click(screen.getByLabelText('Permitir cancelar ticket'));
+    expect(screen.getByText(PENDING)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('tab', { name: 'Prioridades' }));
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByText('Descartar alterações?')).toBeInTheDocument();
+    await user.click(within(dialog).getByRole('button', { name: 'Cancelar' }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Parâmetros' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByLabelText('Permitir cancelar ticket')).not.toBeChecked();
+    expect(screen.getByText(PENDING)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('tab', { name: 'Prioridades' }));
+    await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Confirmar' }));
+    expect(screen.getByRole('tab', { name: 'Prioridades' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.queryByText(PENDING)).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('tab', { name: 'Parâmetros' }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Permitir cancelar ticket')).toBeChecked();
+  });
+
+  it('AC-04: undoing the edit clears the pending line, and leaving a clean tab never asks', async () => {
+    const user = await openDesk('Parâmetros');
+    await user.click(screen.getByLabelText('Permitir cancelar ticket'));
+    expect(screen.getByText(PENDING)).toBeInTheDocument();
+    await user.click(screen.getByLabelText('Permitir cancelar ticket'));
+    expect(screen.queryByText(PENDING)).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('tab', { name: 'Reabertura' }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Reabertura' })).toHaveAttribute('aria-selected', 'true');
+  });
+
+  it('AC-05: the back button and a new desk also ask before discarding', async () => {
+    const user = await openDesk('Parâmetros');
+    await user.click(screen.getByLabelText('Permitir cancelar ticket'));
+
+    await user.click(screen.getByRole('button', { name: 'Voltar' }));
+    await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Cancelar' }));
+    expect(screen.getByRole('tab', { name: 'Parâmetros' })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Nova Mesa' }));
+    await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Cancelar' }));
+    expect(screen.getByRole('tab', { name: 'Parâmetros' })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Voltar' }));
+    await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Confirmar' }));
+    expect(await screen.findByText('Infraestrutura')).toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: 'Parâmetros' })).not.toBeInTheDocument();
+  });
+
+  it('AC-01, AC-04: a successful save shows "Alterações salvas." as a status and clears the pending line', async () => {
+    const user = await openDesk('Parâmetros');
+    await user.click(screen.getByLabelText('Permitir cancelar ticket'));
+    await user.click(screen.getByRole('button', { name: 'Salvar' }));
+
+    expect(await screen.findByRole('status')).toHaveTextContent('Alterações salvas.');
+    expect(api.patch).toHaveBeenCalledWith(
+      '/service-desks/sd-1',
+      expect.objectContaining({ allowCancelTicket: false }),
+    );
+    expect(screen.queryByText(PENDING)).not.toBeInTheDocument();
+    await user.click(screen.getByRole('tab', { name: 'Reabertura' }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('AC-02: a failed save shows one alert with the next step and keeps the edit', async () => {
+    const user = await openDesk('Parâmetros');
+    vi.mocked(api.patch).mockRejectedValue(new Error('rede'));
+    await user.click(screen.getByLabelText('Permitir cancelar ticket'));
+    await user.click(screen.getByRole('button', { name: 'Salvar' }));
+
+    const alerts = await screen.findAllByRole('alert');
+    expect(alerts).toHaveLength(1);
+    expect(alerts[0]).toHaveTextContent('Não foi possível salvar.');
+    expect(alerts[0]).toHaveTextContent('Tente novamente.');
+    expect(screen.getByLabelText('Permitir cancelar ticket')).not.toBeChecked();
+    expect(screen.getByText(PENDING)).toBeInTheDocument();
+  });
+
+  it('AC-03: Prioridades save only on Salvar, with every item, and a failure keeps the marks', async () => {
+    const user = await openDesk('Prioridades');
+    await user.click(screen.getByLabelText('Alta'));
+    expect(api.patch).not.toHaveBeenCalled();
+    expect(screen.getByText(PENDING)).toBeInTheDocument();
+
+    vi.mocked(api.patch).mockRejectedValueOnce(new Error('rede'));
+    await user.click(screen.getByRole('button', { name: 'Salvar' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('Não foi possível salvar.');
+    expect(screen.getByLabelText('Alta')).not.toBeChecked();
+
+    await user.click(screen.getByRole('button', { name: 'Salvar' }));
+    expect(await screen.findByRole('status')).toHaveTextContent('Alterações salvas.');
+    expect(api.patch).toHaveBeenLastCalledWith('/service-desks/sd-1', {
+      priorities: [
+        { ticketPriority: 'HIGH', enabled: false },
+        { ticketPriority: 'LOW', enabled: false },
+      ],
+    });
+  });
+
+  it('AC-03: Seções do ticket save only on Salvar, with every item', async () => {
+    const user = await openDesk('Seções do ticket');
+    await user.click(screen.getByLabelText('Apontamentos'));
+    expect(api.patch).not.toHaveBeenCalled();
+    await user.click(screen.getByRole('button', { name: 'Salvar' }));
+    expect(await screen.findByRole('status')).toHaveTextContent('Alterações salvas.');
+    expect(api.patch).toHaveBeenCalledWith('/service-desks/sd-1', {
+      ticketSections: [
+        { key: 'GENERAL_INFO', enabled: true },
+        { key: 'WORKLOGS', enabled: false },
+      ],
+    });
+  });
+
+  it('AC-08: Dados básicos is controlled, keeps the payload and the button label, and reports the result', async () => {
+    const user = await openDesk();
+    const name = screen.getByLabelText('Nome de exibição');
+    await user.type(name, 'Suporte');
+    expect(name).toHaveValue('Suporte');
+    expect(screen.getByText(PENDING)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Salvar dados básicos' }));
+    expect(await screen.findByRole('status')).toHaveTextContent('Alterações salvas.');
+    expect(api.patch).toHaveBeenCalledWith('/service-desks/sd-1', {
+      displayName: 'Suporte',
+      description: '',
+    });
+    expect(screen.queryByText(PENDING)).not.toBeInTheDocument();
+  });
+
+  it('AC-08: Status is controlled, keeps the payload and the button label, and reports a failure', async () => {
+    const user = await openDesk('Status');
+    await user.selectOptions(screen.getByLabelText('Status ao fechar', { selector: 'select' }), 'RESOLVED');
+    expect(screen.getByText(PENDING)).toBeInTheDocument();
+
+    vi.mocked(api.patch).mockRejectedValue(new Error('rede'));
+    await user.click(screen.getByRole('button', { name: 'Salvar status' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('Não foi possível salvar.');
+    expect(api.patch).toHaveBeenCalledWith('/service-desks/sd-1', {
+      defaultOpenStatus: 'OPEN',
+      defaultClosedStatus: 'RESOLVED',
+    });
+    expect(screen.getByLabelText('Status ao fechar', { selector: 'select' })).toHaveValue('RESOLVED');
+  });
+
+  it('AC-01: Cliente e SLA, Membros and Estágios report the result', async () => {
+    const user = await openDesk('Clientes');
+    await user.click(await screen.findByRole('button', { name: /editar cliente e sla/i }));
+    await user.click(screen.getByRole('button', { name: /salvar cliente e sla/i }));
+    expect(await screen.findByRole('status')).toHaveTextContent('Alterações salvas.');
+
+    await user.click(screen.getByRole('tab', { name: 'Grupos de atendentes' }));
+    await user.click(await screen.findByRole('button', { name: 'Editar Membros' }));
+    vi.mocked(api.patch).mockRejectedValueOnce(new Error('rede'));
+    await user.click(screen.getByRole('button', { name: 'Salvar Membros' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('Não foi possível salvar.');
+    await user.click(screen.getByRole('button', { name: 'Salvar Membros' }));
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('Alterações salvas.'));
+
+    await user.click(screen.getByRole('tab', { name: 'Estágio' }));
+    vi.mocked(api.post).mockResolvedValue({ data: {} });
+    await user.type(await screen.findByLabelText('Novo estágio'), 'Em análise');
+    expect(screen.getByText(PENDING)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: '+ Estágio' }));
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('Alterações salvas.'));
+    expect(screen.queryByText(PENDING)).not.toBeInTheDocument();
+  });
+
+  it('AC-06: beforeunload is armed only while there is an unsaved change', async () => {
+    const user = await openDesk('Parâmetros');
+    const fire = () => {
+      const event = new Event('beforeunload', { cancelable: true });
+      window.dispatchEvent(event);
+      return event.defaultPrevented;
+    };
+    expect(fire()).toBe(false);
+    await user.click(screen.getByLabelText('Permitir cancelar ticket'));
+    expect(fire()).toBe(true);
+    await user.click(screen.getByRole('button', { name: 'Salvar' }));
+    await screen.findByRole('status');
+    expect(fire()).toBe(false);
   });
 });
