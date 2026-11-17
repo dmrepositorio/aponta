@@ -103,16 +103,17 @@ export function SettingsPage() {
           className="divide-y divide-gray-90 overflow-hidden p-0"
           role="status"
           aria-busy="true"
-          aria-label="Carregando configurações"
         >
-          {skeletonGroups.map((rows, group) => (
-            <section key={group}>
+          {skeletonGroups.map((rowCount, groupIndex) => (
+            <section key={groupIndex}>
               <div className="px-4 pb-1 pt-3">
+                {/* sr-only dentro do 1º grupo: um irmão a mais no cartão ganharia o divisor do divide-y e mudaria a altura. */}
+                {groupIndex === 0 && <span className="sr-only">Carregando configurações</span>}
                 <div className="h-4 w-16 animate-pulse rounded-control bg-gray-90" />
               </div>
+              {/* box-content: o divisor de 1 px entra na altura da linha, como na linha real (SettingsLink dentro de <li>). */}
               <ul className="divide-y divide-gray-90">
-                {Array.from({ length: rows }, (_, row) => (
-                  // box-content: o divisor de 1 px entra na altura da linha, como na linha real (SettingsLink dentro de <li>).
+                {Array.from({ length: rowCount }, (_, row) => (
                   <li key={row} className="box-content flex min-h-[var(--control-height-md)] items-center px-4">
                     <div className="h-4 w-1/3 animate-pulse rounded-control bg-gray-90" />
                   </li>

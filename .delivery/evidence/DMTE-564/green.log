@@ -6,14 +6,12 @@
 
  RUN  v4.1.11 /home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-564-ee8d207108b1/workdir/aponta/apps/web
 
- ✓ |web| src/pages/SettingsPage.test.tsx (17 tests) 2410ms
-     ✓ always shows Minha conta inside the Usuários submenu, regardless of permissions  415ms
-     ✓ shows every Usuários submenu item for an ADMIN even with no PermissionGroup linked  309ms
+ ✓ |web| src/pages/SettingsPage.test.tsx (17 tests) 1672ms
 
  Test Files  1 passed (1)
       Tests  17 passed (17)
-   Start at  18:17:24
-   Duration  8.02s (transform 2.92s, setup 162ms, import 4.27s, tests 2.41s, environment 797ms)
+   Start at  18:20:47
+   Duration  7.77s (transform 3.04s, setup 278ms, import 4.27s, tests 1.67s, environment 1.01s)
 
 
 
