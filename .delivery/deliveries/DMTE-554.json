@@ -1,0 +1,75 @@
+{
+  "version": 1,
+  "delivery": "DMTE-554",
+  "repository": "dmrepositorio/aponta",
+  "github_issue": 309,
+  "multica_id": "01a1e971-54cb-7da8-86f4-39d96df92cad",
+  "cycle": "2026-11-09/2026-11-22",
+  "tier": 1,
+  "criteria": [
+    {
+      "id": "AC-01",
+      "description": "com a API recusando o cadastro com mensagem, o formulário mostra essa mensagem num alerta (`role=\"alert\"`) e mantém o nome digitado.",
+      "tests": [
+        "apps/web/src/pages/OrganizationsPage.test.tsx: shows the API message in an alert when the server refuses the new client"
+      ]
+    },
+    {
+      "id": "AC-02",
+      "description": "com a API falhando sem mensagem (erro de rede) ou com 5xx (texto técnico \"Internal server error\"), o formulário mostra \"Não foi possível cadastrar o cliente.\"; com 400 do `ValidationPipe` (`message` em lista), mostra todas as mensagens juntas.",
+      "tests": [
+        "apps/web/src/pages/OrganizationsPage.test.tsx: shows a generic alert when the server fails without a message",
+        "apps/web/src/pages/OrganizationsPage.update-error.test.tsx: shows the pt-BR message, not the raw \"Internal server error\", when the API answers 500",
+        "apps/web/src/pages/OrganizationsPage.update-error.test.tsx: shows every validation message when the API answers 400 with a list"
+      ]
+    },
+    {
+      "id": "AC-03",
+      "description": "o cadastro sem CNPJ/CPF não envia `cnpj` nem `cpf` em branco à API.",
+      "tests": [
+        "apps/web/src/pages/OrganizationsPage.test.tsx: does not send blank CNPJ/CPF, which would collide on the unique columns",
+        "apps/web/src/pages/OrganizationsPage.update-error.test.tsx: sends a filled CNPJ and leaves blank CPF out of the payload"
+      ]
+    },
+    {
+      "id": "AC-04",
+      "description": "nos DTOs de cliente, `cnpj` e `cpf` em branco viram `undefined` na criação e `null` na atualização; valor preenchido é mantido.",
+      "tests": [
+        "apps/api/src/organizations/dto/organization-document.dto.spec.ts: drops blank cnpj and cpf on create so that two clients without a document can coexist",
+        "apps/api/src/organizations/dto/organization-document.dto.spec.ts: turns blank cnpj and cpf into null on update, which clears the document"
+      ]
+    },
+    {
+      "id": "AC-05",
+      "description": "`create` e `update` de cliente respondem 409 com mensagem legível quando `cnpj` ou `cpf` já existe; outros erros de banco seguem como estão.",
+      "tests": [
+        "apps/api/src/organizations/organizations.service.spec.ts: answers 409 with a readable message when the cnpj is already registered (DMTE-554)",
+        "apps/api/src/organizations/organizations.service.spec.ts: answers 409 with a readable message when the new cnpj belongs to another client (DMTE-554)",
+        "apps/api/src/organizations/organizations.duplicate-document.spec.ts: answers 409 with a readable message for index Organization_cnpj_key"
+      ]
+    },
+    {
+      "id": "AC-06",
+      "description": "com a API recusando a edição de um cliente já cadastrado, a tela mostra a mensagem da API num alerta (`role=\"alert\"`).",
+      "tests": [
+        "apps/web/src/pages/OrganizationsPage.update-error.test.tsx: shows the API message in an alert when the PATCH of the registration is refused"
+      ],
+      "tdd_required": false,
+      "reason": "Achado durante a implementação, depois de o RED do coletor já estar gravado. O RED foi observado (teste novo falhou por asserção, 'Unable to find role=alert', contra o código sem a correção) mas fora do coletor; regravar o RED agora exigiria reverter código pronto. O teste passa no GREEN do coletor. Pendência de conformidade registrada no pai."
+    }
+  ],
+  "spec": "docs/delivery/specs/DMTE-554.md",
+  "tdd": {
+    "mode": "required",
+    "red": ".delivery/evidence/DMTE-554/red.json",
+    "green": ".delivery/evidence/DMTE-554/green.json"
+  },
+  "design_system": {
+    "applicable": true,
+    "reused": [
+      "EzAlert"
+    ],
+    "reason": "Reaproveita EzAlert (variante error, role=alert) já usado na página; nenhum componente, prop ou token novo.",
+    "exception": "Nenhum arquivo de apps/web/src/components/ds/ muda nesta entrega, então não há story nova."
+  }
+}

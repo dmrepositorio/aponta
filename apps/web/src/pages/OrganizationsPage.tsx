@@ -117,6 +117,13 @@ interface CnpjLookupResult {
   };
 }
 
+/** Mensagem da API para o usuário: lista do ValidationPipe junta; 5xx (texto técnico em inglês) cai no fallback. */
+function apiErrorMessage(err: unknown, fallback: string): string {
+  const response = (err as { response?: { status?: number; data?: { message?: string | string[] } } }).response;
+  const message = Array.isArray(response?.data?.message) ? response.data.message.join(' ') : response?.data?.message;
+  return message && (response?.status ?? 0) < 500 ? message : fallback;
+}
+
 const orgFormSchema = z.object({
   name: z.string().trim().min(1, 'Nome é obrigatório'),
   legalName: z.string().trim().optional(),
@@ -257,6 +264,7 @@ export function OrganizationsPage() {
   const [selectedOrgs, setSelectedOrgs] = useState<Organization[]>([]);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [inlineError, setInlineError] = useState<string | null>(null);
+  const [createError, setCreateError] = useState<string | null>(null);
   const [focusedIndex, setFocusedIndex] = useState(0);
 
   // Modal para cadastro automático via CNPJ (Sankhya / Receita Federal)
@@ -351,6 +359,9 @@ export function OrganizationsPage() {
     mutationFn: async (values: OrgFormValues) => {
       const payload = {
         ...values,
+        // DMTE-554: documento em branco não vai à API; '' colide na coluna única com outro cliente sem documento.
+        cnpj: values.cnpj || undefined,
+        cpf: values.cpf || undefined,
         billingDueDay: values.billingDueDay ? parseInt(values.billingDueDay, 10) : undefined,
       };
       const { data } = await api.post<Organization>('/organizations', payload);
@@ -365,12 +376,14 @@ export function OrganizationsPage() {
       }
       return data;
     },
+    onMutate: () => setCreateError(null),
     onSuccess: (data) => {
       void queryClient.invalidateQueries({ queryKey: ['organizations'] });
       reset();
       setMode('list');
       openDetail(data.id);
     },
+    onError: (err) => setCreateError(apiErrorMessage(err, 'Não foi possível cadastrar o cliente. Tente novamente.')),
   });
 
   const updateOrgMutation = useMutation({
@@ -378,10 +391,12 @@ export function OrganizationsPage() {
       const { data } = await api.patch<Organization>(`/organizations/${detailOrgId}`, values);
       return data;
     },
+    onMutate: () => setInlineError(null),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['organizations'] });
       void queryClient.invalidateQueries({ queryKey: ['organizations', detailOrgId] });
     },
+    onError: (err) => setInlineError(apiErrorMessage(err, 'Não foi possível salvar a alteração.')),
   });
 
   const attachUserMutation = useMutation({
@@ -846,6 +861,7 @@ export function OrganizationsPage() {
       icon: FilePlus,
       onClick: () => {
         reset();
+        setCreateError(null);
         setDetailOrgId(null);
         setIsCnpjDataLocked(false);
         setMode('form');
@@ -1109,6 +1125,11 @@ className="isolate flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll
                 noValidate
                 className="p-5 space-y-5"
               >
+                {createError && (
+                  <EzAlert variant="error" onClose={() => setCreateError(null)}>
+                    {createError}
+                  </EzAlert>
+                )}
                 <div className="bg-white rounded-[8px] border border-gray-200 p-4 space-y-4">
                   <div className="border-b border-gray-100 pb-2.5 flex items-center justify-between">
                     <div>

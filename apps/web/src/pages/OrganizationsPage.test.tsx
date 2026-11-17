@@ -251,6 +251,68 @@ describe('OrganizationsPage', { timeout: 15000 }, () => {
     });
   });
 
+  describe('cadastro manual: falha ao salvar (DMTE-554)', () => {
+    async function openManualForm(user: ReturnType<typeof userEvent.setup>) {
+      await waitFor(() => {
+        expect(screen.getByText('Empresa A')).toBeInTheDocument();
+      });
+      await user.click(screen.getByTestId('ez-toolbar-actions-button'));
+      await user.click(screen.getByRole('menuitem', { name: /cadastrar manualmente/i }));
+      await waitFor(() => {
+        expect(screen.getByText('Nova Empresa')).toBeInTheDocument();
+      });
+    }
+
+    it('shows the API message in an alert when the server refuses the new client', async () => {
+      vi.mocked(api.post).mockRejectedValue({
+        response: { status: 409, data: { message: 'Já existe um cliente com este CNPJ.' } },
+      });
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      renderPage();
+      await openManualForm(user);
+
+      await user.type(screen.getByLabelText(/nome fantasia/i), 'Empresa D');
+      await user.click(screen.getByRole('button', { name: /cadastrar/i }));
+
+      const alert = await screen.findByRole('alert');
+      expect(alert).toHaveTextContent('Já existe um cliente com este CNPJ.');
+      // continua no formulário, com o que o usuário digitou
+      expect(screen.getByLabelText(/nome fantasia/i)).toHaveValue('Empresa D');
+    });
+
+    it('shows a generic alert when the server fails without a message', async () => {
+      vi.mocked(api.post).mockRejectedValue(new Error('Network Error'));
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      renderPage();
+      await openManualForm(user);
+
+      await user.type(screen.getByLabelText(/nome fantasia/i), 'Empresa D');
+      await user.click(screen.getByRole('button', { name: /cadastrar/i }));
+
+      expect(await screen.findByRole('alert')).toHaveTextContent(/não foi possível cadastrar o cliente/i);
+    });
+
+    it('does not send blank CNPJ/CPF, which would collide on the unique columns', async () => {
+      vi.mocked(api.post).mockResolvedValue({ data: { id: 'org-4', name: 'Empresa D' } });
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      renderPage();
+      await openManualForm(user);
+
+      await user.type(screen.getByLabelText(/nome fantasia/i), 'Empresa D');
+      await user.click(screen.getByRole('button', { name: /cadastrar/i }));
+
+      await waitFor(() => {
+        expect(api.post).toHaveBeenCalledWith('/organizations', expect.objectContaining({ name: 'Empresa D' }));
+      });
+      const payload = vi.mocked(api.post).mock.calls[0]?.[1] as Record<string, unknown>;
+      expect(payload).not.toHaveProperty('cnpj', '');
+      expect(payload).not.toHaveProperty('cpf', '');
+    });
+  });
+
   it('looks up a CNPJ and autofills legal name / trade name', async () => {
     vi.mocked(api.get).mockImplementation((url: string, config?: any) => {
       if (url === '/organizations') return Promise.resolve({ data: orgs });

@@ -6,14 +6,27 @@ import { Prisma, TicketStatus } from '@prisma/client';
 import { CreateOrganizationAddressDto } from './dto/create-organization-address.dto';
 import { CreateOrganizationContactDto } from './dto/create-organization-contact.dto';
 
+// DMTE-554: cnpj e cpf são @unique; sem isto a violação chega ao usuário como 500 sem mensagem.
+function rethrowDuplicateDocument(error: unknown): never {
+  if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+    // Com o adapter-pg o campo vem em driverAdapterError.cause.constraint (index ou fields), sem `target`.
+    const constraint = (error.meta?.driverAdapterError as { cause?: { constraint?: { index?: string; fields?: string[] } } } | undefined)
+      ?.cause?.constraint;
+    const target = [error.meta?.target, constraint?.index, constraint?.fields].flat().join(',');
+    const field = ['cnpj', 'cpf'].find((name) => target.includes(name));
+    if (field) throw new ConflictException(`Já existe um cliente com este ${field.toUpperCase()}.`);
+  }
+  throw error;
+}
+
 @Injectable()
 export class OrganizationsService {
   constructor(private prisma: PrismaService) {}
 
   async create(createOrganizationDto: CreateOrganizationDto) {
-    const organization = await this.prisma.organization.create({
-      data: createOrganizationDto,
-    });
+    const organization = await this.prisma.organization
+      .create({ data: createOrganizationDto })
+      .catch(rethrowDuplicateDocument);
 
     // Tiflux-parity (DMTE-88, Stage 2): um Article PRIVATE com
     // autoShareWithNewOrganizations=true deve ficar imediatamente visível
@@ -69,10 +82,9 @@ export class OrganizationsService {
 
   async update(id: string, updateOrganizationDto: UpdateOrganizationDto) {
     await this.findOne(id); // Check exists
-    return this.prisma.organization.update({
-      where: { id },
-      data: updateOrganizationDto,
-    });
+    return this.prisma.organization
+      .update({ where: { id }, data: updateOrganizationDto })
+      .catch(rethrowDuplicateDocument);
   }
 
   /** DMTE-481: "excluir" só inativa; contrato ativo ou ticket aberto bloqueiam (409). */
