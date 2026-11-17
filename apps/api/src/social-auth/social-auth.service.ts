@@ -97,7 +97,7 @@ export class SocialAuthService {
   }
 
   /** Troca o código de uso único pelo id do usuário que entrou. */
-  async exchange(code: string): Promise<string> {
+  exchange(code: string): string {
     this.sweep();
     const entry = this.exchangeCodes.get(code);
     this.exchangeCodes.delete(code);
@@ -189,6 +189,8 @@ export class SocialAuthService {
   }
 
   private stateKey(): Buffer {
-    return createHash('sha256').update(`${this.config.get<string>('JWT_SECRET') ?? ''}:oauth-state`).digest();
+    const secret = this.config.get<string>('JWT_SECRET');
+    if (!secret) throw new Error('JWT_SECRET is not set.');
+    return createHash('sha256').update(`${secret}:oauth-state`).digest();
   }
 }

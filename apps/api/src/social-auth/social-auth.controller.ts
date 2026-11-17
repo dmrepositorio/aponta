@@ -48,7 +48,7 @@ export class SocialAuthController {
   @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @Post('exchange')
   async exchange(@Body() dto: ExchangeSocialCodeDto) {
-    const userId = await this.social.exchange(dto.code);
+    const userId = this.social.exchange(dto.code);
     const user = await this.usersService.findById(userId);
     // Conta inativada entre o retorno do provedor e a troca não entra.
     if (!user || !user.active) throw new UnauthorizedException('Código inválido.');

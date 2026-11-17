@@ -1,4 +1,4 @@
-import { IsEmail, IsString, MinLength } from 'class-validator';
+import { IsEmail, IsString, MaxLength } from 'class-validator';
 import { TrimLower } from './transforms';
 
 /**
@@ -19,6 +19,6 @@ export class RegisterDto {
   email!: string;
 
   @IsString()
-  @MinLength(8)
+  @MaxLength(128)
   password!: string;
 }

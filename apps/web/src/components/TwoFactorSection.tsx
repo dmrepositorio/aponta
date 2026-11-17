@@ -1,18 +1,13 @@
 import { FormEvent, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { QRCodeSVG } from 'qrcode.react';
-import axios from 'axios';
 import { api } from '../lib/api';
 import { useFeatureFlag } from '../hooks/useFeatureFlag';
+import { apiErrorMessage } from '../hooks/useUsers';
 import { EzAlert, EzButton, EzTextInput } from './ds';
 
 const FLAG = 'autenticacao-dois-fatores';
 type Setup = { secret: string; otpauthUri: string };
-
-const apiMessage = (error: unknown, fallback: string) => {
-  const message = axios.isAxiosError(error) ? error.response?.data?.message : undefined;
-  return typeof message === 'string' ? message : fallback;
-};
 
 /** Segundo fator em Minha Conta → Segurança (DMTE-551): ativar com QR e códigos de recuperação, e desativar. */
 export function TwoFactorSection() {
@@ -39,7 +34,7 @@ export function TwoFactorSection() {
     try {
       await action();
     } catch (e) {
-      setError(apiMessage(e, fallback));
+      setError(apiErrorMessage(e, fallback));
     } finally {
       setBusy(false);
     }

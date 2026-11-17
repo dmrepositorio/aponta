@@ -11,6 +11,6 @@ import { OAUTH_FETCH, SocialAuthService } from './social-auth.service';
 @Module({
   imports: [PrismaModule, ConfigModule, FeatureFlagsModule, UsersModule, TwoFactorModule, AuthModule],
   controllers: [SocialAuthController],
-  providers: [SocialAuthService, { provide: OAUTH_FETCH, useValue: (url: string, init?: object) => fetch(url, init) }],
+  providers: [SocialAuthService, { provide: OAUTH_FETCH, useValue: (url: string, init?: object) => fetch(url, { ...init, signal: AbortSignal.timeout(10_000) }) }],
 })
 export class SocialAuthModule {}

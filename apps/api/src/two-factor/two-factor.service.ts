@@ -132,8 +132,9 @@ export class TwoFactorService {
     if (/^\d{6}$/.test(code)) {
       const step = verifyTotp(decryptText(record.secretEnc, this.key()), code, Date.now(), record.lastStep);
       if (step === null) return false;
-      await this.prisma.userTwoFactor.update({ where: { userId: record.userId }, data: { lastStep: step } });
-      return true;
+      // Condicional: duas requisições com o mesmo código passam da leitura juntas, mas só uma grava o passo.
+      const claimed = await this.prisma.userTwoFactor.updateMany({ where: { userId: record.userId, lastStep: { lt: step } }, data: { lastStep: step } });
+      return claimed.count === 1;
     }
     const claimed = await this.prisma.twoFactorRecoveryCode.updateMany({
       where: { userId: record.userId, codeHash: sha256(normalizeRecovery(code)), usedAt: null },
@@ -143,8 +144,9 @@ export class TwoFactorService {
   }
 
   private sign(payload: string): string {
-    const secret = `${this.config.get<string>('JWT_SECRET') ?? ''}:2fa-challenge`;
-    return createHmac('sha256', secret).update(payload).digest('base64url');
+    const secret = this.config.get<string>('JWT_SECRET');
+    if (!secret) throw new Error('JWT_SECRET is not set.');
+    return createHmac('sha256', `${secret}:2fa-challenge`).update(payload).digest('base64url');
   }
 
   private readChallenge(token: string): { u: string; pv: number } | null {
