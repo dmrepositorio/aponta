@@ -1312,7 +1312,7 @@ function EzEntityGridInner<T>(
             aria-label="Selecionar todas as linhas"
             checked={table.getIsAllRowsSelected()}
             onChange={table.getToggleAllRowsSelectedHandler()}
-            className="w-4 h-4 rounded border-gray-300 text-brand-600 accent-brand-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-200"
+            className="w-4 h-4 rounded border-gray-300 text-brand-600 accent-brand-600 ez-focus"
           />
         ),
         cell: ({ row }) => (
@@ -1321,7 +1321,7 @@ function EzEntityGridInner<T>(
             aria-label="Selecionar linha"
             checked={row.getIsSelected()}
             onChange={row.getToggleSelectedHandler()}
-            className="w-4 h-4 rounded border-gray-300 text-brand-600 accent-brand-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-200"
+            className="w-4 h-4 rounded border-gray-300 text-brand-600 accent-brand-600 ez-focus"
           />
         ),
       });
@@ -1901,7 +1901,7 @@ function EzEntityGridInner<T>(
                     data-testid="ez-entity-grid-group-row"
                     role="button"
                     tabIndex={0}
-                    className="border-t border-gray-200 bg-gray-80 cursor-pointer hover:bg-gray-80/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-200"
+                    className="border-t border-gray-200 bg-gray-80 cursor-pointer hover:bg-gray-80/80 ez-focus-inset"
                     onClick={toggleExpanded}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' || e.key === ' ') {

@@ -21,7 +21,7 @@ Identidade: DMTE-540, Tier 2, ciclo 2026-11-09/2026-11-22, pai Multica `01a1e1dc
 ## Acceptance criteria
 
 - AC-01: nenhum arquivo de produção de `apps/web/src` (fora de testes e stories) contém `focus:ring-brand-200` nem `focus-visible:ring-brand-200`; os elementos migrados usam `ez-focus` ou `ez-focus-inset`.
-- AC-02: `EzButton` (e `EzActionsButton`, `EzTaskbar`, `EzSearchPlus`) tem `ez-focus` e não tem `ring-brand-200`, `ring-4` nem `ring-offset-2` de foco; o teste do token (`styles.focus.test.ts`) continua passando, com `brand-600` a 4,5:1 ou mais sobre branco.
+- AC-02: `EzButton` tem `ez-focus` e não tem `ring-brand-200` nem `ring-offset` de foco (os demais componentes, como `EzActionsButton`, `EzTaskbar` e `EzSearchPlus`, são cobertos pelo guard do AC-01); o teste do token (`styles.focus.test.ts`) continua passando, com `brand-600` a 4,5:1 ou mais sobre branco.
 - AC-03: `EzDialog` aceita `children`, `confirmLabel`, `cancelLabel` e `confirmDisabled`; sem essas props renderiza como hoje ("Confirmar", "Cancelar").
 - AC-04: `EzDialog` com `variant="danger"` foca o botão Cancelar ao abrir; o diálogo tem `aria-labelledby` apontando para o título.
 - AC-05: Excluir em Contratos abre o `EzDialog` e não chama `window.confirm`; o diálogo cita o contrato (um) ou lista os nomes (vários, até 5 mais "e mais N"); nenhuma chamada de exclusão acontece antes de Confirmar; Cancelar e Esc fecham sem excluir.

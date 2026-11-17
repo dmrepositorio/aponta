@@ -80,7 +80,7 @@ export const EzActionsButton = forwardRef<HTMLButtonElement, EzActionsButtonProp
           className={cn(
             'inline-flex items-center gap-2 h-[42px] px-4 rounded-[12px] border text-[14px] font-medium transition-colors',
             'bg-transparent text-brand-600 border-gray-200 hover:bg-gray-80 hover:border-gray-90',
-            'focus:outline-none focus-visible:ring-4 focus-visible:ring-brand-200',
+            'ez-focus',
             disabled && 'opacity-50 cursor-not-allowed pointer-events-none',
             className
           )}

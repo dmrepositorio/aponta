@@ -11,6 +11,7 @@ import {
 import { useAuthStore } from '../stores/authStore';
 import {
   EzAlert,
+  EzDialog,
   EzButton,
   EzComboBox,
   EzDynamicFilter,
@@ -97,6 +98,17 @@ const CONTRACT_SCREEN_CONFIG_FINANCIAL_COLUMNS = [
   { id: 'adjustmentDate', label: 'Reajuste' },
 ];
 
+interface DeleteDialog {
+  targets: Contract[];
+  failures: { contract: Contract; message: string }[];
+  running: boolean;
+}
+
+const MAX_LISTED_CONTRACTS = 5;
+
+const contractLabel = (c: Contract) =>
+  `${c.name || 'Sem nome'} · ${c.organization?.name ?? '—'}`;
+
 function extractErrorMessage(error: unknown, fallback: string): string {
   const message = (
     error as { response?: { data?: { message?: string | string[] } } }
@@ -122,7 +134,7 @@ export function ContractsPage() {
   const [creating, setCreating] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const [selectedContracts, setSelectedContracts] = useState<Contract[]>([]);
-  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [deleteDialog, setDeleteDialog] = useState<DeleteDialog | null>(null);
   const contracts = useContracts('');
   const detail = useContract(selectedContractId);
   const organizations = useContractOrganizations(
@@ -198,22 +210,44 @@ export function ContractsPage() {
 
   const handleDelete = () => {
     if (selectedContracts.length === 0) return;
-    const confirmMsg = `Deseja excluir ${selectedContracts.length} contrato(s) selecionado(s)?`;
-    if (!window.confirm(confirmMsg)) return;
-    setDeleteError(null);
-    selectedContracts.forEach((contract) => {
-      deleteContract.mutate(contract.id, {
-        onError: (error) => {
-          setDeleteError(
-            extractErrorMessage(
-              error,
-              'Não foi possível excluir o contrato. Tente novamente.',
-            ),
-          );
-        },
-      });
+    setDeleteDialog({ targets: selectedContracts, failures: [], running: false });
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteDialog) return;
+    const { targets } = deleteDialog;
+    setDeleteDialog({ ...deleteDialog, running: true });
+    const results = await Promise.allSettled(
+      targets.map((contract) => deleteContract.mutateAsync(contract.id)),
+    );
+    const failures = targets.flatMap((contract, i) => {
+      const result = results[i];
+      return result.status === 'rejected'
+        ? [
+            {
+              contract,
+              message: extractErrorMessage(
+                result.reason,
+                'Não foi possível excluir o contrato. Tente novamente.',
+              ),
+            },
+          ]
+        : [];
     });
-    setSelectedContracts([]);
+    const failedIds = new Set(failures.map((f) => f.contract.id));
+    const deletedIds = new Set(
+      targets.filter((c) => !failedIds.has(c.id)).map((c) => c.id),
+    );
+    setSelectedContracts((prev) => prev.filter((c) => !deletedIds.has(c.id)));
+    setDeleteDialog(
+      failures.length === 0
+        ? null
+        : {
+            targets: failures.map((f) => f.contract),
+            failures,
+            running: false,
+          },
+    );
   };
 
   const openDetail = (id: string) => {
@@ -293,11 +327,6 @@ export function ContractsPage() {
       }
     >
     <div className="space-y-6">
-      {deleteError && (
-        <EzAlert variant="error" onClose={() => setDeleteError(null)}>
-          {deleteError}
-        </EzAlert>
-      )}
       <div className="bg-white rounded-[10px] border border-gray-200 overflow-hidden shadow-xs flex flex-col">
         <EzEntityToolbar
           viewMode={mode === 'list' ? 'GRID' : 'FORM'}
@@ -328,7 +357,7 @@ export function ContractsPage() {
           onPrevious={handlePrevious}
           hasNext={focusedIndex < filteredContracts.length - 1}
           onNext={handleNext}
-          selectedCount={selectedContracts.length}
+          selectedCount={mode === 'list' ? selectedContracts.length : 0}
           onDelete={canManage ? handleDelete : undefined}
           onOpenGridConfig={() => setIsScreenConfigModalOpen(true)}
           onOpenScreenConfig={() => setIsScreenConfigModalOpen(true)}
@@ -509,6 +538,55 @@ export function ContractsPage() {
           onClose={() => setIsScreenConfigModalOpen(false)}
           initialTab="grid"
         />
+      )}
+      {deleteDialog && (
+        <EzDialog
+          open
+          variant="danger"
+          title={
+            deleteDialog.targets.length === 1
+              ? 'Excluir contrato'
+              : `Excluir ${deleteDialog.targets.length} contratos`
+          }
+          message={
+            deleteDialog.failures.length > 0
+              ? 'Não foi possível excluir:'
+              : 'Esta ação não pode ser desfeita.'
+          }
+          confirmLabel={
+            deleteDialog.failures.length > 0 ? 'Tentar novamente' : 'Confirmar'
+          }
+          cancelLabel={deleteDialog.failures.length > 0 ? 'Fechar' : 'Cancelar'}
+          confirmDisabled={deleteDialog.running}
+          onConfirm={() => void confirmDelete()}
+          onCancel={() => {
+            if (!deleteDialog.running) setDeleteDialog(null);
+          }}
+        >
+          <ul className="mt-3 space-y-1">
+            {(deleteDialog.failures.length > 0
+              ? deleteDialog.failures
+              : deleteDialog.targets
+                  .slice(0, MAX_LISTED_CONTRACTS)
+                  .map((contract) => ({ contract, message: '' }))
+            ).map(({ contract, message }) => (
+              <li key={contract.id} className="font-medium text-gray-900">
+                {contractLabel(contract)}
+                {message && (
+                  <span className="block font-normal text-red-700">
+                    {message}
+                  </span>
+                )}
+              </li>
+            ))}
+          </ul>
+          {deleteDialog.failures.length === 0 &&
+            deleteDialog.targets.length > MAX_LISTED_CONTRACTS && (
+              <p className="mt-1">
+                e mais {deleteDialog.targets.length - MAX_LISTED_CONTRACTS}
+              </p>
+            )}
+        </EzDialog>
       )}
     </div>
     </EzPageLayout>

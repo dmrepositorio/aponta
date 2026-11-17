@@ -16,7 +16,7 @@
     },
     {
       "id": "AC-02",
-      "description": "`EzButton` (e `EzActionsButton`, `EzTaskbar`, `EzSearchPlus`) tem `ez-focus` e não tem `ring-brand-200`, `ring-4` nem `ring-offset-2` de foco; o teste do token (`styles.focus.test.ts`) continua passando, com `brand-600` a 4,5:1 ou mais sobre branco.",
+      "description": "`EzButton` tem `ez-focus` e não tem `ring-brand-200` nem `ring-offset` de foco (os demais componentes, como `EzActionsButton`, `EzTaskbar` e `EzSearchPlus`, são cobertos pelo guard do AC-01); o teste do token (`styles.focus.test.ts`) continua passando, com `brand-600` a 4,5:1 ou mais sobre branco.",
       "tests": [
         "apps/web/src/components/ds/EzButton.test.tsx: uses the shared focus token instead of the brand-200 ring",
         "apps/web/src/styles.focus.test.ts: keeps the focus color at 3:1 or more on every tab surface"

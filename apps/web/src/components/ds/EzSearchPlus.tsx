@@ -105,7 +105,7 @@ export const EzSearchPlus = forwardRef<HTMLInputElement, EzSearchPlusProps>(
             aria-pressed={filtersActive}
             className={cn(
               'flex items-center gap-1.5 shrink-0 h-[42px] px-4 rounded-[12px] border text-[14px] font-medium transition-colors outline-none',
-              'focus-visible:ring-4 focus-visible:ring-brand-200',
+              'ez-focus',
               filtersActive
                 ? 'bg-brand-50 border-brand-500 text-brand-700'
                 : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-80 hover:border-gray-300',

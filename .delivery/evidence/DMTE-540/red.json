@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "phase": "red",
+  "started_at": "2026-11-17T13:14:04.984157+00:00",
+  "finished_at": "2026-11-17T13:14:47.817450+00:00",
+  "command": [
+    "pnpm",
+    "--dir",
+    "apps/web",
+    "exec",
+    "vitest",
+    "run",
+    "src/components/ds/focusToken.guard.test.ts",
+    "src/components/ds/EzButton.test.tsx",
+    "src/components/ds/EzDialog.test.tsx",
+    "src/pages/ContractsPage.test.tsx"
+  ],
+  "base_sha": "bba27622a05d386565e1ce09b8134a92ac77a620",
+  "head_sha": "77eed3ffb5c8e9eb412ead96d8e8b38668c37b75",
+  "exit_code": 1,
+  "tests": {
+    "apps/web/src/components/ds/focusToken.guard.test.ts": "07bd51a4b533767927872d61b2eda94674170fde590b66af5edf65dda3378602",
+    "apps/web/src/components/ds/EzButton.test.tsx": "64a30c0305bd3d8f5de2ed21b28fcba81be016e2329a32f3ae87f2d59c078331",
+    "apps/web/src/components/ds/EzDialog.test.tsx": "c8cb966006c3f741b5f8985f6c31fe98cea77c0b87d7ba1dfef70f535302932b",
+    "apps/web/src/pages/ContractsPage.test.tsx": "42cf07cb292b03d49d7509b652779e7f2fb71c089f6b11647014a9fe18e5ba12"
+  },
+  "criteria": [
+    "AC-01",
+    "AC-02",
+    "AC-03",
+    "AC-04",
+    "AC-05",
+    "AC-06",
+    "AC-07",
+    "AC-08"
+  ],
+  "source_hashes": {
+    "apps/web/src/components/ds/EzButton.test.tsx": "64a30c0305bd3d8f5de2ed21b28fcba81be016e2329a32f3ae87f2d59c078331",
+    "apps/web/src/components/ds/EzDialog.test.tsx": "c8cb966006c3f741b5f8985f6c31fe98cea77c0b87d7ba1dfef70f535302932b",
+    "apps/web/src/components/ds/focusToken.guard.test.ts": "07bd51a4b533767927872d61b2eda94674170fde590b66af5edf65dda3378602",
+    "apps/web/src/pages/ContractsPage.test.tsx": "42cf07cb292b03d49d7509b652779e7f2fb71c089f6b11647014a9fe18e5ba12"
+  },
+  "log": ".delivery/evidence/DMTE-540/red.log",
+  "log_sha256": "14cfde386c930de1fe73f2827ffd46d3771f257cb7bf958aebbee4ff25d202ed"
+}

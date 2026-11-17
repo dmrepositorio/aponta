@@ -52,7 +52,7 @@ export const EzChip = forwardRef<HTMLDivElement, EzChipProps>(
             aria-label={`Remover ${label}`}
             className={cn(
               'flex items-center justify-center rounded-full -mr-0.5 h-4 w-4 transition-colors',
-              'hover:bg-black/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-200',
+              'hover:bg-black/10 ez-focus',
               disabled && 'cursor-not-allowed pointer-events-none'
             )}
           >

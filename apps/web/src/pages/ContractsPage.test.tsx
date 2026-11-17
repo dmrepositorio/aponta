@@ -307,58 +307,187 @@ describe('ContractsPage', () => {
     });
   });
 
-  it('lets an ADMIN select a contract and delete it via the toolbar', async () => {
-    vi.mocked(api.get).mockResolvedValue({ data: contracts });
+  const namedContracts = (count: number) =>
+    Array.from({ length: count }, (_, i) => ({
+      id: `c${i + 1}`,
+      organizationId: `org-${i + 1}`,
+      organization: { name: `Empresa ${i + 1}` },
+      name: `Contrato ${i + 1}`,
+      type: 'COVERAGE',
+      active: true,
+      createdAt: `2025-0${(i % 9) + 1}-01T00:00:00.000Z`,
+    }));
+
+  const openDeleteDialog = async (
+    user: ReturnType<typeof userEvent.setup>,
+    rowsToSelect: number | 'all',
+  ) => {
+    const checkboxes = screen.getAllByRole('checkbox');
+    if (rowsToSelect === 'all') {
+      await user.click(checkboxes[0]);
+    } else {
+      for (let i = 1; i <= rowsToSelect; i += 1) await user.click(checkboxes[i]);
+    }
+    await user.click(screen.getByTestId('ez-toolbar-delete-button'));
+    return screen.findByRole('dialog');
+  };
+
+  it('asks for confirmation in a DS dialog that names the contract before deleting', async () => {
+    vi.mocked(api.get).mockResolvedValue({ data: namedContracts(2) });
     vi.mocked(api.delete).mockResolvedValue({ data: {} });
-    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+    const confirmSpy = vi.spyOn(window, 'confirm');
     loginAs('ADMIN');
     const user = userEvent.setup();
     renderPage();
 
-    await screen.findByText('Empresa A');
-    const rowCheckboxes = screen.getAllByRole('checkbox');
-    // rowCheckboxes[0] is the header "select all" checkbox; [1] is the
-    // first data row (contract c1).
-    await user.click(rowCheckboxes[1]);
+    await screen.findByText('Empresa 1');
+    const dialog = await openDeleteDialog(user, 1);
 
-    expect(screen.getByTestId('ez-toolbar-delete-button')).toBeEnabled();
-    await user.click(screen.getByTestId('ez-toolbar-delete-button'));
+    expect(confirmSpy).not.toHaveBeenCalled();
+    expect(within(dialog).getByText('Contrato 1 · Empresa 1')).toBeInTheDocument();
+    expect(api.delete).not.toHaveBeenCalled();
 
-    expect(confirmSpy).toHaveBeenCalled();
+    await user.click(within(dialog).getByRole('button', { name: 'Confirmar' }));
     await waitFor(() => {
       expect(api.delete).toHaveBeenCalledWith('/contracts/c1');
     });
-
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
     confirmSpy.mockRestore();
   });
 
-  it('shows the backend conflict message when deleting a contract with worklogs fails', async () => {
-    vi.mocked(api.get).mockResolvedValue({ data: contracts });
-    vi.mocked(api.delete).mockRejectedValue({
-      response: {
-        data: {
-          message:
-            'Contrato com apontamentos não pode ser excluído; desative-o para preservar o histórico',
-        },
-      },
-    });
-    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+  it('lists up to five contract names and counts the rest', async () => {
+    vi.mocked(api.get).mockResolvedValue({ data: namedContracts(7) });
     loginAs('ADMIN');
     const user = userEvent.setup();
     renderPage();
 
-    await screen.findByText('Empresa A');
-    const rowCheckboxes = screen.getAllByRole('checkbox');
-    await user.click(rowCheckboxes[1]);
+    await screen.findByText('Empresa 1');
+    const dialog = await openDeleteDialog(user, 'all');
+
+    expect(within(dialog).getAllByRole('listitem')).toHaveLength(5);
+    expect(within(dialog).getByText('e mais 2')).toBeInTheDocument();
+  });
+
+  it('cancels the deletion without calling the API', async () => {
+    vi.mocked(api.get).mockResolvedValue({ data: namedContracts(2) });
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    renderPage();
+
+    await screen.findByText('Empresa 1');
+    const dialog = await openDeleteDialog(user, 1);
+    await user.click(within(dialog).getByRole('button', { name: 'Cancelar' }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
     await user.click(screen.getByTestId('ez-toolbar-delete-button'));
+    expect(await screen.findByRole('dialog')).toBeInTheDocument();
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(api.delete).not.toHaveBeenCalled();
+  });
 
+  it('lists each failed contract with its own message and keeps only the failed ones selected', async () => {
+    vi.mocked(api.get).mockResolvedValue({ data: namedContracts(3) });
+    vi.mocked(api.delete).mockImplementation(async (url: string) => {
+      if (url === '/contracts/c1') return { data: {} };
+      throw { response: { data: { message: `Falha em ${url.split('/').pop()}` } } };
+    });
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    renderPage();
+
+    await screen.findByText('Empresa 1');
+    const dialog = await openDeleteDialog(user, 'all');
+    await user.click(within(dialog).getByRole('button', { name: 'Confirmar' }));
+
+    const failures = await within(dialog).findAllByRole('listitem');
+    expect(failures).toHaveLength(2);
+    expect(failures[0]).toHaveTextContent('Contrato 2 · Empresa 2');
+    expect(failures[0]).toHaveTextContent('Falha em c2');
+    expect(failures[1]).toHaveTextContent('Contrato 3 · Empresa 3');
+    expect(failures[1]).toHaveTextContent('Falha em c3');
+    expect(within(dialog).queryByText(/Contrato 1 ·/)).not.toBeInTheDocument();
+    expect(screen.getByTestId('ez-toolbar-delete-button')).toHaveAttribute(
+      'title',
+      'Excluir 2 selecionado(s)',
+    );
+  });
+
+  it('retries only the contracts that failed', async () => {
+    vi.mocked(api.get).mockResolvedValue({ data: namedContracts(3) });
+    vi.mocked(api.delete).mockImplementation(async (url: string) => {
+      if (url === '/contracts/c1') return { data: {} };
+      throw { response: { data: { message: 'Contrato com apontamentos não pode ser excluído' } } };
+    });
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    renderPage();
+
+    await screen.findByText('Empresa 1');
+    const dialog = await openDeleteDialog(user, 'all');
+    await user.click(within(dialog).getByRole('button', { name: 'Confirmar' }));
+    await within(dialog).findAllByRole('listitem');
+    expect(api.delete).toHaveBeenCalledTimes(3);
+
+    vi.mocked(api.delete).mockResolvedValue({ data: {} });
+    await user.click(within(dialog).getByRole('button', { name: 'Tentar novamente' }));
+
+    await waitFor(() => {
+      expect(api.delete).toHaveBeenCalledTimes(5);
+    });
     expect(
-      await screen.findByText(
-        'Contrato com apontamentos não pode ser excluído; desative-o para preservar o histórico',
-      ),
-    ).toBeInTheDocument();
+      vi.mocked(api.delete).mock.calls.filter(([url]) => url === '/contracts/c1'),
+    ).toHaveLength(1);
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+  });
 
-    confirmSpy.mockRestore();
+  it('disables Confirmar while the deletion is running', async () => {
+    vi.mocked(api.get).mockResolvedValue({ data: namedContracts(2) });
+    let finish: (value: unknown) => void = () => undefined;
+    vi.mocked(api.delete).mockImplementation(
+      () => new Promise((resolve) => { finish = resolve; }),
+    );
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    renderPage();
+
+    await screen.findByText('Empresa 1');
+    const dialog = await openDeleteDialog(user, 1);
+    await user.click(within(dialog).getByRole('button', { name: 'Confirmar' }));
+
+    await waitFor(() => {
+      expect(within(dialog).getByRole('button', { name: 'Confirmar' })).toBeDisabled();
+    });
+    expect(api.delete).toHaveBeenCalledTimes(1);
+
+    finish({ data: {} });
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+  });
+
+  it('disables the toolbar delete button while a contract form is open', async () => {
+    const list = namedContracts(2);
+    vi.mocked(api.get).mockImplementation(async (url: string) => ({
+      data: url === '/contracts/c1' ? list[0] : url === '/contracts/c2' ? list[1] : list,
+    }));
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    renderPage();
+
+    await screen.findByText('Empresa 1');
+    await user.click(screen.getAllByRole('checkbox')[1]);
+    expect(screen.getByTestId('ez-toolbar-delete-button')).toBeEnabled();
+
+    await user.click(screen.getAllByRole('button', { name: /Ver detalhes/ })[0]);
+    await waitFor(() => {
+      expect(screen.getByTestId('ez-toolbar-record-count')).toHaveTextContent('1 de 2');
+    });
+    expect(screen.getByTestId('ez-toolbar-delete-button')).toBeDisabled();
   });
 
   it('does not show the delete button for AGENT, who cannot manage contracts', async () => {

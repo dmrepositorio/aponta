@@ -21,4 +21,38 @@ describe('EzDialog', () => {
     );
     expect(document.body.querySelector('svg')).toHaveClass('text-red-600');
   });
+
+  it('renders children, custom labels and a disabled confirm, and keeps the defaults', () => {
+    const { rerender } = render(
+      <EzDialog open title="T" message="M" onConfirm={() => undefined} onCancel={() => undefined}>
+        <ul><li>Contrato 1</li></ul>
+      </EzDialog>
+    );
+    expect(screen.getByText('Contrato 1')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Confirmar' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Cancelar' })).toBeInTheDocument();
+
+    rerender(
+      <EzDialog
+        open
+        title="T"
+        message="M"
+        confirmLabel="Tentar novamente"
+        cancelLabel="Fechar"
+        confirmDisabled
+        onConfirm={() => undefined}
+        onCancel={() => undefined}
+      />
+    );
+    expect(screen.getByRole('button', { name: 'Tentar novamente' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Fechar' })).toBeInTheDocument();
+  });
+
+  it('focuses Cancelar when the danger dialog opens and names the dialog by its title', () => {
+    render(
+      <EzDialog open variant="danger" title="Excluir contrato" message="M" onConfirm={() => undefined} onCancel={() => undefined} />
+    );
+    expect(screen.getByRole('button', { name: 'Cancelar' })).toHaveFocus();
+    expect(screen.getByRole('dialog', { name: 'Excluir contrato' })).toBeInTheDocument();
+  });
 });

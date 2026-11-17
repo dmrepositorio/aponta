@@ -131,7 +131,7 @@ export const EzTextInput = forwardRef<HTMLInputElement, EzTextInputProps>(
                   tabIndex={-1}
                   disabled={disabled}
                   onClick={() => setPasswordVisible(!passwordVisible)}
-                  className="p-0.5 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-200 hover:text-gray-700 transition-colors"
+                  className="p-0.5 rounded hover:text-gray-700 transition-colors ez-focus"
                   aria-label={passwordVisible ? 'Ocultar senha' : 'Mostrar senha'}
                 >
                   {passwordVisible ? (
