@@ -15,7 +15,8 @@ export const activeTagTokenPairs: Record<string, [string, string]> = {
 
 const iconProps = { 'aria-hidden': true, className: 'h-3 w-3', strokeWidth: 3 } as const;
 
-export function ActiveTag({ active }: { active: boolean }) {
+// `pending` (Convite pendente, DMTE-550 D19) só entra na assinatura; o comportamento vem na implementação.
+export function ActiveTag({ active }: { active: boolean; pending?: boolean }) {
   return (
     <EzTag
       label={active ? 'Ativo' : 'Inativo'}

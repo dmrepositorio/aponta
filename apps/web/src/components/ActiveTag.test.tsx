@@ -19,7 +19,7 @@ function look(ui: ReactElement, text: string) {
   return result;
 }
 
-describe('ActiveTag (DMTE-541 AC-03)', () => {
+describe('ActiveTag (DMTE-541 AC-03, DMTE-550 AC-29)', () => {
   it('shows Ativo and Inativo with text and an icon, differing in icon and classes, without red or raw emerald', () => {
     const on = look(<ActiveTag active />, 'Ativo');
     const off = look(<ActiveTag active={false} />, 'Inativo');
@@ -52,15 +52,42 @@ describe('ActiveTag (DMTE-541 AC-03)', () => {
       return (hi + 0.05) / (lo + 0.05);
     };
 
-    expect(Object.keys(activeTagTokenPairs).sort()).toEqual(['active', 'inactive']);
+    // DMTE-550 AC-29: a variante Convite pendente entra no mesmo mapa e no mesmo teste de contraste.
+    expect(Object.keys(activeTagTokenPairs).sort()).toEqual(['active', 'inactive', 'pending']);
     const rendered = {
       active: look(<ActiveTag active />, 'Ativo').className,
       inactive: look(<ActiveTag active={false} />, 'Inativo').className,
+      pending: look(<ActiveTag active pending />, 'Convite pendente').className,
     };
     for (const [name, [text, background]] of Object.entries(activeTagTokenPairs)) {
-      expect(rendered[name as 'active' | 'inactive'], name).toContain(`text-${text}`);
-      expect(rendered[name as 'active' | 'inactive'], name).toContain(`bg-${background}`);
+      expect(rendered[name as keyof typeof rendered], name).toContain(`text-${text}`);
+      expect(rendered[name as keyof typeof rendered], name).toContain(`bg-${background}`);
       expect(contrast(text, background), name).toBeGreaterThanOrEqual(4.5);
     }
+  });
+
+  it('AC-29: Convite pendente shows its text and an icon, apart from Ativo and Inativo, without red or raw emerald', () => {
+    const on = look(<ActiveTag active />, 'Ativo');
+    const off = look(<ActiveTag active={false} />, 'Inativo');
+    const pending = look(<ActiveTag active pending />, 'Convite pendente');
+    expect(pending.glyph).not.toBeNull();
+    expect(pending.glyph).not.toBe(on.glyph);
+    expect(pending.glyph).not.toBe(off.glyph);
+    expect(pending.className).not.toBe(on.className);
+    expect(pending.className).not.toBe(off.className);
+    expect(pending.className).not.toMatch(/red-|emerald-/);
+    expect(pending.iconClass).not.toMatch(/text-/);
+  });
+
+  it('AC-29: an inactive user stays Inativo even with the invite pending', () => {
+    const { container } = render(<ActiveTag active={false} pending />);
+    expect(within(container).getByText('Inativo')).toBeInTheDocument();
+    expect(within(container).queryByText('Convite pendente')).not.toBeInTheDocument();
+  });
+
+  it('AC-29: pending false or missing keeps Ativo', () => {
+    const { container } = render(<ActiveTag active pending={false} />);
+    expect(within(container).getByText('Ativo')).toBeInTheDocument();
+    expect(within(container).queryByText('Convite pendente')).not.toBeInTheDocument();
   });
 });
