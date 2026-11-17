@@ -49,4 +49,12 @@ describe('EzCheck', () => {
     const labelSpan = screen.getByText('Error text');
     expect(labelSpan).toHaveClass('text-red-700');
   });
+
+  it('uses the shared focus indicator', () => {
+    render(<EzCheck data-testid="check" />);
+    const checkbox = screen.getByTestId('check');
+    expect(checkbox).toHaveClass('ez-focus');
+    expect(checkbox.className).not.toContain('focus:outline-none');
+    expect(checkbox.className).not.toContain('ring-brand-200');
+  });
 });

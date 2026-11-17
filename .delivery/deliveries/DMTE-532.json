@@ -1,0 +1,99 @@
+{
+  "version": 1,
+  "delivery": "DMTE-532",
+  "repository": "dmrepositorio/aponta",
+  "github_issue": 299,
+  "multica_id": "01a1e002-a2a1-71c2-be41-fe7c2bd409f0",
+  "cycle": "2026-11-09/2026-11-22",
+  "tier": 2,
+  "criteria": [
+    {
+      "id": "AC-01",
+      "description": "`styles.css` define `--color-focus` igual a `var(--color-brand-600)`, `--focus-ring-width: 2px`, `--focus-ring-offset: 2px` e as utilidades `ez-focus` e `ez-focus-inset` (contorno sólido em `--color-focus` com a largura do token; `ez-focus` com folga do token e `ez-focus-inset` com folga negativa de mesmo valor, ambos só em `:focus-visible`); o contraste de `brand-600` calculado a partir de `styles.css` é ≥ 4,5:1 sobre branco e ≥ 3:1 sobre `gray-90` e `brand-100`.",
+      "tests": [
+        "apps/web/src/styles.focus.test.ts: defines the focus token and the two focus utilities",
+        "apps/web/src/styles.focus.test.ts: keeps the focus color at 3:1 or more on every tab surface"
+      ]
+    },
+    {
+      "id": "AC-02",
+      "description": "`EzTabs` (pills e line) usa `ez-focus-inset` e nenhuma das duas variantes mantém `outline-none`, `focus-visible:bg-gray-80` ou `ring-brand-200`; `EzCheck` usa `ez-focus` e não mantém `focus:outline-none` nem `ring-brand-200`.",
+      "tests": [
+        "apps/web/src/components/ds/EzTabs.test.tsx: uses the shared inset focus indicator in both variants",
+        "apps/web/src/components/ds/EzCheck.test.tsx: uses the shared focus indicator"
+      ]
+    },
+    {
+      "id": "AC-03",
+      "description": "tabindex móvel: com um `tablist` padrão, a aba ativa tem `tabindex=0` e as outras `tabindex=-1`; sem aba ativa na lista, a primeira habilitada tem `tabindex=0`; abas desabilitadas continuam fora do foco.",
+      "tests": [
+        "apps/web/src/components/ds/EzTabs.test.tsx: keeps only the active tab in the tab order"
+      ]
+    },
+    {
+      "id": "AC-04",
+      "description": "ArrowRight/ArrowLeft movem o foco para a aba habilitada seguinte/anterior, com volta ao fim e ao início, e chamam `onChange` com o id dela; Home e End vão à primeira e à última habilitada; abas desabilitadas são puladas; outras teclas não chamam `onChange`; com `role` customizado nada disso se aplica.",
+      "tests": [
+        "apps/web/src/components/ds/EzTabs.test.tsx: moves focus and selection with arrows, Home and End",
+        "apps/web/src/components/ds/EzTabs.test.tsx: skips disabled tabs and wraps around",
+        "apps/web/src/components/ds/EzTabs.test.tsx: ignores the keyboard with a custom role",
+        "apps/web/src/components/ds/EzTabs.test.tsx: lands Home and End on enabled tabs when the ends are disabled",
+        "apps/web/src/components/ds/EzTabs.test.tsx: leaves browser shortcuts alone: Alt, Ctrl and Meta with an arrow do nothing",
+        "apps/web/src/components/ds/EzTabs.test.tsx: does not call onChange when the key lands on the tab that is already active"
+      ]
+    },
+    {
+      "id": "AC-05",
+      "description": "com `idPrefix`, cada aba tem `id=ezTabId(prefix, id)` e `aria-controls=ezTabPanelId(prefix, id)`; sem `idPrefix`, nenhuma aba tem `id` nem `aria-controls` emitidos pelo componente; a API existente (props, `role`, `variant`, `className`) continua aceita sem mudança e as outras telas que usam `EzTabs` passam na suíte `web`.",
+      "tests": [
+        "apps/web/src/components/ds/EzTabs.test.tsx: links tabs to panels only when an idPrefix is given"
+      ]
+    },
+    {
+      "id": "AC-06",
+      "description": "na Mesa, as 12 abas têm `aria-controls`, existe um único `role=tabpanel` com `aria-labelledby` igual ao `id` da aba ativa (e `id` igual ao `aria-controls` dela), o painel acompanha a aba ao trocar por clique e por seta, e rótulos e ordem das 12 abas não mudam.",
+      "tests": [
+        "apps/web/src/pages/ServiceDesksPage.test.tsx: DMTE-532 AC-06: the desk tabs control one labelled tabpanel that follows the active tab"
+      ]
+    },
+    {
+      "id": "AC-07",
+      "description": "em Chromium a 1440 e 390 px, na Mesa: o foco por teclado em aba (pills) e em checkbox (`EzCheck` do `MesaFlagEditor`) tem contorno de 2 px em `rgb(0, 133, 97)` (computed style) e o contorno da aba não é cortado pela lista; um Tab sai da aba ativa direto para o conteúdo do painel; ArrowRight troca a aba ativa e mantém o foco nela; a contagem é 12 `role=tab`, 1 `role=tabpanel`, 12 `aria-controls`; a página não ganha rolagem horizontal.",
+      "tests": [
+        "scripts/mesa_focus_check.mjs: Chromium a 1440 e 390 px, foco de aba e checkbox em rgb(0, 133, 97) com 2 px, teclado e contagem de roles"
+      ],
+      "tdd_required": false,
+      "reason": "Medida de foco e layout em navegador (jsdom não resolve utilidade de contorno nem layout); o comportamento causador é coberto por AC-01 a AC-06"
+    },
+    {
+      "id": "AC-08",
+      "description": "`EzTabs.stories.tsx` ganha a história com painel e teclado (`idPrefix`) e `EzCheck.stories.tsx` uma história de foco; `docs/architecture/03-sankhya-ds-parity.md` registra o token, as utilidades e a regra; os testes de DS (`EzTabs.test.tsx`, `EzCheck.test.tsx`) cobrem AC-02 a AC-05.",
+      "tests": [
+        "apps/web/src/components/ds/EzTabs.stories.tsx: história com painel e teclado (build do Storybook)",
+        "apps/web/src/components/ds/EzCheck.stories.tsx: história de foco (build do Storybook)",
+        "docs/architecture/03-sankhya-ds-parity.md: registro do token de foco"
+      ],
+      "tdd_required": false,
+      "reason": "Documentação e stories do DS: sem comportamento novo; as stories são conferidas pelo build do Storybook no CI"
+    }
+  ],
+  "spec": "docs/delivery/specs/DMTE-532.md",
+  "tdd": {
+    "mode": "required",
+    "red": ".delivery/evidence/DMTE-532/red-r2.json",
+    "green": ".delivery/evidence/DMTE-532/green-r2.json"
+  },
+  "design_system": {
+    "applicable": true,
+    "reused": [
+      "EzTabs",
+      "EzCheck",
+      "EzCardItem"
+    ],
+    "reason": "Altera EzTabs e EzCheck no DS (token de foco único e semântica de abas); só tokens existentes (brand-600) e um token de foco novo; EzCardItem reaproveitado como painel da aba.",
+    "stories": [
+      "apps/web/src/components/ds/EzTabs.stories.tsx",
+      "apps/web/src/components/ds/EzCheck.stories.tsx"
+    ]
+  }
+}
