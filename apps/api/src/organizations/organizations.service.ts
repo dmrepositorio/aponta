@@ -104,10 +104,9 @@ export class OrganizationsService {
       .catch(rethrowDuplicateDocument);
   }
 
-  /** DMTE-481: "excluir" só inativa; contrato ativo ou ticket aberto bloqueiam (409). */
   /** DMTE-560: para cada cliente, o que impede a exclusão e o que sairia junto. */
   async deletionCheck(ids: string[], canDeleteTickets: boolean): Promise<OrganizationDeletionCheck[]> {
-    return Promise.all(ids.map((id) => checkOrganizationDeletion(this.prisma, id, canDeleteTickets)));
+    return Promise.all([...new Set(ids)].map((id) => checkOrganizationDeletion(this.prisma, id, canDeleteTickets)));
   }
 
   /** DMTE-560: exclusão definitiva (substitui o "só inativa" da DMTE-481); a checagem é refeita sob trava de linha. */

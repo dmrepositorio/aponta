@@ -88,7 +88,7 @@ export async function checkOrganizationDeletion(
       count: tickets.length,
       items: rows.slice(0, SAMPLE).map(({ ticket, reasons }) => ({ id: ticket.id, label: `${ticket.protocol}: ${ticket.title}`, reasons })),
       resolvable,
-      howToResolve: resolvable ? 'Exclua os tickets em Tickets e tente de novo.' : null,
+      howToResolve: resolvable ? 'Exclua os tickets em Tickets (antes, remova os apontamentos e os sub-tickets, se houver) e tente de novo.' : null,
     });
   }
   if (count.serviceDesks > 0) {

@@ -459,9 +459,9 @@ export function TicketDetailPage() {
         </p>
         <div aria-live="polite">
           {deleteError && (
-            <p role="alert" className="mt-3 text-red-700">
+            <EzAlert variant="error" role="alert" className="mt-3">
               {deleteError}
-            </p>
+            </EzAlert>
           )}
         </div>
       </EzDialog>

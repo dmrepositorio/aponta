@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { api } from '../../lib/api';
-import { EzDialog } from '../ds';
+import { EzAlert, EzDialog } from '../ds';
 
 /** DMTE-560: pop-up da lixeira de Clientes; consulta os vínculos antes de confirmar e só exclui os clientes livres. */
 
@@ -44,16 +44,20 @@ interface Props {
 
 const apiMessage = (error: unknown) => (error as { response?: { data?: { message?: string } } }).response?.data?.message;
 
-const n = (count: number, one: string, many: string) => `${count} ${count === 1 ? one : many}`;
+const pluralize = (count: number, one: string, many: string) => `${count} ${count === 1 ? one : many}`;
+
+const blockerName: Record<string, string> = {
+  TICKETS: 'tickets', SERVICE_DESKS: 'mesas', CONTRACTS: 'contratos', USERS: 'usuários', VAULT: 'cofre', APPOINTMENTS: 'agenda',
+};
 
 function cascadeText(c: Cascade): string | null {
   const parts = [
-    c.addresses > 0 && n(c.addresses, 'endereço', 'endereços'),
-    c.contacts > 0 && n(c.contacts, 'contato', 'contatos'),
-    c.agentGroups > 0 && n(c.agentGroups, 'grupo de atendentes', 'grupos de atendentes'),
-    c.technicalGroups > 0 && n(c.technicalGroups, 'vínculo com grupo técnico', 'vínculos com grupos técnicos'),
-    c.sharedArticles > 0 && n(c.sharedArticles, 'compartilhamento de artigo', 'compartilhamentos de artigo'),
-    c.deskEvents > 0 && n(c.deskEvents, 'registro de histórico de mesa', 'registros de histórico de mesa'),
+    c.addresses > 0 && pluralize(c.addresses, 'endereço', 'endereços'),
+    c.contacts > 0 && pluralize(c.contacts, 'contato', 'contatos'),
+    c.agentGroups > 0 && pluralize(c.agentGroups, 'grupo de atendentes', 'grupos de atendentes'),
+    c.technicalGroups > 0 && pluralize(c.technicalGroups, 'vínculo com grupo técnico', 'vínculos com grupos técnicos'),
+    c.sharedArticles > 0 && pluralize(c.sharedArticles, 'compartilhamento de artigo', 'compartilhamentos de artigo'),
+    c.deskEvents > 0 && pluralize(c.deskEvents, 'registro de histórico de mesa', 'registros de histórico de mesa'),
   ].filter(Boolean);
   return parts.length > 0 ? `Também serão apagados: ${parts.join(', ')}.` : null;
 }
@@ -62,7 +66,7 @@ export function OrganizationDeleteDialog({ targets, onClose, onDone }: Props) {
   const [checks, setChecks] = useState<Check[] | null>(null);
   const [checkError, setCheckError] = useState<string | null>(null);
   const [running, setRunning] = useState(false);
-  const [failures, setFailures] = useState<{ name: string; message: string }[] | null>(null);
+  const [failures, setFailures] = useState<{ id: string; name: string; message: string }[] | null>(null);
   const ids = useRef(targets.map((t) => t.id));
 
   useEffect(() => {
@@ -122,12 +126,12 @@ export function OrganizationDeleteDialog({ targets, onClose, onDone }: Props) {
         if (!running) onClose();
       }}
     >
-      <div aria-live="polite">
-        {checkError && <p role="alert" className="mt-3 text-red-700">{checkError}</p>}
+      <div aria-live="polite" className="max-h-[50vh] overflow-y-auto">
+        {checkError && <EzAlert variant="error" role="alert" className="mt-3">{checkError}</EzAlert>}
         {failures && (
           <ul className="mt-3 space-y-1">
             {failures.map((failure) => (
-              <li key={failure.name} className="text-red-700">{`${failure.name}: ${failure.message}`}</li>
+              <li key={failure.id} className="text-red-700">{`${failure.name}: ${failure.message}`}</li>
             ))}
           </ul>
         )}
@@ -136,7 +140,7 @@ export function OrganizationDeleteDialog({ targets, onClose, onDone }: Props) {
             {checks.map((check) => (
               <li key={check.id}>
                 {checks.length > 1 && (
-                  <p className="font-medium text-gray-900">{`${check.name}: ${check.canDelete ? 'pode excluir' : 'bloqueado'}`}</p>
+                  <p className="font-medium text-gray-900">{`${check.name}: ${check.canDelete ? 'pode excluir' : `bloqueado: ${check.blockers.map((b) => blockerName[b.code] ?? b.code).join(', ')}`}`}</p>
                 )}
                 {check.canDelete && cascadeText(check.cascade) && <p className="mt-1">{cascadeText(check.cascade)}</p>}
                 {check.blockers.map((blocker) => (

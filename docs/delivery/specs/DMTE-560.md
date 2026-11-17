@@ -70,7 +70,7 @@ Por ticket, o motivo de não poder ser excluído também é informado: aberto pe
 ## Testing Decisions
 
 Um bom teste observa o comportamento externo (resposta, estado do banco, o que o usuário vê), não a implementação. Seams, confirmados pelo responsável (Q16):
-1. **API, controller e serviço com Prisma simulado.** Prior art: `organizations.service.spec.ts`, `organizations.controller.spec.ts`, `tickets.service.spec.ts`, `tickets.controller.spec.ts`, `permission-catalog.users.spec.ts`, `seed.spec.ts` (grupos padrão).
+1. **API, controller e serviço com Prisma simulado.** Prior art: `organizations.service.spec.ts`, `organizations.controller.spec.ts`, `tickets.service.spec.ts`, `tickets.controller.spec.ts`, `permission-catalog.users.spec.ts` (grupos padrão).
 2. **Web, a página pela Testing Library.** Prior art: `OrganizationsPage.test.tsx`, `ContractsPage.test.tsx` (pop-up da DMTE-540), `TicketDetailPage.test.tsx`.
 3. **E2E com banco real isolado** (`scripts/e2e_isolated.sh`, `apps/web-e2e`): um arquivo com poucos cenários, para provar chaves estrangeiras e cascata que o Prisma simulado não prova.
 
@@ -123,7 +123,7 @@ Ticket T3, pop-up na tela Clientes:
 | AC | Seam | Verificação |
 |---|---|---|
 | AC-01 a AC-05 | API, Prisma simulado | `apps/api/src/tickets/tickets.service.spec.ts` e `tickets.controller.spec.ts` (novos casos de exclusão) |
-| AC-06 | API | `permission-catalog.users.spec.ts`, `seed.spec.ts`, `auth.controller.spec.ts` |
+| AC-06 | API | `permission-catalog.users.spec.ts`, `auth.controller.spec.ts` |
 | AC-07 | Web | `apps/web/src/pages/TicketDetailPage.test.tsx` |
 | AC-08 a AC-14 | API, Prisma simulado | `apps/api/src/organizations/organizations.service.spec.ts`, `organizations.controller.spec.ts` |
 | AC-15 | E2E, banco real | `apps/web-e2e/src/organization-delete.spec.ts` via `scripts/e2e_isolated.sh` |
