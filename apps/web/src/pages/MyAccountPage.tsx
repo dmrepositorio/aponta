@@ -8,6 +8,7 @@ import { useAuthStore } from '../stores/authStore';
 import { useApiTokens } from '../hooks/useApiTokens';
 import { EzAlert, EzButton, EzTabs, EzTextInput } from '../components/ds';
 import { PasswordRules, PolicyErrors } from '../components/PasswordRules';
+import { TwoFactorSection } from '../components/TwoFactorSection';
 import { policyMessages } from '../lib/passwordRules';
 
 const changePasswordSchema = z.object({
@@ -59,7 +60,12 @@ export function MyAccountPage() {
 
       <div className="pt-2">
         {tab === 'profile' && <ProfileTab />}
-        {tab === 'security' && <SecurityTab />}
+        {tab === 'security' && (
+          <div className="space-y-6">
+            <SecurityTab />
+            <TwoFactorSection />
+          </div>
+        )}
         {tab === 'tokens' && <ApiTokensTab />}
       </div>
     </div>

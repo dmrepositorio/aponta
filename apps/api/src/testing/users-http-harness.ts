@@ -18,6 +18,8 @@ import { PermissionsService } from '../permissions/permissions.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { PasswordFlowService } from '../users/password-flow.service';
 import { PasswordTokensService } from '../users/password-tokens.service';
+import { TwoFactorController } from '../two-factor/two-factor.controller';
+import { TWO_FACTOR_FLAG, TwoFactorService } from '../two-factor/two-factor.service';
 import { UsersController } from '../users/users.controller';
 import { UsersService } from '../users/users.service';
 import { createFakePrisma, FakePrisma, Tables } from './fake-prisma';
@@ -74,6 +76,8 @@ export interface Harness {
   tokens: PasswordTokensService;
   /** Liga ou desliga a flag convite-e-redefinicao-usuario (começa ligada). */
   setFlag(on: boolean): void;
+  /** Liga ou desliga a flag autenticacao-dois-fatores (começa ligada). */
+  setTwoFactorFlag(on: boolean): void;
   grant(userId: string, ...keys: string[]): void;
   /** Requisição autenticada como `userId` (cabeçalho lido pelo guard de teste). */
   as(method: 'get' | 'post' | 'patch', url: string, userId?: string): request.Test;
@@ -85,9 +89,10 @@ export interface Harness {
   close(): Promise<void>;
 }
 
-export async function buildHarness(options: { flag?: boolean; limit?: number } = {}): Promise<Harness> {
+export async function buildHarness(options: { flag?: boolean; limit?: number; twoFactorKey?: string | null } = {}): Promise<Harness> {
   const prisma = createFakePrisma(seedTables());
-  const state = { flag: options.flag ?? true };
+  const state = { flag: options.flag ?? true, twoFactor: true };
+  const twoFactorKey = options.twoFactorKey === undefined ? 'chave-de-teste-do-segundo-fator' : options.twoFactorKey;
   const grants = new Map<string, Set<string>>([[ID.gestor, new Set(['MANAGE_USERS'])]]);
   const mail = { sendEmail: jest.fn().mockResolvedValue(true) };
   const previousUrl = process.env['PUBLIC_APP_URL'];
@@ -109,12 +114,12 @@ export async function buildHarness(options: { flag?: boolean; limit?: number } =
       JwtModule.register({ secret: 'test-secret', signOptions: { expiresIn: '1d' } }),
       ThrottlerModule.forRoot([{ ttl: 60_000, limit: options.limit ?? 1000 }]),
     ],
-    controllers: [UsersController, AuthController],
+    controllers: [UsersController, AuthController, TwoFactorController],
     providers: [
-      AuthService, LocalStrategy, UsersService, PasswordTokensService, PasswordFlowService,
+      AuthService, LocalStrategy, UsersService, PasswordTokensService, PasswordFlowService, TwoFactorService,
       { provide: PrismaService, useValue: prisma },
       { provide: MailService, useValue: mail },
-      { provide: FeatureFlagsService, useValue: { isEnabled: jest.fn((key: string) => key === FLAG_KEY && state.flag) } },
+      { provide: FeatureFlagsService, useValue: { isEnabled: jest.fn((key: string) => (key === FLAG_KEY && state.flag) || (key === TWO_FACTOR_FLAG && state.twoFactor)) } },
       {
         provide: PermissionsService,
         useValue: {
@@ -122,7 +127,7 @@ export async function buildHarness(options: { flag?: boolean; limit?: number } =
           getEffectivePermissions: jest.fn(async () => new Set<string>()),
         },
       },
-      { provide: ConfigService, useValue: { get: (key: string) => ({ PUBLIC_APP_URL: 'https://aponta.test', JWT_SECRET: 'test-secret' } as Record<string, string>)[key] } },
+      { provide: ConfigService, useValue: { get: (key: string) => ({ PUBLIC_APP_URL: 'https://aponta.test', JWT_SECRET: 'test-secret', ...(twoFactorKey ? { TWO_FACTOR_ENCRYPTION_KEY: twoFactorKey } : {}) } as Record<string, string>)[key] } },
       { provide: APP_GUARD, useClass: ThrottlerGuard },
     ],
   })
@@ -140,6 +145,7 @@ export async function buildHarness(options: { flag?: boolean; limit?: number } =
     app, prisma, mail,
     tokens: app.get(PasswordTokensService),
     setFlag: (on) => { state.flag = on; },
+    setTwoFactorFlag: (on) => { state.twoFactor = on; },
     grant: (id, ...keys) => { grants.set(id, new Set([...(grants.get(id) ?? []), ...keys])); },
     as: (method, url, userId = ID.admin) => request(app.getHttpServer())[method](url).set('x-test-user', userId),
     row: (id) => prisma.tables.user.find((u) => u.id === id)!,

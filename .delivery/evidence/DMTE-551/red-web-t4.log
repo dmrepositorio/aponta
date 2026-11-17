@@ -1,0 +1,140 @@
+
+ RUN  v4.1.11 /home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-551-8067d53caffe/workdir/aponta/apps/web
+
+ ❯ |web| src/components/TwoFactorSection.test.tsx (5 tests | 5 failed) 5162ms
+     × AC-16: com a flag desligada e sem segundo fator ativo a seção não aparece 1058ms
+     × AC-16: ativar mostra o QR e a chave, confirma com o código e mostra os 10 códigos de recuperação uma vez 1014ms
+     × AC-16: código recusado na confirmação mostra o erro e deixa tentar de novo 1019ms
+     × AC-16: quem já ativou vê "Ativado" e desativa com a senha atual e um código, mesmo com a flag desligada 1024ms
+     × AC-16: senha ou código recusado ao desativar mostra o erro e mantém o segundo fator ativo 1038ms
+
+ Test Files  1 failed (1)
+      Tests  5 failed (5)
+   Start at  15:23:01
+   Duration  8.79s (transform 223ms, setup 183ms, import 659ms, tests 5.16s, environment 2.07s)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |web| src/components/TwoFactorSection.test.tsx > TwoFactorSection > AC-16: com a flag desligada e sem segundo fator ativo a seção não aparece
+AssertionError: expected "vi.fn()" to be called with arguments: [ '/auth/2fa/status' ]
+
+Number of calls: 0
+
+
+Ignored nodes: comments, script, style
+[36m<html>[39m
+  [36m<head />[39m
+  [36m<body>[39m
+    [36m<div />[39m
+  [36m</body>[39m
+[36m</html>[39m
+ ❯ src/components/TwoFactorSection.test.tsx:37:41
+     35|     renderSection();
+     36|
+     37|     await waitFor(() => expect(api.get).toHaveBeenCalledWith('/auth/2f…
+       |                                         ^
+     38|     expect(heading()).not.toBeInTheDocument();
+     39|   });
+ ❯ runWithExpensiveErrorDiagnosticsDisabled ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/config.js:47:12
+ ❯ checkCallback ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/wait-for.js:124:77
+ ❯ Timeout.checkRealTimersCallback ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/wait-for.js:118:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  |web| src/components/TwoFactorSection.test.tsx > TwoFactorSection > AC-16: ativar mostra o QR e a chave, confirma com o código e mostra os 10 códigos de recuperação uma vez
+TestingLibraryElementError: Unable to find role="button" and name `/ativar/i`
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div />[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div />[39m
+[36m</body>[39m
+ ❯ waitForWrapper ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/components/TwoFactorSection.test.tsx:50:35
+     48|     renderSection();
+     49|
+     50|     await user.click(await screen.findByRole('button', { name: /ativar…
+       |                                   ^
+     51|
+     52|     expect(await screen.findByRole('img', { name: /qr code/i })).toBeI…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  |web| src/components/TwoFactorSection.test.tsx > TwoFactorSection > AC-16: código recusado na confirmação mostra o erro e deixa tentar de novo
+TestingLibraryElementError: Unable to find role="button" and name `/ativar/i`
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div />[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div />[39m
+[36m</body>[39m
+ ❯ waitForWrapper ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/components/TwoFactorSection.test.tsx:77:35
+     75|     renderSection();
+     76|
+     77|     await user.click(await screen.findByRole('button', { name: /ativar…
+       |                                   ^
+     78|     await user.type(await screen.findByLabelText(/código do aplicativo…
+     79|     await user.click(screen.getByRole('button', { name: /confirmar/i }…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  |web| src/components/TwoFactorSection.test.tsx > TwoFactorSection > AC-16: quem já ativou vê "Ativado" e desativa com a senha atual e um código, mesmo com a flag desligada
+TestingLibraryElementError: Unable to find an element with the text: /ativado/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div />[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div />[39m
+[36m</body>[39m
+ ❯ waitForWrapper ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/components/TwoFactorSection.test.tsx:92:25
+     90|     renderSection();
+     91|
+     92|     expect(await screen.findByText(/ativado/i)).toBeInTheDocument();
+       |                         ^
+     93|     await user.type(screen.getByLabelText(/senha atual/i), 'Senha#Anti…
+     94|     await user.type(screen.getByLabelText(/código/i), '123456');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  |web| src/components/TwoFactorSection.test.tsx > TwoFactorSection > AC-16: senha ou código recusado ao desativar mostra o erro e mantém o segundo fator ativo
+TestingLibraryElementError: Unable to find a label with the text of: /senha atual/i
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div />[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div />[39m
+[36m</body>[39m
+ ❯ waitForWrapper ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/components/TwoFactorSection.test.tsx:108:34
+    106|     renderSection();
+    107|
+    108|     await user.type(await screen.findByLabelText(/senha atual/i), 'err…
+       |                                  ^
+    109|     await user.type(screen.getByLabelText(/código/i), '123456');
+    110|     await user.click(screen.getByRole('button', { name: /desativar/i }…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+

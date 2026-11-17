@@ -45,6 +45,13 @@ export const FEATURE_FLAGS: readonly FeatureFlag[] = [
     removeBy: '2027-01-15',
   },
   {
+    key: 'autenticacao-dois-fatores',
+    description: 'Ativar o segundo fator (TOTP) em Minha Conta; quem já ativou segue sendo desafiado no login mesmo com a flag desligada',
+    owner: 'alfredo',
+    defaultValue: false,
+    removeBy: '2027-01-31',
+  },
+  {
     key: 'consulta-cnpj-alternativa',
     description: 'Consulta de CNPJ em ReceitaWS e minhareceita.org quando a BrasilAPI não acha o CNPJ ou falha',
     owner: 'alfredo',

@@ -200,6 +200,8 @@ model User {
   apiTokens   ApiToken[]
   appointments Appointment[]
   passwordTokens PasswordToken[]
+  twoFactor      UserTwoFactor?
+  twoFactorRecoveryCodes TwoFactorRecoveryCode[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -223,6 +225,30 @@ model PasswordToken {
   createdAt   DateTime             @default(now())
 
   @@index([userId, purpose])
+}
+
+/// DMTE-551: segundo fator (TOTP) do usuário. `secretEnc` é o segredo cifrado (AES-256-GCM); `enabled` só vira true depois de um código válido.
+model UserTwoFactor {
+  userId      String    @id
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  secretEnc   String
+  enabled     Boolean   @default(false)
+  /// Último passo de 30 s aceito: o mesmo código não vale duas vezes.
+  lastStep    Int       @default(0)
+  confirmedAt DateTime?
+  createdAt   DateTime  @default(now())
+}
+
+/// DMTE-551: código de recuperação do segundo fator; só o hash SHA-256 é guardado e cada um vale uma vez.
+model TwoFactorRecoveryCode {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  codeHash  String
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
 }
 
 model ServiceDesk {
