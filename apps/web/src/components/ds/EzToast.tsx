@@ -77,7 +77,7 @@ export const EzToast = forwardRef<HTMLDivElement, EzToastProps>(
           <div className="ml-4 flex shrink-0">
             <button
               onClick={onClose}
-              className="inline-flex rounded-md bg-white text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-200"
+              className="inline-flex rounded-md bg-white text-gray-400 hover:text-gray-600 ez-focus"
             >
               <span className="sr-only">Close</span>
               <X className="h-4 w-4" />

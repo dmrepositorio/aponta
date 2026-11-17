@@ -45,7 +45,7 @@ export const EzListItem = forwardRef<HTMLDivElement, EzListItemProps>(
         }}
         className={cn(
           'flex items-center justify-between w-full gap-3 px-4 py-3 transition-colors text-left outline-none rounded-[8px]',
-          onClick && 'cursor-pointer hover:bg-gray-90 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-200',
+          onClick && 'cursor-pointer hover:bg-gray-90 ez-focus-inset',
           selected && 'bg-brand-50 hover:bg-brand-50',
           className
         )}

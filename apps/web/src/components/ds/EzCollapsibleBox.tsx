@@ -39,7 +39,7 @@ export const EzCollapsibleBox = forwardRef<HTMLDivElement, EzCollapsibleBoxProps
           className={cn(
             'flex w-full items-center justify-between gap-2 px-4 py-3 text-left transition-colors',
             'text-[14px] font-semibold text-gray-900 hover:bg-gray-80',
-            'focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-200'
+            'ez-focus'
           )}
         >
           <span>{title}</span>

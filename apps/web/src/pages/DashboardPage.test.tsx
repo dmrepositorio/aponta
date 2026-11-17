@@ -724,7 +724,7 @@ describe('DashboardPage', () => {
     const ring = screen
       .getByRole('button', { name: /ações/i })
       .className.split(/\s+/)
-      .filter((c) => c.startsWith('focus-visible:'));
+      .filter((c) => c.startsWith('ez-focus'));
     expect(ring.length).toBeGreaterThan(0);
     for (const link of card('card-resumo-de-tickets').getAllByRole('link')) {
       for (const cls of ring) expect(link.className, link.textContent ?? '').toContain(cls);

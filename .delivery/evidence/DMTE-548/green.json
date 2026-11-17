@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "phase": "green",
+  "started_at": "2026-11-17T04:44:51.368931+00:00",
+  "finished_at": "2026-11-17T04:45:06.186488+00:00",
+  "command": [
+    "pnpm",
+    "--dir",
+    "apps/web",
+    "exec",
+    "vitest",
+    "run",
+    "src/components/knowledge/KnowledgeArticleCard.test.tsx",
+    "src/pages/KnowledgePage.test.tsx"
+  ],
+  "base_sha": "9cba9563637b6d0e0eb76c34ff39ef0afcc079af",
+  "head_sha": "afe69dcf0cd4b61d6c17fbaeae1a03212c0c9025",
+  "exit_code": 0,
+  "tests": {
+    "apps/web/src/components/knowledge/KnowledgeArticleCard.test.tsx": "67b831f9ccd4ed662cbaab80498278e970e63176c84573df7c72b1dca9dfb8f3",
+    "apps/web/src/pages/KnowledgePage.test.tsx": "66bfccbc2935651ad32d60eec56626f1aeaa07649dadad1c71de3f8f7c0fef9d"
+  },
+  "criteria": [
+    "AC-01",
+    "AC-02",
+    "AC-03",
+    "AC-04",
+    "AC-06"
+  ],
+  "source_hashes": {
+    "apps/web/src/components/knowledge/KnowledgeArticleCard.test.tsx": "67b831f9ccd4ed662cbaab80498278e970e63176c84573df7c72b1dca9dfb8f3",
+    "apps/web/src/components/knowledge/KnowledgeArticleCard.tsx": "cb336c64630d3cceb77b1332ffb6db98e70200cfd964c26fd342223c82c49e92",
+    "apps/web/src/pages/KnowledgePage.test.tsx": "66bfccbc2935651ad32d60eec56626f1aeaa07649dadad1c71de3f8f7c0fef9d",
+    "apps/web/src/pages/KnowledgePage.tsx": "efbb075f380abb44681353284de67a58e01daacf8d78a59f705c0434bc6c2c13"
+  },
+  "log": ".delivery/evidence/DMTE-548/green.log",
+  "log_sha256": "94fda64a8473bbb1823a4bbf2292a2f462d01b80a9ed268bf0f3227db7cc097a"
+}

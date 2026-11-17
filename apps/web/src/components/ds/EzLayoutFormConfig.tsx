@@ -108,7 +108,7 @@ export const EzLayoutFormConfig = forwardRef<HTMLDivElement, EzLayoutFormConfigP
               aria-checked={isActive}
               onClick={() => handleSelect(option.value)}
               className={cn(
-                'flex flex-col items-center gap-2 rounded-[12px] border p-3 min-w-[120px] transition-colors outline-none focus-visible:ring-2 focus-visible:ring-brand-200',
+                'flex flex-col items-center gap-2 rounded-[12px] border p-3 min-w-[120px] transition-colors ez-focus',
                 isActive
                   ? 'border-brand-600 bg-brand-50'
                   : 'border-gray-200 bg-white hover:border-gray-300'

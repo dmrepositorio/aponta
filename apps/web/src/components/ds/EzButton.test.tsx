@@ -33,4 +33,12 @@ describe('EzButton', () => {
     // No label rendered
     expect(container.textContent).toBe('');
   });
+
+  it('uses the shared focus token instead of the brand-200 ring', () => {
+    const { container } = render(<EzButton label="Foco" />);
+    const button = container.firstChild as HTMLElement;
+    expect(button).toHaveClass('ez-focus');
+    expect(button.className).not.toContain('ring-brand-200');
+    expect(button.className).not.toContain('ring-offset');
+  });
 });

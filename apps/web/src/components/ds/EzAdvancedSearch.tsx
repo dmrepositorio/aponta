@@ -332,7 +332,7 @@ export const EzAdvancedSearch = forwardRef<HTMLDivElement, EzAdvancedSearchProps
                     onClick={() => handleSelectResult(item)}
                     className={cn(
                       'flex flex-col items-start gap-1 rounded-[12px] border p-3 text-left transition-colors outline-none',
-                      'focus-visible:ring-2 focus-visible:ring-brand-200',
+                      'ez-focus',
                       isSelected
                         ? 'bg-brand-50 border-brand-500 text-brand-700'
                         : 'bg-white border-gray-200 hover:bg-gray-80 hover:border-gray-300 text-gray-900'
@@ -357,7 +357,7 @@ export const EzAdvancedSearch = forwardRef<HTMLDivElement, EzAdvancedSearchProps
                     onClick={() => handleSelectResult(item)}
                     className={cn(
                       'flex flex-col items-start gap-0.5 w-full px-3 py-2.5 text-left transition-colors outline-none',
-                      'focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-200',
+                      'ez-focus-inset',
                       isSelected ? 'bg-brand-50' : 'hover:bg-gray-90'
                     )}
                   >

@@ -6,6 +6,5 @@
 export const KNOWLEDGE_PRIMARY =
   'bg-brand-600 border-brand-600 hover:bg-brand-700 hover:border-brand-700';
 
-/** Anel de foco do `EzButton`, para elementos clicáveis que não são `EzButton`. */
-export const FOCUS_RING =
-  'outline-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2';
+/** Foco do DS (token `ez-focus`), para elementos clicáveis que não são `EzButton`. */
+export const FOCUS_RING = 'ez-focus';
