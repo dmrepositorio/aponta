@@ -121,6 +121,7 @@ describe('AuthService', () => {
         role: mockUser.role,
         organizationId: mockUser.organizationId,
         technicalGroupId: null,
+        passwordVersion: 2,
         active: true,
         pending: false,
         createdAt: mockUser.createdAt,
@@ -134,6 +135,7 @@ describe('AuthService', () => {
         email: validatedUser.email,
         role: validatedUser.role,
         organizationId: validatedUser.organizationId,
+        pv: 2, // DMTE-551: o token leva a versão da senha
       });
       expect(result).toEqual({ access_token: 'signed-jwt-token' });
     });

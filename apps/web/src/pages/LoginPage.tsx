@@ -1,5 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useRef, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
@@ -15,6 +16,16 @@ const loginSchema = z.object({
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
+
+const PROVIDER_LABELS: Record<string, string> = { google: 'Google', github: 'GitHub', facebook: 'Facebook' };
+
+/** Motivo da falha do login social que a API põe no fragmento da URL (DMTE-551); qualquer outro vira a mensagem genérica. */
+const SOCIAL_ERRORS: Record<string, string> = {
+  not_found: 'Não há conta no Aponta com esse e-mail. Peça um convite ao administrador.',
+  inactive: 'Esta conta está inativa. Fale com o administrador.',
+  unverified: 'O provedor não confirmou o seu e-mail. Confirme-o lá e tente de novo.',
+};
+const SOCIAL_FALLBACK = 'Não foi possível entrar com a conta social. Tente de novo ou use e-mail e senha.';
 
 const forgotEmailSchema = z.string().trim().max(254).email();
 
@@ -145,6 +156,37 @@ export function LoginPage() {
   const [forgotOpen, setForgotOpen] = useState(false);
   const [challengeToken, setChallengeToken] = useState<string | null>(null);
   const canRecover = useFeatureFlag('convite-e-redefinicao-usuario');
+  const { data: social } = useQuery<string[]>({
+    queryKey: ['social-providers'],
+    queryFn: async () => (await api.get<{ providers: string[] }>('/auth/social/providers')).data.providers,
+    retry: false,
+    staleTime: 5 * 60_000,
+  });
+  // O retorno do provedor traz o código de troca (ou o motivo da falha) no fragmento: lido uma vez e apagado da barra de endereço.
+  const returned = useRef(false);
+  useEffect(() => {
+    if (returned.current) return;
+    returned.current = true;
+    const params = new URLSearchParams(window.location.hash.slice(1));
+    const code = params.get('social');
+    const reason = params.get('social_error');
+    if (!code && reason === null) return;
+    window.history.replaceState(null, '', window.location.pathname + window.location.search);
+    if (reason !== null) {
+      setSubmitError(SOCIAL_ERRORS[reason] ?? SOCIAL_FALLBACK);
+      return;
+    }
+    api
+      .post<{ access_token?: string; challengeToken?: string }>('/auth/social/exchange', { code })
+      .then(({ data }) => {
+        if (data.challengeToken) setChallengeToken(data.challengeToken);
+        else {
+          login(data.access_token!);
+          navigate('/');
+        }
+      })
+      .catch(() => setSubmitError(SOCIAL_FALLBACK));
+  }, [login, navigate]);
   const {
     register,
     handleSubmit,
@@ -220,6 +262,21 @@ export function LoginPage() {
           <EzButton type="submit" disabled={isSubmitting} className="w-full">
             Entrar
           </EzButton>
+
+          {!!social?.length && (
+            <div className="space-y-2">
+              <p className="text-center text-sm text-gray-700">ou</p>
+              {social.map((provider) => (
+                <a
+                  key={provider}
+                  href={`/api/auth/social/${provider}/start`}
+                  className="flex h-[42px] w-full items-center justify-center rounded-[12px] border border-gray-300 bg-white text-sm font-medium text-gray-900 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"
+                >
+                  Entrar com {PROVIDER_LABELS[provider] ?? provider}
+                </a>
+              ))}
+            </div>
+          )}
 
           {canRecover && (
             <button

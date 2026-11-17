@@ -1,4 +1,4 @@
-import { createCipheriv, createDecipheriv, createHash, createHmac, randomBytes, timingSafeEqual } from 'crypto';
+import { createHash, createHmac, randomBytes, timingSafeEqual } from 'crypto';
 import {
   BadRequestException,
   ConflictException,
@@ -11,6 +11,7 @@ import { ConfigService } from '@nestjs/config';
 import { ThrottlerException } from '@nestjs/throttler';
 import * as bcrypt from 'bcryptjs';
 import { FeatureFlagsService } from '../feature-flags/feature-flags.service';
+import { decryptText, encryptText } from '../common/secret-box';
 import { PrismaService } from '../prisma/prisma.service';
 import { base32Encode, generateSecret, verifyTotp } from './totp';
 
@@ -48,7 +49,7 @@ export class TwoFactorService {
     if (existing?.enabled) throw new ConflictException('O segundo fator já está ativo.');
 
     const secret = generateSecret();
-    const data = { secretEnc: this.encrypt(secret, key), lastStep: 0 };
+    const data = { secretEnc: encryptText(secret, key), lastStep: 0 };
     if (existing) await this.prisma.userTwoFactor.update({ where: { userId }, data });
     else await this.prisma.userTwoFactor.create({ data: { userId, ...data } });
     return { secret, otpauthUri: `otpauth://totp/Aponta:${encodeURIComponent(user.email)}?secret=${secret}&issuer=Aponta` };
@@ -61,7 +62,7 @@ export class TwoFactorService {
     const record = await this.prisma.userTwoFactor.findUnique({ where: { userId } });
     if (!record) throw new BadRequestException('Peça a ativação do segundo fator antes de confirmar.');
     if (record.enabled) throw new ConflictException('O segundo fator já está ativo.');
-    const step = verifyTotp(this.decrypt(record.secretEnc, key), code, Date.now(), record.lastStep);
+    const step = verifyTotp(decryptText(record.secretEnc, key), code, Date.now(), record.lastStep);
     if (step === null) throw new BadRequestException('Código inválido.');
 
     const codes = Array.from({ length: RECOVERY_CODE_COUNT }, () => base32Encode(randomBytes(7)).slice(0, 10));
@@ -129,7 +130,7 @@ export class TwoFactorService {
   /** Aceita um código TOTP (mais novo que o último usado) ou um código de recuperação ainda não usado, e o consome. */
   private async consumeCode(record: { userId: string; secretEnc: string; lastStep: number }, code: string): Promise<boolean> {
     if (/^\d{6}$/.test(code)) {
-      const step = verifyTotp(this.decrypt(record.secretEnc, this.key()), code, Date.now(), record.lastStep);
+      const step = verifyTotp(decryptText(record.secretEnc, this.key()), code, Date.now(), record.lastStep);
       if (step === null) return false;
       await this.prisma.userTwoFactor.update({ where: { userId: record.userId }, data: { lastStep: step } });
       return true;
@@ -181,20 +182,5 @@ export class TwoFactorService {
     const raw = this.config.get<string>('TWO_FACTOR_ENCRYPTION_KEY');
     if (!raw) throw new ServiceUnavailableException('Segundo fator indisponível neste ambiente.');
     return createHash('sha256').update(raw).digest();
-  }
-
-  // AES-256-GCM: iv (12) + etiqueta (16) + texto cifrado, em base64.
-  private encrypt(plain: string, key: Buffer): string {
-    const iv = randomBytes(12);
-    const cipher = createCipheriv('aes-256-gcm', key, iv);
-    const body = Buffer.concat([cipher.update(plain, 'utf8'), cipher.final()]);
-    return Buffer.concat([iv, cipher.getAuthTag(), body]).toString('base64');
-  }
-
-  private decrypt(stored: string, key: Buffer): string {
-    const raw = Buffer.from(stored, 'base64');
-    const decipher = createDecipheriv('aes-256-gcm', key, raw.subarray(0, 12));
-    decipher.setAuthTag(raw.subarray(12, 28));
-    return Buffer.concat([decipher.update(raw.subarray(28)), decipher.final()]).toString('utf8');
   }
 }

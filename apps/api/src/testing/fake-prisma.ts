@@ -10,7 +10,7 @@ import { Prisma } from '@prisma/client';
  * Operador fora desta lista lança: estenda aqui em vez de afrouxar o teste.
  */
 type Row = Record<string, any>;
-type Model = 'user' | 'passwordToken' | 'permissionGroup' | 'permissionGroupUser' | 'technicalGroup' | 'organization' | 'serviceDesk' | 'userTwoFactor' | 'twoFactorRecoveryCode' | 'securityEvent';
+type Model = 'user' | 'passwordToken' | 'permissionGroup' | 'permissionGroupUser' | 'technicalGroup' | 'organization' | 'serviceDesk' | 'userTwoFactor' | 'twoFactorRecoveryCode' | 'securityEvent' | 'externalIdentity';
 export type Tables = Record<Model, Row[]>;
 
 const UNIQUE: Partial<Record<Model, string[]>> = { user: ['email'], passwordToken: ['tokenHash'], userTwoFactor: ['userId'] };
@@ -20,6 +20,7 @@ const FOREIGN: Partial<Record<Model, Record<string, Model>>> = {
   passwordToken: { userId: 'user' },
   userTwoFactor: { userId: 'user' },
   twoFactorRecoveryCode: { userId: 'user' },
+  externalIdentity: { userId: 'user' },
 };
 const DEFAULTS: Record<Model, () => Row> = {
   user: () => ({ id: randomUUID(), passwordVersion: 0, phone: null, extension: null, role: 'AGENT', active: true, organizationId: null, technicalGroupId: null, createdAt: new Date(), updatedAt: new Date() }),
@@ -32,6 +33,7 @@ const DEFAULTS: Record<Model, () => Row> = {
   userTwoFactor: () => ({ enabled: false, lastStep: 0, confirmedAt: null, createdAt: new Date() }),
   twoFactorRecoveryCode: () => ({ id: randomUUID(), usedAt: null, createdAt: new Date() }),
   securityEvent: () => ({ id: randomUUID(), createdAt: new Date() }),
+  externalIdentity: () => ({ id: randomUUID(), createdAt: new Date() }),
 };
 const RELATIONS = ['technicalGroup', 'organization', 'permissionGroupLinks', 'permissionGroup', 'twoFactor'];
 const OPERATORS = ['equals', 'not', 'in', 'notIn', 'contains', 'startsWith', 'endsWith', 'gt', 'gte', 'lt', 'lte', 'has', 'some', 'every', 'none', 'is', 'mode'];
@@ -113,7 +115,7 @@ export interface FakePrisma {
 
 export function createFakePrisma(seed: Partial<Tables> = {}): FakePrisma {
   const tables: Tables = {
-    user: [], passwordToken: [], permissionGroup: [], permissionGroupUser: [], technicalGroup: [], organization: [], serviceDesk: [], userTwoFactor: [], twoFactorRecoveryCode: [], securityEvent: [],
+    user: [], passwordToken: [], permissionGroup: [], permissionGroupUser: [], technicalGroup: [], organization: [], serviceDesk: [], userTwoFactor: [], twoFactorRecoveryCode: [], securityEvent: [], externalIdentity: [],
     ...Object.fromEntries(Object.entries(seed).map(([k, rows]) => [k, rows!.map((r) => ({ ...r }))])),
   };
   const calls: FakePrisma['calls'] = [];
