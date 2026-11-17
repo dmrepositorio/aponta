@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "delivery": "DMTE-556",
+  "repository": "dmrepositorio/aponta",
+  "github_issue": 321,
+  "multica_id": "01a1e9d3-99f7-7278-a2fc-9a849d0fb893",
+  "cycle": "2026-11-09/2026-11-22",
+  "tier": 1,
+  "criteria": [
+    {
+      "id": "AC-01",
+      "description": "com a BrasilAPI respondendo 404 e o provedor reserva respondendo 200, `lookup` devolve o cadastro mapeado para `CnpjLookupResult` e o `cnpj` só com dígitos.",
+      "tests": []
+    },
+    {
+      "id": "AC-02",
+      "description": "com a BrasilAPI respondendo 5xx ou falhando na rede e o reserva respondendo 200, `lookup` devolve o cadastro do reserva.",
+      "tests": []
+    },
+    {
+      "id": "AC-03",
+      "description": "com a BrasilAPI e o reserva respondendo 404, `lookup` lança `NotFoundException`.",
+      "tests": []
+    },
+    {
+      "id": "AC-04",
+      "description": "com a BrasilAPI respondendo 404 ou 5xx e o reserva falhando (5xx ou rede), `lookup` lança `BadGatewayException`.",
+      "tests": []
+    },
+    {
+      "id": "AC-05",
+      "description": "com a BrasilAPI respondendo 200, o reserva não é chamado; com a BrasilAPI respondendo 400, o reserva também não é chamado e `lookup` lança `BadRequestException`.",
+      "tests": []
+    },
+    {
+      "id": "AC-06",
+      "description": "com a flag `consulta-cnpj-alternativa` desligada e a BrasilAPI respondendo 404, `lookup` lança `NotFoundException` sem chamar o reserva.",
+      "tests": []
+    },
+    {
+      "id": "AC-07",
+      "description": "o registro de flags traz `consulta-cnpj-alternativa` com owner, padrão e data de remoção.",
+      "tests": []
+    },
+    {
+      "id": "AC-08",
+      "description": "no cadastro por CNPJ, quando a API responde 404 ou 400, o modal mostra \"CNPJ não encontrado ou inválido na Receita Federal.\"; quando responde 502 ou falha sem resposta, mostra \"Não foi possível consultar a Receita Federal agora. Tente novamente em instantes.\"; nos dois casos o modal segue aberto com o CNPJ digitado.",
+      "tests": []
+    }
+  ],
+  "spec": "docs/delivery/specs/DMTE-556.md",
+  "tdd": {
+    "mode": "required",
+    "red": ".delivery/evidence/DMTE-556/red.json",
+    "green": ".delivery/evidence/DMTE-556/green.json"
+  },
+  "design_system": {
+    "applicable": false,
+    "reason": "Sem componente, prop ou token novo: só troca o texto de erro do modal existente."
+  }
+}
