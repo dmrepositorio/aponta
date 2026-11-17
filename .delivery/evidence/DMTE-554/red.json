@@ -1,8 +1,8 @@
 {
   "version": 1,
   "phase": "red",
-  "started_at": "2026-11-17T12:23:10.753613+00:00",
-  "finished_at": "2026-11-17T12:28:30.739733+00:00",
+  "started_at": "2026-11-17T12:38:43.120282+00:00",
+  "finished_at": "2026-11-17T12:44:06.525642+00:00",
   "command": [
     "pnpm",
     "nx",
@@ -14,8 +14,8 @@
     "api",
     "--skip-nx-cache"
   ],
-  "base_sha": "dcfdef083328015894bfecb357c790fe9e9f14da",
-  "head_sha": "dcfdef083328015894bfecb357c790fe9e9f14da",
+  "base_sha": "bba27622a05d386565e1ce09b8134a92ac77a620",
+  "head_sha": "bba27622a05d386565e1ce09b8134a92ac77a620",
   "exit_code": 1,
   "tests": {
     "apps/web/src/pages/OrganizationsPage.test.tsx": "3914ecbc322ef240b384a4d14e36842ebd2886b879261d398d9762be3ab676cc",
@@ -35,5 +35,5 @@
     "apps/web/src/pages/OrganizationsPage.test.tsx": "3914ecbc322ef240b384a4d14e36842ebd2886b879261d398d9762be3ab676cc"
   },
   "log": ".delivery/evidence/DMTE-554/red.log",
-  "log_sha256": "9aa3af1442d00cc6c2ca5bbcb1f42a4cfe2fd93fce010fc0f2cb5db78107d615"
+  "log_sha256": "e5560033f8d0d9264853896842ce04714b5204667af6841469a399e169009b46"
 }
