@@ -905,4 +905,53 @@ describe('VaultPage — row actions and per-field reveal (DMTE-544)', () => {
     expect(screen.queryByText('fake-password-123')).not.toBeInTheDocument();
     expect(eye('senha')).toHaveAttribute('aria-pressed', 'false');
   });
+
+  it('hides revealed values when the selected folder is removed', async () => {
+    const { user } = await renderLoaded();
+    mockReveal();
+    vi.mocked(api.delete).mockResolvedValue({ data: {} });
+
+    await user.click(screen.getByTestId('tree-node-f1'));
+    await screen.findByRole('button', { name: 'Remover pasta Servidores' });
+    await user.click(eye('senha'));
+    expect(await screen.findByText('fake-password-123')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Remover pasta Servidores' }));
+
+    await waitFor(() => expect(api.delete).toHaveBeenCalledWith('/vault/folders/f1'));
+    await waitFor(() => expect(screen.queryByText('fake-password-123')).not.toBeInTheDocument());
+  });
+
+  it('keeps the eye disabled and busy until a discarded reveal settles, so no second call starts', async () => {
+    const { user } = await renderLoaded();
+    let resolveReveal: (value: unknown) => void = () => undefined;
+    vi.mocked(api.post).mockImplementation(() => new Promise((resolve) => { resolveReveal = resolve; }));
+
+    await user.click(eye('senha'));
+    await waitFor(() => expect(eye('senha')).toBeDisabled());
+    expect(eye('senha')).toHaveAttribute('aria-busy', 'true');
+
+    await user.type(screen.getByPlaceholderText('Buscar senha...'), 'f');
+    expect(eye('senha')).toBeDisabled();
+    expect(revealCalls()).toHaveLength(1);
+
+    await act(async () => resolveReveal({ data: { value: 'fake-password-123' } }));
+    await waitFor(() => expect(eye('senha')).toBeEnabled());
+    expect(eye('senha')).not.toHaveAttribute('aria-busy', 'true');
+    expect(screen.queryByText('fake-password-123')).not.toBeInTheDocument();
+  });
+
+  it('starts no reveal timer when the page unmounts with a reveal still in flight', async () => {
+    const { user, unmount } = await renderLoaded({ fakeTimers: true });
+    let resolveReveal: (value: unknown) => void = () => undefined;
+    vi.mocked(api.post).mockImplementation(() => new Promise((resolve) => { resolveReveal = resolve; }));
+    const setTimeoutSpy = vi.spyOn(globalThis, 'setTimeout');
+
+    await user.click(eye('senha'));
+    await waitFor(() => expect(eye('senha')).toBeDisabled());
+    unmount();
+    await act(async () => resolveReveal({ data: { value: 'fake-password-123' } }));
+
+    expect(setTimeoutSpy.mock.calls.filter((call) => call[1] === 30_000)).toHaveLength(0);
+  });
 });
