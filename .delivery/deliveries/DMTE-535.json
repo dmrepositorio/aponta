@@ -1,0 +1,71 @@
+{
+  "version": 1,
+  "delivery": "DMTE-535",
+  "repository": "dmrepositorio/aponta",
+  "github_issue": 301,
+  "multica_id": "01a1e004-6817-7a06-b38c-15d52e5859c9",
+  "cycle": "2026-11-09/2026-11-22",
+  "tier": 2,
+  "criteria": [
+    {
+      "id": "AC-01",
+      "description": "na linha do cabeçalho da página, busca e `+ Novo artigo` têm 42 px de altura (`+ Novo artigo` com `size=\"medium\"`); na linha de ordenação, o combo e o alternador Lista/Grade têm 42 px, o contêiner do alternador usa `--control-height-md` e `rounded-control`, sem `rounded-[12px]`/`rounded-[8px]` soltos; `+ Nova pasta` e `Compartilhar` também em 42 px. No navegador, em 1440 px e 390 px, as alturas medidas de cada linha são iguais.",
+      "tests": []
+    },
+    {
+      "id": "AC-02",
+      "description": "\"Ler artigo completo\", \"Editar\" e \"Excluir\" do card de artigo, e \"Editar\" e \"Excluir\" do card de pasta, não têm padding lateral (`px-0`); no navegador, a borda esquerda do texto de \"Ler artigo completo\" (e de \"Editar\" da pasta) coincide com a do título do card, e a altura do alvo segue em 32 px.",
+      "tests": []
+    },
+    {
+      "id": "AC-03",
+      "description": "os primários da tela (`+ Novo artigo`, `+ Nova pasta`, `Salvar`/`Atualizar` de artigo e de pasta, `Adicionar`) usam `brand-600`; no navegador, a razão de contraste calculada entre o texto e o fundo de cada um é de pelo menos 4,5:1. \"N artigos\" usa `text-gray-500` (razão de pelo menos 4,5:1).",
+      "tests": []
+    },
+    {
+      "id": "AC-04",
+      "description": "a tag clicável do card, o \"×\" do filtro ativo e os botões Lista/Grade mostram anel de foco `brand-200` com `focus-visible` (nenhum contorno padrão do navegador); no navegador, ao navegar por Tab, `box-shadow` do elemento focado não é vazio e `outline-style` é `none`.",
+      "tests": []
+    },
+    {
+      "id": "AC-05",
+      "description": "a tag clicável tem `aria-pressed` igual a `true` quando o filtro está ativo e `false` quando não está, e mostra um ícone decorativo (`aria-hidden`) de seleção só quando ativa.",
+      "tests": []
+    },
+    {
+      "id": "AC-06",
+      "description": "\"Interno\" usa a variante `petroleum` com ícone de cadeado `aria-hidden`, nunca `yellow`; o texto \"Interno\" é o mesmo.",
+      "tests": []
+    },
+    {
+      "id": "AC-07",
+      "description": "com o formulário de artigo aberto (novo ou edição), `+ Novo artigo` do cabeçalho continua na tela, `disabled`, com `title`; o foco vai ao campo \"Título\"; fechar o formulário reabilita o botão.",
+      "tests": []
+    },
+    {
+      "id": "AC-08",
+      "description": "\"+ Novo item de catálogo\" é um `EzButton` terciário alinhado à esquerda (`self-start`, `px-0`); no navegador, sua borda esquerda coincide com a dos campos do formulário.",
+      "tests": []
+    },
+    {
+      "id": "AC-09",
+      "description": "\"Excluir\" do artigo e da pasta abre um `EzDialog` de perigo com o nome do item; \"Confirmar\" chama o `DELETE` do item e fecha; \"Cancelar\" e Escape fecham sem chamar a API; `window.confirm` não é mais chamado.",
+      "tests": []
+    },
+    {
+      "id": "AC-10",
+      "description": "nenhum arquivo de `apps/web/src/components/ds/`, de `apps/api` nem de `apps/web-e2e` é alterado, `package.json` e `pnpm-lock.yaml` não mudam, os parâmetros enviados à API não mudam, e os testes da DMTE-537 (`with a slow articles API`) e os da DMTE-534 que não aparecem em \"Testes existentes que mudam\" passam sem edição.",
+      "tests": []
+    }
+  ],
+  "spec": "docs/delivery/specs/DMTE-535.md",
+  "tdd": {
+    "mode": "required",
+    "red": ".delivery/evidence/DMTE-535/red.json",
+    "green": ".delivery/evidence/DMTE-535/green.json"
+  },
+  "design_system": {
+    "applicable": true,
+    "reused": []
+  }
+}
