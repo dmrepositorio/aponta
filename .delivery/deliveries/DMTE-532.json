@@ -36,7 +36,10 @@
       "tests": [
         "apps/web/src/components/ds/EzTabs.test.tsx: moves focus and selection with arrows, Home and End",
         "apps/web/src/components/ds/EzTabs.test.tsx: skips disabled tabs and wraps around",
-        "apps/web/src/components/ds/EzTabs.test.tsx: ignores the keyboard with a custom role"
+        "apps/web/src/components/ds/EzTabs.test.tsx: ignores the keyboard with a custom role",
+        "apps/web/src/components/ds/EzTabs.test.tsx: lands Home and End on enabled tabs when the ends are disabled",
+        "apps/web/src/components/ds/EzTabs.test.tsx: leaves browser shortcuts alone: Alt, Ctrl and Meta with an arrow do nothing",
+        "apps/web/src/components/ds/EzTabs.test.tsx: does not call onChange when the key lands on the tab that is already active"
       ]
     },
     {
@@ -77,8 +80,8 @@
   "spec": "docs/delivery/specs/DMTE-532.md",
   "tdd": {
     "mode": "required",
-    "red": ".delivery/evidence/DMTE-532/red.json",
-    "green": ".delivery/evidence/DMTE-532/green.json"
+    "red": ".delivery/evidence/DMTE-532/red-r2.json",
+    "green": ".delivery/evidence/DMTE-532/green-r2.json"
   },
   "design_system": {
     "applicable": true,

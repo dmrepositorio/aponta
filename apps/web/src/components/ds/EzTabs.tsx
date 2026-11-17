@@ -43,7 +43,8 @@ export const EzTabs = forwardRef<HTMLDivElement, EzTabsProps>(
     // Setas, Home e End movem o foco e ativam a aba (ativação automática, padrão ARIA de abas).
     const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
       onKeyDown?.(event);
-      if (!tabRole || event.defaultPrevented) return;
+      // Alt+Seta é voltar/avançar do navegador; Ctrl/Meta+tecla também são atalhos dele.
+      if (!tabRole || event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return;
       const buttons = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="tab"]:not(:disabled)'));
       const current = buttons.indexOf(event.target as HTMLButtonElement);
       if (current < 0) return;
@@ -52,7 +53,7 @@ export const EzTabs = forwardRef<HTMLDivElement, EzTabsProps>(
       if (next === undefined) return;
       event.preventDefault();
       buttons[next].focus();
-      onChange(enabledTabs[next].id);
+      if (enabledTabs[next].id !== activeTab) onChange(enabledTabs[next].id);
     };
     return (
       <div

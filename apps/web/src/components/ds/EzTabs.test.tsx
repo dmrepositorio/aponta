@@ -123,9 +123,55 @@ describe('EzTabs', () => {
       expect(onChange).toHaveBeenLastCalledWith('d');
 
       onChange.mockClear();
-      await user.keyboard('x{ArrowDown}{Enter}');
-      expect(onChange).not.toHaveBeenCalledWith('a');
-      expect(onChange).not.toHaveBeenCalledWith('b');
+      await user.keyboard('x{ArrowDown}{PageUp}');
+      expect(onChange).not.toHaveBeenCalled();
+    });
+
+    it('lands Home and End on enabled tabs when the ends are disabled', async () => {
+      const user = userEvent.setup();
+      const edged = [
+        { id: 'x', label: 'X', disabled: true },
+        { id: 'a', label: 'A' },
+        { id: 'b', label: 'B' },
+        { id: 'y', label: 'Y', disabled: true },
+      ];
+      function Edged() {
+        const [active, setActive] = useState<string | number>('a');
+        return <EzTabs tabs={edged} activeTab={active} onChange={setActive} />;
+      }
+      render(<Edged />);
+
+      screen.getByRole('tab', { name: 'A' }).focus();
+      await user.keyboard('{End}');
+      expect(screen.getByRole('tab', { name: 'B' })).toHaveFocus();
+      expect(screen.getByRole('tab', { name: 'B' })).toHaveAttribute('aria-selected', 'true');
+      await user.keyboard('{Home}');
+      expect(screen.getByRole('tab', { name: 'A' })).toHaveFocus();
+      expect(screen.getByRole('tab', { name: 'A' })).toHaveAttribute('aria-selected', 'true');
+    });
+
+    it('leaves browser shortcuts alone: Alt, Ctrl and Meta with an arrow do nothing', async () => {
+      const user = userEvent.setup();
+      const onChange = vi.fn();
+      render(<EzTabs tabs={tabs} activeTab="b" onChange={onChange} />);
+
+      screen.getByRole('tab', { name: 'B' }).focus();
+      await user.keyboard('{Alt>}{ArrowLeft}{/Alt}');
+      await user.keyboard('{Control>}{ArrowRight}{/Control}');
+      await user.keyboard('{Meta>}{Home}{/Meta}');
+      expect(onChange).not.toHaveBeenCalled();
+      expect(screen.getByRole('tab', { name: 'B' })).toHaveFocus();
+    });
+
+    it('does not call onChange when the key lands on the tab that is already active', async () => {
+      const user = userEvent.setup();
+      const onChange = vi.fn();
+      render(<EzTabs tabs={tabs} activeTab="a" onChange={onChange} />);
+
+      screen.getByRole('tab', { name: 'A' }).focus();
+      await user.keyboard('{Home}');
+      expect(onChange).not.toHaveBeenCalled();
+      expect(screen.getByRole('tab', { name: 'A' })).toHaveFocus();
     });
 
     it('ignores the keyboard with a custom role', async () => {

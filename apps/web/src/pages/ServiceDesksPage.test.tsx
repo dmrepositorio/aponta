@@ -589,5 +589,25 @@ describe('ServiceDesksPage', () => {
     await user.keyboard('{ArrowRight}');
     expectPanelOf('Campos obrigatórios');
     expect(screen.getByRole('tab', { name: 'Campos obrigatórios' })).toHaveFocus();
+
+    await user.keyboard('{ArrowLeft}');
+    expectPanelOf('Parâmetros');
+    expect(screen.getByRole('tab', { name: 'Parâmetros' })).toHaveFocus();
+
+    // same 12 tabs, same order as before the semantics were added
+    expect(tabs.map((tab) => tab.textContent)).toEqual([
+      'Informações básicas',
+      'Parâmetros',
+      'Campos obrigatórios',
+      'Prioridades',
+      'Clientes',
+      'Grupos de atendentes',
+      'Estágio',
+      'Status',
+      'Reabertura',
+      'Seções do ticket',
+      'Revisão',
+      'Expediente',
+    ]);
   });
 });

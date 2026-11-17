@@ -51,6 +51,4 @@ export const Interactive: Story = {
  */
 export const KeyboardFocus: Story = {
   args: { id: 'check-focus', label: 'Use Tab para focar' },
-  parameters: { docs: { description: { story: 'Contorno `ez-focus`: 2 px em brand-600, 4,64:1 sobre branco.' } } },
 };
-
