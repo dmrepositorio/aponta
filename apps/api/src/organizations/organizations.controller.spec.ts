@@ -13,6 +13,7 @@ const mockOrganizationsService = {
   findOne: jest.fn(),
   update: jest.fn(),
   remove: jest.fn(),
+  deletionCheck: jest.fn(),
   addAddress: jest.fn(),
   removeAddress: jest.fn(),
   addContact: jest.fn(),
@@ -23,6 +24,8 @@ const mockOrganizationsService = {
   updateAgentGroup: jest.fn(),
   removeAgentGroup: jest.fn(),
 };
+
+const mockPermissions = { hasPermission: jest.fn(), canDeleteTickets: jest.fn() };
 
 const mockCnpjLookupService = {
   lookup: jest.fn(),
@@ -37,7 +40,7 @@ describe('OrganizationsController', () => {
       providers: [
         { provide: OrganizationsService, useValue: mockOrganizationsService },
         { provide: CnpjLookupService, useValue: mockCnpjLookupService },
-        { provide: PermissionsService, useValue: { hasPermission: jest.fn() } },
+        { provide: PermissionsService, useValue: mockPermissions },
         Reflector,
       ],
     }).compile();
@@ -51,7 +54,7 @@ describe('OrganizationsController', () => {
   });
 
   describe('@RequirePermission metadata', () => {
-    it.each([['create'], ['update'], ['remove'], ['lookupCnpj'], ['addAddress'], ['removeAddress'], ['addContact'], ['removeContact'], ['linkServiceDesk'], ['unlinkServiceDesk'], ['createAgentGroup'], ['updateAgentGroup'], ['removeAgentGroup']])(
+    it.each([['create'], ['update'], ['remove'], ['deletionCheck'], ['lookupCnpj'], ['addAddress'], ['removeAddress'], ['addContact'], ['removeContact'], ['linkServiceDesk'], ['unlinkServiceDesk'], ['createAgentGroup'], ['updateAgentGroup'], ['removeAgentGroup']])(
       'requires MANAGE_CLIENTS_AND_RESOURCE_GROUPS on %s',
       (methodName) => {
         expect(Reflect.getMetadata(PERMISSIONS_KEY, (controller as any)[methodName])).toEqual([
@@ -134,13 +137,28 @@ describe('OrganizationsController', () => {
   });
 
   describe('remove', () => {
-    it('delegates to the service with the given id', async () => {
+    it('AC-12 e AC-14: entrega ao serviço o id, se o usuário pode excluir tickets (só pelo grupo) e quem é o usuário', async () => {
       mockOrganizationsService.remove.mockResolvedValue({ id: 'org-1' });
+      mockPermissions.canDeleteTickets.mockResolvedValue(true);
 
-      const result = await controller.remove('org-1');
+      const result = await controller.remove('org-1', { id: 'user-1', role: 'ADMIN' } as never);
 
-      expect(mockOrganizationsService.remove).toHaveBeenCalledWith('org-1');
+      expect(mockPermissions.canDeleteTickets).toHaveBeenCalledWith('user-1');
+      expect(mockOrganizationsService.remove).toHaveBeenCalledWith('org-1', true, { id: 'user-1', role: 'ADMIN' });
       expect(result).toEqual({ id: 'org-1' });
+    });
+  });
+
+  describe('deletionCheck', () => {
+    it('AC-08: consulta os ids pedidos sabendo se o usuário pode excluir tickets', async () => {
+      mockOrganizationsService.deletionCheck.mockResolvedValue([{ id: 'org-1', canDelete: true }]);
+      mockPermissions.canDeleteTickets.mockResolvedValue(false);
+
+      const result = await controller.deletionCheck({ ids: ['org-1', 'org-2'] }, { id: 'user-1', role: 'AGENT' } as never);
+
+      expect(mockPermissions.canDeleteTickets).toHaveBeenCalledWith('user-1');
+      expect(mockOrganizationsService.deletionCheck).toHaveBeenCalledWith(['org-1', 'org-2'], false, { id: 'user-1', role: 'AGENT' });
+      expect(result).toEqual([{ id: 'org-1', canDelete: true }]);
     });
   });
 

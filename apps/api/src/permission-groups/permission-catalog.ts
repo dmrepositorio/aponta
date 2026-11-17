@@ -33,6 +33,7 @@ export const PERMISSION_CATALOG: PermissionDefinition[] = [
   { key: 'MANAGE_RESOURCES', category: PermissionCategory.ADMINISTRATIVE, label: 'Gerenciar recursos' },
   { key: 'MANAGE_TRAVEL', category: PermissionCategory.ADMINISTRATIVE, label: 'Gerenciar deslocamentos' },
   { key: 'EDIT_CLOSED_TICKETS', category: PermissionCategory.ADMINISTRATIVE, label: 'Editar tickets fechados' },
+  { key: 'DELETE_TICKETS', category: PermissionCategory.ADMINISTRATIVE, label: 'Excluir tickets' },
   { key: 'MANAGE_BILLING', category: PermissionCategory.ADMINISTRATIVE, label: 'Gerenciar faturamento' },
   { key: 'MANAGE_BACKUP_RESOURCES', category: PermissionCategory.ADMINISTRATIVE, label: 'Gerenciar recursos de backup' },
   { key: 'ADD_SLA_TIME', category: PermissionCategory.ADMINISTRATIVE, label: 'Adicionar tempo de SLA' },

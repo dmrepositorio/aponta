@@ -1,8 +1,10 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
-import { Prisma, TicketStatus } from '@prisma/client';
+import { Prisma } from '@prisma/client';
+import { checkOrganizationDeletion, OrganizationDeletionCheck } from './organization-deletion';
+import { CurrentUserPayload } from '../tickets/decorators/current-user.decorator';
 import { CreateOrganizationAddressDto } from './dto/create-organization-address.dto';
 import { CreateOrganizationContactDto } from './dto/create-organization-contact.dto';
 
@@ -23,6 +25,8 @@ const formatCnpj = (digits: string) => digits.replace(/(\d{2})(\d{3})(\d{3})(\d{
 
 @Injectable()
 export class OrganizationsService {
+  private readonly logger = new Logger(OrganizationsService.name);
+
   constructor(private prisma: PrismaService) {}
 
   // DMTE-559: o índice único só barra o texto idêntico; cadastros antigos podem ter o CNPJ pontuado.
@@ -101,23 +105,37 @@ export class OrganizationsService {
       .catch(rethrowDuplicateDocument);
   }
 
-  /** DMTE-481: "excluir" só inativa; contrato ativo ou ticket aberto bloqueiam (409). */
-  async remove(id: string) {
-    await this.findOne(id); // Check exists
-    if (await this.prisma.contract.findFirst({ where: { organizationId: id, active: true }, select: { id: true } })) {
-      throw new ConflictException('Não é possível excluir o cliente: há contrato ativo. Encerre o contrato antes.');
+  /** DMTE-560: para cada cliente, o que impede a exclusão e o que sairia junto. */
+  async deletionCheck(ids: string[], canDeleteTickets: boolean, user?: Pick<CurrentUserPayload, 'id' | 'role'>): Promise<OrganizationDeletionCheck[]> {
+    return Promise.all([...new Set(ids)].map((id) => checkOrganizationDeletion(this.prisma, id, canDeleteTickets, user)));
+  }
+
+  /** DMTE-560: exclusão definitiva (substitui o "só inativa" da DMTE-481); a checagem é refeita sob trava de linha. */
+  async remove(id: string, canDeleteTickets: boolean, actor: Pick<CurrentUserPayload, 'id' | 'role'>) {
+    try {
+      await this.prisma.$transaction(
+        async (db) => {
+          await db.$queryRaw(Prisma.sql`SELECT id FROM "Organization" WHERE id = ${id} FOR UPDATE`);
+          const check = await checkOrganizationDeletion(db, id, canDeleteTickets, actor);
+          if (!check.canDelete) {
+            throw new ConflictException({
+              message: `Não é possível excluir o cliente ${check.name}: há vínculos que impedem a exclusão.`,
+              blockers: check.blockers,
+            });
+          }
+          await db.organizationDeskEvent.deleteMany({ where: { organizationId: id } });
+          await db.organization.delete({ where: { id } });
+        },
+        { timeout: 30000 },
+      );
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2003') {
+        throw new ConflictException('Não é possível excluir o cliente: surgiu um vínculo novo durante a exclusão. Tente de novo.');
+      }
+      throw error;
     }
-    const openTicket = await this.prisma.ticket.findFirst({
-      where: {
-        status: { notIn: [TicketStatus.RESOLVED, TicketStatus.CLOSED] },
-        OR: [{ commercialOrganizationId: id }, { requester: { organizationId: id } }],
-      },
-      select: { id: true },
-    });
-    if (openTicket) {
-      throw new ConflictException('Não é possível excluir o cliente: há ticket aberto. Resolva ou feche os tickets antes.');
-    }
-    return this.prisma.organization.update({ where: { id }, data: { active: false } });
+    this.logger.log(`Cliente ${id} excluído por ${actor.id}`);
+    return { id };
   }
 
   async addAddress(organizationId: string, dto: CreateOrganizationAddressDto) {

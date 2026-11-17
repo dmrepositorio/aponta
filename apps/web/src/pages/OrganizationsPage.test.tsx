@@ -953,40 +953,231 @@ describe('OrganizationsPage', { timeout: 15000 }, () => {
     expect(screen.getByLabelText(/nome fantasia/i)).toHaveValue('Empresa A (Cópia)');
   });
 
-  it('DMTE-481 AC-04: a lixeira avisa que o cliente será apenas inativado e chama DELETE /organizations/:id', async () => {
-    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
-    vi.mocked(api.delete).mockResolvedValue({ data: { id: 'org-1', active: false } });
-    loginAs('ADMIN');
-    const user = userEvent.setup();
-    renderPage();
-
-    await screen.findByText('Empresa A');
-    await user.click(screen.getAllByRole('checkbox')[1]); // "Empresa A"
-    await user.click(screen.getByTestId('ez-toolbar-delete-button'));
-
-    expect(confirmSpy).toHaveBeenCalledWith(expect.stringMatching(/apenas inativad/i));
-    await waitFor(() => {
-      expect(api.delete).toHaveBeenCalledWith('/organizations/org-1');
+  describe('exclusão de cliente (DMTE-560 T3)', () => {
+    const noCascade = { addresses: 0, contacts: 0, agentGroups: 0, technicalGroups: 0, sharedArticles: 0, deskEvents: 0 };
+    const free = (id: string, name: string, cascade: Partial<typeof noCascade> = {}) => ({
+      id, name, canDelete: true, blockers: [], cascade: { ...noCascade, ...cascade },
     });
-    expect(api.patch).not.toHaveBeenCalled();
-    confirmSpy.mockRestore();
-  });
-
-  it('DMTE-481 AC-04: mostra a mensagem da API quando a exclusão é recusada (contrato ativo/ticket aberto)', async () => {
-    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
-    vi.mocked(api.delete).mockRejectedValue({
-      response: { data: { message: 'Cliente com contrato ativo não pode ser excluído' } },
+    const blocked = (id: string, name: string, blockers: unknown[]) => ({
+      id, name, canDelete: false, blockers, cascade: noCascade,
     });
-    loginAs('ADMIN');
-    const user = userEvent.setup();
-    renderPage();
+    const contractsBlocker = {
+      code: 'CONTRACTS', message: 'Há 7 contratos do cliente.', count: 7,
+      items: [{ id: 'c1', label: 'Contrato A' }, { id: 'c2', label: 'Contrato B' }],
+      resolvable: true, howToResolve: 'Exclua o contrato em Contratos.',
+    };
+    const usersBlocker = {
+      code: 'USERS', message: 'Há 1 usuário vinculado ao cliente.', count: 1,
+      items: [{ id: 'u1', label: 'Ana' }], resolvable: false, howToResolve: null,
+    };
 
-    await screen.findByText('Empresa A');
-    await user.click(screen.getAllByRole('checkbox')[1]);
-    await user.click(screen.getByTestId('ez-toolbar-delete-button'));
+    async function selectAndTrash(user: ReturnType<typeof userEvent.setup>, rows: number[]) {
+      await screen.findByText('Empresa A');
+      for (const row of rows) await user.click(screen.getAllByRole('checkbox')[row]);
+      await user.click(screen.getByTestId('ez-toolbar-delete-button'));
+      return screen.findByRole('dialog');
+    }
 
-    expect(await screen.findByText(/cliente com contrato ativo não pode ser excluído/i)).toBeInTheDocument();
-    confirmSpy.mockRestore();
+    it('AC-16: a lixeira consulta a API e abre o diálogo do DS; nada é excluído antes de Confirmar e window.confirm não é usado', async () => {
+      const confirmSpy = vi.spyOn(window, 'confirm');
+      vi.mocked(api.post).mockResolvedValue({ data: [free('org-1', 'Empresa A')] });
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      renderPage();
+
+      const dialog = await selectAndTrash(user, [1]);
+
+      expect(api.post).toHaveBeenCalledWith('/organizations/deletion-check', { ids: ['org-1'] });
+      expect(within(dialog).getByText('Excluir cliente')).toBeInTheDocument();
+      expect(api.delete).not.toHaveBeenCalled();
+      expect(confirmSpy).not.toHaveBeenCalled();
+      confirmSpy.mockRestore();
+    });
+
+    it('AC-17: cliente livre mostra o aviso, o que sai junto com as contagens, e Confirmar chama DELETE', async () => {
+      vi.mocked(api.post).mockResolvedValue({
+        data: [free('org-1', 'Empresa A', { addresses: 2, contacts: 1, agentGroups: 3, technicalGroups: 4, sharedArticles: 5, deskEvents: 6 })],
+      });
+      vi.mocked(api.delete).mockResolvedValue({ data: { id: 'org-1' } });
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      renderPage();
+
+      const dialog = await selectAndTrash(user, [1]);
+
+      expect(within(dialog).getByText(/esta ação não pode ser desfeita/i)).toBeInTheDocument();
+      expect(within(dialog).getByText(/2 endereços/i)).toBeInTheDocument();
+      expect(within(dialog).getByText(/1 contato\b/i)).toBeInTheDocument();
+      expect(within(dialog).getByText(/3 grupos de atendentes/i)).toBeInTheDocument();
+      expect(within(dialog).getByText(/4 vínculos com grupos técnicos/i)).toBeInTheDocument();
+      expect(within(dialog).getByText(/5 compartilhamentos de artigo/i)).toBeInTheDocument();
+      expect(within(dialog).getByText(/6 registros de histórico de mesa/i)).toBeInTheDocument();
+
+      await user.click(within(dialog).getByRole('button', { name: 'Confirmar' }));
+
+      await waitFor(() => expect(api.delete).toHaveBeenCalledWith('/organizations/org-1'));
+      expect(api.delete).toHaveBeenCalledTimes(1);
+      expect(api.patch).not.toHaveBeenCalled();
+    });
+
+    it('AC-18 e AC-21: cliente bloqueado lista cada bloqueio com quantidade, exemplos, "e mais N" e a saída; Confirmar não exclui; o diálogo não exclui ticket', async () => {
+      vi.mocked(api.post).mockResolvedValue({ data: [blocked('org-1', 'Empresa A', [contractsBlocker, usersBlocker])] });
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      renderPage();
+
+      const dialog = await selectAndTrash(user, [1]);
+
+      expect(within(dialog).getByText(/há 7 contratos do cliente/i)).toBeInTheDocument();
+      expect(within(dialog).getByText('Contrato A')).toBeInTheDocument();
+      expect(within(dialog).getByText('Contrato B')).toBeInTheDocument();
+      expect(within(dialog).getByText(/e mais 5/i)).toBeInTheDocument();
+      expect(within(dialog).getByText(/como resolver: exclua o contrato em contratos/i)).toBeInTheDocument();
+      expect(within(dialog).getByText(/há 1 usuário vinculado ao cliente/i)).toBeInTheDocument();
+      expect(within(dialog).getByText(/não é possível resolver: inative o cliente/i)).toBeInTheDocument();
+      expect(within(dialog).getByRole('button', { name: 'Confirmar' })).toBeDisabled();
+      expect(within(dialog).queryByRole('button', { name: /excluir ticket/i })).not.toBeInTheDocument();
+
+      await user.click(within(dialog).getByRole('button', { name: 'Fechar' }));
+
+      await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+      expect(api.delete).not.toHaveBeenCalled();
+    });
+
+    it('AC-18: ticket do cliente aparece com o motivo de cada um e a orientação de excluir em Tickets', async () => {
+      vi.mocked(api.post).mockResolvedValue({
+        data: [
+          blocked('org-1', 'Empresa A', [
+            {
+              code: 'TICKETS', message: 'Há 2 tickets do cliente.', count: 2,
+              items: [
+                { id: 't1', label: 'TCK-1: Impressora', reasons: ['tem apontamento'] },
+                { id: 't2', label: 'TCK-2: Rede', reasons: ['aberto pelo cliente'] },
+              ],
+              resolvable: false, howToResolve: null,
+            },
+          ]),
+        ],
+      });
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      renderPage();
+
+      const dialog = await selectAndTrash(user, [1]);
+
+      expect(within(dialog).getByText(/TCK-1: Impressora.*tem apontamento/i)).toBeInTheDocument();
+      expect(within(dialog).getByText(/TCK-2: Rede.*aberto pelo cliente/i)).toBeInTheDocument();
+      expect(within(dialog).getByText(/não é possível resolver: inative o cliente/i)).toBeInTheDocument();
+    });
+
+    it('AC-19: com vários clientes mostra cada um como "pode excluir" ou "bloqueado"; Confirmar exclui só os livres, e a lista e a seleção se atualizam', async () => {
+      vi.mocked(api.post).mockResolvedValue({
+        data: [free('org-1', 'Empresa A'), blocked('org-2', 'Empresa B', [contractsBlocker])],
+      });
+      vi.mocked(api.delete).mockImplementation(async () => {
+        vi.mocked(api.get).mockImplementation((url: string) =>
+          url === '/organizations' ? Promise.resolve({ data: [orgs[1]] }) : url === PREF_URL ? Promise.resolve({ data: {} }) : Promise.reject(new Error(`Unexpected GET ${url}`)),
+        );
+        return { data: { id: 'org-1' } };
+      });
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      renderPage();
+
+      const dialog = await selectAndTrash(user, [1, 2]);
+
+      expect(within(dialog).getByText('Excluir 2 clientes')).toBeInTheDocument();
+      expect(within(dialog).getByText(/empresa a.*pode excluir/i)).toBeInTheDocument();
+      expect(within(dialog).getByText(/empresa b.*bloqueado/i)).toBeInTheDocument();
+
+      await user.click(within(dialog).getByRole('button', { name: 'Confirmar' }));
+
+      await waitFor(() => expect(api.delete).toHaveBeenCalledWith('/organizations/org-1'));
+      expect(api.delete).toHaveBeenCalledTimes(1);
+      await waitFor(() => expect(screen.queryByText('Empresa A')).not.toBeInTheDocument());
+      expect(screen.getByText('Empresa B')).toBeInTheDocument();
+      expect(screen.getAllByRole('checkbox')[1]).not.toBeChecked();
+    });
+
+    it('AC-19: falha na hora de excluir mostra a mensagem do servidor por cliente, e o cliente que falhou continua selecionado', async () => {
+      vi.mocked(api.post).mockResolvedValue({ data: [free('org-1', 'Empresa A'), free('org-2', 'Empresa B')] });
+      vi.mocked(api.delete).mockImplementation(async (url: string) => {
+        if (url === '/organizations/org-2') throw { response: { data: { message: 'Há contrato novo, recusado' } } };
+        return { data: { id: 'org-1' } };
+      });
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      renderPage();
+
+      const dialog = await selectAndTrash(user, [1, 2]);
+      await user.click(within(dialog).getByRole('button', { name: 'Confirmar' }));
+
+      expect(await within(dialog).findByText(/empresa b.*há contrato novo, recusado/i)).toBeInTheDocument();
+      expect(within(dialog).getByRole('button', { name: 'Fechar' })).toBeInTheDocument();
+      await user.click(within(dialog).getByRole('button', { name: 'Fechar' }));
+      const boxes = screen.getAllByRole('checkbox');
+      expect(boxes[2]).toBeChecked(); // "Empresa B" segue selecionada
+    });
+
+    it('AC-19: sem nenhum cliente livre só há Fechar útil: Confirmar fica desabilitado', async () => {
+      vi.mocked(api.post).mockResolvedValue({
+        data: [blocked('org-1', 'Empresa A', [usersBlocker]), blocked('org-2', 'Empresa B', [usersBlocker])],
+      });
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      renderPage();
+
+      const dialog = await selectAndTrash(user, [1, 2]);
+
+      expect(within(dialog).getByRole('button', { name: 'Confirmar' })).toBeDisabled();
+      expect(within(dialog).getByRole('button', { name: 'Fechar' })).toBeEnabled();
+    });
+
+    it('AC-20: Cancelar e Esc fecham sem excluir', async () => {
+      vi.mocked(api.post).mockResolvedValue({ data: [free('org-1', 'Empresa A')] });
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      renderPage();
+
+      let dialog = await selectAndTrash(user, [1]);
+      await user.click(within(dialog).getByRole('button', { name: 'Cancelar' }));
+      await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+
+      await user.click(screen.getByTestId('ez-toolbar-delete-button'));
+      dialog = await screen.findByRole('dialog');
+      await user.keyboard('{Escape}');
+      await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+      expect(api.delete).not.toHaveBeenCalled();
+    });
+
+    it('AC-20: Confirmar fica desabilitado enquanto a exclusão roda (sem envio duplo)', async () => {
+      vi.mocked(api.post).mockResolvedValue({ data: [free('org-1', 'Empresa A')] });
+      let finish: (value: unknown) => void = () => undefined;
+      vi.mocked(api.delete).mockReturnValue(new Promise((resolve) => { finish = resolve; }));
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      renderPage();
+
+      const dialog = await selectAndTrash(user, [1]);
+      await user.click(within(dialog).getByRole('button', { name: 'Confirmar' }));
+
+      await waitFor(() => expect(within(dialog).getByRole('button', { name: 'Confirmar' })).toBeDisabled());
+      expect(api.delete).toHaveBeenCalledTimes(1);
+      finish({ data: { id: 'org-1' } });
+    });
+
+    it('AC-20: falha da consulta mostra a mensagem e não oferece Confirmar', async () => {
+      vi.mocked(api.post).mockRejectedValue({ response: { data: { message: 'Consulta recusada pelo servidor' } } });
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      renderPage();
+
+      const dialog = await selectAndTrash(user, [1]);
+
+      expect(await within(dialog).findByText(/consulta recusada pelo servidor/i)).toBeInTheDocument();
+      expect(within(dialog).getByRole('button', { name: 'Confirmar' })).toBeDisabled();
+      expect(api.delete).not.toHaveBeenCalled();
+    });
   });
 
   it('persists column visibility toggles to the per-user screen config (server, DMTE-527 T2)', async () => {

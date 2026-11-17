@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, PlayCircle, Square } from 'lucide-react';
 import { CommentForm } from '../components/tickets/CommentForm';
@@ -15,7 +16,9 @@ import { useEscapeLayer } from '../hooks/useEscapeLayer';
 import { useTicket } from '../hooks/useTicket';
 import { Ticket } from '../hooks/useTickets';
 import { useAuthStore } from '../stores/authStore';
-import { EzAlert, EzButton, EzSpinner, EzTabs, EzTabItem } from '../components/ds';
+import { useEffectivePermissions } from '../hooks/usePermissions';
+import { api } from '../lib/api';
+import { EzAlert, EzButton, EzDialog, EzSpinner, EzTabs, EzTabItem } from '../components/ds';
 
 function isTicketSectionEnabled(ticket: Ticket, key: string): boolean {
   const sections = ticket.serviceDesk?.ticketSections;
@@ -36,6 +39,32 @@ export function TicketDetailPage() {
   const [isWorklogModalOpen, setIsWorklogModalOpen] = useState<boolean>(false);
   const activityTimer = useActivityTimer(id || '');
   const [timerError, setTimerError] = useState('');
+  // DMTE-560: excluir ticket só aparece para quem tem DELETE_TICKETS no grupo (sem bypass de ADMIN).
+  const canDeleteTickets = useEffectivePermissions().data?.canDeleteTickets === true;
+  const queryClient = useQueryClient();
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
+
+  const closeDelete = () => {
+    if (deleting) return;
+    setDeleteOpen(false);
+    setDeleteError('');
+  };
+
+  const confirmDelete = async () => {
+    setDeleting(true);
+    setDeleteError('');
+    try {
+      await api.delete(`/tickets/${id}`);
+      void queryClient.invalidateQueries({ queryKey: ['tickets'] });
+      navigate('/tickets');
+    } catch (error) {
+      const message = (error as { response?: { data?: { message?: string } } }).response?.data?.message;
+      setDeleteError(message ?? 'Não foi possível excluir o ticket. Tente de novo.');
+      setDeleting(false);
+    }
+  };
 
   // TiFlux parity: the browser tab shows "#<protocolo> - <título>" while a
   // ticket is open, so an agent working several tickets in separate tabs
@@ -170,6 +199,15 @@ export function TicketDetailPage() {
                   </button>
                 )}
               </div>
+            )}
+            {canDeleteTickets && (
+              <EzButton
+                type="button"
+                variant="secondary"
+                size="small"
+                label="Excluir ticket"
+                onClick={() => setDeleteOpen(true)}
+              />
             )}
           </div>
         </div>
@@ -407,6 +445,26 @@ export function TicketDetailPage() {
           )}
         </div>
       </div>
+      <EzDialog
+        open={deleteOpen}
+        variant="danger"
+        title="Excluir ticket"
+        message="Esta ação não pode ser desfeita. Comentários, histórico, checklist e anexos do ticket também serão apagados."
+        confirmDisabled={deleting}
+        onConfirm={() => void confirmDelete()}
+        onCancel={closeDelete}
+      >
+        <p className="mt-3 font-medium text-gray-900">
+          #{ticket.protocol} - {ticket.title}
+        </p>
+        <div aria-live="polite">
+          {deleteError && (
+            <EzAlert variant="error" role="alert" className="mt-3">
+              {deleteError}
+            </EzAlert>
+          )}
+        </div>
+      </EzDialog>
     </div>
   );
 }

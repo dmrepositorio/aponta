@@ -91,3 +91,19 @@ _Avoid_: Usuário não ativado, usuário provisório
 **Redefinição de senha**:
 E-mail com link de uso único em que quem já tem senha define uma nova, pedida pelo administrador ou pelo próprio usuário na tela de login.
 _Avoid_: Recuperação de senha, reset
+
+**Cliente**:
+Empresa ou pessoa atendida pelo helpdesk, cadastrada na tela Clientes; reúne solicitantes, contratos, mesas e cofre.
+_Avoid_: Parceiro, organização, conta
+
+**Exclusão de cliente**:
+Remoção definitiva do cadastro do Cliente, permitida só quando ele não tem Vínculo que impede a exclusão; é diferente de inativar, que mantém o cadastro.
+_Avoid_: Deleção, remoção lógica
+
+**Vínculo que impede a exclusão**:
+Registro de outra área ligado ao Cliente (ticket, mesa, contrato, usuário, cofre ou agenda) que bloqueia a Exclusão de cliente; cada vínculo diz se o usuário consegue resolvê-lo ou se a saída é inativar o Cliente.
+_Avoid_: Dependência, restrição
+
+**Exclusão de ticket**:
+Remoção definitiva de um ticket, restrita a quem tem a permissão do grupo e negada quando há apontamento, sub-tickets ou solicitante que seja usuário de um Cliente.
+_Avoid_: Cancelamento (cancelar fecha o ticket e o mantém)

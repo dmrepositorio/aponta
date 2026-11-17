@@ -1,0 +1,226 @@
+{
+  "version": 1,
+  "delivery": "DMTE-560",
+  "repository": "dmrepositorio/aponta",
+  "github_issue": 336,
+  "multica_id": "01a1eaa2-4d5a-7509-9e9f-3e5c3852f2a7",
+  "cycle": "2026-11-09/2026-11-22",
+  "tier": 3,
+  "criteria": [
+    {
+      "id": "AC-01",
+      "description": "`DELETE /tickets/:id` apaga o ticket (qualquer status) e responde 200 com `{ id }` quando o usuário tem `DELETE_TICKETS`, não há apontamento, pré-apontamento nem sub-tickets e o solicitante não é usuário de um cliente; comentários, auditoria, checklist, anexos e compromissos de agenda do ticket saem na mesma transação.",
+      "tests": [
+        "apps/api/src/tickets/tickets.service.spec.ts: TicketsService > remove (DMTE-560 T1) > AC-01: apaga o ticket OPEN, RESOLVED e CLOSED e o que é dele na mesma transação, e responde com o id",
+        "apps/api/src/tickets/tickets.service.spec.ts: TicketsService > remove (DMTE-560 T1) > AC-01: depois de apagar, remove do disco os arquivos dos anexos",
+        "apps/api/src/tickets/tickets.controller.spec.ts: TicketsController > remove (DMTE-560 T1) > AC-01: com DELETE_TICKETS no grupo entrega ao serviço o id e o usuário"
+      ]
+    },
+    {
+      "id": "AC-02",
+      "description": "com apontamento ou pré-apontamento, responde 409 com mensagem e a lista de até 5 itens com a contagem, e não apaga nada.",
+      "tests": [
+        "apps/api/src/tickets/tickets.service.spec.ts: TicketsService > remove (DMTE-560 T1) > AC-02: recusa com 409 enquanto houver apontamento, com a contagem e até 5 itens, sem apagar nada",
+        "apps/api/src/tickets/tickets.service.spec.ts: TicketsService > remove (DMTE-560 T1) > AC-02: pré-apontamento também impede a exclusão"
+      ]
+    },
+    {
+      "id": "AC-03",
+      "description": "com solicitante que é usuário de um cliente, responde 409 (\"aberto pelo cliente\") mesmo para quem tem a permissão, e não apaga nada.",
+      "tests": [
+        "apps/api/src/tickets/tickets.service.spec.ts: TicketsService > remove (DMTE-560 T1) > AC-03: recusa com 409 o ticket aberto por usuário de cliente, mesmo para quem pode excluir"
+      ]
+    },
+    {
+      "id": "AC-04",
+      "description": "com sub-tickets, responde 409 e não apaga nada.",
+      "tests": [
+        "apps/api/src/tickets/tickets.service.spec.ts: TicketsService > remove (DMTE-560 T1) > AC-04: recusa com 409 o ticket que tem sub-tickets"
+      ]
+    },
+    {
+      "id": "AC-05",
+      "description": "sem `DELETE_TICKETS` responde 403, inclusive para ADMIN; ticket que o usuário não enxerga pela regra do `GET /tickets/:id` responde 404; inexistente responde 404.",
+      "tests": [
+        "apps/api/src/tickets/tickets.controller.spec.ts: TicketsController > remove (DMTE-560 T1) > AC-05: sem DELETE_TICKETS no grupo responde 403, inclusive para ADMIN, e não chama o serviço",
+        "apps/api/src/tickets/tickets.controller.spec.ts: TicketsController > remove (DMTE-560 T1) > AC-05: a rota não usa @RequirePermission, que daria o bypass de ADMIN do PermissionsGuard",
+        "apps/api/src/tickets/tickets.service.spec.ts: TicketsService > remove (DMTE-560 T1) > AC-05: ticket que o usuário não enxerga pela regra do GET responde 404, sem apagar",
+        "apps/api/src/tickets/tickets.service.spec.ts: TicketsService > remove (DMTE-560 T1) > AC-05: ticket inexistente responde 404, sem apagar"
+      ]
+    },
+    {
+      "id": "AC-06",
+      "description": "`DELETE_TICKETS` está no catálogo (Administrativo, \"Excluir tickets\"), não está em nenhum grupo padrão de papel, grupos existentes não a ganham, e `GET /auth/me` devolve `canDeleteTickets` verdadeiro só quando a chave está num grupo do usuário (ADMIN sem a chave recebe falso).",
+      "tests": [
+        "apps/api/src/permission-groups/permission-catalog.delete-tickets.spec.ts: DELETE_TICKETS no catálogo (DMTE-560)",
+        "apps/api/src/permissions/permissions.service.spec.ts: PermissionsService > canDeleteTickets (DMTE-560)",
+        "apps/api/src/auth/auth.controller.spec.ts: AuthController > getProfile > DMTE-560 AC-06: ADMIN sem DELETE_TICKETS no grupo recebe canDeleteTickets falso; com a chave no grupo, verdadeiro"
+      ]
+    },
+    {
+      "id": "AC-07",
+      "description": "na tela do ticket, \"Excluir ticket\" só aparece com `canDeleteTickets`; abre `EzDialog` danger com o protocolo, nada é excluído antes de Confirmar, Confirmar fica desabilitado durante o envio, a mensagem de recusa da API aparece no diálogo, e o sucesso leva à lista de Tickets.",
+      "tests": [
+        "apps/web/src/pages/TicketDetailPage.test.tsx: TicketDetailPage > excluir ticket (DMTE-560 T1) > AC-07: \"Excluir ticket\" só aparece quando o servidor diz que o usuário pode (canDeleteTickets)",
+        "apps/web/src/pages/TicketDetailPage.test.tsx: TicketDetailPage > excluir ticket (DMTE-560 T1) > AC-07: abre o diálogo do DS com o protocolo e não exclui antes de Confirmar; Cancelar fecha sem excluir",
+        "apps/web/src/pages/TicketDetailPage.test.tsx: TicketDetailPage > excluir ticket (DMTE-560 T1) > AC-07: Confirmar chama DELETE /tickets/:id uma vez, desabilita Confirmar durante o envio e, no sucesso, volta à lista de Tickets",
+        "apps/web/src/pages/TicketDetailPage.test.tsx: TicketDetailPage > excluir ticket (DMTE-560 T1) > AC-07: a recusa da API aparece no diálogo, que continua aberto"
+      ]
+    },
+    {
+      "id": "AC-08",
+      "description": "`POST /organizations/deletion-check` com `ids` (1 a 50) devolve, por cliente, `canDelete`, `blockers` e `cascade`; exige `MANAGE_CLIENTS_AND_RESOURCE_GROUPS` (403 sem ela) e responde 404 para id inexistente.",
+      "tests": [
+        "apps/api/src/organizations/organizations.service.spec.ts: OrganizationsService > deletionCheck (DMTE-560 T2) > AC-08 (devolve por cliente, cliente inexistente 404, vários clientes)",
+        "apps/api/src/organizations/dto/deletion-check.dto.spec.ts: DeletionCheckDto (DMTE-560 AC-08)",
+        "apps/api/src/organizations/organizations.controller.spec.ts: OrganizationsController > deletionCheck (e @RequirePermission em deletionCheck)"
+      ]
+    },
+    {
+      "id": "AC-09",
+      "description": "cada um destes vínculos gera o bloqueio com o código correspondente, de forma independente: ticket de qualquer status (cliente comercial ou solicitante do cliente) = TICKETS; vínculo atual com mesa = SERVICE_DESKS; contrato ativo ou inativo = CONTRACTS; usuário do cliente = USERS; credencial ou pasta do cofre = VAULT; compromisso de agenda do cliente = APPOINTMENTS.",
+      "tests": [
+        "apps/api/src/organizations/organizations.service.spec.ts: OrganizationsService > deletionCheck (DMTE-560 T2) > AC-09 (TICKETS, SERVICE_DESKS, CONTRACTS, USERS, VAULT, APPOINTMENTS bloqueiam sozinhos; consulta de ticket de qualquer status)"
+      ]
+    },
+    {
+      "id": "AC-10",
+      "description": "todos os bloqueios do cliente voltam numa só resposta, cada um com `code`, `message`, `count`, até 5 `items`, `resolvable` e `howToResolve`; USERS tem `resolvable=false`, os demais dependem do item.",
+      "tests": [
+        "apps/api/src/organizations/organizations.service.spec.ts: OrganizationsService > deletionCheck (DMTE-560 T2) > AC-10 (todos os bloqueios, contagem, até 5 itens, saída; USERS não resolvível)"
+      ]
+    },
+    {
+      "id": "AC-11",
+      "description": "em TICKETS, cada ticket traz seus motivos (aberto pelo cliente, sem permissão `DELETE_TICKETS`, com apontamento, com sub-tickets); `resolvable` é falso se algum ticket tem motivo sem solução (aberto pelo cliente ou sem permissão) e verdadeiro caso contrário.",
+      "tests": [
+        "apps/api/src/organizations/organizations.service.spec.ts: OrganizationsService > deletionCheck (DMTE-560 T2) > AC-11 (motivos por ticket e resolvível)"
+      ]
+    },
+    {
+      "id": "AC-12",
+      "description": "`DELETE /organizations/:id` de cliente sem bloqueios apaga o cliente e o que sai junto (histórico de vínculo com mesa, endereços, contatos, grupos de atendentes, vínculos com grupos técnicos, compartilhamentos de artigo) numa única transação, responde 200 com `{ id }` e não apenas inativa.",
+      "tests": [
+        "apps/api/src/organizations/organizations.service.spec.ts: OrganizationsService > remove (DMTE-560 T2) > AC-12: sem bloqueios apaga o cliente (e o histórico de mesa) de verdade, numa transação, e não apenas inativa",
+        "apps/api/src/organizations/organizations.controller.spec.ts: OrganizationsController > remove > AC-12 e AC-14"
+      ]
+    },
+    {
+      "id": "AC-13",
+      "description": "com bloqueios, responde 409 com `message` e a mesma lista `blockers` da consulta, e nada é apagado; a checagem é refeita dentro da transação, com trava na linha do cliente, e uma violação de chave estrangeira concorrente vira 409, não 500.",
+      "tests": [
+        "apps/api/src/organizations/organizations.service.spec.ts: OrganizationsService > remove (DMTE-560 T2) > AC-13 (trava, 409 com a lista, violação de chave estrangeira vira 409)"
+      ]
+    },
+    {
+      "id": "AC-14",
+      "description": "`DELETE /organizations/:id` exige `MANAGE_CLIENTS_AND_RESOURCE_GROUPS` (403 sem ela) e responde 404 para id inexistente; a exclusão grava log com o id do cliente e do usuário, sem dados pessoais.",
+      "tests": [
+        "apps/api/src/organizations/organizations.service.spec.ts: OrganizationsService > remove (DMTE-560 T2) > AC-14 (404 e log)",
+        "apps/api/src/organizations/organizations.controller.spec.ts: OrganizationsController > @RequirePermission metadata (remove, deletionCheck)"
+      ]
+    },
+    {
+      "id": "AC-15",
+      "description": "com banco real, um cliente sem vínculos é excluído e deixa de aparecer na lista, os registros que saem junto somem, e um cliente com mesa, ticket, contrato, usuário, cofre ou agenda é recusado e continua cadastrado.",
+      "tests": [
+        "apps/web-e2e/src/organization-delete.spec.ts: excluir cliente (real API/Postgres) > cliente sem vínculos é apagado com o que sai junto; cliente com vínculos é recusado e continua cadastrado"
+      ],
+      "tdd_required": false,
+      "reason": "E2E com banco real isolado (scripts/e2e_isolated.sh) não roda pelo coletor, que só aceita o comando de teste unitário; a execução real, com o comando exato e o resultado, vai registrada no resultado da implementação e no PR. O comportamento em si (regras, 409, cascata simulada) é coberto pelos AC-08 a AC-14 com RED/GREEN."
+    },
+    {
+      "id": "AC-16",
+      "description": "a lixeira (clientes selecionados na grade ou cliente aberto) chama `deletion-check` e abre `EzDialog` danger; nenhuma exclusão é enviada antes de Confirmar; `window.confirm` não é mais usado.",
+      "tests": [
+        "apps/web/src/pages/OrganizationsPage.test.tsx: OrganizationsPage > exclusão de cliente (DMTE-560 T3) > AC-16: a lixeira consulta a API e abre o diálogo do DS; nada é excluído antes de Confirmar e window.confirm não é usado"
+      ]
+    },
+    {
+      "id": "AC-17",
+      "description": "cliente livre: o pop-up mostra o título \"Excluir cliente\" (ou \"Excluir N clientes\"), \"Esta ação não pode ser desfeita\" e o que sai junto com as contagens; Confirmar chama `DELETE /organizations/:id` para cada cliente livre.",
+      "tests": [
+        "apps/web/src/pages/OrganizationsPage.test.tsx: OrganizationsPage > exclusão de cliente (DMTE-560 T3) > AC-17: cliente livre mostra o aviso, o que sai junto com as contagens, e Confirmar chama DELETE"
+      ]
+    },
+    {
+      "id": "AC-18",
+      "description": "cliente bloqueado: cada bloqueio aparece com a mensagem e a quantidade, até 5 exemplos (\"e mais N\" além disso; os tickets com o motivo de cada um) e \"Como resolver: …\" quando dá para resolver ou \"Não é possível resolver: inative o cliente\" quando não dá; ticket aberto pelo cliente mostra o motivo \"aberto pelo cliente\".",
+      "tests": [
+        "apps/web/src/pages/OrganizationsPage.test.tsx: OrganizationsPage > exclusão de cliente (DMTE-560 T3) > AC-18 e AC-21: cliente bloqueado lista cada bloqueio com quantidade, exemplos, \"e mais N\" e a saída; Confirmar não exclui; o diálogo não exclui ticket",
+        "apps/web/src/pages/OrganizationsPage.test.tsx: OrganizationsPage > exclusão de cliente (DMTE-560 T3) > AC-18: ticket do cliente aparece com o motivo de cada um e a orientação de excluir em Tickets"
+      ]
+    },
+    {
+      "id": "AC-19",
+      "description": "com vários clientes, cada um aparece como \"pode excluir\" ou \"bloqueado: motivo\"; Confirmar exclui só os livres; os excluídos saem da seleção e da lista; os que falharem ficam selecionados com a mensagem do servidor; sem nenhum livre, Confirmar fica desabilitado e o botão de saída é \"Fechar\".",
+      "tests": [
+        "apps/web/src/pages/OrganizationsPage.test.tsx: OrganizationsPage > exclusão de cliente (DMTE-560 T3) > AC-19: com vários clientes mostra cada um como \"pode excluir\" ou \"bloqueado\"; Confirmar exclui só os livres, e a lista e a seleção se atualizam",
+        "apps/web/src/pages/OrganizationsPage.test.tsx: OrganizationsPage > exclusão de cliente (DMTE-560 T3) > AC-19: falha na hora de excluir mostra a mensagem do servidor por cliente, e o cliente que falhou continua selecionado",
+        "apps/web/src/pages/OrganizationsPage.test.tsx: OrganizationsPage > exclusão de cliente (DMTE-560 T3) > AC-19: sem nenhum cliente livre só há Fechar útil: Confirmar fica desabilitado"
+      ]
+    },
+    {
+      "id": "AC-20",
+      "description": "Cancelar e Esc fecham sem excluir; Confirmar fica desabilitado durante a exclusão; falha da consulta mostra a mensagem e não oferece Confirmar.",
+      "tests": [
+        "apps/web/src/pages/OrganizationsPage.test.tsx: OrganizationsPage > exclusão de cliente (DMTE-560 T3) > AC-20: Cancelar e Esc fecham sem excluir",
+        "apps/web/src/pages/OrganizationsPage.test.tsx: OrganizationsPage > exclusão de cliente (DMTE-560 T3) > AC-20: Confirmar fica desabilitado enquanto a exclusão roda (sem envio duplo)",
+        "apps/web/src/pages/OrganizationsPage.test.tsx: OrganizationsPage > exclusão de cliente (DMTE-560 T3) > AC-20: falha da consulta mostra a mensagem e não oferece Confirmar"
+      ]
+    },
+    {
+      "id": "AC-21",
+      "description": "o pop-up não exclui ticket: para tickets que bloqueiam, orienta a excluir em Tickets e tentar de novo.",
+      "tests": [
+        "apps/web/src/pages/OrganizationsPage.test.tsx: OrganizationsPage > exclusão de cliente (DMTE-560 T3) > AC-18 e AC-21: cliente bloqueado lista cada bloqueio com quantidade, exemplos, \"e mais N\" e a saída; Confirmar não exclui; o diálogo não exclui ticket"
+      ]
+    },
+    {
+      "id": "AC-22",
+      "description": "apontamento anulado (estornado, que fica no banco para auditoria) não conta como removível: o ticket continua sem poder ser excluído, com o motivo `HAS_VOIDED_WORKLOGS` (409 na exclusão do ticket) e \"tem apontamento anulado (fica registrado para auditoria)\" no `deletion-check`, que o marca sem saída; apontamento ativo continua sendo o motivo `HAS_WORKLOGS`, e o apontamento anulado não entra na contagem dele.",
+      "tests": [
+        "apps/api/src/tickets/tickets.service.spec.ts: TicketsService > remove (DMTE-560 T1) > AC-22: apontamento anulado (estornado, fica no banco para auditoria) não se remove: recusa com 409 e diz que não há saída",
+        "apps/api/src/organizations/organizations.service.spec.ts: OrganizationsService > deletionCheck (DMTE-560 T2) > AC-22: apontamento anulado do ticket é motivo sem saída: o ticket e o cliente ficam sem solução, e o texto diz que o registro fica para auditoria"
+      ]
+    },
+    {
+      "id": "AC-23",
+      "description": "no `deletion-check`, o bloqueio TICKETS só é resolvível por quem remove os apontamentos e pré-apontamentos ativos do ticket: um ADMIN ou o autor de todos eles; para os demais o motivo é \"tem apontamento de outro usuário (só o autor ou um administrador remove)\" e não há saída.",
+      "tests": [
+        "apps/api/src/organizations/organizations.service.spec.ts: OrganizationsService > deletionCheck (DMTE-560 T2) > AC-23: apontamento ativo de outro usuário só se remove por ADMIN ou pelo autor: para quem não é, não há saída e o motivo diz isso",
+        "apps/api/src/organizations/organizations.service.spec.ts: OrganizationsService > deletionCheck (DMTE-560 T2) > AC-23: o autor de todos os apontamentos e pré-apontamentos resolve sozinho"
+      ]
+    },
+    {
+      "id": "AC-24",
+      "description": "na exclusão do ticket, uma gravação concorrente que quebre uma chave estrangeira (P2003) responde 409 (\"apontamento ou sub-ticket\"), não 500, sem apagar nada nem os arquivos dos anexos.",
+      "tests": [
+        "apps/api/src/tickets/tickets.service.spec.ts: TicketsService > remove (DMTE-560 T1) > AC-24: gravação concorrente que quebra uma chave estrangeira na exclusão vira 409, não 500, e nada é apagado"
+      ]
+    },
+    {
+      "id": "AC-25",
+      "description": "o `deletion-check` não devolve título de ticket nem nome de credencial ou pasta do cofre: o ticket aparece pelo protocolo e o cofre pelo tipo (\"Credencial\", \"Pasta\").",
+      "tests": [
+        "apps/api/src/organizations/organizations.service.spec.ts: OrganizationsService > deletionCheck (DMTE-560 T2) > AC-25: o cofre e os tickets não vazam nomes: credencial e pasta aparecem só pelo tipo e o ticket só pelo protocolo"
+      ]
+    }
+  ],
+  "spec": "docs/delivery/specs/DMTE-560.md",
+  "tdd": {
+    "mode": "required",
+    "red": ".delivery/evidence/DMTE-560/red-r2.json",
+    "green": ".delivery/evidence/DMTE-560/green-r2.json"
+  },
+  "design_system": {
+    "applicable": true,
+    "reused": [
+      "EzDialog",
+      "EzButton",
+      "EzAlert"
+    ],
+    "reason": "Reusa o EzDialog (com children, confirmLabel, cancelLabel e confirmDisabled, entregues na DMTE-540), o EzButton e o EzAlert para o pop-up de exclusão de cliente e de ticket; nenhum componente, prop ou token novo.",
+    "exception": "Sem componente do DS novo nem alterado, então sem story nova."
+  }
+}

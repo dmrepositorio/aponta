@@ -1,4 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { join } from 'path';
+import { unlink } from 'fs/promises';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Prisma, Role, TicketPriority, TicketStatus } from '@prisma/client';
 
@@ -6,11 +8,14 @@ import { Prisma, Role, TicketPriority, TicketStatus } from '@prisma/client';
 const PENDING_SANKHYA = 'PENDING_SANKHYA' as TicketStatus;
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   NotFoundException,
 } from '@nestjs/common';
 import { TicketsService } from './tickets.service';
 import { PrismaService } from '../prisma/prisma.service';
+
+jest.mock('fs/promises', () => ({ unlink: jest.fn().mockResolvedValue(undefined) }));
 
 function prismaKnownError(code: string, meta: Record<string, unknown> = {}) {
   return new Prisma.PrismaClientKnownRequestError('mocked prisma error', {
@@ -2120,6 +2125,155 @@ describe('TicketsService', () => {
       await expect(
         service.changeStage('t1', 'stage-n2', actingUser),
       ).rejects.toThrow('Transição de estágio não permitida');
+    });
+  });
+  describe('remove (DMTE-560 T1)', () => {
+    const admin = { id: 'admin-1', role: Role.ADMIN };
+    const tx = {
+      comment: { deleteMany: jest.fn() },
+      ticketAudit: { deleteMany: jest.fn() },
+      appointment: { deleteMany: jest.fn() },
+      ticket: { delete: jest.fn() },
+    };
+    const db = () => mockPrismaService as any;
+    // Cada chamada devolve um objeto novo: findOne apaga `requester` do que recebe.
+    const ticketRow = (over: Record<string, unknown> = {}) => ({
+      id: 'tk-1',
+      protocol: 'TCK-1',
+      status: TicketStatus.OPEN,
+      requesterId: 'agent-9',
+      requester: { organizationId: null },
+      serviceDesk: { agents: [], agentGroups: [], allowCrossDeskInteraction: false },
+      attachments: [{ filename: 'a.pdf' }],
+      worklogs: [],
+      preAppointments: [],
+      _count: { subTickets: 0 },
+      ...over,
+    });
+    const given = (over: Record<string, unknown> = {}) =>
+      mockPrismaService.ticket.findUnique.mockImplementation(async () => ticketRow(over));
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+      db().worklog.findMany = jest.fn().mockResolvedValue([]);
+      db().preAppointment = { findMany: jest.fn().mockResolvedValue([]) };
+      mockPrismaService.$transaction.mockImplementation(async (callback: (t: typeof tx) => unknown) => callback(tx));
+    });
+
+    it.each([TicketStatus.OPEN, TicketStatus.RESOLVED, TicketStatus.CLOSED])(
+      'AC-01: apaga o ticket %s e o que é dele na mesma transação, e responde com o id',
+      async (status) => {
+        given({ status });
+
+        const result = await service.remove('tk-1', admin);
+
+        expect(result).toEqual({ id: 'tk-1' });
+        expect(mockPrismaService.$transaction).toHaveBeenCalledTimes(1);
+        expect(tx.comment.deleteMany).toHaveBeenCalledWith({ where: { ticketId: 'tk-1' } });
+        expect(tx.ticketAudit.deleteMany).toHaveBeenCalledWith({ where: { ticketId: 'tk-1' } });
+        expect(tx.appointment.deleteMany).toHaveBeenCalledWith({ where: { ticketId: 'tk-1' } });
+        expect(tx.ticket.delete).toHaveBeenCalledWith({ where: { id: 'tk-1' } });
+      },
+    );
+
+    it('AC-01: depois de apagar, remove do disco os arquivos dos anexos', async () => {
+      given();
+
+      await service.remove('tk-1', admin);
+
+      expect(unlink).toHaveBeenCalledWith(join(process.cwd(), 'uploads', 'a.pdf'));
+    });
+
+    it('AC-02: recusa com 409 enquanto houver apontamento, com a contagem e até 5 itens, sem apagar nada', async () => {
+      given({ worklogs: Array.from({ length: 7 }, () => ({ authorId: 'a1', voidedAt: null })) });
+      db().worklog.findMany.mockResolvedValue([{ id: 'w1', startTime: new Date('2026-11-10T12:00:00Z') }]);
+
+      const error = await service.remove('tk-1', admin).catch((e) => e);
+
+      expect(error).toBeInstanceOf(ConflictException);
+      expect(error.getResponse()).toMatchObject({
+        message: expect.stringMatching(/apontamento/i),
+        reasons: [{ code: 'HAS_WORKLOGS', count: 7, items: [{ id: 'w1', label: 'Apontamento de 2026-11-10' }] }],
+      });
+      expect(db().worklog.findMany).toHaveBeenCalledWith(expect.objectContaining({ take: 5, where: { ticketId: 'tk-1', voidedAt: null } }));
+      expect(mockPrismaService.$transaction).not.toHaveBeenCalled();
+      expect(tx.ticket.delete).not.toHaveBeenCalled();
+    });
+
+    it('AC-02: pré-apontamento também impede a exclusão', async () => {
+      given({ preAppointments: [{ authorId: 'a1' }] });
+      db().preAppointment.findMany.mockResolvedValue([{ id: 'p1', beginning: new Date('2026-11-11T09:00:00Z') }]);
+
+      const error = await service.remove('tk-1', admin).catch((e) => e);
+
+      expect(error).toBeInstanceOf(ConflictException);
+      expect(error.getResponse().reasons[0]).toMatchObject({ code: 'HAS_WORKLOGS', count: 1 });
+      expect(tx.ticket.delete).not.toHaveBeenCalled();
+    });
+
+    it('AC-03: recusa com 409 o ticket aberto por usuário de cliente, mesmo para quem pode excluir', async () => {
+      given({ requester: { organizationId: 'org-1' } });
+
+      const error = await service.remove('tk-1', admin).catch((e) => e);
+
+      expect(error).toBeInstanceOf(ConflictException);
+      expect(error.getResponse()).toMatchObject({
+        message: expect.stringMatching(/aberto pelo cliente/i),
+        reasons: [{ code: 'CLIENT_REQUESTER' }],
+      });
+      expect(tx.ticket.delete).not.toHaveBeenCalled();
+    });
+
+    it('AC-04: recusa com 409 o ticket que tem sub-tickets', async () => {
+      given({ _count: { subTickets: 2 } });
+
+      const error = await service.remove('tk-1', admin).catch((e) => e);
+
+      expect(error).toBeInstanceOf(ConflictException);
+      expect(error.getResponse()).toMatchObject({
+        message: expect.stringMatching(/sub-ticket/i),
+        reasons: [{ code: 'HAS_SUB_TICKETS', count: 2 }],
+      });
+      expect(tx.ticket.delete).not.toHaveBeenCalled();
+    });
+
+    it('AC-22: apontamento anulado (estornado, fica no banco para auditoria) não se remove: recusa com 409 e diz que não há saída', async () => {
+      given({ worklogs: [{ authorId: 'a1', voidedAt: new Date('2026-11-12T10:00:00Z') }] });
+
+      const error = await service.remove('tk-1', admin).catch((e) => e);
+
+      expect(error).toBeInstanceOf(ConflictException);
+      expect(error.getResponse()).toMatchObject({
+        message: expect.stringMatching(/anulado.*auditoria/i),
+        reasons: [{ code: 'HAS_VOIDED_WORKLOGS', count: 1 }],
+      });
+      expect(error.getResponse().reasons.map((r: { code: string }) => r.code)).not.toContain('HAS_WORKLOGS');
+      expect(tx.ticket.delete).not.toHaveBeenCalled();
+    });
+
+    it('AC-24: gravação concorrente que quebra uma chave estrangeira na exclusão vira 409, não 500, e nada é apagado', async () => {
+      given();
+      tx.ticket.delete.mockRejectedValue(prismaKnownError('P2003'));
+
+      const error = await service.remove('tk-1', admin).catch((e) => e);
+
+      expect(error).toBeInstanceOf(ConflictException);
+      expect(error.message).toMatch(/apontamento ou sub-ticket/i);
+      expect(unlink).not.toHaveBeenCalled();
+    });
+
+    it('AC-05: ticket que o usuário não enxerga pela regra do GET responde 404, sem apagar', async () => {
+      given();
+
+      await expect(service.remove('tk-1', { id: 'agent-1', role: Role.AGENT })).rejects.toThrow(NotFoundException);
+      expect(mockPrismaService.$transaction).not.toHaveBeenCalled();
+    });
+
+    it('AC-05: ticket inexistente responde 404, sem apagar', async () => {
+      mockPrismaService.ticket.findUnique.mockResolvedValue(null);
+
+      await expect(service.remove('tk-x', admin)).rejects.toThrow(NotFoundException);
+      expect(mockPrismaService.$transaction).not.toHaveBeenCalled();
     });
   });
 });

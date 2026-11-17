@@ -88,8 +88,11 @@ const mockAgents = [
   { id: 'admin-1', name: 'Admin Boss', email: 'admin@ex.com', role: 'ADMIN' },
 ];
 
+let canDeleteTickets = false;
+
 function mockApi() {
   vi.mocked(api.get).mockImplementation((url: string) => {
+    if (url === '/auth/me') return Promise.resolve({ data: { id: 'u-1', isAdmin: false, permissions: [], canDeleteTickets } });
     if (url.endsWith('/worklog-contracts')) return Promise.resolve({ data: [{ id: 'contract-1' }] });
     if (url === '/tickets/t-1') {
       return Promise.resolve({ data: ticket });
@@ -190,6 +193,7 @@ function renderPage() {
       <MemoryRouter initialEntries={['/tickets/t-1']}>
         <Routes>
           <Route path="/" element={<p>Dashboard</p>} />
+          <Route path="/tickets" element={<p>Lista de tickets</p>} />
           <Route path="/tickets/:id" element={<TicketDetailPage />} />
         </Routes>
       </MemoryRouter>
@@ -200,6 +204,7 @@ function renderPage() {
 describe('TicketDetailPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    canDeleteTickets = false;
     comments.length = 2;
     preAppointments.length = 0;
     mockApi();
@@ -720,6 +725,71 @@ describe('TicketDetailPage', () => {
       await user.click(backLink);
 
       expect(await screen.findByText('Dashboard')).toBeInTheDocument();
+    });
+  });
+  describe('excluir ticket (DMTE-560 T1)', () => {
+    async function openDeleteDialog(user: ReturnType<typeof userEvent.setup>) {
+      await screen.findByRole('heading', { name: 'Printer not working' });
+      await user.click(await screen.findByRole('button', { name: 'Excluir ticket' }));
+      return screen.findByRole('dialog');
+    }
+
+    it('AC-07: "Excluir ticket" só aparece quando o servidor diz que o usuário pode (canDeleteTickets)', async () => {
+      setRole('ADMIN');
+      renderPage();
+
+      await screen.findByRole('heading', { name: 'Printer not working' });
+      await waitFor(() => expect(api.get).toHaveBeenCalledWith('/auth/me'));
+      expect(screen.queryByRole('button', { name: 'Excluir ticket' })).not.toBeInTheDocument();
+    });
+
+    it('AC-07: abre o diálogo do DS com o protocolo e não exclui antes de Confirmar; Cancelar fecha sem excluir', async () => {
+      canDeleteTickets = true;
+      setRole('AGENT');
+      const user = userEvent.setup();
+      renderPage();
+
+      const dialog = await openDeleteDialog(user);
+
+      expect(within(dialog).getByText(/AP-000001/)).toBeInTheDocument();
+      expect(api.delete).not.toHaveBeenCalled();
+      await user.click(within(dialog).getByRole('button', { name: 'Cancelar' }));
+      await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+      expect(api.delete).not.toHaveBeenCalled();
+    });
+
+    it('AC-07: Confirmar chama DELETE /tickets/:id uma vez, desabilita Confirmar durante o envio e, no sucesso, volta à lista de Tickets', async () => {
+      canDeleteTickets = true;
+      setRole('AGENT');
+      let finish: (value: unknown) => void = () => undefined;
+      vi.mocked(api.delete).mockReturnValue(new Promise((resolve) => { finish = resolve; }));
+      const user = userEvent.setup();
+      renderPage();
+
+      const dialog = await openDeleteDialog(user);
+      await user.click(within(dialog).getByRole('button', { name: 'Confirmar' }));
+
+      await waitFor(() => expect(within(dialog).getByRole('button', { name: 'Confirmar' })).toBeDisabled());
+      expect(api.delete).toHaveBeenCalledTimes(1);
+      expect(api.delete).toHaveBeenCalledWith('/tickets/t-1');
+      finish({ data: { id: 't-1' } });
+      expect(await screen.findByText('Lista de tickets')).toBeInTheDocument();
+    });
+
+    it('AC-07: a recusa da API aparece no diálogo, que continua aberto', async () => {
+      canDeleteTickets = true;
+      setRole('AGENT');
+      vi.mocked(api.delete).mockRejectedValue({
+        response: { data: { message: 'Não é possível excluir o ticket AP-000001: tem 2 apontamentos.' } },
+      });
+      const user = userEvent.setup();
+      renderPage();
+
+      const dialog = await openDeleteDialog(user);
+      await user.click(within(dialog).getByRole('button', { name: 'Confirmar' }));
+
+      expect(await within(dialog).findByText(/tem 2 apontamentos/i)).toBeInTheDocument();
+      expect(screen.queryByText('Lista de tickets')).not.toBeInTheDocument();
     });
   });
 });

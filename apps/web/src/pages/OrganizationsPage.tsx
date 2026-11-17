@@ -31,6 +31,7 @@ import {
 import { applyDynamicFilters } from '../components/ds/EzDynamicFilter';
 import type { EzDynamicFilterField, EzDynamicFilterRule } from '../components/ds/EzDynamicFilter';
 import { ActiveTag } from '../components/ActiveTag';
+import { OrganizationDeleteDialog, type OrganizationDeleteResult } from '../components/organizations/OrganizationDeleteDialog';
 import { formatCnpj, formatCpf } from '../lib/documents';
 import { useUserScreenConfig } from '../hooks/useUserScreenConfig';
 
@@ -274,7 +275,9 @@ export function OrganizationsPage() {
   const [isScreenConfigModalOpen, setIsScreenConfigModalOpen] = useState(false);
   const [screenConfigInitialTab, setScreenConfigInitialTab] = useState<'grid' | 'form'>('grid');
   const [selectedOrgs, setSelectedOrgs] = useState<Organization[]>([]);
-  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [deleteTargets, setDeleteTargets] = useState<Organization[] | null>(null);
+  // A grade guarda a seleção por posição da linha; sem falha, remontá-la limpa a seleção das linhas que saíram da lista.
+  const [gridKey, setGridKey] = useState(0);
   const [inlineError, setInlineError] = useState<string | null>(null);
   const [createError, setCreateError] = useState<string | null>(null);
   const [duplicateDocument, setDuplicateDocument] = useState<string | null>(null);
@@ -851,23 +854,19 @@ export function OrganizationsPage() {
     }
   };
 
-  // DMTE-481: "excluir" só inativa; a API recusa (409) com contrato ativo ou ticket aberto.
-  const handleDelete = async () => {
+  // DMTE-560: a lixeira exclui de verdade, depois de consultar os vínculos no pop-up do DS.
+  const handleDelete = () => {
     const targets = selectedOrgs.length > 0 ? selectedOrgs : (detailOrgId && orgDetail ? [orgDetail] : []);
-    if (targets.length === 0) return;
-    const confirmMsg = `O cliente será apenas inativado, não apagado (${targets.length} selecionado(s)). Contrato ativo ou ticket aberto impedem a ação. Deseja continuar?`;
-    if (!window.confirm(confirmMsg)) return;
-    const errors: string[] = [];
-    for (const org of targets) {
-      try {
-        await api.delete(`/organizations/${org.id}`);
-      } catch (err) {
-        const message = (err as { response?: { data?: { message?: string } } }).response?.data?.message;
-        errors.push(`${org.name}: ${message ?? 'não foi possível excluir o cliente.'}`);
-      }
+    if (targets.length > 0) setDeleteTargets(targets);
+  };
+
+  const handleDeleted = ({ deleted, failed }: OrganizationDeleteResult) => {
+    setSelectedOrgs((current) => current.filter((org) => failed.includes(org.id)));
+    if (failed.length === 0) setGridKey((key) => key + 1);
+    if (detailOrgId && deleted.includes(detailOrgId)) {
+      setDetailOrgId(null);
+      setMode('list');
     }
-    setDeleteError(errors.length > 0 ? errors.join(' ') : null);
-    setSelectedOrgs([]);
     void queryClient.invalidateQueries({ queryKey: ['organizations'] });
   };
 
@@ -1015,12 +1014,6 @@ export function OrganizationsPage() {
               </EzAlert>
             )}
 
-            {deleteError && (
-              <EzAlert variant="error" onClose={() => setDeleteError(null)}>
-                {deleteError}
-              </EzAlert>
-            )}
-
             {mode === 'list' && (
               <div className="relative flex flex-1 overflow-hidden min-h-[420px]">
                 {/* Lateral Filter Drawer com Filtros Dinâmicos e Filtros Salvos */}
@@ -1117,6 +1110,7 @@ className="isolate flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll
                     </div>
                   ) : (
                     <EzEntityGrid
+                      key={gridKey}
                       columns={orgColumns}
                       data={filteredOrgs}
                       showRowNumbers
@@ -1962,6 +1956,9 @@ className="isolate flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll
           )}
         </div>
       </EzModal>
+      {deleteTargets && (
+        <OrganizationDeleteDialog targets={deleteTargets} onClose={() => setDeleteTargets(null)} onDone={handleDeleted} />
+      )}
     </EzPageLayout>
   );
 }

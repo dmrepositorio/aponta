@@ -36,6 +36,7 @@ describe('AC-12: JwtStrategy recusa usuário inativo (DMTE-550)', () => {
             canEditWorklogStartTime: jest.fn(async () => false),
             canReleaseWorklogWithoutSchedule: jest.fn(async () => false),
             canReleaseWorklogs: jest.fn(async () => false),
+            canDeleteTickets: jest.fn(async () => false),
           },
         },
       ],

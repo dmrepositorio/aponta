@@ -1,0 +1,132 @@
+
+ NX   Running target test for 2 projects:
+
+- web
+- api
+
+With additional flags:
+  src/pages/TicketDetailPage.test.tsx src/tickets/tickets.service.spec.ts src/tickets/tickets.controller.spec.ts src/permission-groups/permission-catalog.delete-tickets.spec.ts src/permissions/permissions.service.spec.ts src/auth/auth.controller.spec.ts src/organizations/organizations.service.spec.ts src/organizations/organizations.controller.spec.ts src/organizations/dto/deletion-check.dto.spec.ts
+  --passWithNoTests=src/pages/OrganizationsPage.test.tsx
+
+
+
+> nx run api:test --passWithNoTests src/pages/OrganizationsPage.test.tsx src/pages/TicketDetailPage.test.tsx src/tickets/tickets.service.spec.ts src/tickets/tickets.controller.spec.ts src/permission-groups/permission-catalog.delete-tickets.spec.ts src/permissions/permissions.service.spec.ts src/auth/auth.controller.spec.ts src/organizations/organizations.service.spec.ts src/organizations/organizations.controller.spec.ts src/organizations/dto/deletion-check.dto.spec.ts
+
+> jest --passWithNoTests src/pages/OrganizationsPage.test.tsx src/pages/TicketDetailPage.test.tsx src/tickets/tickets.service.spec.ts src/tickets/tickets.controller.spec.ts src/permission-groups/permission-catalog.delete-tickets.spec.ts src/permissions/permissions.service.spec.ts src/auth/auth.controller.spec.ts src/organizations/organizations.service.spec.ts src/organizations/organizations.controller.spec.ts src/organizations/dto/deletion-check.dto.spec.ts
+
+[32m[Nest] 3190587  - [39m11/17/2026, 6:57:52 PM [32m    LOG[39m [38;5;3m[OrganizationsService] [39m[32mCliente org-1 excluído por user-1[39m
+[32m[Nest] 3190587  - [39m11/17/2026, 6:57:52 PM [32m    LOG[39m [38;5;3m[OrganizationsService] [39m[32mCliente org-1 excluído por user-1[39m
+
+[1mTest Suites: [22m[1m[32m8 passed[39m[22m, 8 total
+[1mTests:       [22m[1m[32m280 passed[39m[22m, 280 total
+[1mSnapshots:   [22m0 total
+[1mTime:[22m        4.872 s, estimated 12 s
+[2mRan all test suites[22m[2m matching [22msrc/pages/OrganizationsPage.test.tsx|src/pages/TicketDetailPage.test.tsx|src/tickets/tickets.service.spec.ts|src/tickets/tickets.controller.spec.ts|src/permission-groups/permission-catalog.delete-tickets.spec.ts|src/permissions/permissions.service.spec.ts|src/auth/auth.controller.spec.ts|src/organizations/organizations.service.spec.ts|src/organizations/organizations.controller.spec.ts|src/organizations/dto/deletion-check.dto.spec.ts[2m.[22m
+
+> nx run web:test --passWithNoTests src/pages/OrganizationsPage.test.tsx src/pages/TicketDetailPage.test.tsx src/tickets/tickets.service.spec.ts src/tickets/tickets.controller.spec.ts src/permission-groups/permission-catalog.delete-tickets.spec.ts src/permissions/permissions.service.spec.ts src/auth/auth.controller.spec.ts src/organizations/organizations.service.spec.ts src/organizations/organizations.controller.spec.ts src/organizations/dto/deletion-check.dto.spec.ts
+
+> vitest --passWithNoTests src/pages/OrganizationsPage.test.tsx src/pages/TicketDetailPage.test.tsx src/tickets/tickets.service.spec.ts src/tickets/tickets.controller.spec.ts src/permission-groups/permission-catalog.delete-tickets.spec.ts src/permissions/permissions.service.spec.ts src/auth/auth.controller.spec.ts src/organizations/organizations.service.spec.ts src/organizations/organizations.controller.spec.ts src/organizations/dto/deletion-check.dto.spec.ts
+
+
+ RUN  v4.1.11 /home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-560-ad69a88a4a53/workdir/aponta/apps/web
+
+stderr | src/pages/OrganizationsPage.test.tsx > OrganizationsPage > shows an access-denied message for non-ADMIN roles
+An update to OrganizationsPage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to OrganizationsPage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+ ✓ |web| src/pages/TicketDetailPage.test.tsx (30 tests) 3825ms
+       ✓ AC-07: Confirmar chama DELETE /tickets/:id uma vez, desabilita Confirmar durante o envio e, no sucesso, volta à lista de Tickets  301ms
+stderr | src/pages/OrganizationsPage.test.tsx > OrganizationsPage > exclusão de cliente (DMTE-560 T3) > AC-20: Confirmar fica desabilitado enquanto a exclusão roda (sem envio duplo)
+An update to OrganizationsPage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to OrganizationsPage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to OrganizationsPage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+ ✓ |web| src/pages/OrganizationsPage.test.tsx (61 tests) 21093ms
+     ✓ shows the list view by default with a mode toggle (Tiflux/Sankhya-parity, issue #57)  376ms
+     ✓ switches to the full-page form via Ações > Cadastrar manualmente and validates it  355ms
+     ✓ switches between Grid Mode and Form Mode via the toolbar toggle  316ms
+     ✓ creates a new organization with rich fields  593ms
+       ✓ shows the API message in an alert when the server refuses the new client  335ms
+       ✓ shows a generic alert when the server fails without a message  371ms
+       ✓ does not send blank CNPJ/CPF, which would collide on the unique columns  329ms
+       ✓ says the CNPJ was not found or is invalid when the API answers 404  571ms
+       ✓ says the CNPJ was not found or is invalid when the API answers 400  519ms
+       ✓ says the lookup is unavailable when it fails with 502  542ms
+       ✓ says the lookup is unavailable when it fails with no response  522ms
+     ✓ locks CNPJ and Razão Social after a Receita lookup, standardizing form-mode editability (Sankhya parity)  811ms
+     ✓ toggles CPF/CNPJ fields based on document type (Tiflux-parity, issue #56)  614ms
+     ✓ opens the full-page detail with the Tiflux-parity 3-column panel  416ms
+     ✓ shows the "Cliente ativo" toggle and inactivates the organization  407ms
+     ✓ lists only CLIENT/CLIENT_MASTER users in the Usuários tab and allows linking  698ms
+     ✓ updates organization name and legal name on blur in Geral tab  934ms
+     ✓ toggles visibility and quarterly billing from the detail header  311ms
+     ✓ adds a new contact from the Geral tab  319ms
+     ✓ saves serviceType/healthStatus from the Geral tab (Perfil do Cliente, issue #56)  502ms
+     ✓ manages Mesas (N:N) and Grupo de Atendentes in the Relacionamentos tab (Tiflux-parity, issue #57)  494ms
+     ✓ renders billing preferences and updates quarterly billing in Faturamento tab (issue #58)  915ms
+     ✓ supports inline editing of cells and Cadastrar por CNPJ via toolbar actions (Sankhya parity)  327ms
+     ✓ filters the grid by search text, status, and document type (Sankhya filter drawer)  707ms
+     ✓ saves, applies, and deletes a saved filter from the drawer (Sankhya saved filters parity)  623ms
+     ✓ navigates between organizations from the detail view using toolbar Anterior/Próximo  323ms
+     ✓ persists column visibility toggles to the per-user screen config (server, DMTE-527 T2)  528ms
+     ✓ edits the optional grid columns (IE, IM, Pasta, Perfil, Saúde) once made visible via screen config  913ms
+     ✓ filters dynamically by any column using the rule builder (Sankhya Filtros parity)  606ms
+     ✓ AC-02: Razão Social stays editable by click, and a failed PATCH shows the reason and the cell keeps the previous value  328ms
+     ✓ AC-02: a successful PATCH shows no notice  316ms
+
+ Test Files  2 passed (2)
+      Tests  91 passed (91)
+   Start at  18:57:48
+   Duration  26.86s (transform 6.01s, setup 536ms, import 8.90s, tests 24.92s, environment 1.74s)
+
+
+
+
+ NX   Successfully ran target test for 2 projects
+
+

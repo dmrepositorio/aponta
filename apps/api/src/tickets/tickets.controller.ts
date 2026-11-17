@@ -1,6 +1,8 @@
 import {
   Body,
   Controller,
+  Delete,
+  ForbiddenException,
   Get,
   Param,
   Patch,
@@ -23,6 +25,7 @@ import { JwtOrTokenAuthGuard } from '../auth/guards/jwt-or-token-auth.guard';
 import { PermissionsGuard } from '../auth/guards/permissions.guard';
 import { RequirePermission } from '../auth/decorators/require-permission.decorator';
 import { CurrentUserPayload } from './decorators/current-user.decorator';
+import { PermissionsService } from '../permissions/permissions.service';
 
 import { ApiBearerAuth, ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
@@ -35,7 +38,10 @@ interface AuthenticatedRequest {
 @Controller('tickets')
 @UseGuards(JwtOrTokenAuthGuard)
 export class TicketsController {
-  constructor(private readonly ticketsService: TicketsService) {}
+  constructor(
+    private readonly ticketsService: TicketsService,
+    private readonly permissionsService: PermissionsService,
+  ) {}
 
   @Post()
   @ApiOperation({ summary: 'Create a new ticket', description: 'Creates a ticket acting on behalf of the user using strictly predefined DTO rules' })
@@ -121,6 +127,16 @@ export class TicketsController {
   @ApiOperation({ summary: 'Cancel a ticket', description: 'Closes the ticket as cancelled when the mesa allows it' })
   cancel(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
     return this.ticketsService.cancel(id, req.user);
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: 'Excluir ticket', description: 'Exige DELETE_TICKETS no grupo de permissões (sem bypass de ADMIN)' })
+  async remove(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
+    // Sem @RequirePermission: o PermissionsGuard dá bypass ao ADMIN, e aqui só o grupo decide.
+    if (!(await this.permissionsService.canDeleteTickets(req.user.id))) {
+      throw new ForbiddenException('Excluir tickets exige a permissão DELETE_TICKETS no grupo de permissões.');
+    }
+    return this.ticketsService.remove(id, req.user);
   }
 
   @Post(':id/sla/add-hours')

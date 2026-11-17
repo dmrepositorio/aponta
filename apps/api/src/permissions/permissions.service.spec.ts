@@ -131,6 +131,32 @@ describe('PermissionsService', () => {
     });
   });
 
+  describe('canDeleteTickets (DMTE-560)', () => {
+    it('AC-06: é verdadeiro quando um grupo direto tem DELETE_TICKETS', async () => {
+      mockPrisma.user.findUnique.mockResolvedValue({
+        permissionGroupLinks: [{ permissionGroup: { permissions: ['DELETE_TICKETS'] } }],
+        technicalGroup: null,
+      });
+      await expect(service.canDeleteTickets('user-1')).resolves.toBe(true);
+    });
+
+    it('AC-06: é verdadeiro quando o grupo técnico do usuário tem a permissão', async () => {
+      mockPrisma.user.findUnique.mockResolvedValue({
+        permissionGroupLinks: [],
+        technicalGroup: { permissionGroupLinks: [{ permissionGroup: { permissions: ['DELETE_TICKETS'] } }] },
+      });
+      await expect(service.canDeleteTickets('user-1')).resolves.toBe(true);
+    });
+
+    it('AC-06: é falso sem a permissão, mesmo com outras permissões', async () => {
+      mockPrisma.user.findUnique.mockResolvedValue({
+        permissionGroupLinks: [{ permissionGroup: { permissions: ['EDIT_TICKETS', 'MANAGE_CLIENTS_AND_RESOURCE_GROUPS'] } }],
+        technicalGroup: null,
+      });
+      await expect(service.canDeleteTickets('user-1')).resolves.toBe(false);
+    });
+  });
+
   describe('canEditWorklogStartTime (DMTE-462 T1)', () => {
     it('AC-02: é verdadeiro quando um grupo direto tem EDIT_WORKLOG_START_TIME', async () => {
       mockPrisma.user.findUnique.mockResolvedValue({
