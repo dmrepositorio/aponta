@@ -10,42 +10,70 @@
     {
       "id": "AC-01",
       "description": "com a BrasilAPI respondendo 404 e a ReceitaWS respondendo 200, `lookup` devolve o cadastro mapeado para `CnpjLookupResult` (`cnpj` e CEP só com dígitos).",
-      "tests": []
+      "tests": [
+        "apps/api/src/organizations/cnpj-lookup.service.spec.ts: falls back to ReceitaWS when the primary does not know the CNPJ"
+      ]
     },
     {
       "id": "AC-02",
       "description": "com a BrasilAPI respondendo 5xx ou falhando na rede, e a ReceitaWS falhando (429 ou rede), `lookup` devolve o cadastro da minhareceita.org.",
-      "tests": []
+      "tests": [
+        "apps/api/src/organizations/cnpj-lookup.service.spec.ts: falls back to ReceitaWS when the primary answers 5xx",
+        "apps/api/src/organizations/cnpj-lookup.service.spec.ts: falls back to ReceitaWS when the primary is unreachable",
+        "apps/api/src/organizations/cnpj-lookup.service.spec.ts: falls back to minhareceita.org when ReceitaWS is rate limited",
+        "apps/api/src/organizations/cnpj-lookup.service.spec.ts: falls back to minhareceita.org when ReceitaWS and the primary are unreachable",
+        "apps/api/src/organizations/cnpj-lookup.service.spec.ts: moves on when a provider answers 200 with a body that has no company name",
+        "apps/api/src/organizations/cnpj-lookup.service.spec.ts: moves on when a provider answers 200 with a null body"
+      ]
     },
     {
       "id": "AC-03",
       "description": "com todos os provedores respondendo 404 (ou a ReceitaWS respondendo 200 com `status: \"ERROR\"`), `lookup` lança `NotFoundException`.",
-      "tests": []
+      "tests": [
+        "apps/api/src/organizations/cnpj-lookup.service.spec.ts: throws NotFoundException when every provider answers 404",
+        "apps/api/src/organizations/cnpj-lookup.service.spec.ts: counts a ReceitaWS 200 with status ERROR as not found"
+      ]
     },
     {
       "id": "AC-04",
       "description": "sem nenhum cadastro encontrado e com pelo menos um provedor falhando (5xx, 429 ou rede), `lookup` lança `BadGatewayException`.",
-      "tests": []
+      "tests": [
+        "apps/api/src/organizations/cnpj-lookup.service.spec.ts: throws BadGatewayException when nobody found the CNPJ and one provider failed",
+        "apps/api/src/organizations/cnpj-lookup.service.spec.ts: throws BadGatewayException when every provider is unreachable",
+        "apps/api/src/organizations/cnpj-lookup.service.spec.ts: throws BadGatewayException when ReceitaWS is rate limited and nobody else found the CNPJ"
+      ]
     },
     {
       "id": "AC-05",
       "description": "com a BrasilAPI respondendo 200, nenhum outro provedor é chamado; com a BrasilAPI respondendo 400, os outros também não são chamados e `lookup` lança `BadRequestException`.",
-      "tests": []
+      "tests": [
+        "apps/api/src/organizations/cnpj-lookup.service.spec.ts: does not call another provider when the primary answers 200",
+        "apps/api/src/organizations/cnpj-lookup.service.spec.ts: throws BadRequestException without calling another provider when the primary says the number is invalid",
+        "apps/api/src/organizations/cnpj-lookup.service.spec.ts: throws BadRequestException when a reserve provider says the number is invalid"
+      ]
     },
     {
       "id": "AC-06",
       "description": "com a flag `consulta-cnpj-alternativa` desligada e a BrasilAPI respondendo 404, `lookup` lança `NotFoundException` sem chamar outro provedor.",
-      "tests": []
+      "tests": [
+        "apps/api/src/organizations/cnpj-lookup.service.spec.ts: keeps the old behavior when the flag consulta-cnpj-alternativa is off",
+        "apps/api/src/organizations/cnpj-lookup.service.spec.ts: sends an abort signal so a slow provider cannot hang the lookup"
+      ]
     },
     {
       "id": "AC-07",
       "description": "o registro de flags traz `consulta-cnpj-alternativa` com owner, padrão e data de remoção.",
-      "tests": []
+      "tests": [
+        "apps/api/src/feature-flags/feature-flags.spec.ts: AC-07: consulta-cnpj-alternativa está registrada, ligada por padrão e com dono e data de remoção"
+      ]
     },
     {
       "id": "AC-08",
       "description": "no cadastro por CNPJ, quando a API responde 404 ou 400, o modal mostra \"CNPJ não encontrado ou inválido na Receita Federal.\"; quando responde 502 ou falha sem resposta, mostra \"Não foi possível consultar a Receita Federal agora. Tente novamente em instantes.\"; nos dois casos o modal segue aberto com o CNPJ digitado.",
-      "tests": []
+      "tests": [
+        "apps/web/src/pages/OrganizationsPage.test.tsx: says the CNPJ was not found or is invalid when the API answers %i",
+        "apps/web/src/pages/OrganizationsPage.test.tsx: says the lookup is unavailable when it fails with %s"
+      ]
     }
   ],
   "spec": "docs/delivery/specs/DMTE-556.md",
@@ -55,7 +83,11 @@
     "green": ".delivery/evidence/DMTE-556/green.json"
   },
   "design_system": {
-    "applicable": false,
-    "reason": "Sem componente, prop ou token novo: só troca o texto de erro do modal existente."
+    "applicable": true,
+    "reused": [
+      "EzAlert"
+    ],
+    "reason": "Só troca o texto do EzAlert (variante error) que o modal Cadastrar Parceiro por CNPJ já mostra; nenhum componente, prop ou token novo.",
+    "exception": "Nenhum arquivo de apps/web/src/components/ds/ muda nesta entrega, então não há story nova."
   }
 }
