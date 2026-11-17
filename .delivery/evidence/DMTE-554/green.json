@@ -1,8 +1,8 @@
 {
   "version": 1,
   "phase": "green",
-  "started_at": "2026-11-17T12:52:46.848787+00:00",
-  "finished_at": "2026-11-17T12:57:29.619970+00:00",
+  "started_at": "2026-11-17T12:59:37.813655+00:00",
+  "finished_at": "2026-11-17T13:05:47.359813+00:00",
   "command": [
     "pnpm",
     "nx",
@@ -15,7 +15,7 @@
     "--skip-nx-cache"
   ],
   "base_sha": "bba27622a05d386565e1ce09b8134a92ac77a620",
-  "head_sha": "c6b333dfee66b7a5547bfd98d7c8f28b29f7c44d",
+  "head_sha": "5311f53c399bc586ea7040118d0747fd296e50d7",
   "exit_code": 0,
   "tests": {
     "apps/web/src/pages/OrganizationsPage.test.tsx": "3914ecbc322ef240b384a4d14e36842ebd2886b879261d398d9762be3ab676cc",
@@ -39,8 +39,8 @@
     "apps/api/src/organizations/organizations.service.ts": "439637aa1e35e2560860db790bd8f116ae97a2e936c82b1067a4d8d20bd909f4",
     "apps/web/src/pages/OrganizationsPage.test.tsx": "3914ecbc322ef240b384a4d14e36842ebd2886b879261d398d9762be3ab676cc",
     "apps/web/src/pages/OrganizationsPage.tsx": "b5fc57db416821144607b4904151c6d1b0f8bb371d1d88504c32bd7bdd5206e0",
-    "apps/web/src/pages/OrganizationsPage.update-error.test.tsx": "5b910d5db6960c8d92698d36f9825265990ec10fba8a059b9adb557786db9c05"
+    "apps/web/src/pages/OrganizationsPage.update-error.test.tsx": "e7565e923fd4c5565052815050d5cf907dc10dd89ecc88a8352de5ee4346446b"
   },
   "log": ".delivery/evidence/DMTE-554/green.log",
-  "log_sha256": "424050824d846626762e28f5292e7dc43f7ad5270f7d0b6d06530f251afd922d"
+  "log_sha256": "a0fcf08b7509d104294184ec46b9a129aa6e1a7836959315a947d37cf8735a24"
 }
