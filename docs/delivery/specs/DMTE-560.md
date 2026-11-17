@@ -42,7 +42,7 @@ A lixeira passa a **excluir** o cliente de verdade, e só quando ele não tem v�
 | VAULT | credencial ou pasta do cofre | sim | excluir no cofre |
 | APPOINTMENTS | compromisso de agenda ligado ao cliente | sim | excluir o compromisso na agenda |
 
-Por ticket, o motivo de não poder ser excluído também é informado: aberto pelo cliente (não resolve), sem permissão `DELETE_TICKETS` (não resolve; pedir liberação no grupo), com apontamento ou pré-apontamento (resolve removendo), com sub-tickets (resolve excluindo ou desvinculando os filhos). Ticket aberto pelo cliente, mesmo cancelado ou fechado, continua existindo e bloqueando; o item do ticket mostra o motivo "aberto pelo cliente" e o bloqueio mostra "Não é possível resolver: inative o cliente".
+Por ticket, o motivo de não poder ser excluído também é informado: aberto pelo cliente (não resolve), sem permissão `DELETE_TICKETS` (não resolve; pedir liberação no grupo), com apontamento ou pré-apontamento ativo (resolve removendo, mas só um ADMIN ou o autor remove: para os demais, "tem apontamento de outro usuário", sem saída), com apontamento anulado (não resolve: fica registrado para auditoria; o apontamento faturado removido só é anulado), com sub-tickets (resolve excluindo ou desvinculando os filhos). Ticket aberto pelo cliente, mesmo cancelado ou fechado, continua existindo e bloqueando; o item do ticket mostra o motivo "aberto pelo cliente" e o bloqueio mostra "Não é possível resolver: inative o cliente".
 
 **O que sai junto com o cliente, sem bloquear:** endereços, contatos, grupos de atendentes do cliente, vínculos com grupos técnicos, compartilhamentos de artigo e o histórico de vínculo com mesa. O histórico de vínculo é apagado explicitamente na mesma transação (a chave estrangeira o impediria); os demais saem por cascata do banco. Os registros de auditoria do cofre, que não têm chave estrangeira, ficam como estão.
 
@@ -52,7 +52,7 @@ Por ticket, o motivo de não poder ser excluído também é informado: aberto pe
 - O módulo de regras de bloqueio é um só e serve às duas rotas, para que a consulta e a exclusão nunca divirjam.
 
 **Contrato da API de ticket.**
-- `DELETE /tickets/:id`: apaga o ticket em qualquer status e responde 200 com `{ id }`. Regras: usuário com `DELETE_TICKETS` (sem bypass de ADMIN, como `VIEW_TICKET_VALUES`); ticket visível ao usuário pela mesma regra de acesso do `GET /tickets/:id` (senão 404); solicitante que não seja usuário de um cliente; sem apontamento nem pré-apontamento; sem sub-tickets. Recusa com 409 (`message` e `reasons`, até 5 exemplos e a contagem). Comentários, auditoria, checklist, anexos e compromissos de agenda do ticket saem na mesma transação. Registro de log com protocolo e usuário.
+- `DELETE /tickets/:id`: apaga o ticket em qualquer status e responde 200 com `{ id }`. Regras: usuário com `DELETE_TICKETS` (sem bypass de ADMIN, como `VIEW_TICKET_VALUES`); ticket visível ao usuário pela mesma regra de acesso do `GET /tickets/:id` (senão 404); solicitante que não seja usuário de um cliente; sem apontamento nem pré-apontamento ativos e sem apontamento anulado (motivos `HAS_WORKLOGS` e `HAS_VOIDED_WORKLOGS`); sem sub-tickets. Recusa com 409 (`message` e `reasons`, até 5 exemplos e a contagem). Comentários, auditoria, checklist, anexos e compromissos de agenda do ticket saem na mesma transação. Registro de log com protocolo e usuário.
 - `DELETE_TICKETS` ("Excluir tickets") entra no catálogo na categoria Administrativo, fora dos grupos padrão de qualquer papel (junto das demais chaves só de grupo); grupos existentes não a recebem. `GET /auth/me` passa a devolver `canDeleteTickets`, calculado sem bypass de ADMIN.
 
 **Tela Clientes.** A lixeira (cliente da grade selecionado, vários ou o cliente aberto) chama `deletion-check` e abre um `EzDialog` `variant="danger"`. Cliente livre: título "Excluir cliente" (ou "Excluir N clientes"), "Esta ação não pode ser desfeita" e o que sai junto, com contagens. Cliente bloqueado: cada bloqueio com quantidade, exemplos ("e mais N" além de 5) e "Como resolver: …" ou "Não é possível resolver: inative o cliente". Com vários clientes, cada um aparece como "pode excluir" ou "bloqueado: motivo"; Confirmar exclui só os livres, tira da seleção os excluídos e mantém os que falharem com a mensagem do servidor. Sem nenhum livre, Confirmar fica desabilitado e o botão de saída vira "Fechar". Cancelar e Esc fecham sem excluir; Confirmar fica desabilitado durante a exclusão. O `EzAlert` solto de erro de exclusão e o `window.confirm` saem. O pop-up não exclui ticket: orienta a excluir em Tickets e tentar de novo.
@@ -85,7 +85,7 @@ Os testes da DMTE-481 que afirmam "a exclusão só inativa" são substituídos, 
 
 ## Further Notes
 
-- Rodada 2 (QA independente rejeitou o SHA `9d283fe`): apontamento anulado não é apagado junto com o ticket (guarda o estorno de apontamento faturado); decisão pendente do responsável se a exclusão de ticket deve passar a apagá-lo também. Decisão do implementador: bloquear e dizer a verdade, reversível por nova entrega.
+- Rodada 2 (QA independente rejeitou o SHA `9d283fe`): apontamento anulado não é apagado junto com o ticket (guarda o estorno de apontamento faturado); decisão pendente do responsável se a exclusão de ticket deve passar a apagá-lo também. Decisão do implementador: bloquear e dizer a verdade, reversível por nova entrega. Limite conhecido: pré-apontamento travado pelo sistema (`lockedReason`) só sai com `canEditWorklogStartTime`, e o `deletion-check` não leva isso em conta ao dizer "resolvível".
 
 - Decisão que muda um comportamento já entregue: DMTE-481 (#199, #201) definiu "excluir só inativa"; esta SPEC a substitui por pedido do responsável.
 - Vínculo que o pedido não citava e que a análise do schema encontrou: sub-tickets (bloqueiam a exclusão do ticket), histórico de vínculo com mesa, contrato inativo, usuários, cofre, agenda e apontamento.
@@ -95,7 +95,7 @@ Os testes da DMTE-481 que afirmam "a exclusão só inativa" são substituídos, 
 
 Ticket T1, exclusão de ticket:
 - AC-01: `DELETE /tickets/:id` apaga o ticket (qualquer status) e responde 200 com `{ id }` quando o usuário tem `DELETE_TICKETS`, não há apontamento, pré-apontamento nem sub-tickets e o solicitante não é usuário de um cliente; comentários, auditoria, checklist, anexos e compromissos de agenda do ticket saem na mesma transação.
-- AC-02: com apontamento ou pré-apontamento, responde 409 com mensagem e a lista de até 5 itens com a contagem, e não apaga nada.
+- AC-02: com apontamento ou pré-apontamento ativo (o anulado é o AC-22), responde 409 com mensagem e a lista de até 5 itens com a contagem, e não apaga nada.
 - AC-03: com solicitante que é usuário de um cliente, responde 409 ("aberto pelo cliente") mesmo para quem tem a permissão, e não apaga nada.
 - AC-04: com sub-tickets, responde 409 e não apaga nada.
 - AC-05: sem `DELETE_TICKETS` responde 403, inclusive para ADMIN; ticket que o usuário não enxerga pela regra do `GET /tickets/:id` responde 404; inexistente responde 404.
@@ -106,7 +106,7 @@ Ticket T2, exclusão de cliente na API:
 - AC-08: `POST /organizations/deletion-check` com `ids` (1 a 50) devolve, por cliente, `canDelete`, `blockers` e `cascade`; exige `MANAGE_CLIENTS_AND_RESOURCE_GROUPS` (403 sem ela) e responde 404 para id inexistente.
 - AC-09: cada um destes vínculos gera o bloqueio com o código correspondente, de forma independente: ticket de qualquer status (cliente comercial ou solicitante do cliente) = TICKETS; vínculo atual com mesa = SERVICE_DESKS; contrato ativo ou inativo = CONTRACTS; usuário do cliente = USERS; credencial ou pasta do cofre = VAULT; compromisso de agenda do cliente = APPOINTMENTS.
 - AC-10: todos os bloqueios do cliente voltam numa só resposta, cada um com `code`, `message`, `count`, até 5 `items`, `resolvable` e `howToResolve`; USERS tem `resolvable=false`, os demais dependem do item.
-- AC-11: em TICKETS, cada ticket traz seus motivos (aberto pelo cliente, sem permissão `DELETE_TICKETS`, com apontamento, com sub-tickets); `resolvable` é falso se algum ticket tem motivo sem solução (aberto pelo cliente ou sem permissão) e verdadeiro caso contrário.
+- AC-11: em TICKETS, cada ticket traz seus motivos (aberto pelo cliente, sem permissão `DELETE_TICKETS`, com apontamento, com sub-tickets); `resolvable` é falso se algum ticket tem motivo sem solução (aberto pelo cliente, sem permissão, apontamento anulado ou apontamento que o usuário não pode remover: AC-22 e AC-23) e verdadeiro caso contrário.
 - AC-12: `DELETE /organizations/:id` de cliente sem bloqueios apaga o cliente e o que sai junto (histórico de vínculo com mesa, endereços, contatos, grupos de atendentes, vínculos com grupos técnicos, compartilhamentos de artigo) numa única transação, responde 200 com `{ id }` e não apenas inativa.
 - AC-13: com bloqueios, responde 409 com `message` e a mesma lista `blockers` da consulta, e nada é apagado; a checagem é refeita dentro da transação, com trava na linha do cliente, e uma violação de chave estrangeira concorrente vira 409, não 500.
 - AC-14: `DELETE /organizations/:id` exige `MANAGE_CLIENTS_AND_RESOURCE_GROUPS` (403 sem ela) e responde 404 para id inexistente; a exclusão grava log com o id do cliente e do usuário, sem dados pessoais.
@@ -124,7 +124,7 @@ Correções da revisão independente (rodada 2):
 - AC-22: apontamento anulado (estornado, que fica no banco para auditoria) não conta como removível: o ticket continua sem poder ser excluído, com o motivo `HAS_VOIDED_WORKLOGS` (409 na exclusão do ticket) e "tem apontamento anulado (fica registrado para auditoria)" no `deletion-check`, que o marca sem saída; apontamento ativo continua sendo o motivo `HAS_WORKLOGS`, e o apontamento anulado não entra na contagem dele.
 - AC-23: no `deletion-check`, o bloqueio TICKETS só é resolvível por quem remove os apontamentos e pré-apontamentos ativos do ticket: um ADMIN ou o autor de todos eles; para os demais o motivo é "tem apontamento de outro usuário (só o autor ou um administrador remove)" e não há saída.
 - AC-24: na exclusão do ticket, uma gravação concorrente que quebre uma chave estrangeira (P2003) responde 409 ("apontamento ou sub-ticket"), não 500, sem apagar nada nem os arquivos dos anexos.
-- AC-25: o `deletion-check` não devolve título de ticket nem nome de credencial ou pasta do cofre: o ticket aparece pelo protocolo e o cofre pelo tipo ("Credencial", "Pasta").
+- AC-25: o `deletion-check` não devolve título de ticket nem nome de credencial ou pasta do cofre: o ticket aparece pelo protocolo, o cofre pelo tipo ("Credencial", "Pasta") e o compromisso de agenda como "Compromisso na agenda".
 
 ## Matriz AC → verificação
 

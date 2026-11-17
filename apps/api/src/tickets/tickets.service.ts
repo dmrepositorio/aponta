@@ -1231,7 +1231,7 @@ export class TicketsService {
       }
       throw error;
     }
-    // Anexos, checklist e pré-apontamentos saem por cascata no banco; o arquivo do anexo sai daqui.
+    // Anexos e checklist saem por cascata no banco; o arquivo do anexo sai daqui.
     await Promise.all(
       ticket.attachments.map((attachment) => unlink(join(process.cwd(), 'uploads', attachment.filename)).catch(() => undefined)),
     );
@@ -1261,7 +1261,7 @@ export class TicketsService {
           ...worklogs.map((w) => ({ id: w.id, label: `Apontamento de ${day(w.startTime)}` })),
           ...preAppointments.map((p) => ({ id: p.id, label: `Pré-apontamento de ${day(p.beginning)}` })),
         ].slice(0, 5);
-        texts.push(`tem ${count} ${count === 1 ? 'apontamento' : 'apontamentos'}; remova-os antes`);
+        texts.push(`tem ${count} ${count === 1 ? 'apontamento' : 'apontamentos'}; remova-os antes (o apontamento faturado só é anulado e continua impedindo a exclusão)`);
         details.push({ code, count, items });
       } else if (code === 'HAS_VOIDED_WORKLOGS') {
         const count = ticket.worklogs.filter((worklog) => worklog.voidedAt).length;

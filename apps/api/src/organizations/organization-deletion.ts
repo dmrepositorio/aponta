@@ -1,6 +1,7 @@
 import { NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { canRemoveWorklogs, ticketDeletionReasons } from '../tickets/ticket-deletion';
+import { Role } from '@prisma/client';
+import { canRemoveWorklogs, hasNoWayOut, TicketDeletionReason, ticketDeletionReasons } from '../tickets/ticket-deletion';
 
 /** DMTE-560: regras de bloqueio da exclusão de cliente; a consulta e a exclusão usam este módulo, para nunca divergirem. */
 
@@ -25,7 +26,7 @@ export interface OrganizationDeletionCheck {
   cascade: { addresses: number; contacts: number; agentGroups: number; technicalGroups: number; sharedArticles: number; deskEvents: number };
 }
 
-const ticketReasonText = {
+const ticketReasonText: Record<TicketDeletionReason, string> = {
   CLIENT_REQUESTER: 'aberto pelo cliente',
   HAS_WORKLOGS: 'tem apontamento',
   HAS_VOIDED_WORKLOGS: 'tem apontamento anulado (fica registrado para auditoria)',
@@ -41,7 +42,7 @@ export async function checkOrganizationDeletion(
   db: Prisma.TransactionClient,
   id: string,
   canDeleteTickets: boolean,
-  user: { id: string; role: string },
+  user: { id: string; role: Role },
 ): Promise<OrganizationDeletionCheck> {
   const sample = { take: SAMPLE };
   const organization = await db.organization.findUnique({
@@ -60,7 +61,7 @@ export async function checkOrganizationDeletion(
       users: { select: { id: true, name: true }, ...sample },
       credentials: { select: { id: true }, ...sample },
       credentialFolders: { select: { id: true }, ...sample },
-      appointments: { select: { id: true, title: true }, ...sample },
+      appointments: { select: { id: true }, ...sample },
     },
   });
   if (!organization) throw new NotFoundException(`Organization with ID ${id} not found`);
@@ -85,8 +86,7 @@ export async function checkOrganizationDeletion(
       const mayRemoveWorklogs = canRemoveWorklogs(ticket, user);
       const reasons = rules.map((code) => (code === 'HAS_WORKLOGS' && !mayRemoveWorklogs ? notAuthorText : ticketReasonText[code]));
       if (!canDeleteTickets) reasons.push('sem permissão para excluir tickets');
-      const hopeless = rules.includes('CLIENT_REQUESTER') || rules.includes('HAS_VOIDED_WORKLOGS') || (rules.includes('HAS_WORKLOGS') && !mayRemoveWorklogs);
-      return { ticket, reasons, resolvable: canDeleteTickets && !hopeless };
+      return { ticket, reasons, resolvable: canDeleteTickets && !hasNoWayOut(rules, mayRemoveWorklogs) };
     });
     const resolvable = rows.every((row) => row.resolvable);
     blockers.push({
@@ -147,7 +147,7 @@ export async function checkOrganizationDeletion(
       code: 'APPOINTMENTS',
       message: `Há ${plural(count.appointments, 'compromisso', 'compromissos')} na agenda ligados ao cliente.`,
       count: count.appointments,
-      items: organization.appointments.map((row) => ({ id: row.id, label: row.title })),
+      items: organization.appointments.map((row) => ({ id: row.id, label: 'Compromisso na agenda' })),
       resolvable: true,
       howToResolve: 'Exclua o compromisso na Agenda.',
     });
