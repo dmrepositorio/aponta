@@ -1,8 +1,8 @@
 {
   "version": 1,
   "phase": "red",
-  "started_at": "2026-11-17T13:26:34.291765+00:00",
-  "finished_at": "2026-11-17T13:32:56.367866+00:00",
+  "started_at": "2026-11-17T14:50:29.737073+00:00",
+  "finished_at": "2026-11-17T14:56:20.064933+00:00",
   "command": [
     "pnpm",
     "nx",
@@ -18,14 +18,14 @@
   "head_sha": "e0f410d790478130d68930bd005deee9ab046bf1",
   "exit_code": 1,
   "tests": {
-    "apps/web/src/pages/UsersPage.test.tsx": "7beb30d3d984dd2a6f5c62f2e30b9e79294935c7405829af5ca657cf0f35c963",
+    "apps/web/src/pages/UsersPage.test.tsx": "8788c4a441f9a8cde3c98dc267e818c0c96f213a456fce5c02910da2811953fc",
     "apps/web/src/pages/LoginPage.test.tsx": "c809bd55ca1f96a8dd4c3652c627984b5fd07a1324d44eede1705d5e2f5bd636",
     "apps/web/src/pages/SetPasswordPage.test.tsx": "c7d0e4d36f28b5b6248f5de3ec84a43df4e4dad750badb0802f5ec958e448909",
     "apps/web/src/components/ActiveTag.test.tsx": "471d0d5ee4e42f3f923ef990bbf11e375673d226072cc1d1b37fbaef96486000",
     "apps/api/src/users/password-tokens.service.spec.ts": "5b980da14c7509ec47c0c15ba072e07066a288fa969607beffdc6e15bd999b35",
-    "apps/api/src/users/users.admin.http.spec.ts": "695d4f92fcc15ca6e48ab82bcb6a946b2d830c8295eec3971849f7ebb2bca3e5",
+    "apps/api/src/users/users.admin.http.spec.ts": "0cbf1e869ef48432560c10983ec4638a7e203453d0d0938236fc342805796adc",
     "apps/api/src/users/password-flow.http.spec.ts": "647114174294838f681d5af2ddee5d2bcfed79afe50802f668c73c7244e07bc3",
-    "apps/api/src/users/hostile-input.http.spec.ts": "fbddde114e6fc0e2114fec09c989886d9b27487e9756353c0ea3f6d2e9c95bd1",
+    "apps/api/src/users/hostile-input.http.spec.ts": "e2b1566a47d1d3f4fc16dae68c2cc42c5232df906d62a24d5eacefdf5ec0de6b",
     "apps/api/src/users/users.service.rules.spec.ts": "84ab81173d231cc89fd0c68b05c34df08be2195716838421b6e02c12709b5f68",
     "apps/api/src/auth/login.http.spec.ts": "c679834abb224750bf3433c2e3d2ca475236feb6ce66244bc851690b576f0bb2",
     "apps/api/src/auth/jwt.strategy.spec.ts": "05e792eb878dd2daed1eda701ff2a8c1275d7b867055c1cd147f5831c8b7464e",
@@ -73,20 +73,20 @@
     "apps/api/src/permission-groups/permission-catalog.users.spec.ts": "70c632ce6a743a811b6a8bd6012acbcea73c7c3a280567cf3c0c6fa5d190f1c4",
     "apps/api/src/testing/fake-prisma.ts": "ff13c0a4b609f9566840d409e518f628e54df8a5dd895baddab4093cf50decb1",
     "apps/api/src/testing/users-http-harness.ts": "87e159d933fc35341c1cdb36fa876fb11e1dcdd155cd5ee604bd9882ec076a0d",
-    "apps/api/src/users/hostile-input.http.spec.ts": "fbddde114e6fc0e2114fec09c989886d9b27487e9756353c0ea3f6d2e9c95bd1",
+    "apps/api/src/users/hostile-input.http.spec.ts": "e2b1566a47d1d3f4fc16dae68c2cc42c5232df906d62a24d5eacefdf5ec0de6b",
     "apps/api/src/users/password-flow.http.spec.ts": "647114174294838f681d5af2ddee5d2bcfed79afe50802f668c73c7244e07bc3",
     "apps/api/src/users/password-flow.service.ts": "152d296a3558d694e611d00f914a86831fe4101d33470b92d1a57027f4d10d0e",
     "apps/api/src/users/password-tokens.service.spec.ts": "5b980da14c7509ec47c0c15ba072e07066a288fa969607beffdc6e15bd999b35",
     "apps/api/src/users/password-tokens.service.ts": "bfd4cd860e9933c16de2274b381986d396efc9f5dfa145b3c73bad94c0e9c615",
-    "apps/api/src/users/users.admin.http.spec.ts": "695d4f92fcc15ca6e48ab82bcb6a946b2d830c8295eec3971849f7ebb2bca3e5",
+    "apps/api/src/users/users.admin.http.spec.ts": "0cbf1e869ef48432560c10983ec4638a7e203453d0d0938236fc342805796adc",
     "apps/api/src/users/users.service.rules.spec.ts": "84ab81173d231cc89fd0c68b05c34df08be2195716838421b6e02c12709b5f68",
     "apps/web/src/components/ActiveTag.test.tsx": "471d0d5ee4e42f3f923ef990bbf11e375673d226072cc1d1b37fbaef96486000",
     "apps/web/src/components/ActiveTag.tsx": "1ac60e88725a6c311e15ebe29978bfe6690a502f179bf5fd405a3143f9814189",
     "apps/web/src/pages/LoginPage.test.tsx": "c809bd55ca1f96a8dd4c3652c627984b5fd07a1324d44eede1705d5e2f5bd636",
     "apps/web/src/pages/SetPasswordPage.test.tsx": "c7d0e4d36f28b5b6248f5de3ec84a43df4e4dad750badb0802f5ec958e448909",
     "apps/web/src/pages/SetPasswordPage.tsx": "a6ec2cb14a21f988a4512dc985941b844a70fe046716522c43e0f9e9ce4c642a",
-    "apps/web/src/pages/UsersPage.test.tsx": "7beb30d3d984dd2a6f5c62f2e30b9e79294935c7405829af5ca657cf0f35c963"
+    "apps/web/src/pages/UsersPage.test.tsx": "8788c4a441f9a8cde3c98dc267e818c0c96f213a456fce5c02910da2811953fc"
   },
   "log": ".delivery/evidence/DMTE-550/red.log",
-  "log_sha256": "370521d4a39d4cd752ba976e2d64c49571fa73704875a4dea7ff3836c5388ba5"
+  "log_sha256": "dc89e6c3e416f32b0158da951dd8c6a66f9ea04fd29cd32b08c87e6aad6ced6d"
 }
