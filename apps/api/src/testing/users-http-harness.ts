@@ -75,6 +75,11 @@ export function seedTables(): Partial<Tables> {
 export const GOOGLE_CLIENT_ID = 'google-client-id-test';
 export const GOOGLE_CLIENT_SECRET = 'google-secret-test';
 export const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token';
+export const GITHUB_CLIENT_ID = 'github-client-id-test';
+export const GITHUB_CLIENT_SECRET = 'github-secret-test';
+export const GITHUB_TOKEN_URL = 'https://github.com/login/oauth/access_token';
+export const GITHUB_USER_URL = 'https://api.github.com/user';
+export const GITHUB_EMAILS_URL = 'https://api.github.com/user/emails';
 
 /** Provedor OAuth simulado em memória: o teste diz o que foi pedido (`authorize`) e o que o provedor devolve (`claims`). */
 export interface FakeOAuth {
@@ -83,7 +88,9 @@ export interface FakeOAuth {
   /** Sobrescreve campos do id_token (sub, email, email_verified, aud, iss, exp, nonce). */
   claims: Record<string, unknown>;
   tokenStatus: number;
-  requests: { url: string; body: URLSearchParams }[];
+  requests: { url: string; body: URLSearchParams; headers: Record<string, string> }[];
+  /** GitHub simulado: perfil, e-mails, e o que o endpoint de e-mails responde. */
+  github: { user: Record<string, unknown>; emails: unknown; emailsStatus: number; tokenError: boolean };
 }
 
 const unsigned = (claims: object) => `e30.${Buffer.from(JSON.stringify(claims)).toString('base64url')}.assinatura`;
@@ -111,22 +118,39 @@ export interface Harness {
   close(): Promise<void>;
 }
 
-export async function buildHarness(options: { flag?: boolean; limit?: number; twoFactorKey?: string | null; googleConfigured?: boolean } = {}): Promise<Harness> {
+export async function buildHarness(options: { flag?: boolean; limit?: number; twoFactorKey?: string | null; googleConfigured?: boolean; githubConfigured?: boolean } = {}): Promise<Harness> {
   const prisma = createFakePrisma(seedTables());
-  const state = { flag: options.flag ?? true, twoFactor: true, social: { google: true } as Record<string, boolean> };
-  const oauth: FakeOAuth = { claims: {}, tokenStatus: 200, requests: [] };
+  const state = { flag: options.flag ?? true, twoFactor: true, social: { google: true, github: true, facebook: true } as Record<string, boolean> };
+  const oauth: FakeOAuth = {
+    claims: {}, tokenStatus: 200, requests: [],
+    github: { user: { id: 4242, login: 'ana' }, emails: [{ email: 'ana@aponta.test', primary: true, verified: true }], emailsStatus: 200, tokenError: false },
+  };
   const fakeFetch: OAuthFetch = async (url, init) => {
     const body = new URLSearchParams(init?.body ?? '');
-    oauth.requests.push({ url, body });
+    oauth.requests.push({ url, body, headers: init?.headers ?? {} });
     const refuse = (status: number) => ({ ok: false, status, json: async () => ({}) });
-    if (url !== GOOGLE_TOKEN_URL) throw new Error(`Chamada inesperada ao provedor: ${url}`);
+    const reply = (json: unknown) => ({ ok: true, status: 200, json: async () => json });
     const sent = oauth.authorize;
     const challenge = createHash('sha256').update(body.get('code_verifier') ?? '').digest('base64url');
-    if (oauth.tokenStatus !== 200) return refuse(oauth.tokenStatus);
-    if (!sent || body.get('code') !== 'code-ok' || body.get('client_secret') !== GOOGLE_CLIENT_SECRET || body.get('client_id') !== GOOGLE_CLIENT_ID
-      || body.get('redirect_uri') !== sent.redirectUri || challenge !== sent.codeChallenge) return refuse(400);
-    const claims = { iss: 'https://accounts.google.com', aud: GOOGLE_CLIENT_ID, sub: 'google-sub-1', email: 'ana@aponta.test', email_verified: true, exp: Math.floor(Date.now() / 1000) + 3600, nonce: sent.nonce, ...oauth.claims };
-    return { ok: true, status: 200, json: async () => ({ id_token: unsigned(claims), access_token: 'token-de-acesso' }) };
+    const pkceAndRedirectOk = !!sent && body.get('code') === 'code-ok' && body.get('redirect_uri') === sent.redirectUri && challenge === sent.codeChallenge;
+    if (url === GOOGLE_TOKEN_URL) {
+      if (oauth.tokenStatus !== 200) return refuse(oauth.tokenStatus);
+      if (!pkceAndRedirectOk || body.get('client_secret') !== GOOGLE_CLIENT_SECRET || body.get('client_id') !== GOOGLE_CLIENT_ID) return refuse(400);
+      const claims = { iss: 'https://accounts.google.com', aud: GOOGLE_CLIENT_ID, sub: 'google-sub-1', email: 'ana@aponta.test', email_verified: true, exp: Math.floor(Date.now() / 1000) + 3600, nonce: sent!.nonce, ...oauth.claims };
+      return reply({ id_token: unsigned(claims), access_token: 'token-de-acesso' });
+    }
+    if (url === GITHUB_TOKEN_URL) {
+      if (oauth.tokenStatus !== 200) return refuse(oauth.tokenStatus);
+      // O GitHub responde 200 com `error` quando o código é recusado.
+      if (oauth.github.tokenError || !pkceAndRedirectOk || body.get('client_secret') !== GITHUB_CLIENT_SECRET || body.get('client_id') !== GITHUB_CLIENT_ID) return reply({ error: 'bad_verification_code' });
+      return reply({ access_token: 'gh-token', token_type: 'bearer', scope: 'read:user,user:email' });
+    }
+    if (url === GITHUB_USER_URL || url === GITHUB_EMAILS_URL) {
+      if (init?.headers?.['authorization'] !== 'Bearer gh-token' || !init?.headers?.['user-agent']) return refuse(401);
+      if (url === GITHUB_EMAILS_URL && oauth.github.emailsStatus !== 200) return refuse(oauth.github.emailsStatus);
+      return reply(url === GITHUB_USER_URL ? oauth.github.user : oauth.github.emails);
+    }
+    throw new Error(`Chamada inesperada ao provedor: ${url}`);
   };
   const twoFactorKey = options.twoFactorKey === undefined ? 'chave-de-teste-do-segundo-fator' : options.twoFactorKey;
   const grants = new Map<string, Set<string>>([[ID.gestor, new Set(['MANAGE_USERS'])]]);
@@ -164,7 +188,7 @@ export async function buildHarness(options: { flag?: boolean; limit?: number; tw
           getEffectivePermissions: jest.fn(async () => new Set<string>()),
         },
       },
-      { provide: ConfigService, useValue: { get: (key: string) => ({ PUBLIC_APP_URL: 'https://aponta.test', JWT_SECRET: 'test-secret', ...(twoFactorKey ? { TWO_FACTOR_ENCRYPTION_KEY: twoFactorKey } : {}), ...(options.googleConfigured === false ? {} : { OAUTH_GOOGLE_CLIENT_ID: GOOGLE_CLIENT_ID, OAUTH_GOOGLE_CLIENT_SECRET: GOOGLE_CLIENT_SECRET }) } as Record<string, string>)[key] } },
+      { provide: ConfigService, useValue: { get: (key: string) => ({ PUBLIC_APP_URL: 'https://aponta.test', JWT_SECRET: 'test-secret', ...(twoFactorKey ? { TWO_FACTOR_ENCRYPTION_KEY: twoFactorKey } : {}), ...(options.googleConfigured === false ? {} : { OAUTH_GOOGLE_CLIENT_ID: GOOGLE_CLIENT_ID, OAUTH_GOOGLE_CLIENT_SECRET: GOOGLE_CLIENT_SECRET }), ...(options.githubConfigured === false ? {} : { OAUTH_GITHUB_CLIENT_ID: GITHUB_CLIENT_ID, OAUTH_GITHUB_CLIENT_SECRET: GITHUB_CLIENT_SECRET }) } as Record<string, string>)[key] } },
       { provide: APP_GUARD, useClass: ThrottlerGuard },
     ],
   })

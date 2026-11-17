@@ -5,14 +5,10 @@ import { decryptText, encryptText } from '../common/secret-box';
 import { FeatureFlagsService } from '../feature-flags/feature-flags.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { UsersService } from '../users/users.service';
-import { SOCIAL_PROVIDERS, SocialProvider } from './social-providers';
+import { OAuthFetch, SOCIAL_PROVIDERS, SocialProvider } from './social-providers';
 
 export const OAUTH_FETCH = 'OAUTH_FETCH';
-export type OAuthFetch = (url: string, init?: { method?: string; headers?: Record<string, string>; body?: string }) => Promise<{
-  ok: boolean;
-  status: number;
-  json(): Promise<any>;
-}>;
+export type { OAuthFetch };
 
 export interface StartResult {
   location: string;
@@ -124,7 +120,7 @@ export class SocialAuthService {
     });
     const response = await this.http(provider.tokenUrl, { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded', accept: 'application/json' }, body: body.toString() });
     if (!response.ok) throw new SocialFailure('failed');
-    const profile = await provider.profile(await response.json(), { clientId, nonce: sealed.n, nowMs: Date.now() });
+    const profile = await provider.profile(await response.json(), { clientId, nonce: sealed.n, nowMs: Date.now(), http: this.http });
     if (!profile) throw new SocialFailure('failed');
 
     // Depois da primeira vez a entrada é pelo identificador do provedor, nunca pelo e-mail.

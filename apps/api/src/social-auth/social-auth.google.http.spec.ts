@@ -18,7 +18,7 @@ describe('Login com Google (DMTE-551)', () => {
   beforeEach(async () => {
     now = NOW;
     jest.spyOn(Date, 'now').mockImplementation(() => now);
-    h = await buildHarness();
+    h = await buildHarness({ githubConfigured: false }); // aqui só o Google está configurado
   });
   afterEach(async () => { await h.close(); jest.restoreAllMocks(); });
 
@@ -60,7 +60,7 @@ describe('Login com Google (DMTE-551)', () => {
       expect((await get('/auth/social/providers')).body).toEqual({ providers: [] });
 
       await h.close();
-      h = await buildHarness({ googleConfigured: false });
+      h = await buildHarness({ googleConfigured: false, githubConfigured: false });
       expect((await get('/auth/social/providers')).body).toEqual({ providers: [] });
     });
 

@@ -1,3 +1,9 @@
+export type OAuthFetch = (url: string, init?: { method?: string; headers?: Record<string, string>; body?: string }) => Promise<{
+  ok: boolean;
+  status: number;
+  json(): Promise<any>;
+}>;
+
 export interface SocialProfile {
   subject: string;
   email?: string;
@@ -8,6 +14,7 @@ export interface ProfileContext {
   clientId: string;
   nonce: string;
   nowMs: number;
+  http: OAuthFetch;
 }
 
 export interface SocialProvider {
@@ -47,6 +54,23 @@ function googleProfile(tokens: Record<string, unknown>, { clientId, nonce, nowMs
   return { subject, email: asString(claims['email']), emailVerified: claims['email_verified'] === true || claims['email_verified'] === 'true' };
 }
 
+const GITHUB_API = 'https://api.github.com';
+
+/** O GitHub não tem id_token: o perfil vem da API, com o token de acesso; vale só o e-mail principal e verificado. */
+async function githubProfile(tokens: Record<string, unknown>, { http }: ProfileContext): Promise<SocialProfile | null> {
+  // Com o código recusado o GitHub responde 200 com `error` e sem `access_token`.
+  const accessToken = asString(tokens['access_token']);
+  if (!accessToken) return null;
+  const headers = { authorization: `Bearer ${accessToken}`, accept: 'application/vnd.github+json', 'user-agent': 'Aponta' };
+  const [user, emails] = await Promise.all([http(`${GITHUB_API}/user`, { headers }), http(`${GITHUB_API}/user/emails`, { headers })]);
+  if (!user.ok || !emails.ok) return null;
+  const id = (await user.json())?.id;
+  if (typeof id !== 'number' && typeof id !== 'string') return null;
+  const list = await emails.json();
+  const primary = Array.isArray(list) ? list.find((entry) => entry?.primary === true) : undefined;
+  return { subject: String(id), email: asString(primary?.email), emailVerified: primary?.verified === true };
+}
+
 export const SOCIAL_PROVIDERS: readonly SocialProvider[] = [
   {
     id: 'google',
@@ -55,5 +79,13 @@ export const SOCIAL_PROVIDERS: readonly SocialProvider[] = [
     scope: 'openid email',
     oidc: true,
     profile: googleProfile,
+  },
+  {
+    id: 'github',
+    authorizeUrl: 'https://github.com/login/oauth/authorize',
+    tokenUrl: 'https://github.com/login/oauth/access_token',
+    scope: 'read:user user:email',
+    oidc: false,
+    profile: githubProfile,
   },
 ];
