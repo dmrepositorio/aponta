@@ -451,7 +451,7 @@ describe('UsersPage', () => {
       const drawer = await openFilters(user);
       const status = within(drawer).getByLabelText(/^status$/i);
 
-      expect(within(status).getAllByRole('option').map((o) => [(o as HTMLOptionElement).value, o.textContent])).toEqual([
+      expect(within(status).getAllByRole('option', { hidden: true }).map((o) => [(o as HTMLOptionElement).value, o.textContent])).toEqual([
         ['ALL', 'Todos os status'],
         ['ACTIVE', 'Ativo'],
         ['INACTIVE', 'Inativo'],
@@ -543,7 +543,7 @@ describe('UsersPage', () => {
       await user.selectOptions(screen.getByLabelText(/^tipo/i), 'AGENT');
       await user.type(screen.getByLabelText(/^telefone/i), '11999990000');
       await user.type(screen.getByLabelText(/^ramal/i), '123');
-      await screen.findByRole('option', { name: 'Acme Ltda' });
+      await screen.findByRole('option', { name: 'Acme Ltda', hidden: true });
       await user.selectOptions(screen.getByLabelText(/^cliente/i), 'org-1');
       await user.selectOptions(screen.getByLabelText(/^grupo de atendentes/i), 'tg-1');
       await user.click(await screen.findByRole('checkbox', { name: 'Grupo Gestão' }));

@@ -45,6 +45,24 @@ export const ComFooter: Story = {
   },
 };
 
+/** `trapFocus`: Tab e Shift+Tab ficam no modal e o foco entra nele ao abrir (ex.: "Esqueci minha senha"). */
+export const FocoPreso: Story = {
+  args: {
+    isOpen: true,
+    onClose: () => undefined,
+    title: 'Esqueci minha senha',
+    maxWidth: 'sm',
+    trapFocus: true,
+    children: <input aria-label="E-mail" placeholder="voce@empresa.com" className="w-full rounded-[12px] border border-gray-200 px-3 py-2" autoFocus />,
+    footer: (
+      <>
+        <EzButton variant="tertiary" label="Cancelar" onClick={() => undefined} />
+        <EzButton label="Enviar" onClick={() => undefined} />
+      </>
+    ),
+  },
+};
+
 export const PreventOutsideClose: Story = {
   args: {
     isOpen: true,

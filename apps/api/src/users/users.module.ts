@@ -3,11 +3,15 @@ import { PrismaModule } from '../prisma/prisma.module';
 import { UsersService } from './users.service';
 import { UsersController } from './users.controller';
 import { PermissionsModule } from '../permissions/permissions.module';
+import { MailModule } from '../mail/mail.module';
+import { FeatureFlagsModule } from '../feature-flags/feature-flags.module';
+import { PasswordTokensService } from './password-tokens.service';
+import { PasswordFlowService } from './password-flow.service';
 
 @Module({
-  imports: [PrismaModule, PermissionsModule],
+  imports: [PrismaModule, PermissionsModule, MailModule, FeatureFlagsModule],
   controllers: [UsersController],
-  providers: [UsersService],
-  exports: [UsersService],
+  providers: [UsersService, PasswordTokensService, PasswordFlowService],
+  exports: [UsersService, PasswordFlowService],
 })
 export class UsersModule {}

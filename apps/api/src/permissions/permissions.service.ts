@@ -71,7 +71,8 @@ export class PermissionsService {
   async usersWithPermission(key: string): Promise<{ id: string; name: string; email: string }[]> {
     const group = { permissionGroup: { permissions: { has: key } } };
     return this.prisma.user.findMany({
-      where: { active: true, OR: [{ permissionGroupLinks: { some: group } }, { technicalGroup: { permissionGroupLinks: { some: group } } }] },
+      // DMTE-550: convite pendente (sem senha) não recebe e-mail do sistema.
+      where: { active: true, password: { not: null }, OR: [{ permissionGroupLinks: { some: group } }, { technicalGroup: { permissionGroupLinks: { some: group } } }] },
       select: { id: true, name: true, email: true },
     });
   }

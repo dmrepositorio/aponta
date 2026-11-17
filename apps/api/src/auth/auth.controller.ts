@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Patch, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, CallHandler, Controller, ExecutionContext, Get, NestInterceptor, Optional, Patch, Post, Request, UseGuards, UseInterceptors } from '@nestjs/common';
 import { Role } from '@prisma/client';
 import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
@@ -7,6 +7,8 @@ import { PermissionsService } from '../permissions/permissions.service';
 import { RegisterDto } from '../users/dto/register.dto';
 import { ChangePasswordDto } from '../users/dto/change-password.dto';
 import { UpdateProfileDto } from '../users/dto/update-profile.dto';
+import { PasswordFlowService } from '../users/password-flow.service';
+import { ForgotPasswordDto, SetPasswordDto } from '../users/dto/password-flow.dto';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
@@ -21,12 +23,22 @@ interface AuthenticatedRequest {
  */
 const DEFAULT_REGISTRATION_ROLE = Role.CLIENT;
 
+/** Respostas das rotas de senha nunca ficam em cache (DMTE-550); roda antes da validação, então vale também para 400. */
+const noStore: NestInterceptor = {
+  intercept(context: ExecutionContext, next: CallHandler) {
+    context.switchToHttp().getResponse().setHeader('Cache-Control', 'no-store');
+    return next.handle();
+  },
+};
+
 @Controller('auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly usersService: UsersService,
     private readonly permissionsService: PermissionsService,
+    // @Optional: os testes que montam só o AuthController (sem e-mail nem flag) seguem construindo; em produção o UsersModule sempre o provê.
+    @Optional() private readonly passwordFlow?: PasswordFlowService,
   ) {}
 
   @UseGuards(LocalAuthGuard)
@@ -43,6 +55,23 @@ export class AuthController {
       ...registerDto,
       role: DEFAULT_REGISTRATION_ROLE,
     });
+  }
+
+  // Públicas (DMTE-550). O limite por origem é do throttler; o por e-mail do "esqueci" fica no serviço.
+  @UseInterceptors(noStore)
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
+  @Post('password/set')
+  async setPassword(@Body() dto: SetPasswordDto) {
+    await this.passwordFlow!.setPassword(dto.token, dto.password);
+    return { ok: true };
+  }
+
+  @UseInterceptors(noStore)
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @Post('forgot-password')
+  async forgotPassword(@Body() dto: ForgotPasswordDto) {
+    this.passwordFlow!.forgot(dto.email);
+    return { ok: true };
   }
 
   @UseGuards(JwtAuthGuard)

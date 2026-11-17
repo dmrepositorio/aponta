@@ -1,8 +1,17 @@
-import { ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 import { Prisma, Role } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
+import { AdminCreateUserDto } from './dto/admin-create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 import { UserQueryDto } from './dto/user-query.dto';
 import type { User } from '@prisma/client';
 import {
@@ -15,10 +24,14 @@ import { CurrentUserPayload } from '../tickets/decorators/current-user.decorator
 const SALT_ROUNDS = 10;
 const UNIQUE_CONSTRAINT_VIOLATION = 'P2002';
 const RECORD_NOT_FOUND = 'P2025';
+const FOREIGN_KEY_VIOLATION = 'P2003';
+const EMAIL_IN_USE = 'E-mail já cadastrado';
+const USER_NOT_FOUND = 'Usuário não encontrado';
 const DEFAULT_PAGE_SIZE = 20;
 const MAX_PAGE_SIZE = 100;
 
-export type SafeUser = Omit<User, 'password'>;
+/** `pending` = convite pendente (senha nula); a senha nunca sai da API. */
+export type SafeUser = Omit<User, 'password'> & { pending: boolean };
 
 interface GroupSummary {
   id: string;
@@ -55,8 +68,9 @@ const USER_GROUPS_INCLUDE = {
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
+  // E-mail é único sem diferença de caixa (DMTE-550); dado legado pode ter caixa mista.
   async findByEmail(email: string): Promise<User | null> {
-    return this.prisma.user.findUnique({ where: { email } });
+    return this.prisma.user.findFirst({ where: { email: { equals: email, mode: 'insensitive' } } });
   }
 
   async findById(id: string): Promise<User | null> {
@@ -107,27 +121,86 @@ export class UsersService {
   // que o seed usa para os 2 usuários fixos (find-or-create pelo `name`,
   // já que PermissionGroup não tem unique constraint nesse campo).
   private async linkToDefaultPermissionGroup(user: User): Promise<void> {
-    const name = ROLE_GROUP_NAME[user.role];
-    let group = await this.prisma.permissionGroup.findFirst({ where: { name } });
-    if (!group) {
-      group = await this.prisma.permissionGroup.create({
-        data: {
-          name,
-          description: DEFAULT_PERMISSION_GROUPS[user.role].description,
-          permissions: DEFAULT_PERMISSION_GROUPS[user.role].permissions,
-        },
-      });
-    }
-
+    const groupId = await this.defaultGroupId(this.prisma, user.role);
     await this.prisma.permissionGroupUser.create({
-      data: { permissionGroupId: group.id, userId: user.id },
+      data: { permissionGroupId: groupId, userId: user.id },
     });
   }
 
+  private async defaultGroupId(db: Pick<PrismaService, 'permissionGroup'>, role: Role): Promise<string> {
+    const name = ROLE_GROUP_NAME[role];
+    const group =
+      (await db.permissionGroup.findFirst({ where: { name } })) ??
+      (await db.permissionGroup.create({
+        data: {
+          name,
+          description: DEFAULT_PERMISSION_GROUPS[role].description,
+          permissions: DEFAULT_PERMISSION_GROUPS[role].permissions,
+        },
+      }));
+    return group.id;
+  }
+
+  /**
+   * Cadastro pelo administrador (DMTE-550): sem senha, o usuário nasce com convite pendente.
+   * Vincula o grupo de permissões padrão do tipo mais os escolhidos; tudo numa transação.
+   */
+  async createByAdmin(dto: AdminCreateUserDto): Promise<UserWithGroups> {
+    if (await this.findByEmail(dto.email)) {
+      throw new ConflictException(EMAIL_IN_USE);
+    }
+    const extraGroupIds = dto.permissionGroupIds ?? [];
+    await this.assertPermissionGroupsExist(extraGroupIds);
+
+    const id = await this.writeUnique(() =>
+      this.prisma.$transaction(async (tx) => {
+        const user = await tx.user.create({
+          data: {
+            name: dto.name,
+            email: dto.email,
+            password: null,
+            ...(dto.role ? { role: dto.role } : {}),
+            phone: dto.phone ?? null,
+            extension: dto.extension ?? null,
+            organizationId: dto.organizationId ?? null,
+            technicalGroupId: dto.technicalGroupId ?? null,
+          },
+        });
+        const groupIds = new Set([await this.defaultGroupId(tx, user.role), ...extraGroupIds]);
+        await tx.permissionGroupUser.createMany({
+          data: [...groupIds].map((permissionGroupId) => ({ permissionGroupId, userId: user.id })),
+        });
+        return user.id;
+      }),
+    );
+    return this.findOne(id);
+  }
+
+  // Corrida entre dois cadastros com o mesmo e-mail e chave estrangeira inexistente viram erro de cliente, não 500.
+  private async writeUnique<T>(write: () => Promise<T>): Promise<T> {
+    try {
+      return await write();
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === UNIQUE_CONSTRAINT_VIOLATION) throw new ConflictException(EMAIL_IN_USE);
+        if (error.code === FOREIGN_KEY_VIOLATION) throw new BadRequestException('Cliente ou grupo de atendentes inexistente');
+        if (error.code === RECORD_NOT_FOUND) throw new NotFoundException(USER_NOT_FOUND);
+      }
+      throw error;
+    }
+  }
+
+  private async assertPermissionGroupsExist(ids: string[]): Promise<void> {
+    const unique = [...new Set(ids)];
+    if (!unique.length) return;
+    const found = await this.prisma.permissionGroup.count({ where: { id: { in: unique } } });
+    if (found !== unique.length) throw new BadRequestException('Grupo de permissões inexistente');
+  }
+
   toSafeUser(user: User): SafeUser {
-    const rest: SafeUser = { ...user };
-    delete (rest as Partial<User>).password;
-    return rest;
+    const rest = { ...user, pending: user.password == null } as Partial<User> & { pending: boolean };
+    delete rest.password;
+    return rest as SafeUser;
   }
 
   private toUserWithGroups(user: UserWithGroupRelations): UserWithGroups {
@@ -151,7 +224,7 @@ export class UsersService {
     newPassword: string,
   ): Promise<void> {
     const user = await this.findById(userId);
-    if (!user) {
+    if (!user || !user.password) {
       // Same error as a wrong password: never reveal whether the user
       // exists to a caller who only has a (possibly stale) JWT.
       throw new UnauthorizedException('Current password is incorrect');
@@ -204,7 +277,9 @@ export class UsersService {
         query.pageSize ||
         query.q ||
         query.technicalGroupId ||
-        query.permissionGroupId,
+        query.permissionGroupId ||
+        query.roles ||
+        query.status,
     );
 
     const where: Prisma.UserWhereInput = {};
@@ -222,6 +297,13 @@ export class UsersService {
         some: { permissionGroupId: query.permissionGroupId },
       };
     }
+    if (query.roles?.length) {
+      where.role = { in: query.roles };
+    }
+    // Convite pendente é derivado (senha nula, ainda ativo); sem coluna de status.
+    if (query.status === 'ACTIVE') Object.assign(where, { active: true, password: { not: null } });
+    if (query.status === 'INACTIVE') where.active = false;
+    if (query.status === 'PENDING') Object.assign(where, { active: true, password: null });
 
     if (!hasPaginationParams) {
       const users = await this.prisma.user.findMany({
@@ -275,32 +357,73 @@ export class UsersService {
     return this.toUserWithGroups(user);
   }
 
-  async setActive(id: string, active: boolean): Promise<SafeUser> {
-    try {
-      const user = await this.prisma.user.update({
-        where: { id },
-        data: { active },
-        include: { organization: true },
-      });
-      return this.toSafeUser(user);
-    } catch (error) {
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === RECORD_NOT_FOUND
-      ) {
-        throw new NotFoundException('Usuário não encontrado');
-      }
-      throw error;
+  /**
+   * Edição pelo administrador (DMTE-550). Trocar o tipo não mexe nos grupos de permissões; só
+   * `permissionGroupIds` os substitui. `canChangeRole` vem da permissão CHANGE_USER_ROLE.
+   */
+  async update(id: string, dto: UpdateUserDto, canChangeRole: boolean): Promise<UserWithGroups> {
+    const current = await this.findById(id);
+    if (!current) throw new NotFoundException(USER_NOT_FOUND);
+    if (dto.role !== undefined && dto.role !== current.role && !canChangeRole) {
+      throw new ForbiddenException('Sem permissão para alterar o tipo do usuário');
     }
+    if (dto.email !== undefined) {
+      const other = await this.findByEmail(dto.email);
+      if (other && other.id !== id) throw new ConflictException(EMAIL_IN_USE);
+    }
+    await this.assertPermissionGroupsExist(dto.permissionGroupIds ?? []);
+
+    const { permissionGroupIds, ...rest } = dto;
+    // Só o que veio no corpo muda: campo ausente não pode virar `undefined` na gravação.
+    const fields = Object.fromEntries(Object.entries(rest).filter(([, value]) => value !== undefined));
+    await this.writeUnique(() =>
+      this.prisma.user.update({
+        where: { id },
+        data: {
+          ...fields,
+          ...(permissionGroupIds
+            ? {
+                permissionGroupLinks: {
+                  deleteMany: {},
+                  create: [...new Set(permissionGroupIds)].map((permissionGroupId) => ({ permissionGroupId })),
+                },
+              }
+            : {}),
+        },
+      }),
+    );
+    return this.findOne(id);
   }
 
-  async updateAdminFields(id: string, data: { role?: Role; organizationId?: string | null }) {
-    const user = await this.prisma.user.update({
-      where: { id },
-      data,
-      include: { organization: true },
+  async setActive(id: string, active: boolean, actorId: string): Promise<SafeUser> {
+    const [user] = await this.setActiveMany([id], active, actorId);
+    return user;
+  }
+
+  /**
+   * Ativar/inativar vale na hora e em lote, tudo ou nada (DMTE-550). Inativar: ninguém inativa a si
+   * mesmo nem deixa o sistema sem ADMIN ativo (a regra olha o conjunto inteiro).
+   * shortcut: sem isolamento serializável; duas inativações simultâneas de admins distintos podem
+   * passar juntas. Subir o isolamento se o volume de administradores crescer.
+   */
+  async setActiveMany(ids: string[], active: boolean, actorId: string): Promise<SafeUser[]> {
+    const unique = [...new Set(ids)];
+    return this.prisma.$transaction(async (tx) => {
+      const found = await tx.user.findMany({ where: { id: { in: unique } } });
+      if (found.length !== unique.length) throw new NotFoundException(USER_NOT_FOUND);
+      if (!active) {
+        if (unique.includes(actorId)) {
+          throw new ConflictException('Você não pode inativar a si mesmo.');
+        }
+        if (found.some((u) => u.role === Role.ADMIN && u.active)) {
+          const remaining = await tx.user.count({ where: { role: Role.ADMIN, active: true, id: { notIn: unique } } });
+          if (remaining === 0) throw new ConflictException('Não é possível inativar o último administrador ativo.');
+        }
+      }
+      await tx.user.updateMany({ where: { id: { in: unique } }, data: { active } });
+      const updated = await tx.user.findMany({ where: { id: { in: unique } }, orderBy: { name: 'asc' } });
+      return updated.map((user) => this.toSafeUser(user));
     });
-    return this.toSafeUser(user);
   }
 
   /**
@@ -313,6 +436,9 @@ export class UsersService {
   async findAgents(currentUser: CurrentUserPayload): Promise<SafeUser[]> {
     const roleFilter: Prisma.UserWhereInput = {
       role: { in: [Role.AGENT, Role.AGENT_MASTER, Role.ADMIN] },
+      // Inativo e convite pendente não são atribuíveis (DMTE-550); o nome em ticket antigo segue legível.
+      active: true,
+      password: { not: null },
     };
 
     if (currentUser.role === Role.ADMIN) {

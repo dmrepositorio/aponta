@@ -1,5 +1,15 @@
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
+import axios from 'axios';
 import { api } from '../lib/api';
+
+/** Mensagem fixa que a API devolve (nunca eco do que foi digitado); sem ela, o texto padrão. */
+export function apiErrorMessage(error: unknown, fallback = 'Algo deu errado. Tente novamente.'): string {
+  const message = axios.isAxiosError(error) ? error.response?.data?.message : undefined;
+  return typeof message === 'string' && message ? message : fallback;
+}
+
+export const apiErrorStatus = (error: unknown): number | undefined =>
+  axios.isAxiosError(error) ? error.response?.status : undefined;
 
 export interface GroupSummary {
   id: string;
@@ -12,6 +22,10 @@ export interface UserListItem {
   email: string;
   role: string;
   active: boolean;
+  /** Convite pendente: o usuário ainda não definiu a senha (DMTE-550 D18). */
+  pending: boolean;
+  phone: string | null;
+  extension: string | null;
   organizationId: string | null;
   technicalGroup: GroupSummary | null;
   permissionGroups: GroupSummary[];
@@ -26,8 +40,25 @@ export interface UsersListMeta {
 
 export interface UsersListParams {
   q?: string;
+  technicalGroupId?: string;
+  permissionGroupId?: string;
+  /** Tipos separados por vírgula (`AGENT,ADMIN`). */
+  roles?: string;
+  status?: 'ACTIVE' | 'INACTIVE' | 'PENDING';
   page: number;
   pageSize: number;
+}
+
+/** Campos que o formulário envia; no PATCH só vai o que mudou, e `null` limpa os opcionais. */
+export interface UserInput {
+  name: string;
+  email: string;
+  role: string;
+  phone: string | null;
+  extension: string | null;
+  organizationId: string | null;
+  technicalGroupId: string | null;
+  permissionGroupIds: string[];
 }
 
 export function useUsersList(params: UsersListParams) {
@@ -54,16 +85,40 @@ export function useUser(id: string | null) {
   });
 }
 
-export function useSetUserActive() {
+function useUsersMutation<V, R>(mutationFn: (variables: V) => Promise<R>) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, active }: { id: string; active: boolean }) => {
-      const { data } = await api.patch<UserListItem>(`/users/${id}/active`, { active });
-      return data;
-    },
-    onSuccess: (data) => {
-      void queryClient.invalidateQueries({ queryKey: ['users'] });
-      void queryClient.invalidateQueries({ queryKey: ['users', data.id] });
+    mutationFn,
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['users'] }),
+  });
+}
+
+export function useCreateUser() {
+  return useUsersMutation(async (input: Partial<UserInput>) => (await api.post<UserListItem>('/users', input)).data);
+}
+
+export function useUpdateUser(id: string) {
+  return useUsersMutation(async (input: Partial<UserInput>) => (await api.patch<UserListItem>(`/users/${id}`, input)).data);
+}
+
+export function useSetUserActive() {
+  return useUsersMutation(async ({ id, active }: { id: string; active: boolean }) =>
+    (await api.patch<UserListItem>(`/users/${id}/active`, { active })).data,
+  );
+}
+
+/** Ativar ou inativar vários de uma vez: tudo ou nada, com as regras sobre o conjunto (API). */
+export function useSetUsersActive() {
+  return useUsersMutation(async ({ ids, active }: { ids: string[]; active: boolean }) => {
+    await api.patch('/users/active', { ids, active });
+  });
+}
+
+/** `invite` (usuário com convite pendente) ou `password-reset` (ativo, com senha); a API responde `{ ok: true }`. */
+export function useSendUserLink(id: string, kind: 'invite' | 'password-reset') {
+  return useMutation({
+    mutationFn: async () => {
+      await api.post(`/users/${id}/${kind}`);
     },
   });
 }

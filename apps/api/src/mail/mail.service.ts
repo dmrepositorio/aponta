@@ -40,10 +40,11 @@ export class MailService {
     }
   }
 
-  async sendEmail(options: SendEmailOptions): Promise<void> {
+  /** `true` só quando o SMTP aceitou a mensagem (DMTE-550); falha ou SMTP ausente dá `false`, sem lançar. */
+  async sendEmail(options: SendEmailOptions): Promise<boolean> {
     if (!this.transporter) {
       this.logger.error(`Email to ${options.to} aborted: SMTP transporter not initialized.`);
-      return;
+      return false;
     }
 
     try {
@@ -55,8 +56,10 @@ export class MailService {
         html: options.html,
         ...(options.replyTo ? { replyTo: options.replyTo } : {}),
       });
+      return true;
     } catch (error) {
       this.logger.error(`Failed to send email to ${options.to}`, error instanceof Error ? error.stack : String(error));
+      return false;
     }
   }
 }

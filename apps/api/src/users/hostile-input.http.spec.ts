@@ -32,8 +32,9 @@ interface Endpoint {
   control: (h: Harness, ip: string) => request.Test;
 }
 const pub = (h: Harness, url: string, ip: string) => request(h.app.getHttpServer()).post(url).set('X-Forwarded-For', ip);
+// Na query, 5.000 caracteres já é enorme: acima de ~16 KB o Node responde 431 antes de a aplicação ver o pedido.
 const query = (h: Harness, name: string, value: unknown, ip: string) => {
-  const qs = typeof value === 'string' ? `${name}=${encodeURIComponent(value)}` : `${name}[$ne]=x`;
+  const qs = typeof value === 'string' ? `${name}=${encodeURIComponent(value.slice(0, 5_000))}` : `${name}[$ne]=x`;
   return h.as('get', `/users?${qs}`).set('X-Forwarded-For', ip);
 };
 

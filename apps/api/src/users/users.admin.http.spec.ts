@@ -22,7 +22,7 @@ describe('Usuários: HTTP do cadastro (DMTE-550)', () => {
     it('AC-02: roles aceita lista separada por vírgula e filtra no servidor pelo valor exato do enum', async () => {
       const res = await h.as('get', '/users?roles=AGENT,ADMIN');
       expect(res.status).toBe(200);
-      expect(names(res)).toEqual(['Admin Aponta', 'Ana Souza', 'Bruno Lima', 'Diego Alves', 'Fábio Reis']);
+      expect(names(res)).toEqual(['Admin Aponta', 'Ana Souza', 'Bruno Lima', 'Diego Alves', 'Elisa Prado', 'Fábio Reis']);
     });
 
     it('AC-02: status ACTIVE exclui inativos e pendentes; combina com roles', async () => {

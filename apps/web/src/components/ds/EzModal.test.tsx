@@ -83,4 +83,36 @@ describe('EzModal', () => {
       expect(mockClose).not.toHaveBeenCalled();
     }
   });
+
+  describe('trapFocus (DMTE-550)', () => {
+    const open = (trapFocus?: boolean) =>
+      render(
+        <>
+          <button>Fora</button>
+          <EzModal isOpen onClose={vi.fn()} title="T" trapFocus={trapFocus} footer={<button>Último</button>}>
+            <input aria-label="Campo" />
+          </EzModal>
+        </>,
+      );
+
+    it('moves the focus into the dialog on open and keeps Tab and Shift+Tab inside it', async () => {
+      const user = userEvent.setup();
+      open(true);
+      const dialog = screen.getByRole('dialog');
+      expect(dialog).toHaveFocus();
+
+      await user.tab();
+      expect(screen.getByLabelText('Fechar')).toHaveFocus();
+      await user.tab({ shift: true });
+      expect(screen.getByText('Último')).toHaveFocus();
+      await user.tab();
+      expect(screen.getByLabelText('Fechar')).toHaveFocus();
+    });
+
+    it('is opt-in: without it the dialog is not focusable and Tab can leave it', () => {
+      open();
+      expect(screen.getByRole('dialog')).not.toHaveAttribute('tabindex');
+      expect(screen.getByText('Fora')).not.toHaveFocus();
+    });
+  });
 });

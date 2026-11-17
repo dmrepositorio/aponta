@@ -37,6 +37,13 @@ export const FEATURE_FLAGS: readonly FeatureFlag[] = [
     defaultValue: true,
     removeBy: '2026-12-13',
   },
+  {
+    key: 'convite-e-redefinicao-usuario',
+    description: 'Convite e redefinição de senha de usuário por e-mail (enviar convite, redefinir, esqueci minha senha e definir senha)',
+    owner: 'alfredo',
+    defaultValue: false,
+    removeBy: '2027-01-15',
+  },
 ];
 
 export const FEATURE_FLAGS_TOKEN = 'FEATURE_FLAGS';

@@ -161,7 +161,8 @@ model User {
   email    String  @unique
   phone    String?
   extension String?
-  password String
+  /// Nulo = convite pendente (DMTE-550): o usuário ainda não definiu a própria senha.
+  password String?
   role     Role    @default(AGENT)
   /// Tiflux-parity (DMTE-84, Tarefa 3): toggle "Usuário ativo" no perfil —
   /// inativo não consegue autenticar, mas histórico/auditoria continua legível.
@@ -196,9 +197,30 @@ model User {
   preAppointments PreAppointment[]
   apiTokens   ApiToken[]
   appointments Appointment[]
+  passwordTokens PasswordToken[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+enum PasswordTokenPurpose {
+  INVITE
+  RESET
+}
+
+/// DMTE-550: link de uso único para definir senha (convite ou redefinição). Só o hash SHA-256 é guardado.
+model PasswordToken {
+  id          String               @id @default(uuid())
+  userId      String
+  user        User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  purpose     PasswordTokenPurpose
+  tokenHash   String               @unique
+  expiresAt   DateTime
+  usedAt      DateTime?
+  createdById String?
+  createdAt   DateTime             @default(now())
+
+  @@index([userId, purpose])
 }
 
 model ServiceDesk {
