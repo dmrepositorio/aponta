@@ -106,7 +106,7 @@ export class OrganizationsService {
   }
 
   /** DMTE-560: para cada cliente, o que impede a exclusão e o que sairia junto. */
-  async deletionCheck(ids: string[], canDeleteTickets: boolean, user: Pick<CurrentUserPayload, 'id' | 'role'>): Promise<OrganizationDeletionCheck[]> {
+  async deletionCheck(ids: string[], canDeleteTickets: boolean, user?: Pick<CurrentUserPayload, 'id' | 'role'>): Promise<OrganizationDeletionCheck[]> {
     return Promise.all([...new Set(ids)].map((id) => checkOrganizationDeletion(this.prisma, id, canDeleteTickets, user)));
   }
 

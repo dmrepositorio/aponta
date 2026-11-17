@@ -42,7 +42,8 @@ export async function checkOrganizationDeletion(
   db: Prisma.TransactionClient,
   id: string,
   canDeleteTickets: boolean,
-  user: { id: string; role: Role },
+  /** Sem usuário, nenhum apontamento conta como removível. */
+  user?: { id: string; role: Role },
 ): Promise<OrganizationDeletionCheck> {
   const sample = { take: SAMPLE };
   const organization = await db.organization.findUnique({
@@ -83,7 +84,7 @@ export async function checkOrganizationDeletion(
   if (tickets.length > 0) {
     const rows = tickets.map((ticket) => {
       const rules = ticketDeletionReasons(ticket);
-      const mayRemoveWorklogs = canRemoveWorklogs(ticket, user);
+      const mayRemoveWorklogs = !!user && canRemoveWorklogs(ticket, user);
       const reasons = rules.map((code) => (code === 'HAS_WORKLOGS' && !mayRemoveWorklogs ? notAuthorText : ticketReasonText[code]));
       if (!canDeleteTickets) reasons.push('sem permissão para excluir tickets');
       return { ticket, reasons, resolvable: canDeleteTickets && !hasNoWayOut(rules, mayRemoveWorklogs) };
