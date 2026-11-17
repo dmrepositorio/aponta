@@ -37,6 +37,13 @@ export const FEATURE_FLAGS: readonly FeatureFlag[] = [
     defaultValue: true,
     removeBy: '2026-12-13',
   },
+  {
+    key: 'consulta-cnpj-alternativa',
+    description: 'Consulta de CNPJ em ReceitaWS e minhareceita.org quando a BrasilAPI não acha o CNPJ ou falha',
+    owner: 'alfredo',
+    defaultValue: true,
+    removeBy: '2026-12-18',
+  },
 ];
 
 export const FEATURE_FLAGS_TOKEN = 'FEATURE_FLAGS';

@@ -113,3 +113,11 @@ describe('flag do sino (DMTE-462 T6)', () => {
     expect(registered?.removeBy).toMatch(/^\d{4}-\d{2}-\d{2}$/);
   });
 });
+
+describe('flag da consulta de CNPJ (DMTE-556)', () => {
+  it('AC-07: consulta-cnpj-alternativa está registrada, ligada por padrão e com dono e data de remoção', () => {
+    const registered = FEATURE_FLAGS.find((f) => f.key === 'consulta-cnpj-alternativa');
+    expect(registered).toMatchObject({ owner: 'alfredo', defaultValue: true });
+    expect(registered?.removeBy).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  });
+});

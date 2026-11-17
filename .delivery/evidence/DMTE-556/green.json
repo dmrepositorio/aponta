@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "phase": "green",
+  "started_at": "2026-11-17T15:06:31.051573+00:00",
+  "finished_at": "2026-11-17T15:13:51.309727+00:00",
+  "command": [
+    "pnpm",
+    "nx",
+    "run-many",
+    "-t",
+    "test",
+    "-p",
+    "web",
+    "api",
+    "--skip-nx-cache"
+  ],
+  "base_sha": "fbb67df498dd35ef70db9b7580caf08bd9c15a06",
+  "head_sha": "dc0e3fed182ba09e68c1e08bbc8deb3d825fe45d",
+  "exit_code": 0,
+  "tests": {
+    "apps/api/src/organizations/cnpj-lookup.service.spec.ts": "ac0c8c5ad5d82d9c2fb79513f0da93f559bd39c0448c4feb702dde056b084f8f",
+    "apps/api/src/feature-flags/feature-flags.spec.ts": "7e6d9138cffeaaf4580eaa3dd2ac7378c1829348951d94a0b7eaba9364d8274f",
+    "apps/web/src/pages/OrganizationsPage.test.tsx": "bdb0e9651ef17b6c8f0c780f2be5f9d3b20b62e6e8478de508fd76d322ac6ad1"
+  },
+  "criteria": [
+    "AC-01",
+    "AC-02",
+    "AC-03",
+    "AC-04",
+    "AC-05",
+    "AC-06",
+    "AC-07",
+    "AC-08"
+  ],
+  "source_hashes": {
+    "apps/api/src/feature-flags/feature-flags.spec.ts": "7e6d9138cffeaaf4580eaa3dd2ac7378c1829348951d94a0b7eaba9364d8274f",
+    "apps/api/src/feature-flags/feature-flags.ts": "82b10be5ede3913e39cc5171e90b8519ca1e9d9e241c1bf89320f70867c0ef52",
+    "apps/api/src/organizations/cnpj-lookup.service.spec.ts": "ac0c8c5ad5d82d9c2fb79513f0da93f559bd39c0448c4feb702dde056b084f8f",
+    "apps/api/src/organizations/cnpj-lookup.service.ts": "3e741bab27f0ccaf303e856efe8e79a7fe29d13ae636d4241764610c6787a4c1",
+    "apps/api/src/organizations/organizations.module.ts": "ab2e4c712f0769519c9153fbe91d899c072b6871fb5187b3c9c90ee3fd866d3b",
+    "apps/web/src/pages/OrganizationsPage.test.tsx": "bdb0e9651ef17b6c8f0c780f2be5f9d3b20b62e6e8478de508fd76d322ac6ad1",
+    "apps/web/src/pages/OrganizationsPage.tsx": "9fc9fd2b8b767af16165c222d34a82bfb32035c5e97183a5ba7022a0c52d76b5"
+  },
+  "log": ".delivery/evidence/DMTE-556/green.log",
+  "log_sha256": "08215527460bd127a33167adb4b70e9cf13a70a1a86f948bd3a67d555c3ea574"
+}

@@ -485,8 +485,13 @@ export function OrganizationsPage() {
       setDetailOrgId(null);
       setIsCnpjDataLocked(true);
       setMode('form');
-    } catch {
-      setCnpjModalError('CNPJ não encontrado ou inválido na Receita Federal.');
+    } catch (err) {
+      const status = (err as { response?: { status?: number } }).response?.status;
+      setCnpjModalError(
+        status === 404 || status === 400
+          ? 'CNPJ não encontrado ou inválido na Receita Federal.'
+          : 'Não foi possível consultar a Receita Federal agora. Tente novamente em instantes.',
+      );
     } finally {
       setIsLookingUpCnpjModal(false);
     }
