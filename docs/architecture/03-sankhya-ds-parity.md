@@ -228,6 +228,16 @@ Nenhum token, prop ou componente novo no DS; o resto reaproveita o que existe.
 - **Avatares do filtro de responsável:** anel `focus-visible:ring-brand-600` e `z-10` ao focar, para o avatar focado não ficar coberto pelo vizinho; alvo de 28 px mantido.
 - **`EzSlaChip`:** escreve "Resp." (resposta) ou "Solução" (resolução) antes do tempo, e só a palavra quando não há prazo. `aria-label` e `title` seguem com o texto completo.
 
+## Foco único do DS e semântica das abas (DMTE-532)
+
+Um token novo de foco e duas utilidades; nenhum componente novo. O foco do `EzTabs` e do `EzCheck` era `brand-200` (1,81:1 sobre branco, abaixo dos 3:1 da WCAG 1.4.11); a variante `line` das abas nem tinha anel.
+
+- **Token (`styles.css`):** `--color-focus` (= `brand-600`: 4,64:1 sobre branco, 3,86:1 sobre `gray-90`, 3,24:1 sobre `brand-100`), `--focus-ring-width: 2px` e `--focus-ring-offset: 2px`. Utilidades `ez-focus` (contorno com folga, para controle solto) e `ez-focus-inset` (contorno por dentro da caixa, para controle dentro de área que rola e cortaria o anel de fora). É contorno (`outline`), não `ring`: segue o raio e aparece em `forced-colors`. Regra: foco novo no DS usa `ez-focus` ou `ez-focus-inset`; os demais pontos de foco do app (`ring-brand-200`, `ring-brand-500`, `ring-brand-600` soltos) migram em entrega própria.
+- **`EzCheck`:** `ez-focus`. **`EzTabs`** (pills e line): `ez-focus-inset`.
+- **`EzTabs`, teclado:** tabindex móvel (só a aba ativa, ou a primeira habilitada, entra na ordem do Tab); setas, Home e End movem o foco e ativam a aba (ativação automática, padrão ARIA de abas), pulando abas desabilitadas e voltando do fim ao início. Só com o `role` padrão (`tablist`); com `role` customizado o componente se comporta como antes.
+- **`EzTabs`, painel:** prop opcional `idPrefix`; com ela cada aba ganha `id` e `aria-controls`, e o DS exporta `ezTabId(prefix, tabId)` e `ezTabPanelId(prefix, tabId)` para o consumidor montar o painel (`role="tabpanel"`, `id`, `aria-labelledby`). Sem `idPrefix` não há `id` nem `aria-controls` (não aponta para painel que não existe). A Mesa usa o `EzCardItem` do corpo como painel; os outros usos de `EzTabs` ganham só o tabindex móvel e as teclas.
+- **Medido em Chromium** (1440 e 390 px, `scripts/mesa_focus_check.mjs`, dados sintéticos; evidência técnica, o aceite visual é do Alfredo): contorno de 2 px em `rgb(0, 133, 97)` na aba e no checkbox, aba focada dentro da lista que rola, 12 `tab`, 1 `tabpanel`, 12 `aria-controls`, seta troca a aba, Tab sai da lista para o conteúdo, End leva à última aba e o foco a traz para a área visível da lista (a 390 px ela fica fora da tela).
+
 ## Conhecimento: proporção, tokens, foco e semântica de cor (DMTE-535)
 
 Nenhum token, prop ou componente novo no DS; o resto reaproveita o que existe. Medido em Chromium (390 e 1440 px, `scripts/knowledge_proportion_check.mjs`, dados sintéticos; evidência técnica, o aceite visual é do Alfredo).

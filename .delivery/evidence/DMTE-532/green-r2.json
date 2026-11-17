@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "phase": "green",
+  "started_at": "2026-11-17T01:00:08.304841+00:00",
+  "finished_at": "2026-11-17T01:00:33.798157+00:00",
+  "command": [
+    "pnpm",
+    "--dir",
+    "apps/web",
+    "exec",
+    "vitest",
+    "run",
+    "src/components/ds/EzTabs.test.tsx",
+    "src/components/ds/EzCheck.test.tsx",
+    "src/styles.focus.test.ts",
+    "src/pages/ServiceDesksPage.test.tsx"
+  ],
+  "base_sha": "374023f6872baa42e6dd2e686fefaede4302f042",
+  "head_sha": "a8492af79f08c3aaf7a35a353dfeee957daf1275",
+  "exit_code": 0,
+  "tests": {
+    "apps/web/src/components/ds/EzTabs.test.tsx": "f60a5c121e9d186799285db613b03436116b22aec8d1393319ed00dcf87a844a",
+    "apps/web/src/components/ds/EzCheck.test.tsx": "7957662dcafcc5d8b14673fa0384561d310c8f256dff732684ce7797c28e75b5",
+    "apps/web/src/styles.focus.test.ts": "5f6ef9a7cf8d11d73719013d6b62af38a3518de7d50c3cbe133d83067da28468",
+    "apps/web/src/pages/ServiceDesksPage.test.tsx": "e8e125e4b783ca24af5b3b610c8eb4eedb460074bd578e20ac7436e83bed3c50"
+  },
+  "criteria": [
+    "AC-01",
+    "AC-02",
+    "AC-03",
+    "AC-04",
+    "AC-05",
+    "AC-06"
+  ],
+  "source_hashes": {
+    "apps/web/src/components/ds/EzCheck.stories.tsx": "c38cd7f7ddc0419bee11b53142b9a58b940d6361b3913a552e4c5d85f67d6ae3",
+    "apps/web/src/components/ds/EzCheck.test.tsx": "7957662dcafcc5d8b14673fa0384561d310c8f256dff732684ce7797c28e75b5",
+    "apps/web/src/components/ds/EzCheck.tsx": "367762408ea9a315f422f8bcbf9c523cea16f4c982dec44b29dc71902e102491",
+    "apps/web/src/components/ds/EzTabs.stories.tsx": "afe6b2a19856855cb812235a3f03be2480e0b87d0a5b77a4087750ba0ec3514c",
+    "apps/web/src/components/ds/EzTabs.test.tsx": "f60a5c121e9d186799285db613b03436116b22aec8d1393319ed00dcf87a844a",
+    "apps/web/src/components/ds/EzTabs.tsx": "d22286bfb61c460a1b6406ecf6d9f6eff1a4917a69e4535277cb6ae7d770268d",
+    "apps/web/src/pages/ServiceDesksPage.test.tsx": "e8e125e4b783ca24af5b3b610c8eb4eedb460074bd578e20ac7436e83bed3c50",
+    "apps/web/src/pages/ServiceDesksPage.tsx": "a785012c9bd4d79b0c4d96f09553e403c0eec8eafd86fb2e711a27fdd589ff02",
+    "apps/web/src/styles.css": "ec69cc9f9db1dea0b8cae1c58171e823ee549315801c2d4011066e20af91c66a",
+    "apps/web/src/styles.focus.test.ts": "5f6ef9a7cf8d11d73719013d6b62af38a3518de7d50c3cbe133d83067da28468",
+    "scripts/mesa_focus_check.mjs": "26985030c859cf7fb6514e7b538bedadf1016c939d8ec873ce0ac3a660b17e90"
+  },
+  "log": ".delivery/evidence/DMTE-532/green-r2.log",
+  "log_sha256": "9d75f631fe8d112a135cc02dadeafcb435f7c147d5ee91a87baf1ee1f96710ae"
+}

@@ -1,0 +1,90 @@
+{
+  "aba-1440": {
+    "tabFocus": {
+      "role": "tab",
+      "label": "Informações básicas",
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(0, 133, 97)",
+      "outlineOffset": "-2px",
+      "boxShadow": "none",
+      "insideList": true
+    },
+    "initial": {
+      "tabs": 12,
+      "tabpanels": 1,
+      "ariaControls": 12,
+      "tabIndexes": "0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1",
+      "selected": "Informações básicas",
+      "panelLabelledBy": "mesa-tabs-tab-basics",
+      "selectedId": "mesa-tabs-tab-basics",
+      "pageOverflow": 0
+    }
+  },
+  "seta-1440": {
+    "focused": "Parâmetros",
+    "selected": "Parâmetros"
+  },
+  "tab-1440": {
+    "roleAfterTab": null
+  },
+  "checkbox-1440": {
+    "role": null,
+    "label": "mesa-flag-allowCrossDeskInteraction",
+    "outlineStyle": "solid",
+    "outlineWidth": "2px",
+    "outlineColor": "rgb(0, 133, 97)",
+    "outlineOffset": "2px",
+    "boxShadow": "none",
+    "insideList": null
+  },
+  "fim-1440": {
+    "selected": "Expediente",
+    "focused": true,
+    "inside": true
+  },
+  "aba-390": {
+    "tabFocus": {
+      "role": "tab",
+      "label": "Informações básicas",
+      "outlineStyle": "solid",
+      "outlineWidth": "2px",
+      "outlineColor": "rgb(0, 133, 97)",
+      "outlineOffset": "-2px",
+      "boxShadow": "none",
+      "insideList": true
+    },
+    "initial": {
+      "tabs": 12,
+      "tabpanels": 1,
+      "ariaControls": 12,
+      "tabIndexes": "0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1",
+      "selected": "Informações básicas",
+      "panelLabelledBy": "mesa-tabs-tab-basics",
+      "selectedId": "mesa-tabs-tab-basics",
+      "pageOverflow": 0
+    }
+  },
+  "seta-390": {
+    "focused": "Parâmetros",
+    "selected": "Parâmetros"
+  },
+  "tab-390": {
+    "roleAfterTab": null
+  },
+  "checkbox-390": {
+    "role": null,
+    "label": "mesa-flag-allowCrossDeskInteraction",
+    "outlineStyle": "solid",
+    "outlineWidth": "2px",
+    "outlineColor": "rgb(0, 133, 97)",
+    "outlineOffset": "2px",
+    "boxShadow": "none",
+    "insideList": null
+  },
+  "fim-390": {
+    "selected": "Expediente",
+    "focused": true,
+    "inside": true
+  }
+}

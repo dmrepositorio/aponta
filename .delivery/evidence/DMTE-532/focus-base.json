@@ -1,0 +1,80 @@
+{
+  "aba-1440": {
+    "tabFocus": {
+      "role": "tab",
+      "label": "Informações básicas",
+      "outlineStyle": "none",
+      "outlineWidth": "1px",
+      "outlineColor": "rgb(3, 89, 65)",
+      "outlineOffset": "0px",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgb(148, 204, 189) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "insideList": true
+    },
+    "initial": {
+      "tabs": 12,
+      "tabpanels": 0,
+      "ariaControls": 0,
+      "tabIndexes": ",,,,,,,,,,,",
+      "selected": "Informações básicas",
+      "panelLabelledBy": null,
+      "selectedId": null,
+      "pageOverflow": 0
+    }
+  },
+  "seta-1440": {
+    "focused": "Informações básicas",
+    "selected": "Informações básicas"
+  },
+  "tab-1440": {
+    "roleAfterTab": "tab"
+  },
+  "checkbox-1440": {
+    "role": null,
+    "label": "mesa-flag-active",
+    "outlineStyle": "none",
+    "outlineWidth": "1px",
+    "outlineColor": "rgb(11, 12, 14)",
+    "outlineOffset": "2px",
+    "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgb(148, 204, 189) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+    "insideList": null
+  },
+  "aba-390": {
+    "tabFocus": {
+      "role": "tab",
+      "label": "Informações básicas",
+      "outlineStyle": "none",
+      "outlineWidth": "1px",
+      "outlineColor": "rgb(1, 101, 74)",
+      "outlineOffset": "0px",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgb(148, 204, 189) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "insideList": true
+    },
+    "initial": {
+      "tabs": 12,
+      "tabpanels": 0,
+      "ariaControls": 0,
+      "tabIndexes": ",,,,,,,,,,,",
+      "selected": "Informações básicas",
+      "panelLabelledBy": null,
+      "selectedId": null,
+      "pageOverflow": 0
+    }
+  },
+  "seta-390": {
+    "focused": "Informações básicas",
+    "selected": "Informações básicas"
+  },
+  "tab-390": {
+    "roleAfterTab": "tab"
+  },
+  "checkbox-390": {
+    "role": null,
+    "label": "mesa-flag-active",
+    "outlineStyle": "none",
+    "outlineWidth": "1px",
+    "outlineColor": "rgb(11, 12, 14)",
+    "outlineOffset": "2px",
+    "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgb(148, 204, 189) 0px 0px 0px 2px, rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+    "insideList": null
+  }
+}

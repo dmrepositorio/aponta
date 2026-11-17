@@ -34,12 +34,16 @@ import {
   EzTabs,
   EzTextArea,
   EzTextInput,
+  ezTabId,
+  ezTabPanelId,
 } from '../components/ds';
 import { EzEntityGrid } from '../components/ds/EzEntityGrid';
 import { applyDynamicFilters } from '../components/ds/EzDynamicFilter';
 import type { EzDynamicFilterField, EzDynamicFilterRule } from '../components/ds/EzDynamicFilter';
 import { useUserScreenConfig } from '../hooks/useUserScreenConfig';
 import { ticketSectionLabel } from '../lib/mesaLabels';
+
+const MESA_TABS_ID = 'mesa-tabs';
 
 interface ServiceDesk {
   id: string;
@@ -487,8 +491,15 @@ export function ServiceDesksPage() {
                     tabs={mesaTabs}
                     activeTab={activeTab}
                     onChange={(tabId) => setActiveTab(String(tabId))}
+                    idPrefix={MESA_TABS_ID}
                   />
-                  <EzCardItem flat className="p-5 md:p-6">
+                  <EzCardItem
+                    flat
+                    className="p-5 md:p-6"
+                    role="tabpanel"
+                    id={ezTabPanelId(MESA_TABS_ID, activeTab)}
+                    aria-labelledby={ezTabId(MESA_TABS_ID, activeTab)}
+                  >
                     {activeTab === 'basics' && (
                       <div className="space-y-6">
                         <form

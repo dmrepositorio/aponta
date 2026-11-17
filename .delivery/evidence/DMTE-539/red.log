@@ -1,0 +1,1237 @@
+
+ RUN  v4.1.11 /home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-521-c4187c3d45b2/workdir/aponta/apps/web
+
+ ❯ |web| src/pages/ContractsPage.test.tsx (33 tests | 3 failed) 9715ms
+     ✓ shows a loading state while contracts are being fetched 121ms
+     ✓ shows an error state when the contracts request fails 106ms
+     ✓ shows the empty state when there are no contracts 78ms
+     ✓ shows financial columns (valor mensal / reajuste) for ADMIN 253ms
+     ✓ shows financial columns for CLIENT_MASTER as well 226ms
+     ✓ hides financial columns for AGENT (masked by the backend, but double-check the UI gate too) 91ms
+     ✓ displays inactive contracts and zero money honestly 113ms
+     ✓ lets admins create with explicit excess rate and minute allowance  594ms
+     ✓ prevents non-admin management and hides detail financial data 275ms
+     ✓ opens a contract's detail as a full page (no dialog) and returns to the list via the back button  411ms
+     ✓ navigates between contracts using the toolbar Anterior/Próximo buttons 279ms
+     ✓ shows a dedicated "Novo contrato" button directly on the toolbar for ADMIN, opening the full-page form 270ms
+     ✓ lets an ADMIN select a contract and delete it via the toolbar 261ms
+     ✓ shows the backend conflict message when deleting a contract with worklogs fails 217ms
+     ✓ does not show the delete button for AGENT, who cannot manage contracts 91ms
+     ✓ renders the Sankhya standard filter drawer and screen config modal (parity with Clientes) 210ms
+     ✓ filters contracts by name or company on the client side via the filter drawer  596ms
+     ✓ filters contracts by status (Ativo/Inativo) via the filter drawer  426ms
+     ✓ filters dynamically by modality using the rule builder (Sankhya Filtros parity)  492ms
+     ✓ saves, applies, and deletes a saved filter from the drawer (Sankhya saved filters parity)  754ms
+     ✓ edits via the update command without turning zero into missing money  313ms
+     ✓ validates reversed dates before saving 157ms
+     ✓ opens the detail from the contract name button and has no Ações column 136ms
+     ✓ opens the detail of the row on double click 123ms
+     ✓ keeps Contrato and Empresa on one line with the full text in the title, and fixed column widths 94ms
+     ✓ shows Ativo/Inativo and the approval state as tags with text and icon in one Situação column 152ms
+     ✓ uses the same approval words in the detail 217ms
+     ✓ filters by the same approval words, including Rascunho and Regularização pendente  402ms
+     ✓ starts with Hora excedente and Reajuste hidden but still configurable  582ms
+     ✓ DMTE-541 AC-08: the filter panel sits in a positioned container so it can overlay the grid below xl 94ms
+     × moves focus to the validation alert and scrolls it into view when the form is invalid 165ms
+     × moves focus to the alert with the API message when saving fails 1187ms
+     × moves focus again on every failed attempt, even with the same message 224ms
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 30 passed (33)
+   Start at  21:48:04
+   Duration  15.41s (transform 2.43s, setup 243ms, import 3.52s, tests 9.72s, environment 1.12s)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |web| src/pages/ContractsPage.test.tsx > ContractsPage form errors (DMTE-539) > moves focus to the validation alert and scrolls it into view when the form is invalid
+Error: [2mexpect([22m[31melement[39m[2m).toHaveFocus()[22m
+
+Expected element with focus:
+  [32m<form
+  class="space-y-4"
+  novalidate=""
+>
+  <div
+    class="relative flex w-full flex-col sm:flex-row sm:items-start gap-3 p-4 rounded-[12px] border transition-colors bg-red-100 border-red-200 text-red-800"
+    role="alert"
+  >
+    <div
+      class="shrink-0 mt-0.5 text-red-600"
+    >
+      <svg
+        aria-hidden="true"
+        class="lucide lucide-circle-alert lucide-alert-circle w-5 h-5"
+        fill="none"
+        height="24"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        viewBox="0 0 24 24"
+        width="24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <circle
+          cx="12"
+          cy="12"
+          r="10"
+        />
+        <line
+          x1="12"
+          x2="12"
+          y1="8"
+          y2="12"
+        />
+        <line
+          x1="12"
+          x2="12.01"
+          y1="16"
+          y2="16"
+        />
+      </svg>
+    </div>
+    <div
+      class="flex flex-1 flex-col gap-1"
+    >
+      <div
+        class="text-[14px] leading-relaxed font-medium"
+      >
+        Selecione a empresa.
+      </div>
+    </div>
+  </div>
+  <fieldset
+    class="min-w-0 space-y-6"
+  >
+    <fieldset
+      class="flex min-w-0 flex-wrap gap-x-6 gap-y-2"
+    >
+      <legend
+        class="sr-only"
+      >
+        Situação do contrato
+      </legend>
+      <label
+        class="inline-flex items-center gap-2 group cursor-pointer select-none"
+        for="contract-active"
+      >
+        <div
+          class="relative flex items-center justify-center"
+        >
+          <input … />
+          <svg … />
+        </div>
+        <span
+          class="text-[14px] font-medium text-gray-900"
+        >
+          Contrato ativo
+        </span>
+      </label>
+      <label
+        class="inline-flex items-center gap-2 group cursor-pointer select-none"
+        for="contract-approved"
+      >
+        <div
+          class="relative flex items-center justify-center"
+        >
+          <input … />
+          <svg … />
+        </div>
+        <span
+          class="text-[14px] font-medium text-gray-900"
+        >
+          Condições comerciais aprovadas
+        </span>
+      </label>
+    </fieldset>
+    <fieldset
+      class="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+    >
+      <legend
+        class="mb-3 text-sm font-semibold text-gray-900"
+      >
+        Identificação
+      </legend>
+      <div
+        class="flex flex-col w-full gap-1.5"
+      >
+        <label
+          class="text-[14px] font-medium leading-none mb-0.5 select-none text-gray-900"
+          for="contract-name"
+        >
+          Nome do contrato
+        </label>
+        <div
+          class="relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"
+        >
+          <input … />
+        </div>
+      </div>
+      <div
+        class="flex flex-col w-full gap-1.5"
+      >
+        <div
+          class="flex items-center mb-0.5 leading-none"
+        >
+          <label … />
+          <span … />
+        </div>
+        <div
+          class="relative"
+        >
+          <div … />
+        </div>
+      </div>
+      <div
+        class="flex flex-col w-full gap-1.5"
+      >
+        <div
+          class="flex items-center mb-0.5 leading-none"
+        >
+          <label … />
+        </div>
+        <div
+          class="relative"
+        >
+          <div … />
+        </div>
+      </div>
+    </fieldset>
+    <fieldset
+      class="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+    >
+      <legend
+        class="mb-3 text-sm font-semibold text-gray-900"
+      >
+        Vigência
+      </legend>
+      <div
+        class="flex flex-col w-full gap-1.5"
+      >
+        <label
+          class="text-[14px] font-medium leading-none mb-0.5 select-none text-gray-900"
+          for="contract-start"
+        >
+          Início da vigência
+        </label>
+        <div
+          class="relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"
+        >
+          <input … />
+        </div>
+      </div>
+      <div
+        class="flex flex-col w-full gap-1.5"
+      >
+        <label
+          class="text-[14px] font-medium leading-none mb-0.5 select-none text-gray-900"
+          for="contract-end"
+        >
+          Fim da vigência
+        </label>
+        <div
+          class="relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"
+        >
+          <input … />
+        </div>
+        <div
+          class="flex items-center gap-1.5 text-[12px] font-medium leading-none mt-0.5 text-gray-500"
+        >
+          <span … />
+        </div>
+      </div>
+      <div
+        class="flex flex-col w-full gap-1.5"
+      >
+        <label
+          class="text-[14px] font-medium leading-none mb-0.5 select-none text-gray-900"
+          for="contract-adjustment"
+        >
+          Data de reajuste
+        </label>
+        <div
+          class="relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"
+        >
+          <input … />
+        </div>
+      </div>
+    </fieldset>
+    <fieldset
+      class="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2"
+    >
+      <legend
+        class="mb-3 text-sm font-semibold text-gray-900"
+      >
+        Condições comerciais
+      </legend>
+      <div
+        class="flex flex-col w-full gap-1.5"
+      >
+        <label
+          class="text-[14px] font-medium leading-none mb-0.5 select-none text-gray-900"
+          for="contract-hours"
+        >
+          Franquia mensal (horas)
+        </label>
+        <div
+          class="relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"
+        >
+          <input … />
+        </div>
+      </div>
+      <div
+        class="flex flex-col w-full gap-1.5"
+      >
+        <label
+          class="text-[14px] font-medium leading-none mb-0.5 select-none text-gray-900"
+          for="contract-monthly"
+        >
+          Valor mensal (R$)
+        </label>
+        <div
+          class="relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"
+        >
+          <input … />
+        </div>
+      </div>
+      <div
+        class="flex flex-col w-full gap-1.5"
+      >
+        <label
+          class="text-[14px] font-medium leading-none mb-0.5 select-none text-gray-900"
+          for="contract-rate"
+        >
+          Hora excedente (R$)
+        </label>
+        <div
+          class="relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"
+        >
+          <input … />
+        </div>
+        <div
+          class="flex items-center gap-1.5 text-[12px] font-medium leading-none mt-0.5 text-gray-500"
+        >
+          <span … />
+        </div>
+      </div>
+    </fieldset>
+    <fieldset
+      class="min-w-0"
+    >
+      <legend
+        class="mb-3 text-sm font-semibold text-gray-900"
+      >
+        Mesas de serviços cobertas
+      </legend>
+      <div
+        class="flex flex-wrap gap-x-6 gap-y-2"
+      >
+        <p
+          class="text-sm text-gray-500"
+        >
+          Selecione uma empresa com mesas explicitamente vinculadas. Sem esse vínculo, novos lançamentos ficam bloqueados.
+        </p>
+      </div>
+    </fieldset>
+  </fieldset>
+  <div
+    class="flex justify-end gap-3"
+  >
+    <button
+      class="relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent text-brand-600 border border-gray-200 hover:bg-gray-80 hover:border-gray-90 disabled:bg-gray-80 disabled:border-gray-200 disabled:text-gray-400 h-[42px] text-sm px-4"
+      type="button"
+    >
+      <div
+        class="relative z-10 flex items-center gap-2"
+      >
+        <span
+          class="font-medium"
+        >
+          Cancelar
+        </span>
+      </div>
+    </button>
+    <button
+      class="relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-brand-500 text-gray-70 border border-brand-500 hover:bg-brand-700 hover:border-brand-700 disabled:bg-gray-400 disabled:border-gray-400 disabled:text-gray-70 h-[42px] text-sm px-4"
+      type="submit"
+    >
+      <div
+        class="relative z-10 flex items-center gap-2"
+      >
+        <span
+          class="font-normal"
+        >
+          Salvar contrato
+        </span>
+      </div>
+      <span
+        class="pointer-events-none absolute w-[20px] h-[20px] rounded-full scale-0 animate-ripple z-0 bg-white/30"
+        style="left: -10px; top: -10px;"
+      />
+    </button>
+  </div>
+</form>[39m
+Received element with focus:
+  [31m<button
+  class="relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-brand-500 text-gray-70 border border-brand-500 hover:bg-brand-700 hover:border-brand-700 disabled:bg-gray-400 disabled:border-gray-400 disabled:text-gray-70 h-[42px] text-sm px-4"
+  type="submit"
+>
+  <div
+    class="relative z-10 flex items-center gap-2"
+  >
+    <span
+      class="font-normal"
+    >
+      Salvar contrato
+    </span>
+  </div>
+  <span
+    class="pointer-events-none absolute w-[20px] h-[20px] rounded-full scale-0 animate-ripple z-0 bg-white/30"
+    style="left: -10px; top: -10px;"
+  />
+</button>[39m
+ ❯ src/pages/ContractsPage.test.tsx:836:33
+    834|     const alert = await screen.findByRole('alert');
+    835|     expect(alert).toHaveTextContent('Selecione a empresa.');
+    836|     expect(alert.parentElement).toHaveFocus();
+       |                                 ^
+    837|     expect(scrollIntoView).toHaveBeenCalledWith({ block: 'center' });
+    838|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  |web| src/pages/ContractsPage.test.tsx > ContractsPage form errors (DMTE-539) > moves focus to the alert with the API message when saving fails
+Error: [2mexpect([22m[31melement[39m[2m).toHaveFocus()[22m
+
+Expected element with focus:
+  [32m<form
+  class="space-y-4"
+  novalidate=""
+>
+  <div
+    class="relative flex w-full flex-col sm:flex-row sm:items-start gap-3 p-4 rounded-[12px] border transition-colors bg-red-100 border-red-200 text-red-800"
+    role="alert"
+  >
+    <div
+      class="shrink-0 mt-0.5 text-red-600"
+    >
+      <svg
+        aria-hidden="true"
+        class="lucide lucide-circle-alert lucide-alert-circle w-5 h-5"
+        fill="none"
+        height="24"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        viewBox="0 0 24 24"
+        width="24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <circle
+          cx="12"
+          cy="12"
+          r="10"
+        />
+        <line
+          x1="12"
+          x2="12"
+          y1="8"
+          y2="12"
+        />
+        <line
+          x1="12"
+          x2="12.01"
+          y1="16"
+          y2="16"
+        />
+      </svg>
+    </div>
+    <div
+      class="flex flex-1 flex-col gap-1"
+    >
+      <div
+        class="text-[14px] leading-relaxed font-medium"
+      >
+        Contrato duplicado.
+      </div>
+    </div>
+  </div>
+  <fieldset
+    class="min-w-0 space-y-6"
+  >
+    <fieldset
+      class="flex min-w-0 flex-wrap gap-x-6 gap-y-2"
+    >
+      <legend
+        class="sr-only"
+      >
+        Situação do contrato
+      </legend>
+      <label
+        class="inline-flex items-center gap-2 group cursor-pointer select-none"
+        for="contract-active"
+      >
+        <div
+          class="relative flex items-center justify-center"
+        >
+          <input … />
+          <svg … />
+        </div>
+        <span
+          class="text-[14px] font-medium text-gray-900"
+        >
+          Contrato ativo
+        </span>
+      </label>
+      <label
+        class="inline-flex items-center gap-2 group cursor-pointer select-none"
+        for="contract-approved"
+      >
+        <div
+          class="relative flex items-center justify-center"
+        >
+          <input … />
+          <svg … />
+        </div>
+        <span
+          class="text-[14px] font-medium text-gray-900"
+        >
+          Condições comerciais aprovadas
+        </span>
+      </label>
+    </fieldset>
+    <fieldset
+      class="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+    >
+      <legend
+        class="mb-3 text-sm font-semibold text-gray-900"
+      >
+        Identificação
+      </legend>
+      <div
+        class="flex flex-col w-full gap-1.5"
+      >
+        <label
+          class="text-[14px] font-medium leading-none mb-0.5 select-none text-gray-900"
+          for="contract-name"
+        >
+          Nome do contrato
+        </label>
+        <div
+          class="relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"
+        >
+          <input … />
+        </div>
+      </div>
+      <div
+        class="flex flex-col w-full gap-1.5"
+      >
+        <div
+          class="flex items-center mb-0.5 leading-none"
+        >
+          <label … />
+          <span … />
+        </div>
+        <div
+          class="relative"
+        >
+          <div … />
+        </div>
+      </div>
+      <div
+        class="flex flex-col w-full gap-1.5"
+      >
+        <div
+          class="flex items-center mb-0.5 leading-none"
+        >
+          <label … />
+        </div>
+        <div
+          class="relative"
+        >
+          <div … />
+        </div>
+      </div>
+    </fieldset>
+    <fieldset
+      class="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+    >
+      <legend
+        class="mb-3 text-sm font-semibold text-gray-900"
+      >
+        Vigência
+      </legend>
+      <div
+        class="flex flex-col w-full gap-1.5"
+      >
+        <label
+          class="text-[14px] font-medium leading-none mb-0.5 select-none text-gray-900"
+          for="contract-start"
+        >
+          Início da vigência
+        </label>
+        <div
+          class="relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"
+        >
+          <input … />
+        </div>
+      </div>
+      <div
+        class="flex flex-col w-full gap-1.5"
+      >
+        <label
+          class="text-[14px] font-medium leading-none mb-0.5 select-none text-gray-900"
+          for="contract-end"
+        >
+          Fim da vigência
+        </label>
+        <div
+          class="relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"
+        >
+          <input … />
+        </div>
+        <div
+          class="flex items-center gap-1.5 text-[12px] font-medium leading-none mt-0.5 text-gray-500"
+        >
+          <span … />
+        </div>
+      </div>
+      <div
+        class="flex flex-col w-full gap-1.5"
+      >
+        <label
+          class="text-[14px] font-medium leading-none mb-0.5 select-none text-gray-900"
+          for="contract-adjustment"
+        >
+          Data de reajuste
+        </label>
+        <div
+          class="relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"
+        >
+          <input … />
+        </div>
+      </div>
+    </fieldset>
+    <fieldset
+      class="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2"
+    >
+      <legend
+        class="mb-3 text-sm font-semibold text-gray-900"
+      >
+        Condições comerciais
+      </legend>
+      <div
+        class="flex flex-col w-full gap-1.5"
+      >
+        <label
+          class="text-[14px] font-medium leading-none mb-0.5 select-none text-gray-900"
+          for="contract-hours"
+        >
+          Franquia mensal (horas)
+        </label>
+        <div
+          class="relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"
+        >
+          <input … />
+        </div>
+      </div>
+      <div
+        class="flex flex-col w-full gap-1.5"
+      >
+        <label
+          class="text-[14px] font-medium leading-none mb-0.5 select-none text-gray-900"
+          for="contract-monthly"
+        >
+          Valor mensal (R$)
+        </label>
+        <div
+          class="relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"
+        >
+          <input … />
+        </div>
+      </div>
+      <div
+        class="flex flex-col w-full gap-1.5"
+      >
+        <label
+          class="text-[14px] font-medium leading-none mb-0.5 select-none text-gray-900"
+          for="contract-rate"
+        >
+          Hora excedente (R$)
+        </label>
+        <div
+          class="relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"
+        >
+          <input … />
+        </div>
+        <div
+          class="flex items-center gap-1.5 text-[12px] font-medium leading-none mt-0.5 text-gray-500"
+        >
+          <span … />
+        </div>
+      </div>
+    </fieldset>
+    <fieldset
+      class="min-w-0"
+    >
+      <legend
+        class="mb-3 text-sm font-semibold text-gray-900"
+      >
+        Mesas de serviços cobertas
+      </legend>
+      <div
+        class="flex flex-wrap gap-x-6 gap-y-2"
+      >
+        <p
+          class="text-sm text-gray-500"
+        >
+          Selecione uma empresa com mesas explicitamente vinculadas. Sem esse vínculo, novos lançamentos ficam bloqueados.
+        </p>
+      </div>
+    </fieldset>
+  </fieldset>
+  <div
+    class="flex justify-end gap-3"
+  >
+    <button
+      class="relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent text-brand-600 border border-gray-200 hover:bg-gray-80 hover:border-gray-90 disabled:bg-gray-80 disabled:border-gray-200 disabled:text-gray-400 h-[42px] text-sm px-4"
+      type="button"
+    >
+      <div
+        class="relative z-10 flex items-center gap-2"
+      >
+        <span
+          class="font-medium"
+        >
+          Cancelar
+        </span>
+      </div>
+    </button>
+    <button
+      class="relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-brand-500 text-gray-70 border border-brand-500 hover:bg-brand-700 hover:border-brand-700 disabled:bg-gray-400 disabled:border-gray-400 disabled:text-gray-70 h-[42px] text-sm px-4"
+      type="submit"
+    >
+      <div
+        class="relative z-10 flex items-center gap-2"
+      >
+        <span
+          class="font-normal"
+        >
+          Salvar contrato
+        </span>
+      </div>
+    </button>
+  </div>
+</form>[39m
+Received element with focus:
+  [31m<button
+  class="relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-brand-500 text-gray-70 border border-brand-500 hover:bg-brand-700 hover:border-brand-700 disabled:bg-gray-400 disabled:border-gray-400 disabled:text-gray-70 h-[42px] text-sm px-4"
+  type="submit"
+>
+  <div
+    class="relative z-10 flex items-center gap-2"
+  >
+    <span
+      class="font-normal"
+    >
+      Salvar contrato
+    </span>
+  </div>
+</button>[39m
+
+Ignored nodes: comments, script, style
+[36m<html>[39m
+  [36m<head />[39m
+  [36m<body>[39m
+    [36m<div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex flex-col h-full bg-gray-80"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex flex-col w-full bg-white border-b border-gray-200 px-4 py-2 sm:px-6 gap-3"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center justify-between min-h-[32px]"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center gap-3"[39m
+            [36m>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"p-1.5 -ml-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-80 rounded-md transition-colors"[39m
+                [33mtitle[39m=[32m"Voltar"[39m
+              [36m>[39m
+                [36m<svg[39m
+                  [33maria-hidden[39m=[32m"true"[39m
+                  [33mclass[39m=[32m"lucide lucide-arrow-left w-5 h-5"[39m
+                  [33mfill[39m=[32m"none"[39m
+                  [33mheight[39m=[32m"24"[39m
+                  [33mstroke[39m=[32m"currentColor"[39m
+                  [33mstroke-linecap[39m=[32m"round"[39m
+                  [33mstroke-linejoin[39m=[32m"round"[39m
+                  [33mstroke-width[39m=[32m"2"[39m
+                  [33mviewBox[39m=[32m"0 0 24 24"[39m
+                  [33mwidth[39m=[32m"24"[39m
+                  [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                [36m>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"m12 19-7-7 7-7"[39m
+                  [36m/>[39m
+                  [36m<path[39m
+                    [33md[39m=[32m"M19 12H5"[39m
+                  [36m/>[39m
+                [36m</svg>[39m
+              [36m</button>[39m
+              [36m<h1[39m
+                [33mclass[39m=[32m"text-[20px] font-semibold text-gray-900 leading-none m-0"[39m
+              [36m>[39m
+                [0mNovo contrato[0m
+              [36m</h1>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center gap-4"[39m
+            [36m/>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex-1 overflow-auto p-6"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"space-y-6"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"bg-white rounded-[10px] border border-gray-200 overflow-hidden shadow-xs flex flex-col"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center gap-3 px-3 py-1.5 bg-white border-b border-gray-200 select-none min-h-[44px] max-sm:flex-col max-sm:items-stretch max-sm:gap-0 max-sm:px-0"[39m
+                [33mdata-testid[39m=[32m"ez-entity-toolbar"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center justify-between gap-3 max-sm:overflow-x-auto max-sm:px-3 sm:contents"[39m
+                [36m>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"flex items-center gap-1 flex-wrap max-sm:flex-nowrap shrink-0 sm:shrink"[39m
+                  [36m>[39m
+                    [36m<button[39m
+                      [33maria-label[39m=[32m"Painel de filtros"[39m
+                      [33mclass[39m=[32m"max-sm:min-h-11 max-sm:min-w-11 inline-flex items-center justify-center h-[32px] px-2.5 rounded-[6px] text-[12px] font-medium transition-colors border cursor-pointer bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:text-gray-900"[39m
+                      [33mdata-testid[39m=[32m"ez-toolbar-filter-panel-button"[39m
+                      [33mtitle[39m=[32m"Painel de filtros"[39m
+                      [33mtype[39m=[32m"button"[39m
+                    [36m>[39m
+                      [36m<svg[39m
+                        [33maria-hidden[39m=[32m"true"[39m
+                        [33mclass[39m=[32m"lucide lucide-funnel lucide-filter w-3.5 h-3.5 mr-1.5"[39m
+                        [33mfill[39m=[32m"none"[39m
+                        [33mheight[39m=[32m"24"[39m
+                        [33mstroke[39m=[32m"currentColor"[39m
+                        [33mstroke-linecap[39m=[32m"round"[39m
+                        [33mstroke-linejoin[39m=[32m"round"[39m
+                        [33mstroke-width[39m=[32m"2"[39m
+                        [33mviewBox[39m=[32m"0 0 24 24"[39m
+                        [33mwidth[39m=[32m"24"[39m
+                        [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                      [36m>[39m
+                        [36m<path[39m
+                          [33md[39m=[32m"M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z"[39m
+                        [36m/>[39m
+                      [36m</svg>[39m
+                      [0mFiltros[0m
+                    [36m</button>[39m
+                    [36m<span[39m
+                      [33mclass[39m=[32m"w-px h-5 bg-gray-200 mx-0.5"[39m
+                    [36m/>[39m
+                    [36m<div[39m
+                      [33mclass[39m=[32m"relative inline-flex items-center rounded-[6px] border border-gray-200 bg-white"[39m
+                    [36m>[39m
+                      [36m<button[39m
+                        [33maria-label[39m=[32m"Alternar para Modo Grade"[39m
+                        [33mclass[39m=[32m"max-sm:min-h-11 max-sm:min-w-11 inline-flex items-center gap-1.5 px-2.5 h-[30px] rounded-l-[5px] text-[12px] font-medium transition-colors cursor-pointer text-gray-700 hover:bg-gray-50"[39m
+                        [33mdata-testid[39m=[32m"ez-toolbar-mode-toggle-button"[39m
+                        [33mtitle[39m=[32m"Ver grade de registros"[39m
+                        [33mtype[39m=[32m"button"[39m
+                      [36m>[39m
+                        [36m<svg[39m
+                          [33maria-hidden[39m=[32m"true"[39m
+                          [33mclass[39m=[32m"lucide lucide-file-text w-3.5 h-3.5 text-brand-600"[39m
+                          [33mfill[39m=[32m"none"[39m
+                          [33mheight[39m=[32m"24"[39m
+                          [33mstroke[39m=[32m"currentColor"[39m
+                          [33mstroke-linecap[39m=[32m"round"[39m
+                          [33mstroke-linejoin[39m=[32m"round"[39m
+                          [33mstroke-width[39m=[32m"2"[39m
+                          [33mviewBox[39m=[32m"0 0 24 24"[39m
+                          [33mwidth[39m=[32m"24"[39m
+                          [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                        [...
+ ❯ src/pages/ContractsPage.test.tsx:853:53
+    851|     const alert = await screen.findByRole('alert');
+    852|     expect(alert).toHaveTextContent('Contrato duplicado.');
+    853|     await waitFor(() => expect(alert.parentElement).toHaveFocus());
+       |                                                     ^
+    854|     expect(scrollIntoView).toHaveBeenCalledWith({ block: 'center' });
+    855|   });
+ ❯ runWithExpensiveErrorDiagnosticsDisabled ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/config.js:47:12
+ ❯ checkCallback ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/wait-for.js:124:77
+ ❯ Timeout.checkRealTimersCallback ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/wait-for.js:118:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  |web| src/pages/ContractsPage.test.tsx > ContractsPage form errors (DMTE-539) > moves focus again on every failed attempt, even with the same message
+Error: [2mexpect([22m[31melement[39m[2m).toHaveFocus()[22m
+
+Expected element with focus:
+  [32m<form
+  class="space-y-4"
+  novalidate=""
+>
+  <div
+    class="relative flex w-full flex-col sm:flex-row sm:items-start gap-3 p-4 rounded-[12px] border transition-colors bg-red-100 border-red-200 text-red-800"
+    role="alert"
+  >
+    <div
+      class="shrink-0 mt-0.5 text-red-600"
+    >
+      <svg
+        aria-hidden="true"
+        class="lucide lucide-circle-alert lucide-alert-circle w-5 h-5"
+        fill="none"
+        height="24"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        viewBox="0 0 24 24"
+        width="24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <circle
+          cx="12"
+          cy="12"
+          r="10"
+        />
+        <line
+          x1="12"
+          x2="12"
+          y1="8"
+          y2="12"
+        />
+        <line
+          x1="12"
+          x2="12.01"
+          y1="16"
+          y2="16"
+        />
+      </svg>
+    </div>
+    <div
+      class="flex flex-1 flex-col gap-1"
+    >
+      <div
+        class="text-[14px] leading-relaxed font-medium"
+      >
+        Selecione a empresa.
+      </div>
+    </div>
+  </div>
+  <fieldset
+    class="min-w-0 space-y-6"
+  >
+    <fieldset
+      class="flex min-w-0 flex-wrap gap-x-6 gap-y-2"
+    >
+      <legend
+        class="sr-only"
+      >
+        Situação do contrato
+      </legend>
+      <label
+        class="inline-flex items-center gap-2 group cursor-pointer select-none"
+        for="contract-active"
+      >
+        <div
+          class="relative flex items-center justify-center"
+        >
+          <input … />
+          <svg … />
+        </div>
+        <span
+          class="text-[14px] font-medium text-gray-900"
+        >
+          Contrato ativo
+        </span>
+      </label>
+      <label
+        class="inline-flex items-center gap-2 group cursor-pointer select-none"
+        for="contract-approved"
+      >
+        <div
+          class="relative flex items-center justify-center"
+        >
+          <input … />
+          <svg … />
+        </div>
+        <span
+          class="text-[14px] font-medium text-gray-900"
+        >
+          Condições comerciais aprovadas
+        </span>
+      </label>
+    </fieldset>
+    <fieldset
+      class="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+    >
+      <legend
+        class="mb-3 text-sm font-semibold text-gray-900"
+      >
+        Identificação
+      </legend>
+      <div
+        class="flex flex-col w-full gap-1.5"
+      >
+        <label
+          class="text-[14px] font-medium leading-none mb-0.5 select-none text-gray-900"
+          for="contract-name"
+        >
+          Nome do contrato
+        </label>
+        <div
+          class="relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"
+        >
+          <input … />
+        </div>
+      </div>
+      <div
+        class="flex flex-col w-full gap-1.5"
+      >
+        <div
+          class="flex items-center mb-0.5 leading-none"
+        >
+          <label … />
+          <span … />
+        </div>
+        <div
+          class="relative"
+        >
+          <div … />
+        </div>
+      </div>
+      <div
+        class="flex flex-col w-full gap-1.5"
+      >
+        <div
+          class="flex items-center mb-0.5 leading-none"
+        >
+          <label … />
+        </div>
+        <div
+          class="relative"
+        >
+          <div … />
+        </div>
+      </div>
+    </fieldset>
+    <fieldset
+      class="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+    >
+      <legend
+        class="mb-3 text-sm font-semibold text-gray-900"
+      >
+        Vigência
+      </legend>
+      <div
+        class="flex flex-col w-full gap-1.5"
+      >
+        <label
+          class="text-[14px] font-medium leading-none mb-0.5 select-none text-gray-900"
+          for="contract-start"
+        >
+          Início da vigência
+        </label>
+        <div
+          class="relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"
+        >
+          <input … />
+        </div>
+      </div>
+      <div
+        class="flex flex-col w-full gap-1.5"
+      >
+        <label
+          class="text-[14px] font-medium leading-none mb-0.5 select-none text-gray-900"
+          for="contract-end"
+        >
+          Fim da vigência
+        </label>
+        <div
+          class="relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"
+        >
+          <input … />
+        </div>
+        <div
+          class="flex items-center gap-1.5 text-[12px] font-medium leading-none mt-0.5 text-gray-500"
+        >
+          <span … />
+        </div>
+      </div>
+      <div
+        class="flex flex-col w-full gap-1.5"
+      >
+        <label
+          class="text-[14px] font-medium leading-none mb-0.5 select-none text-gray-900"
+          for="contract-adjustment"
+        >
+          Data de reajuste
+        </label>
+        <div
+          class="relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"
+        >
+          <input … />
+        </div>
+      </div>
+    </fieldset>
+    <fieldset
+      class="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2"
+    >
+      <legend
+        class="mb-3 text-sm font-semibold text-gray-900"
+      >
+        Condições comerciais
+      </legend>
+      <div
+        class="flex flex-col w-full gap-1.5"
+      >
+        <label
+          class="text-[14px] font-medium leading-none mb-0.5 select-none text-gray-900"
+          for="contract-hours"
+        >
+          Franquia mensal (horas)
+        </label>
+        <div
+          class="relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"
+        >
+          <input … />
+        </div>
+      </div>
+      <div
+        class="flex flex-col w-full gap-1.5"
+      >
+        <label
+          class="text-[14px] font-medium leading-none mb-0.5 select-none text-gray-900"
+          for="contract-monthly"
+        >
+          Valor mensal (R$)
+        </label>
+        <div
+          class="relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"
+        >
+          <input … />
+        </div>
+      </div>
+      <div
+        class="flex flex-col w-full gap-1.5"
+      >
+        <label
+          class="text-[14px] font-medium leading-none mb-0.5 select-none text-gray-900"
+          for="contract-rate"
+        >
+          Hora excedente (R$)
+        </label>
+        <div
+          class="relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"
+        >
+          <input … />
+        </div>
+        <div
+          class="flex items-center gap-1.5 text-[12px] font-medium leading-none mt-0.5 text-gray-500"
+        >
+          <span … />
+        </div>
+      </div>
+    </fieldset>
+    <fieldset
+      class="min-w-0"
+    >
+      <legend
+        class="mb-3 text-sm font-semibold text-gray-900"
+      >
+        Mesas de serviços cobertas
+      </legend>
+      <div
+        class="flex flex-wrap gap-x-6 gap-y-2"
+      >
+        <p
+          class="text-sm text-gray-500"
+        >
+          Selecione uma empresa com mesas explicitamente vinculadas. Sem esse vínculo, novos lançamentos ficam bloqueados.
+        </p>
+      </div>
+    </fieldset>
+  </fieldset>
+  <div
+    class="flex justify-end gap-3"
+  >
+    <button
+      class="relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent text-brand-600 border border-gray-200 hover:bg-gray-80 hover:border-gray-90 disabled:bg-gray-80 disabled:border-gray-200 disabled:text-gray-400 h-[42px] text-sm px-4"
+      type="button"
+    >
+      <div
+        class="relative z-10 flex items-center gap-2"
+      >
+        <span
+          class="font-medium"
+        >
+          Cancelar
+        </span>
+      </div>
+    </button>
+    <button
+      class="relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-brand-500 text-gray-70 border border-brand-500 hover:bg-brand-700 hover:border-brand-700 disabled:bg-gray-400 disabled:border-gray-400 disabled:text-gray-70 h-[42px] text-sm px-4"
+      type="submit"
+    >
+      <div
+        class="relative z-10 flex items-center gap-2"
+      >
+        <span
+          class="font-normal"
+        >
+          Salvar contrato
+        </span>
+      </div>
+      <span
+        class="pointer-events-none absolute w-[20px] h-[20px] rounded-full scale-0 animate-ripple z-0 bg-white/30"
+        style="left: -10px; top: -10px;"
+      />
+    </button>
+  </div>
+</form>[39m
+Received element with focus:
+  [31m<button
+  class="relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-brand-500 text-gray-70 border border-brand-500 hover:bg-brand-700 hover:border-brand-700 disabled:bg-gray-400 disabled:border-gray-400 disabled:text-gray-70 h-[42px] text-sm px-4"
+  type="submit"
+>
+  <div
+    class="relative z-10 flex items-center gap-2"
+  >
+    <span
+      class="font-normal"
+    >
+      Salvar contrato
+    </span>
+  </div>
+  <span
+    class="pointer-events-none absolute w-[20px] h-[20px] rounded-full scale-0 animate-ripple z-0 bg-white/30"
+    style="left: -10px; top: -10px;"
+  />
+</button>[39m
+ ❯ src/pages/ContractsPage.test.tsx:861:62
+    859|
+    860|     await user.click(screen.getByRole('button', { name: 'Salvar contra…
+    861|     expect((await screen.findByRole('alert')).parentElement).toHaveFoc…
+       |                                                              ^
+    862|     expect(scrollIntoView).toHaveBeenCalledTimes(1);
+    863|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+

@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "delivery": "DMTE-539",
+  "repository": "dmrepositorio/aponta",
+  "github_issue": 300,
+  "multica_id": "01a1e1dc-2688-7527-91d1-b2dac726d3e1",
+  "cycle": "2026-11-09/2026-11-22",
+  "tier": 2,
+  "criteria": [
+    {
+      "id": "AC-01",
+      "description": "quando a validação do formulário falha, o contêiner do alerta recebe o foco e `scrollIntoView` é chamado com `block: 'center'`; o alerta mantém `role=\"alert\"` e a mesma mensagem.",
+      "tests": [
+        "apps/web/src/pages/ContractsPage.test.tsx: moves focus to the validation alert and scrolls it into view when the form is invalid"
+      ]
+    },
+    {
+      "id": "AC-02",
+      "description": "quando a gravação falha com erro da API, o alerta com a mensagem do servidor recebe o foco e é rolado até a vista da mesma forma.",
+      "tests": [
+        "apps/web/src/pages/ContractsPage.test.tsx: moves focus to the alert with the API message when saving fails"
+      ]
+    },
+    {
+      "id": "AC-03",
+      "description": "cada tentativa que falha move o foco de novo, inclusive com a mesma mensagem da tentativa anterior (Salvar duas vezes sem corrigir).",
+      "tests": [
+        "apps/web/src/pages/ContractsPage.test.tsx: moves focus again on every failed attempt, even with the same message"
+      ]
+    },
+    {
+      "id": "AC-04",
+      "description": "a 390 px, no navegador, depois de clicar em Salvar com erro, o alerta fica dentro da área visível e com o foco (medido em Chromium com a massa da auditoria; antes: alerta a -587 px, foco no botão).",
+      "tests": [
+        "Medição em Chromium a 390 px: depois de Salvar com erro o alerta fica na área visível e com o foco (resultado no PR)"
+      ],
+      "tdd_required": false,
+      "reason": "Medida de layout em navegador (jsdom não calcula layout); o comportamento causador (foco e scrollIntoView) é coberto por AC-01 a AC-03"
+    },
+    {
+      "id": "AC-05",
+      "description": "nenhum arquivo de `apps/web/src/components/ds/` nem de `apps/api` é alterado; as mensagens de validação existentes ficam idênticas.",
+      "tests": [
+        "git diff do PR: nenhum arquivo em apps/web/src/components/ds/ nem em apps/api"
+      ],
+      "tdd_required": false,
+      "reason": "Restrição de escopo, verificada no diff do PR; não é comportamento"
+    }
+  ],
+  "spec": "docs/delivery/specs/DMTE-539.md",
+  "tdd": {
+    "mode": "required",
+    "red": ".delivery/evidence/DMTE-539/red.json",
+    "green": ".delivery/evidence/DMTE-539/green.json"
+  },
+  "design_system": {
+    "applicable": true,
+    "reused": [
+      "EzAlert"
+    ],
+    "reason": "Reaproveita EzAlert (role=alert) dentro de um contêiner focável por programa em ContractForm; nenhum componente, prop ou token novo no DS.",
+    "exception": "Nenhum arquivo de apps/web/src/components/ds/ muda nesta entrega, então não há story nova."
+  }
+}
