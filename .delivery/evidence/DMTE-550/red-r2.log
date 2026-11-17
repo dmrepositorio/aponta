@@ -1,0 +1,136 @@
+
+> nx run api:test --runTestsByPath src/users/email-case.http.spec.ts src/users/users.find-by-email.spec.ts src/mail/mail.service.pending.spec.ts
+
+> jest --passWithNoTests=true --runTestsByPath src/users/email-case.http.spec.ts src/users/users.find-by-email.spec.ts src/mail/mail.service.pending.spec.ts
+
+
+
+
+ NX   Running target test for project api failed
+
+Failed tasks:
+
+- api:test
+
+Hint: run the command with --verbose for more details.
+
+[0m[7m[1m[31m FAIL [39m[22m[27m[0m [0m[7m[37m api [39m[27m[0m [2msrc/mail/[22m[1mmail.service.pending.spec.ts[22m
+[1m[31m  [1m● [22m[1mDMTE-550 D17: o sistema não escreve para quem tem convite pendente › envia normalmente quando o destinatário não é pendente[39m[22m
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mresolves[2m.[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32mtrue[39m
+    Received: [31mfalse[39m
+
+[2m    [0m [90m 27 |[39m[22m
+[2m     [90m 28 |[39m   it([32m'envia normalmente quando o destinatário não é pendente'[39m[33m,[39m [36masync[39m () [33m=>[39m {[22m
+[2m    [31m[1m>[22m[2m[39m[90m 29 |[39m     [36mawait[39m expect(build([36mfalse[39m)[33m.[39mservice[33m.[39msendEmail(mail))[33m.[39mresolves[33m.[39mtoBe([36mtrue[39m)[33m;[39m[22m
+[2m     [90m    |[39m                                                                 [31m[1m^[22m[2m[39m[22m
+[2m     [90m 30 |[39m     expect(mockSendMail)[33m.[39mtoHaveBeenCalledTimes([35m1[39m)[33m;[39m[22m
+[2m     [90m 31 |[39m   })[33m;[39m[22m
+[2m     [90m 32 |[39m[0m[22m
+
+[2m      [2mat Object.toBe ([22m[2m../../node_modules/.pnpm/expect@30.5.2/node_modules/expect/build/index.js[2m:2140:20)[22m[2m[22m
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/mail/mail.service.pending.spec.ts[39m[0m[2m:29:65)[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mDMTE-550 D17: o sistema não escreve para quem tem convite pendente › r2: consulta pela chave única do e-mail em minúsculas, sem busca insensível (sem varredura da tabela)[39m[22m
+
+    [2mexpect([22m[31mjest.fn()[39m[2m).[22mtoHaveBeenCalledWith[2m([22m[32m...expected[39m[2m)[22m
+
+    Expected: [32mObjectContaining {"where": {"email": "pendente@aponta.test"}}[39m
+
+    Number of calls: [31m0[39m
+
+[2m    [0m [90m 36 |[39m     [36mawait[39m service[33m.[39msendEmail(mail)[33m;[39m[22m
+[2m     [90m 37 |[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 38 |[39m     expect(prisma[33m.[39muser[33m.[39mfindUnique)[33m.[39mtoHaveBeenCalledWith(expect[33m.[39mobjectContaining({ where[33m:[39m { email[33m:[39m [32m'pendente@aponta.test'[39m } }))[33m;[39m[22m
+[2m     [90m    |[39m                                    [31m[1m^[22m[2m[39m[22m
+[2m     [90m 39 |[39m     expect(prisma[33m.[39muser[33m.[39mfindFirst)[33m.[39mnot[33m.[39mtoHaveBeenCalled()[33m;[39m[22m
+[2m     [90m 40 |[39m   })[33m;[39m[22m
+[2m     [90m 41 |[39m })[33m;[39m[0m[22m
+
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/mail/mail.service.pending.spec.ts[39m[0m[2m:38:36)[22m[2m[22m
+
+[0m[7m[1m[31m FAIL [39m[22m[27m[0m [0m[7m[37m api [39m[27m[0m [2msrc/users/[22m[1musers.find-by-email.spec.ts[22m
+[1m[31m  [1m● [22m[1mDMTE-550 r2: UsersService.findByEmail usa a chave única primeiro › r2: acha pelo e-mail em minúsculas por chave única, sem busca insensível[39m[22m
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mresolves[2m.[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    Expected: [32m{"email": "ana@aponta.test", "id": "u1"}[39m
+    Received: [31mundefined[39m
+
+[2m    [0m [90m 17 |[39m     prisma[33m.[39muser[33m.[39mfindUnique[33m.[39mmockResolvedValue({ id[33m:[39m [32m'u1'[39m[33m,[39m email[33m:[39m [32m'ana@aponta.test'[39m })[33m;[39m[22m
+[2m     [90m 18 |[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 19 |[39m     [36mawait[39m expect(service[33m.[39mfindByEmail([32m' Ana@Aponta.Test '[39m))[33m.[39mresolves[33m.[39mtoEqual({ id[33m:[39m [32m'u1'[39m[33m,[39m email[33m:[39m [32m'ana@aponta.test'[39m })[33m;[39m[22m
+[2m     [90m    |[39m                                                                     [31m[1m^[22m[2m[39m[22m
+[2m     [90m 20 |[39m     expect(prisma[33m.[39muser[33m.[39mfindUnique)[33m.[39mtoHaveBeenCalledWith({ where[33m:[39m { email[33m:[39m [32m'ana@aponta.test'[39m } })[33m;[39m[22m
+[2m     [90m 21 |[39m     expect(prisma[33m.[39muser[33m.[39mfindFirst)[33m.[39mnot[33m.[39mtoHaveBeenCalled()[33m;[39m[22m
+[2m     [90m 22 |[39m   })[33m;[39m[0m[22m
+
+[2m      [2mat Object.toEqual ([22m[2m../../node_modules/.pnpm/expect@30.5.2/node_modules/expect/build/index.js[2m:2140:20)[22m[2m[22m
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/users/users.find-by-email.spec.ts[39m[0m[2m:19:69)[22m[2m[22m
+
+[0m[7m[1m[31m FAIL [39m[22m[27m[0m [0m[7m[37m api [39m[27m[0m [2msrc/users/[22m[1memail-case.http.spec.ts[22m
+[1m[31m  [1m● [22m[1mDMTE-550 r2: e-mail em minúsculas em toda escrita (SPEC D5) › r2: POST /auth/register guarda o e-mail aparado e em minúsculas[39m[22m
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoContain[2m([22m[32mexpected[39m[2m) // indexOf[22m
+
+    Expected value: [32m400[39m
+    Received array: [31m[200, 201][39m
+
+[2m    [0m [90m 19 |[39m     [36mconst[39m res [33m=[39m [36mawait[39m register([32m'  Nova.Pessoa@Aponta.Test '[39m[33m,[39m [32m'203.0.113.10'[39m)[33m;[39m[22m
+[2m     [90m 20 |[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 21 |[39m     expect([[35m200[39m[33m,[39m [35m201[39m])[33m.[39mtoContain(res[33m.[39mstatus)[33m;[39m[22m
+[2m     [90m    |[39m                        [31m[1m^[22m[2m[39m[22m
+[2m     [90m 22 |[39m     expect(emails())[33m.[39mtoContain([32m'nova.pessoa@aponta.test'[39m)[33m;[39m[22m
+[2m     [90m 23 |[39m     expect(emails())[33m.[39mnot[33m.[39mtoContain([32m'Nova.Pessoa@Aponta.Test'[39m)[33m;[39m[22m
+[2m     [90m 24 |[39m   })[33m;[39m[0m[22m
+
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/users/email-case.http.spec.ts[39m[0m[2m:21:24)[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mDMTE-550 r2: e-mail em minúsculas em toda escrita (SPEC D5) › r2: duas contas simultâneas com caixas diferentes viram uma conta e um 409[39m[22m
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 1[39m
+    [31m+ Received  + 1[39m
+
+    [2m  Array [[22m
+    [2m    201,[22m
+    [32m-   409,[39m
+    [31m+   201,[39m
+    [2m  ][22m
+
+[2m    [0m [90m 27 |[39m     [36mconst[39m [a[33m,[39m b] [33m=[39m [36mawait[39m [33mPromise[39m[33m.[39mall([register([32m'Dupla@Aponta.Test'[39m[33m,[39m [32m'203.0.113.11'[39m)[33m,[39m register([32m'dupla@aponta.test'[39m[33m,[39m [32m'203.0.113.12'[39m)])[33m;[39m[22m
+[2m     [90m 28 |[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 29 |[39m     expect([a[33m.[39mstatus[33m,[39m b[33m.[39mstatus][33m.[39msort())[33m.[39mtoEqual([[35m201[39m[33m,[39m [35m409[39m])[33m;[39m[22m
+[2m     [90m    |[39m                                         [31m[1m^[22m[2m[39m[22m
+[2m     [90m 30 |[39m     expect(emails()[33m.[39mfilter((e) [33m=>[39m e[33m.[39mtoLowerCase() [33m===[39m [32m'dupla@aponta.test'[39m))[33m.[39mtoHaveLength([35m1[39m)[33m;[39m[22m
+[2m     [90m 31 |[39m   })[33m;[39m[22m
+[2m     [90m 32 |[39m[0m[22m
+
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/users/email-case.http.spec.ts[39m[0m[2m:29:41)[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mDMTE-550 r2: e-mail em minúsculas em toda escrita (SPEC D5) › r2: PATCH /auth/me guarda o novo e-mail em minúsculas[39m[22m
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32m"[7ma[27mna.[7mn[27mova@[7ma[27mponta.[7mt[27mest"[39m
+    Received: [31m"[7mA[27mna.[7mN[27mova@[7mA[27mponta.[7mT[27mest"[39m
+
+[2m    [0m [90m 35 |[39m[22m
+[2m     [90m 36 |[39m     expect(res[33m.[39mstatus)[33m.[39mtoBe([35m200[39m)[33m;[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 37 |[39m     expect(h[33m.[39mrow([33mID[39m[33m.[39mana)[33m.[39memail)[33m.[39mtoBe([32m'ana.nova@aponta.test'[39m)[33m;[39m[22m
+[2m     [90m    |[39m                                 [31m[1m^[22m[2m[39m[22m
+[2m     [90m 38 |[39m   })[33m;[39m[22m
+[2m     [90m 39 |[39m })[33m;[39m[22m
+[2m     [90m 40 |[39m[0m[22m
+
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/users/email-case.http.spec.ts[39m[0m[2m:37:33)[22m[2m[22m
+
+[1mTest Suites: [22m[1m[31m3 failed[39m[22m, 3 total
+[1mTests:       [22m[1m[31m6 failed[39m[22m, [1m[32m3 passed[39m[22m, 9 total
+[1mSnapshots:   [22m0 total
+[1mTime:[22m        3.209 s
+[2mRan all test suites[22m[2m within paths[22m "src/users/email-case.http.spec.ts", "src/users/users.find-by-email.spec.ts", "src/mail/mail.service.pending.spec.ts"[2m.[22m
+Warning: command "jest --passWithNoTests=true --runTestsByPath src/users/email-case.http.spec.ts src/users/users.find-by-email.spec.ts src/mail/mail.service.pending.spec.ts" exited with non-zero status code

@@ -15,7 +15,8 @@ export class AuthService {
     password: string,
   ): Promise<SafeUser | null> {
     const user = await this.usersService.findByEmail(email);
-    if (!user) {
+    // Convite pendente (senha nula) nunca é lido como hash: mesma resposta de credencial inválida.
+    if (!user || !user.password) {
       return null;
     }
 

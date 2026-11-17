@@ -14,11 +14,14 @@ describe('UsersService', () => {
   let prisma: {
     user: {
       findUnique: jest.Mock;
+      findFirst: jest.Mock;
       create: jest.Mock;
       update: jest.Mock;
+      updateMany: jest.Mock;
       findMany: jest.Mock;
       count: jest.Mock;
     };
+    $transaction: jest.Mock;
     permissionGroup: {
       findFirst: jest.Mock;
       create: jest.Mock;
@@ -35,8 +38,10 @@ describe('UsersService', () => {
     prisma = {
       user: {
         findUnique: jest.fn(),
+        findFirst: jest.fn(),
         create: jest.fn(),
         update: jest.fn(),
+        updateMany: jest.fn(),
         findMany: jest.fn(),
         count: jest.fn(),
       },
@@ -50,6 +55,7 @@ describe('UsersService', () => {
       serviceDesk: {
         findMany: jest.fn(),
       },
+      $transaction: jest.fn((fn: (tx: unknown) => unknown) => fn(prisma)),
     };
 
     const moduleRef = await Test.createTestingModule({
@@ -70,7 +76,7 @@ describe('UsersService', () => {
     };
 
     it('throws ConflictException when the pre-check finds an existing user', async () => {
-      prisma.user.findUnique.mockResolvedValue({ id: 'existing-user' });
+      prisma.user.findFirst.mockResolvedValue({ id: 'existing-user' });
 
       await expect(service.create(dto)).rejects.toBeInstanceOf(
         ConflictException,
@@ -80,7 +86,7 @@ describe('UsersService', () => {
 
     it('translates a race-condition unique-constraint violation into a clean 409', async () => {
       // Pre-check passes (no existing user found)...
-      prisma.user.findUnique.mockResolvedValue(null);
+      prisma.user.findFirst.mockResolvedValue(null);
       // ...but a concurrent request wins the race and the DB unique
       // constraint fires on the actual insert.
       const prismaError = new Prisma.PrismaClientKnownRequestError(
@@ -95,7 +101,7 @@ describe('UsersService', () => {
     });
 
     it('re-throws unrelated database errors unchanged', async () => {
-      prisma.user.findUnique.mockResolvedValue(null);
+      prisma.user.findFirst.mockResolvedValue(null);
       const unrelatedError = new Error('connection lost');
       prisma.user.create.mockRejectedValue(unrelatedError);
 
@@ -103,7 +109,7 @@ describe('UsersService', () => {
     });
 
     it('creates the user and strips the password when everything succeeds', async () => {
-      prisma.user.findUnique.mockResolvedValue(null);
+      prisma.user.findFirst.mockResolvedValue(null);
       prisma.user.create.mockResolvedValue({
         id: 'user-1',
         name: dto.name,
@@ -126,7 +132,7 @@ describe('UsersService', () => {
     // nenhum PermissionGroup para o usuário novo e ele nasce sem nenhuma
     // permissão (ADMIN tem bypass no guard, os demais papéis não).
     it('links the newly created user to the existing default PermissionGroup for their role', async () => {
-      prisma.user.findUnique.mockResolvedValue(null);
+      prisma.user.findFirst.mockResolvedValue(null);
       prisma.user.create.mockResolvedValue({
         id: 'user-1',
         name: dto.name,
@@ -153,7 +159,7 @@ describe('UsersService', () => {
     });
 
     it("creates the role's default PermissionGroup when it does not exist yet, then links the user to it", async () => {
-      prisma.user.findUnique.mockResolvedValue(null);
+      prisma.user.findFirst.mockResolvedValue(null);
       prisma.user.create.mockResolvedValue({
         id: 'user-1',
         name: dto.name,
@@ -308,7 +314,7 @@ describe('UsersService', () => {
       const result = await service.findAgents({ id: 'admin-1', role: Role.ADMIN });
 
       expect(prisma.user.findMany).toHaveBeenCalledWith({
-        where: { role: { in: ['AGENT', 'AGENT_MASTER', 'ADMIN'] } },
+        where: { role: { in: ['AGENT', 'AGENT_MASTER', 'ADMIN'] }, active: true, password: { not: null } },
         orderBy: { name: 'asc' },
       });
       expect(prisma.serviceDesk.findMany).not.toHaveBeenCalled();
@@ -347,6 +353,8 @@ describe('UsersService', () => {
       expect(prisma.user.findMany).toHaveBeenCalledWith({
         where: {
           role: { in: ['AGENT', 'AGENT_MASTER', 'ADMIN'] },
+          active: true,
+          password: { not: null },
           id: { in: ['agent-1', 'agent-2'] },
         },
         orderBy: { name: 'asc' },
@@ -367,37 +375,37 @@ describe('UsersService', () => {
     };
 
     it('deactivates a user and returns the safe user', async () => {
-      prisma.user.update.mockResolvedValue({ ...existingUser, active: false });
+      prisma.user.findMany
+        .mockResolvedValueOnce([existingUser])
+        .mockResolvedValueOnce([{ ...existingUser, active: false }]);
 
-      const result = await service.setActive('user-1', false);
+      const result = await service.setActive('user-1', false, 'actor-1');
 
-      expect(prisma.user.update).toHaveBeenCalledWith({
-        where: { id: 'user-1' },
+      expect(prisma.user.updateMany).toHaveBeenCalledWith({
+        where: { id: { in: ['user-1'] } },
         data: { active: false },
-        include: { organization: true },
       });
       expect(result).not.toHaveProperty('password');
       expect(result.active).toBe(false);
     });
 
     it('reactivates a user', async () => {
-      prisma.user.update.mockResolvedValue({ ...existingUser, active: true });
+      prisma.user.findMany
+        .mockResolvedValueOnce([{ ...existingUser, active: false }])
+        .mockResolvedValueOnce([existingUser]);
 
-      const result = await service.setActive('user-1', true);
+      const result = await service.setActive('user-1', true, 'actor-1');
 
       expect(result.active).toBe(true);
     });
 
     it('throws NotFoundException when the user does not exist', async () => {
-      const prismaError = new Prisma.PrismaClientKnownRequestError(
-        'An operation failed because it depends on one or more records that were required but not found.',
-        { code: 'P2025', clientVersion: '7.8.0' },
-      );
-      prisma.user.update.mockRejectedValue(prismaError);
+      prisma.user.findMany.mockResolvedValueOnce([]);
 
-      await expect(service.setActive('missing-user', false)).rejects.toBeInstanceOf(
+      await expect(service.setActive('missing-user', false, 'actor-1')).rejects.toBeInstanceOf(
         NotFoundException,
       );
+      expect(prisma.user.updateMany).not.toHaveBeenCalled();
     });
   });
 

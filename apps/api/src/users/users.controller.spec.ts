@@ -3,6 +3,7 @@ import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { Role } from '@prisma/client';
 import { PermissionsService } from '../permissions/permissions.service';
+import { PasswordFlowService } from './password-flow.service';
 
 describe('UsersController', () => {
   let controller: UsersController;
@@ -25,6 +26,7 @@ describe('UsersController', () => {
       providers: [
         { provide: UsersService, useValue: service },
         { provide: PermissionsService, useValue: { hasPermission: jest.fn() } },
+        { provide: PasswordFlowService, useValue: {} },
       ],
     }).compile();
 
@@ -90,9 +92,9 @@ describe('UsersController', () => {
       const mockUser = { id: 'user-1', active: false };
       service.setActive.mockResolvedValueOnce(mockUser);
 
-      const result = await controller.setActive('user-1', { active: false });
+      const result = await controller.setActive({ user: { id: 'actor-1' } } as never, 'user-1', { active: false });
 
-      expect(service.setActive).toHaveBeenCalledWith('user-1', false);
+      expect(service.setActive).toHaveBeenCalledWith('user-1', false, 'actor-1');
       expect(result).toEqual(mockUser);
     });
   });

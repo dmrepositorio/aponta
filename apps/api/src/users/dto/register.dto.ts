@@ -1,4 +1,5 @@
 import { IsEmail, IsString, MinLength } from 'class-validator';
+import { TrimLower } from './transforms';
 
 /**
  * DTO for the public, unauthenticated registration endpoint.
@@ -13,6 +14,7 @@ export class RegisterDto {
   @IsString()
   name!: string;
 
+  @TrimLower()
   @IsEmail()
   email!: string;
 

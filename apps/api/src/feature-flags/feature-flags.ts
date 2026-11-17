@@ -38,6 +38,13 @@ export const FEATURE_FLAGS: readonly FeatureFlag[] = [
     removeBy: '2026-12-13',
   },
   {
+    key: 'convite-e-redefinicao-usuario',
+    description: 'Convite e redefinição de senha de usuário por e-mail (enviar convite, redefinir, esqueci minha senha e definir senha)',
+    owner: 'alfredo',
+    defaultValue: false,
+    removeBy: '2027-01-15',
+  },
+  {
     key: 'consulta-cnpj-alternativa',
     description: 'Consulta de CNPJ em ReceitaWS e minhareceita.org quando a BrasilAPI não acha o CNPJ ou falha',
     owner: 'alfredo',

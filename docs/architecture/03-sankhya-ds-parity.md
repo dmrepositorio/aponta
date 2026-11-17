@@ -248,6 +248,18 @@ Nenhum token, prop ou componente novo no DS; o resto reaproveita o que existe. M
 - **Foco:** `FOCUS_RING` é o `ez-focus` (token do DMTE-532) na tag clicável, no "×" do filtro e no alternador. A tag clicável tem `aria-pressed` e `Check` quando ativa.
 - **Cor:** "Interno" em `petroleum` com cadeado; amarelo fica para alerta. Exclusão de artigo e de pasta por `EzDialog` (`danger`), não `window.confirm`.
 
+## Usuários: dsgrid, Convite pendente e "Esqueci minha senha" (DMTE-550)
+
+Nenhum componente nem token novo no DS. Uma prop opcional no `EzModal`, uma variante no `ActiveTag` e a tela Usuários no padrão de Mesa e Clientes. Evidência visual (390, 1024 e 1440 px, dados sintéticos) é técnica; o aceite visual é do Alfredo.
+
+- **Usuários no dsgrid** (`pages/UsersPage.tsx`, `components/users/UserForm.tsx`): `EzEntityToolbar` (Novo usuário só com `CREATE_USERS`, Recarregar, configurar colunas, Grade/Formulário; sem Excluir nem Duplicar), `EzFilterDrawer` "Filtros de Usuários" (busca, Tipo em múltipla escolha, Status, grupo de atendentes, grupo de permissões, filtros dinâmicos e salvos), `EzEntityGrid` com `compactBelowSm` e `meta.hideBelowSm` (abaixo de 640 px só Nome e Status), colunas e densidade por usuário em `useUserScreenConfig('users', …)` e o modelo de salvamento da Mesa (`MesaSaveProvider`, linha "Alterações não salvas" e confirmação "Descartar alterações?"). Tipo, Status e grupos vão ao servidor em `GET /users`; só os filtros dinâmicos valem para a página carregada. Filtros e paginação não vão para a URL, como em Mesa e Clientes.
+- **Ativar e Inativar em lote:** botões `EzButton` numa faixa abaixo da toolbar (escondida abaixo de 640 px, onde a seleção da grade também some), com `EzDialog` de confirmação; a toolbar não ganhou prop. A grade é refeita (`key`) quando página, filtros, colunas ou um lote aplicado mudam, para a seleção, que o `EzEntityGrid` guarda por posição de linha, não apontar para outro usuário.
+- **`ActiveTag`:** nova variante `pending` ("Convite pendente"): `EzTag` `yellow` com ícone de relógio, par `yellow-800/yellow-100` (4,6:1) no mesmo teste de contraste. O estado vem de `active` e `pending` (senha ainda não definida); Inativo vence Convite pendente.
+- **`EzModal`, `trapFocus`:** prop opcional, desligada por padrão (sem ela o markup é o de antes). Com ela, o foco entra no diálogo ao abrir (no `autoFocus` do conteúdo, senão no próprio diálogo, `tabIndex={-1}`), Tab e Shift+Tab ficam dentro, e o foco volta ao gatilho ao fechar (`useEscapeLayer`). Usada no modal "Esqueci minha senha" da tela de login, que passa a conter conteúdo no `EzModal` (o `EzDialog` só aceita texto). Story `DS/EzModal` ganha `FocoPreso`; testes em `EzModal.test.tsx`.
+- **Selects:** `EzComboBox` com `<label htmlFor>` próprio, como no painel de filtros da Mesa (o `label` do `EzSelect` duplica o nome acessível com o controle visível).
+- **Página `/definir-senha`:** pública, fora do `AppLayout`; só `EzCardItem`, `EzTextInput`, `EzButton` e `EzAlert`. O token vem do fragmento e é apagado da barra de endereço.
+- **Story ou exceção:** `EzModal` (em `components/ds`) ganhou a story `FocoPreso`. `ActiveTag` fica fora de `components/ds` e nunca teve story; a variante `pending` é coberta por `ActiveTag.test.tsx`, sem exceção nova.
+
 ## Foco com contraste em todo o DS e exclusão de Contratos no diálogo (DMTE-540)
 
 Um componente do DS muda de API; nenhum token novo (o foco é o do DMTE-532).

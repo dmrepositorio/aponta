@@ -1,4 +1,4 @@
-import { HTMLAttributes, forwardRef, ReactNode, useEffect, useState } from 'react';
+import { HTMLAttributes, KeyboardEvent, forwardRef, ReactNode, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { cn } from './utils';
 import { X } from 'lucide-react';
@@ -15,15 +15,50 @@ export interface EzModalProps extends Omit<HTMLAttributes<HTMLDivElement>, 'titl
   /** Alterações não salvas: Esc pede confirmação antes de fechar */
   dirty?: boolean;
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl' | 'full';
+  /**
+   * Foco preso: Tab e Shift+Tab ficam dentro do modal, e o foco entra nele ao abrir (no que já tiver
+   * `autoFocus`, senão no próprio diálogo). Ao fechar o foco volta ao gatilho (`useEscapeLayer`). Opt-in.
+   * @default false
+   */
+  trapFocus?: boolean;
 }
+
+const FOCUSABLE =
+  'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
 
 /**
  * Aponta DS Modal (Dialog)
  */
 export const EzModal = forwardRef<HTMLDivElement, EzModalProps>(
-  ({ isOpen, onClose, title, footer, preventOutsideClose = false, dirty = false, maxWidth = 'md', className, children, ...props }, ref) => {
+  ({ isOpen, onClose, title, footer, preventOutsideClose = false, dirty = false, maxWidth = 'md', trapFocus = false, className, children, onKeyDown, ...props }, ref) => {
     const [mounted, setMounted] = useState(false);
     const [confirmingDiscard, setConfirmingDiscard] = useState(false);
+    const dialog = useRef<HTMLDivElement | null>(null);
+    const setDialog = (node: HTMLDivElement | null) => {
+      dialog.current = node;
+      if (typeof ref === 'function') ref(node);
+      else if (ref) ref.current = node;
+    };
+
+    useEffect(() => {
+      const node = dialog.current;
+      if (trapFocus && isOpen && node && !node.contains(document.activeElement)) node.focus();
+    }, [trapFocus, isOpen, mounted]);
+
+    const keepFocusInside = (event: KeyboardEvent<HTMLDivElement>) => {
+      onKeyDown?.(event);
+      if (!trapFocus || event.key !== 'Tab') return;
+      const nodes = Array.from(event.currentTarget.querySelectorAll<HTMLElement>(FOCUSABLE));
+      const [first, last] = [nodes[0], nodes[nodes.length - 1]];
+      const active = document.activeElement;
+      if (nodes.length === 0 || (event.shiftKey && (active === first || active === event.currentTarget))) {
+        event.preventDefault();
+        (event.shiftKey ? last : event.currentTarget).focus();
+      } else if (!event.shiftKey && active === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
 
     useEffect(() => {
       setMounted(true);
@@ -71,12 +106,15 @@ export const EzModal = forwardRef<HTMLDivElement, EzModalProps>(
 
         {/* Dialog */}
         <div
-          ref={ref}
+          ref={setDialog}
           role="dialog"
           aria-modal="true"
+          tabIndex={trapFocus ? -1 : undefined}
+          onKeyDown={keepFocusInside}
           className={cn(
             'relative flex flex-col w-full h-full sm:h-auto bg-white sm:rounded-[24px] shadow-2xl animate-in zoom-in-95 duration-200',
             maxWidthClass,
+            trapFocus && 'focus:outline-none',
             className
           )}
           {...props}

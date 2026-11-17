@@ -1,0 +1,281 @@
+{
+  "version": 1,
+  "delivery": "DMTE-550",
+  "repository": "dmrepositorio/aponta",
+  "github_issue": 311,
+  "multica_id": "01a1e7d1-ca02-70e4-bfc5-47ceb1fd8358",
+  "cycle": "2026-11-09/2026-11-22",
+  "tier": 3,
+  "criteria": [
+    {
+      "id": "AC-01",
+      "description": "a tela Usuários usa `EzEntityToolbar` com Novo usuário (só com `CREATE_USERS`, a partir de T2), Recarregar e configurar colunas, modo Grade/Formulário e painel de filtros; não tem Excluir nem Duplicar.",
+      "tests": [
+        "apps/web/src/pages/UsersPage.test.tsx: testes com o prefixo AC-01:"
+      ]
+    },
+    {
+      "id": "AC-02",
+      "description": "`GET /users` aceita `roles` (lista) e `status` (`ACTIVE`, `INACTIVE`, e `PENDING` a partir de T5) e filtra no servidor, combinando com `q`, `technicalGroupId`, `permissionGroupId`, `page` e `pageSize`; valor fora do enum responde 400 sem eco da entrada.",
+      "tests": [
+        "apps/api/src/users/users.admin.http.spec.ts: testes com o prefixo AC-02:",
+        "apps/api/src/users/hostile-input.http.spec.ts: testes com o prefixo AC-02:"
+      ]
+    },
+    {
+      "id": "AC-03",
+      "description": "o painel de filtros tem Tipo (múltipla escolha) e Status, filtros dinâmicos e salvos e colunas configuráveis por usuário (`useUserScreenConfig`); mudar filtro ou busca volta à página 1; a paginação de 20 por página e o total continuam.",
+      "tests": [
+        "apps/web/src/pages/UsersPage.test.tsx: testes com o prefixo AC-03:"
+      ]
+    },
+    {
+      "id": "AC-04",
+      "description": "abaixo de 640 px a grade mostra Nome e Status e a toolbar rola em uma linha (classes de breakpoint declaradas).",
+      "tests": [
+        "apps/web/src/pages/UsersPage.test.tsx: testes com o prefixo AC-04:"
+      ]
+    },
+    {
+      "id": "AC-05",
+      "description": "o catálogo de permissões tem `CREATE_USERS`, `CHANGE_USER_ROLE`, `ACTIVATE_DEACTIVATE_USERS` e `SEND_USER_INVITES_AND_RESETS` na categoria gestão; a migration as acrescenta a todo grupo que tem `MANAGE_USERS` (rodar duas vezes não duplica) e os grupos padrão as incluem onde `MANAGE_USERS` já está.",
+      "tests": [
+        "apps/api/src/permission-groups/permission-catalog.users.spec.ts: testes com o prefixo AC-05:"
+      ]
+    },
+    {
+      "id": "AC-06",
+      "description": "`POST /users` exige `CREATE_USERS` (403 sem ela, mesmo com a tela manipulada), valida o DTO, cria o usuário sem senha, vincula o grupo de permissões padrão do tipo mais os escolhidos, e responde 409 com mensagem fixa para e-mail já cadastrado (sem diferença de caixa).",
+      "tests": [
+        "apps/api/src/users/users.admin.http.spec.ts: testes com o prefixo AC-06:",
+        "apps/api/src/users/email-case.http.spec.ts: testes com o prefixo r2:"
+      ]
+    },
+    {
+      "id": "AC-07",
+      "description": "o formulário de Novo usuário valida inline (nome, e-mail, tipo obrigatórios), mostra o erro do servidor e, ao criar, abre o cadastro do novo usuário, em \"Convite pendente\".",
+      "tests": [
+        "apps/web/src/pages/UsersPage.test.tsx: testes com o prefixo AC-07:"
+      ]
+    },
+    {
+      "id": "AC-08",
+      "description": "o login recusa usuário sem senha com a mesma resposta 401 de credencial inválida; a coluna `password` aceita nulo e nenhum código lê a senha nula como hash.",
+      "tests": [
+        "apps/api/src/auth/login.http.spec.ts: testes com o prefixo AC-08:",
+        "apps/api/src/users/users.service.rules.spec.ts: testes com o prefixo AC-08:"
+      ]
+    },
+    {
+      "id": "AC-09",
+      "description": "`PATCH /users/:id` aceita nome, e-mail, telefone, ramal, cliente, grupo de atendentes, grupos de permissões e tipo; exige `MANAGE_USERS` e, para alterar o tipo, também `CHANGE_USER_ROLE` (403 sem ela); e-mail único sem diferença de caixa; cliente e grupos inexistentes respondem 400/404.",
+      "tests": [
+        "apps/api/src/users/users.admin.http.spec.ts: testes com o prefixo AC-09:",
+        "apps/api/src/users/users.find-by-email.spec.ts: testes com o prefixo r2:"
+      ]
+    },
+    {
+      "id": "AC-10",
+      "description": "a aba Geral edita todos os campos com um só botão de salvar, erro inline por campo, confirmação ao sair com alteração pendente e aviso de que trocar o tipo não troca os grupos de permissões; campo sem permissão para editar fica somente leitura.",
+      "tests": [
+        "apps/web/src/pages/UsersPage.test.tsx: testes com o prefixo AC-10:"
+      ]
+    },
+    {
+      "id": "AC-11",
+      "description": "`PATCH /users/:id/active` exige `ACTIVATE_DEACTIVATE_USERS`; inativar a si mesmo ou o último ADMIN ativo responde 409; `PATCH /users/active` aplica ativar/inativar em lote (até 100) com as mesmas regras sobre o conjunto, tudo ou nada.",
+      "tests": [
+        "apps/api/src/users/users.admin.http.spec.ts: testes com o prefixo AC-11:"
+      ]
+    },
+    {
+      "id": "AC-12",
+      "description": "`JwtStrategy.validate` recusa usuário com `active = false` com 401 na requisição seguinte, mesmo com token ainda válido.",
+      "tests": [
+        "apps/api/src/auth/jwt.strategy.spec.ts: testes com o prefixo AC-12:"
+      ]
+    },
+    {
+      "id": "AC-13",
+      "description": "`GET /users/agents` não lista inativos nem usuários com convite pendente; um ticket que já tem um inativo como atendente continua mostrando o nome.",
+      "tests": [
+        "apps/api/src/users/users.admin.http.spec.ts: testes com o prefixo AC-13:",
+        "apps/api/src/users/users.service.rules.spec.ts: testes com o prefixo AC-13:"
+      ]
+    },
+    {
+      "id": "AC-14",
+      "description": "\"Ativar\" e \"Inativar\" em lote e a troca de situação na aba Segurança pedem confirmação em modal, mostram o motivo quando o servidor recusa e substituem o checkbox atual.",
+      "tests": [
+        "apps/web/src/pages/UsersPage.test.tsx: testes com o prefixo AC-14:"
+      ]
+    },
+    {
+      "id": "AC-15",
+      "description": "o serviço de token emite e consome tokens de convite (72 h) e de redefinição (24 h; 1 h no \"esqueci\"): só o hash fica no banco; expirado, usado ou substituído é recusado; o uso é atômico (duas tentativas simultâneas, uma passa); emitir um novo invalida os anteriores do mesmo usuário e propósito.",
+      "tests": [
+        "apps/api/src/users/password-tokens.service.spec.ts: testes com o prefixo AC-15:"
+      ]
+    },
+    {
+      "id": "AC-16",
+      "description": "`MailService.sendEmail` informa se o envio foi aceito; convite ou redefinição com envio falho responde erro e não deixa token válido.",
+      "tests": [
+        "apps/api/src/mail/mail.service.result.spec.ts: testes com o prefixo AC-16:",
+        "apps/api/src/users/password-flow.http.spec.ts: testes com o prefixo AC-16:"
+      ]
+    },
+    {
+      "id": "AC-17",
+      "description": "`POST /users/:id/invite` (`SEND_USER_INVITES_AND_RESETS`, flag ligada, só usuário com convite pendente) envia o convite com o link `/definir-senha#t=<token>` montado de `PUBLIC_APP_URL`; reenviar invalida o link anterior; com a flag desligada responde 404 e não cria token.",
+      "tests": [
+        "apps/api/src/users/password-flow.http.spec.ts: testes com o prefixo AC-17:",
+        "apps/api/src/users/code-review-fixes.http.spec.ts: testes com o prefixo AC-17:"
+      ]
+    },
+    {
+      "id": "AC-18",
+      "description": "`POST /auth/password/set` (público, com limite de tentativas) recebe só `token` e `senha`, define a senha do usuário dono do token e marca o token como usado; token inexistente, expirado, usado ou substituído dá a mesma resposta genérica; o corpo não aceita e-mail nem id de usuário; a resposta sai com `Cache-Control: no-store`; o token nunca aparece em log.",
+      "tests": [
+        "apps/api/src/users/password-flow.http.spec.ts: testes com o prefixo AC-18:",
+        "apps/api/src/users/code-review-fixes.http.spec.ts: testes com o prefixo AC-18:"
+      ]
+    },
+    {
+      "id": "AC-19",
+      "description": "a página `/definir-senha` lê o token do fragmento, o apaga da barra de endereço, mostra o formulário (nova senha e confirmação, `autocomplete=\"new-password\"`, erro inline, `aria-live`), os estados de link inválido/expirado/usado e de sucesso (volta ao login), e nunca ecoa o que foi digitado como HTML.",
+      "tests": [
+        "apps/web/src/pages/SetPasswordPage.test.tsx: testes com o prefixo AC-19:"
+      ]
+    },
+    {
+      "id": "AC-20",
+      "description": "o status \"Convite pendente\" aparece na grade (`ActiveTag` com texto e ícone), no filtro de Status (`PENDING`) e no formulário; ao definir a senha o usuário vira Ativo; quem está com convite pendente não recebe e-mail de notificação do sistema.",
+      "tests": [
+        "apps/api/src/users/users.admin.http.spec.ts: testes com o prefixo AC-20:",
+        "apps/api/src/users/password-flow.http.spec.ts: testes com o prefixo AC-20:",
+        "apps/api/src/users/users.service.rules.spec.ts: testes com o prefixo AC-20:",
+        "apps/api/src/mail/mail.service.pending.spec.ts: testes com o prefixo AC-20:",
+        "apps/web/src/pages/UsersPage.test.tsx: testes com o prefixo AC-20:",
+        "apps/web/src/components/ActiveTag.test.tsx: testes com o prefixo AC-20:",
+        "apps/api/src/mail/mail.service.pending.spec.ts: teste r2 (consulta pela chave única)",
+        "apps/api/src/mail/mail.service.recipient.spec.ts: teste r2 (destinatário ausente)"
+      ]
+    },
+    {
+      "id": "AC-21",
+      "description": "a flag `convite-e-redefinicao-usuario` está registrada (dono `alfredo`, padrão desligada, remoção 2027-01-15); com ela desligada os botões de convite e redefinição ficam desabilitados com a explicação e o link \"Esqueci minha senha\" não aparece.",
+      "tests": [
+        "apps/api/src/feature-flags/feature-flags.convite.spec.ts: testes com o prefixo AC-21:",
+        "apps/web/src/pages/UsersPage.test.tsx: testes com o prefixo AC-21:",
+        "apps/web/src/pages/LoginPage.test.tsx: testes com o prefixo AC-21:"
+      ]
+    },
+    {
+      "id": "AC-22",
+      "description": "`POST /users/:id/password-reset` (`SEND_USER_INVITES_AND_RESETS`, flag ligada, só usuário ativo e com senha) envia o link de 24 h; a senha atual continua valendo até o uso; usar o link invalida os outros tokens de redefinição do usuário.",
+      "tests": [
+        "apps/api/src/users/password-flow.http.spec.ts: testes com o prefixo AC-22:",
+        "apps/api/src/users/password-tokens.service.spec.ts: testes com o prefixo AC-22:"
+      ]
+    },
+    {
+      "id": "AC-23",
+      "description": "`POST /auth/forgot-password` (público) responde sempre o mesmo corpo, qualquer e-mail; só conta ativa com senha recebe o e-mail (link de 1 h); o envio não bloqueia a resposta; o limite é de 5 por minuto por origem e por e-mail; com a flag desligada responde 404.",
+      "tests": [
+        "apps/api/src/users/password-flow.http.spec.ts: testes com o prefixo AC-23:",
+        "apps/api/src/users/code-review-fixes.http.spec.ts: testes com o prefixo AC-23:"
+      ]
+    },
+    {
+      "id": "AC-24",
+      "description": "o modal \"Esqueci minha senha\" (`EzDialog`) na tela de login pede só o e-mail, valida antes de enviar, mostra a mensagem fixa de resposta, tem Escape, foco preso e foco devolvido, e só existe com a flag ligada.",
+      "tests": [
+        "apps/web/src/pages/LoginPage.test.tsx: testes com o prefixo AC-24:"
+      ]
+    },
+    {
+      "id": "AC-25",
+      "description": "`POST /auth/login` valida o corpo por DTO antes de consultar o banco (e-mail string de até 254 e em minúsculas, senha string de 1 a 128); objeto, lista, número ou texto enorme respondem 400 sem tocar no banco; credencial errada continua 401 com a mensagem atual.",
+      "tests": [
+        "apps/api/src/auth/login.http.spec.ts: testes com o prefixo AC-25:",
+        "apps/api/src/users/hostile-input.http.spec.ts: testes com o prefixo AC-25:"
+      ]
+    },
+    {
+      "id": "AC-26",
+      "description": "entrada hostil nos endpoints públicos e no cadastro: tipo errado (objeto, lista), texto enorme, `<script>` e HTML, aspas e `'; DROP TABLE`, e-mail com quebra de linha (injeção de cabeçalho), token mal formado; todos respondem erro de validação sem eco, sem erro 500 e sem chamar o banco com o valor.",
+      "tests": [
+        "apps/api/src/users/hostile-input.http.spec.ts: testes com o prefixo AC-26:",
+        "apps/web/src/pages/UsersPage.test.tsx: testes com o prefixo AC-26:",
+        "apps/web/src/pages/LoginPage.test.tsx: testes com o prefixo AC-26:"
+      ]
+    },
+    {
+      "id": "AC-27",
+      "description": "um link de redefinição de A não troca a senha de B, nem com corpo alterado (campos extras recusados por `forbidNonWhitelisted`).",
+      "tests": [
+        "apps/api/src/users/password-flow.http.spec.ts: testes com o prefixo AC-27:",
+        "apps/web/src/pages/SetPasswordPage.test.tsx: testes com o prefixo AC-27:"
+      ]
+    },
+    {
+      "id": "AC-28",
+      "description": "o usuário nunca vê nem digita a senha de outro: nenhuma resposta da API de usuários contém `password` nem hash.",
+      "tests": [
+        "apps/api/src/users/users.admin.http.spec.ts: testes com o prefixo AC-28:"
+      ]
+    },
+    {
+      "id": "AC-29",
+      "description": "sem API nova além das listadas; `docs/architecture/03-sankhya-ds-parity.md` registra a variante de `ActiveTag` e o uso do dsgrid em Usuários; o que muda no DS tem story ou exceção registrada no manifesto; `GLOSSARY.md` tem Convite, Convite pendente e Redefinição de senha.",
+      "tests": [
+        "apps/web/src/components/ActiveTag.test.tsx: testes com o prefixo AC-29:",
+        "apps/web/src/components/ds/EzModal.test.tsx: testes com o prefixo AC-29:"
+      ]
+    },
+    {
+      "id": "AC-30",
+      "description": "em Chromium, a 1440×900, 1024×768 e 390×844, a tela Usuários, o formulário, o modal e a página `/definir-senha` não têm rolagem horizontal; capturas antes e depois anexadas ao PR. Evidência técnica; o aceite visual é do Alfredo.",
+      "tests": [
+        "Medição em Chromium (Playwright) a 1440×900, 1024×768 e 390×844 com capturas (scripts/users_responsive_check.mjs; resultado e anexos no pai Multica e no PR)"
+      ],
+      "tdd_required": false,
+      "reason": "Layout real só se mede em navegador: jsdom não calcula layout e o aceite visual é humano; as classes de breakpoint já são testadas em UsersPage.test.tsx (AC-04)."
+    }
+  ],
+  "spec": "docs/delivery/specs/DMTE-550.md",
+  "tdd": {
+    "mode": "required",
+    "red": ".delivery/evidence/DMTE-550/red-r2.json",
+    "green": ".delivery/evidence/DMTE-550/green-r2.json"
+  },
+  "design_system": {
+    "applicable": true,
+    "reused": [
+      "EzAlert",
+      "EzButton",
+      "EzCardItem",
+      "EzCheck",
+      "EzComboBox",
+      "EzDialog",
+      "EzDynamicFilter",
+      "EzEmptyCard",
+      "EzEntityGrid",
+      "EzEntityScreenConfigModal",
+      "EzEntityToolbar",
+      "EzFilterDrawer",
+      "EzModal",
+      "EzPageLayout",
+      "EzPagination",
+      "EzSpinner",
+      "EzTag",
+      "EzTextInput"
+    ],
+    "stories": [
+      "apps/web/src/components/ds/EzModal.stories.tsx"
+    ],
+    "reason": "Reaproveita o dsgrid de Mesa e Clientes (EzEntityToolbar, EzEntityGrid, EzFilterDrawer, EzEntityScreenConfigModal), EzTag via ActiveTag (variante Convite pendente com os tokens yellow já conferidos) e os campos do DS; o que muda no DS está em docs/architecture/03-sankhya-ds-parity.md.",
+    "exception": "EzModal ganhou a prop trapFocus (desligada por padrão, markup igual ao anterior) e a story FocoPreso. ActiveTag fica fora de components/ds, nunca teve story, e a variante pending é coberta por ActiveTag.test.tsx."
+  }
+}

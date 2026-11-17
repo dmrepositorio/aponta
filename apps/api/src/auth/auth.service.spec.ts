@@ -122,6 +122,7 @@ describe('AuthService', () => {
         organizationId: mockUser.organizationId,
         technicalGroupId: null,
         active: true,
+        pending: false,
         createdAt: mockUser.createdAt,
         updatedAt: mockUser.updatedAt,
       };
