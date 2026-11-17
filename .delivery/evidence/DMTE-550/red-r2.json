@@ -1,8 +1,8 @@
 {
   "version": 1,
   "phase": "red",
-  "started_at": "2026-11-17T15:50:58.989067+00:00",
-  "finished_at": "2026-11-17T15:51:04.964813+00:00",
+  "started_at": "2026-11-17T15:54:16.050546+00:00",
+  "finished_at": "2026-11-17T15:54:20.982013+00:00",
   "command": [
     "pnpm",
     "nx",
@@ -14,8 +14,8 @@
     "src/users/users.find-by-email.spec.ts",
     "src/mail/mail.service.pending.spec.ts"
   ],
-  "base_sha": "b458addcd74f82ebc31650f167c6e23db0a69119",
-  "head_sha": "8da7f5be91f892ab253a108b97d7212ce2eb5766",
+  "base_sha": "627972ad6a0378afa8e70cbc7add279c10b304e0",
+  "head_sha": "4575431d8155a2f9ea014dce6c4ecc6e0fcd16cc",
   "exit_code": 1,
   "tests": {
     "apps/api/src/users/email-case.http.spec.ts": "0c292d979aa7ac199cd22a48bc944633ff095f754fd6b8055376d1fcd662ab92",
@@ -67,7 +67,7 @@
     "apps/api/src/auth/jwt.strategy.ts": "af4ea7be6e72215c5e7f9ccc195539764f658d7122eda843fe6667f1617bdc19",
     "apps/api/src/auth/login.http.spec.ts": "c679834abb224750bf3433c2e3d2ca475236feb6ce66244bc851690b576f0bb2",
     "apps/api/src/feature-flags/feature-flags.convite.spec.ts": "6af51fde96159675b790cd3f11ae42ae5b790882c65501d8b4a70c3dced1d382",
-    "apps/api/src/feature-flags/feature-flags.ts": "ba49c6b47500061b9efaf8d3d24d44e4c976f2d7622277c386e548ef583c5bc8",
+    "apps/api/src/feature-flags/feature-flags.ts": "efbf7fd9ee6377f9a8119ba0ca417e9f204e77393a41dca7da872829805b3a5e",
     "apps/api/src/mail/mail.module.ts": "9ac5a4482e79d27abe9617bcce352032b2a0430215e3b0f62490116d71348ff9",
     "apps/api/src/mail/mail.service.pending.spec.ts": "d985e05a3cfbd3ef0ebd7e036a22580870fd00960d98dce885369726d0385e25",
     "apps/api/src/mail/mail.service.result.spec.ts": "1c75e5852672f3dcdf3ab93a0c99a8bd29452d071b0c7e5d7a7a4fc4ebff3abd",
@@ -118,5 +118,5 @@
     "scripts/users_responsive_check.mjs": "633c536589592b0306285bc5c5c0c8c0a4c75568c44e32fc50e964a12d0dc70e"
   },
   "log": ".delivery/evidence/DMTE-550/red-r2.log",
-  "log_sha256": "27381cb9dc5ab77aedd2a169647058abdd3d89a201819100f6570d63fccf37e8"
+  "log_sha256": "468d8404f973a801d3c5d923c30f31a283e3fa50390e1000e87d4b7573b41d48"
 }

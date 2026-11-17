@@ -131,6 +131,6 @@ Hint: run the command with --verbose for more details.
 [1mTest Suites: [22m[1m[31m3 failed[39m[22m, 3 total
 [1mTests:       [22m[1m[31m6 failed[39m[22m, [1m[32m3 passed[39m[22m, 9 total
 [1mSnapshots:   [22m0 total
-[1mTime:[22m        [1m[33m4.284 s[39m[22m
+[1mTime:[22m        3.209 s
 [2mRan all test suites[22m[2m within paths[22m "src/users/email-case.http.spec.ts", "src/users/users.find-by-email.spec.ts", "src/mail/mail.service.pending.spec.ts"[2m.[22m
 Warning: command "jest --passWithNoTests=true --runTestsByPath src/users/email-case.http.spec.ts src/users/users.find-by-email.spec.ts src/mail/mail.service.pending.spec.ts" exited with non-zero status code
