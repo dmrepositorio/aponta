@@ -1,11 +1,4 @@
-import {
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  FormEvent,
-  ReactNode,
-} from 'react';
+import { useEffect, useMemo, useRef, useState, FormEvent, ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useEscapeLayer } from '../hooks/useEscapeLayer';
@@ -56,10 +49,7 @@ const DANGER_ICON = 'text-red-600 hover:text-red-800';
 type SecretField = 'username' | 'password';
 type Feedback = { kind: 'success' | 'error'; text: string };
 
-const SECRET_FIELDS: Record<
-  SecretField,
-  { noun: string; copied: string; copyError: string; revealError: string }
-> = {
+const SECRET_FIELDS: Record<SecretField, { noun: string; copied: string; copyError: string; revealError: string }> = {
   username: {
     noun: 'usuário',
     copied: 'Usuário copiado',
@@ -74,34 +64,16 @@ const SECRET_FIELDS: Record<
   },
 };
 
-function Modal({
-  title,
-  onClose,
-  children,
-}: {
-  title: string;
-  onClose: () => void;
-  children: ReactNode;
-}) {
+function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: ReactNode }) {
   useEscapeLayer(onClose);
   if (typeof document === 'undefined') return null;
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
       <div className="fixed inset-0 bg-gray-900/60" onClick={onClose} />
-      <div
-        role="dialog"
-        aria-modal="true"
-        className="relative w-full max-w-md rounded-[24px] bg-white shadow-2xl"
-      >
+      <div role="dialog" aria-modal="true" className="relative w-full max-w-md rounded-[24px] bg-white shadow-2xl">
         <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
-          <span className="text-[16px] font-semibold text-gray-900">
-            {title}
-          </span>
-          <button
-            onClick={onClose}
-            aria-label="Fechar"
-            className="rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-700"
-          >
+          <span className="text-[16px] font-semibold text-gray-900">{title}</span>
+          <button onClick={onClose} aria-label="Fechar" className="rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-700">
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -130,10 +102,7 @@ function FolderModal({
   };
 
   return (
-    <Modal
-      title={initialName ? 'Editar pasta' : 'Nova pasta'}
-      onClose={onClose}
-    >
+    <Modal title={initialName ? 'Editar pasta' : 'Nova pasta'} onClose={onClose}>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <EzTextInput
           label="Nome da pasta"
@@ -143,12 +112,7 @@ function FolderModal({
           required
         />
         <div className="flex justify-end gap-3">
-          <EzButton
-            type="button"
-            variant="secondary"
-            label="Cancelar"
-            onClick={onClose}
-          />
+          <EzButton type="button" variant="secondary" label="Cancelar" onClick={onClose} />
           <EzButton type="submit" variant="primary" label="Salvar" />
         </div>
       </form>
@@ -176,7 +140,7 @@ function CredentialModal({
   const [url, setUrl] = useState(credential?.url ?? '');
   const [description, setDescription] = useState(credential?.description ?? '');
   const [folderId, setFolderId] = useState(
-    credential ? (credential.folderId ?? ROOT_FOLDER_ID) : defaultFolderId,
+    credential ? credential.folderId ?? ROOT_FOLDER_ID : defaultFolderId,
   );
 
   const handleSubmit = (e: FormEvent) => {
@@ -198,17 +162,9 @@ function CredentialModal({
   return (
     <Modal title={isEdit ? 'Editar senha' : 'Nova senha'} onClose={onClose}>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <EzTextInput label="Nome" value={name} onChange={(e) => setName(e.target.value)} autoFocus required />
         <EzTextInput
-          label="Nome"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          autoFocus
-          required
-        />
-        <EzTextInput
-          label={
-            isEdit ? 'Usuário (deixe em branco para não alterar)' : 'Usuário'
-          }
+          label={isEdit ? 'Usuário (deixe em branco para não alterar)' : 'Usuário'}
           value={username}
           onChange={(e) => setUsername(e.target.value)}
         />
@@ -219,35 +175,18 @@ function CredentialModal({
           onChange={(e) => setPassword(e.target.value)}
           required={!isEdit}
         />
-        <EzTextInput
-          label="URL"
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-        />
-        <EzTextInput
-          label="Notas"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
-        <EzSelect
-          label="Pasta"
-          value={folderId}
-          onChange={(e) => setFolderId(e.target.value)}
-        >
-          <option value={ROOT_FOLDER_ID}>Raiz do cofre</option>
-          {folders.map((folder) => (
-            <option key={folder.id} value={folder.id}>
-              {folder.name}
-            </option>
-          ))}
-        </EzSelect>
+        <EzTextInput label="URL" value={url} onChange={(e) => setUrl(e.target.value)} />
+        <EzTextInput label="Notas" value={description} onChange={(e) => setDescription(e.target.value)} />
+        <EzSelect label="Pasta" value={folderId} onChange={(e) => setFolderId(e.target.value)}>
+            <option value={ROOT_FOLDER_ID}>Raiz do cofre</option>
+            {folders.map((folder) => (
+              <option key={folder.id} value={folder.id}>
+                {folder.name}
+              </option>
+            ))}
+          </EzSelect>
         <div className="flex justify-end gap-3">
-          <EzButton
-            type="button"
-            variant="secondary"
-            label="Cancelar"
-            onClick={onClose}
-          />
+          <EzButton type="button" variant="secondary" label="Cancelar" onClick={onClose} />
           <EzButton type="submit" variant="primary" label="Salvar" />
         </div>
       </form>
@@ -260,8 +199,7 @@ export function VaultPage() {
   const user = useAuthStore((s) => s.user);
   const canEdit = user?.role === 'ADMIN';
 
-  const [selectedFolderId, setSelectedFolderId] =
-    useState<string>(ROOT_FOLDER_ID);
+  const [selectedFolderId, setSelectedFolderId] = useState<string>(ROOT_FOLDER_ID);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   // Keyed by `<credentialId>:<field>`; each revealed value hides itself after REVEAL_TTL_MS.
@@ -269,17 +207,11 @@ export function VaultPage() {
   const [pending, setPending] = useState<string[]>([]);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const revealTimers = useRef(new Map<string, ReturnType<typeof setTimeout>>());
-  const feedbackTimer = useRef<ReturnType<typeof setTimeout> | undefined>(
-    undefined,
-  );
+  const feedbackTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   // Bumped on every clear: a reveal that answers after it must not show its value.
   const generation = useRef(0);
-  const [folderModal, setFolderModal] = useState<{
-    folder?: VaultFolder;
-  } | null>(null);
-  const [credentialModal, setCredentialModal] = useState<{
-    credential?: VaultCredential;
-  } | null>(null);
+  const [folderModal, setFolderModal] = useState<{ folder?: VaultFolder } | null>(null);
+  const [credentialModal, setCredentialModal] = useState<{ credential?: VaultCredential } | null>(null);
 
   const foldersQuery = useVaultFolders();
   const credentialsQuery = useVaultCredentials({
@@ -299,18 +231,12 @@ export function VaultPage() {
   const revealMutation = useRevealCredential();
 
   const foldersData = foldersQuery.data;
-  const folders = useMemo<VaultFolder[]>(
-    () => foldersData ?? [],
-    [foldersData],
-  );
+  const folders = useMemo<VaultFolder[]>(() => foldersData ?? [], [foldersData]);
 
   const treeNodes = useMemo<EzTreeNode[]>(
     () => [
       { id: ROOT_FOLDER_ID, label: 'Raiz do cofre' },
-      ...folders.map((folder) => ({
-        id: folder.id,
-        label: `${folder.name} (${folder.credentialCount})`,
-      })),
+      ...folders.map((folder) => ({ id: folder.id, label: `${folder.name} (${folder.credentialCount})` })),
     ],
     [folders],
   );
@@ -329,11 +255,7 @@ export function VaultPage() {
   const showFeedback = (next: Feedback | null) => {
     clearTimeout(feedbackTimer.current);
     setFeedback(next);
-    if (next?.kind === 'success')
-      feedbackTimer.current = setTimeout(
-        () => setFeedback(null),
-        FEEDBACK_TTL_MS,
-      );
+    if (next?.kind === 'success') feedbackTimer.current = setTimeout(() => setFeedback(null), FEEDBACK_TTL_MS);
   };
 
   const hideField = (key: string) => {
@@ -373,11 +295,7 @@ export function VaultPage() {
   const handleCopy = async (credentialId: string, field: SecretField) => {
     showFeedback(null);
     try {
-      const value = await revealMutation.mutateAsync({
-        id: credentialId,
-        field,
-        intent: 'copy',
-      });
+      const value = await revealMutation.mutateAsync({ id: credentialId, field, intent: 'copy' });
       revealMutation.reset();
       if (!value) throw new Error('empty value');
       await navigator.clipboard.writeText(value);
@@ -397,10 +315,7 @@ export function VaultPage() {
     }
   };
 
-  const handleToggleReveal = async (
-    credentialId: string,
-    field: SecretField,
-  ) => {
+  const handleToggleReveal = async (credentialId: string, field: SecretField) => {
     const key = `${credentialId}:${field}`;
     if (key in revealed) {
       hideField(key);
@@ -411,22 +326,14 @@ export function VaultPage() {
     const startedAt = generation.current;
     setPending((prev) => [...prev, key]);
     try {
-      const value = await revealMutation.mutateAsync({
-        id: credentialId,
-        field,
-        intent: 'reveal',
-      });
+      const value = await revealMutation.mutateAsync({ id: credentialId, field, intent: 'reveal' });
       revealMutation.reset();
       if (startedAt !== generation.current) return;
       if (!value) throw new Error('empty value');
       setRevealed((prev) => ({ ...prev, [key]: value }));
-      revealTimers.current.set(
-        key,
-        setTimeout(() => hideField(key), REVEAL_TTL_MS),
-      );
+      revealTimers.current.set(key, setTimeout(() => hideField(key), REVEAL_TTL_MS));
     } catch {
-      if (startedAt === generation.current)
-        showFeedback({ kind: 'error', text: SECRET_FIELDS[field].revealError });
+      if (startedAt === generation.current) showFeedback({ kind: 'error', text: SECRET_FIELDS[field].revealError });
     } finally {
       setPending((prev) => prev.filter((pendingKey) => pendingKey !== key));
     }
@@ -453,10 +360,7 @@ export function VaultPage() {
 
   const handleSaveCredential = (dto: Partial<CredentialInput>) => {
     if (credentialModal?.credential) {
-      updateCredentialMutation.mutate({
-        id: credentialModal.credential.id,
-        ...dto,
-      });
+      updateCredentialMutation.mutate({ id: credentialModal.credential.id, ...dto });
     } else {
       createCredentialMutation.mutate(dto as CredentialInput);
     }
@@ -471,8 +375,7 @@ export function VaultPage() {
   };
 
   const renderSecret = (cred: VaultCredential, field: SecretField) => {
-    if (!(field === 'username' ? cred.hasUsername : cred.hasPassword))
-      return <span className="text-gray-400">—</span>;
+    if (!(field === 'username' ? cred.hasUsername : cred.hasPassword)) return <span className="text-gray-400">—</span>;
     const { noun } = SECRET_FIELDS[field];
     const key = `${cred.id}:${field}`;
     const shown = key in revealed;
@@ -558,16 +461,8 @@ export function VaultPage() {
               <EzActionsButton
                 label="Ações"
                 actions={[
-                  {
-                    label: 'Nova pasta',
-                    icon: <FolderPlus className="h-4 w-4" />,
-                    onClick: () => setFolderModal({}),
-                  },
-                  {
-                    label: 'Nova senha',
-                    icon: <KeyRound className="h-4 w-4" />,
-                    onClick: () => setCredentialModal({}),
-                  },
+                  { label: 'Nova pasta', icon: <FolderPlus className="h-4 w-4" />, onClick: () => setFolderModal({}) },
+                  { label: 'Nova senha', icon: <KeyRound className="h-4 w-4" />, onClick: () => setCredentialModal({}) },
                 ]}
               />
             )}
@@ -602,17 +497,11 @@ export function VaultPage() {
 
           <div role="status" aria-live="polite">
             {feedback?.kind === 'success' && (
-              <p className="border-b border-gray-100 bg-green-100 px-4 py-2 text-sm text-green-800">
-                {feedback.text}
-              </p>
+              <p className="border-b border-gray-100 bg-green-100 px-4 py-2 text-sm text-green-800">{feedback.text}</p>
             )}
           </div>
           {feedback?.kind === 'error' && (
-            <EzAlert
-              variant="error"
-              className="m-3"
-              onClose={() => showFeedback(null)}
-            >
+            <EzAlert variant="error" className="m-3" onClose={() => showFeedback(null)}>
               {feedback.text}
             </EzAlert>
           )}
@@ -620,99 +509,83 @@ export function VaultPage() {
           {!credentials.length ? (
             <EzEmptyCard title="Nenhuma credencial liberada para esta operação." />
           ) : (
-            <table className="w-full text-left text-[14px]">
-              <thead className="bg-gray-90/60 text-gray-600">
-                <tr>
-                  <th className="px-4 py-2 font-medium">Nome</th>
-                  <th className="px-4 py-2 font-medium">Usuário</th>
-                  <th className="px-4 py-2 font-medium">Senha</th>
-                  <th className="px-4 py-2 font-medium">URL</th>
+          <table className="w-full text-left text-[14px]">
+            <thead className="bg-gray-90/60 text-gray-600">
+              <tr>
+                <th className="px-4 py-2 font-medium">Nome</th>
+                <th className="px-4 py-2 font-medium">Usuário</th>
+                <th className="px-4 py-2 font-medium">Senha</th>
+                <th className="px-4 py-2 font-medium">URL</th>
+                {canEdit && <th className="px-4 py-2 font-medium text-right">Ações</th>}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {credentials.map((cred) => (
+                <tr key={cred.id} className="hover:bg-gray-90/40">
+                  <td className="px-4 py-1.5">
+                    <span className="font-medium text-gray-900">{cred.name}</span>
+                  </td>
+                  <td className="px-4 py-1.5">{renderSecret(cred, 'username')}</td>
+                  <td className="px-4 py-1.5">{renderSecret(cred, 'password')}</td>
+                  <td className="px-4 py-1.5">
+                    {cred.url ? (
+                      <div className="flex items-center gap-1 text-gray-700">
+                        <span className="truncate max-w-[160px]">{cred.url}</span>
+                        <EzButton
+                          variant="tertiary"
+                          size="small"
+                          leftIcon={Copy}
+                          title="Copiar URL"
+                          aria-label={`Copiar URL de ${cred.name}`}
+                          onClick={() => handleCopyUrl(cred.url ?? '')}
+                        />
+                        <a
+                          href={cred.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          title="Abrir URL"
+                          aria-label={`Abrir URL de ${cred.name}`}
+                          className="inline-flex h-[32px] w-[32px] items-center justify-center rounded-full text-brand-600 hover:text-brand-800 ez-focus"
+                        >
+                          <ExternalLink className="h-4 w-4" />
+                        </a>
+                      </div>
+                    ) : (
+                      <span className="text-gray-400">—</span>
+                    )}
+                  </td>
                   {canEdit && (
-                    <th className="px-4 py-2 font-medium text-right">Ações</th>
+                    <td className="px-4 py-1.5 text-right">
+                      <div className="flex justify-end gap-1">
+                        <EzButton
+                          variant="tertiary"
+                          size="small"
+                          leftIcon={Pencil}
+                          title="Editar"
+                          aria-label={`Editar ${cred.name}`}
+                          onClick={() => setCredentialModal({ credential: cred })}
+                        />
+                        <EzButton
+                          variant="tertiary"
+                          size="small"
+                          leftIcon={Trash2}
+                          title="Excluir"
+                          aria-label={`Excluir ${cred.name}`}
+                          className={DANGER_ICON}
+                          onClick={() => handleRemoveCredential(cred)}
+                        />
+                      </div>
+                    </td>
                   )}
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {credentials.map((cred) => (
-                  <tr key={cred.id} className="hover:bg-gray-90/40">
-                    <td className="px-4 py-1.5">
-                      <span className="font-medium text-gray-900">
-                        {cred.name}
-                      </span>
-                    </td>
-                    <td className="px-4 py-1.5">
-                      {renderSecret(cred, 'username')}
-                    </td>
-                    <td className="px-4 py-1.5">
-                      {renderSecret(cred, 'password')}
-                    </td>
-                    <td className="px-4 py-1.5">
-                      {cred.url ? (
-                        <div className="flex items-center gap-1 text-gray-700">
-                          <span className="truncate max-w-[160px]">
-                            {cred.url}
-                          </span>
-                          <EzButton
-                            variant="tertiary"
-                            size="small"
-                            leftIcon={Copy}
-                            title="Copiar URL"
-                            aria-label={`Copiar URL de ${cred.name}`}
-                            onClick={() => handleCopyUrl(cred.url ?? '')}
-                          />
-                          <a
-                            href={cred.url}
-                            target="_blank"
-                            rel="noreferrer"
-                            title="Abrir URL"
-                            aria-label={`Abrir URL de ${cred.name}`}
-                            className="inline-flex h-[32px] w-[32px] items-center justify-center rounded-full text-brand-600 hover:text-brand-800 ez-focus"
-                          >
-                            <ExternalLink className="h-4 w-4" />
-                          </a>
-                        </div>
-                      ) : (
-                        <span className="text-gray-400">—</span>
-                      )}
-                    </td>
-                    {canEdit && (
-                      <td className="px-4 py-1.5 text-right">
-                        <div className="flex justify-end gap-1">
-                          <EzButton
-                            variant="tertiary"
-                            size="small"
-                            leftIcon={Pencil}
-                            title="Editar"
-                            aria-label={`Editar ${cred.name}`}
-                            onClick={() =>
-                              setCredentialModal({ credential: cred })
-                            }
-                          />
-                          <EzButton
-                            variant="tertiary"
-                            size="small"
-                            leftIcon={Trash2}
-                            title="Excluir"
-                            aria-label={`Excluir ${cred.name}`}
-                            className={DANGER_ICON}
-                            onClick={() => handleRemoveCredential(cred)}
-                          />
-                        </div>
-                      </td>
-                    )}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+              ))}
+            </tbody>
+          </table>
           )}
 
           {meta && meta.totalPages > 1 && (
             <div className="flex justify-end border-t border-gray-100 px-4 py-3">
-              <EzPagination
-                currentPage={meta.page}
-                totalPages={meta.totalPages}
-                onChange={handleChangePage}
-              />
+              <EzPagination currentPage={meta.page} totalPages={meta.totalPages} onChange={handleChangePage} />
             </div>
           )}
         </EzCardItem>
