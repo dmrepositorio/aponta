@@ -10,6 +10,7 @@ import {
   EzCardItem,
   EzCheck,
   EzComboBox,
+  EzDialog,
   EzEmptyCard,
   EzModal,
   EzMultiSelect,
@@ -25,6 +26,7 @@ import {
   type KnowledgeAttachment,
 } from '../components/knowledge/KnowledgeArticleAttachments';
 import { KnowledgeArticleCard } from '../components/knowledge/KnowledgeArticleCard';
+import { FOCUS_RING, KNOWLEDGE_PRIMARY } from '../components/knowledge/knowledgeStyles';
 
 type ArticleVisibility = 'PUBLIC' | 'PRIVATE';
 
@@ -85,6 +87,8 @@ export function KnowledgePage() {
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [page, setPage] = useState(1);
   const searchRef = useRef<HTMLInputElement>(null);
+  const titleRef = useRef<HTMLInputElement>(null);
+  const [articleToDelete, setArticleToDelete] = useState<Article | null>(null);
 
   // Tiflux-parity: ordenação e filtro por múltiplas tags reiniciam a paginação.
   useEffect(() => {
@@ -243,6 +247,11 @@ export function KnowledgePage() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // O formulário abre inline e empurra a lista: o foco vai ao título.
+  useEffect(() => {
+    if (isFormOpen) titleRef.current?.focus();
+  }, [isFormOpen, editingId]);
+
   const saveMutation = useMutation({
     mutationFn: async () => {
       const payload: {
@@ -325,8 +334,14 @@ export function KnowledgePage() {
             title="busca por palavra-chave"
             className="w-full md:w-[280px]"
           />
-          {canAuthor && !isFormOpen && (
-            <EzButton type="button" onClick={openNewForm} size="small" className="shrink-0 self-start md:self-auto">
+          {canAuthor && (
+            <EzButton
+              type="button"
+              onClick={openNewForm}
+              disabled={isFormOpen}
+              title={isFormOpen ? 'O formulário de artigo já está aberto.' : undefined}
+              className={cn('shrink-0 self-start md:self-auto', KNOWLEDGE_PRIMARY)}
+            >
               + Novo artigo
             </EzButton>
           )}
@@ -346,7 +361,10 @@ export function KnowledgePage() {
                   type="button"
                   onClick={() => toggleTag(t)}
                   aria-label={`Remover filtro de tag ${t}`}
-                  className="hover:text-brand-900 font-bold"
+                  className={cn(
+                    'inline-flex h-4 w-4 items-center justify-center rounded-full font-bold hover:bg-black/10',
+                    FOCUS_RING
+                  )}
                 >
                   &times;
                 </button>
@@ -366,6 +384,7 @@ export function KnowledgePage() {
         >
           <EzCardItem flat className="p-4 space-y-3">
             <EzTextInput
+              ref={titleRef}
               id="article-title"
               label="Título"
               value={title}
@@ -409,7 +428,6 @@ export function KnowledgePage() {
                 <EzButton
                   type="button"
                   variant="secondary"
-                  size="small"
                   onClick={() => setIsShareModalOpen(true)}
                 >
                   Compartilhar
@@ -427,13 +445,15 @@ export function KnowledgePage() {
             />
 
             {!isNewCatalogItemFormOpen ? (
-              <button
+              <EzButton
                 type="button"
-                className="text-sm text-brand-700 hover:underline"
+                variant="tertiary"
+                size="small"
+                className="self-start px-0"
                 onClick={() => setIsNewCatalogItemFormOpen(true)}
               >
                 + Novo item de catálogo
-              </button>
+              </EzButton>
             ) : (
               <EzCardItem flat className="p-3 space-y-2 bg-gray-90/40">
                 <EzTextInput
@@ -452,6 +472,7 @@ export function KnowledgePage() {
                   <EzButton
                     type="button"
                     size="small"
+                    className={KNOWLEDGE_PRIMARY}
                     disabled={!newCatalogItemName.trim() || createCatalogItemMutation.isPending}
                     onClick={() => createCatalogItemMutation.mutate()}
                   >
@@ -475,7 +496,7 @@ export function KnowledgePage() {
               </EzAlert>
             )}
             <div className="flex gap-2 pt-2">
-              <EzButton type="submit" disabled={saveMutation.isPending}>
+              <EzButton type="submit" className={KNOWLEDGE_PRIMARY} disabled={saveMutation.isPending}>
                 {editingId ? 'Atualizar' : 'Salvar'}
               </EzButton>
               <EzButton type="button" variant="secondary" onClick={() => setIsFormOpen(false)}>
@@ -538,14 +559,15 @@ export function KnowledgePage() {
           </EzComboBox>
         </div>
 
-        <div className="flex items-center gap-1 shrink-0 rounded-[12px] border border-gray-200 p-1">
+        <div className="flex h-[var(--control-height-md)] shrink-0 items-center gap-1 rounded-control border border-gray-200 p-1">
           <button
             type="button"
             aria-label="Exibir em lista"
             aria-pressed={viewMode === 'list'}
             onClick={() => setViewMode('list')}
             className={cn(
-              'flex items-center justify-center w-8 h-8 rounded-[8px] transition-colors',
+              'flex h-8 w-8 items-center justify-center rounded-md transition-colors',
+              FOCUS_RING,
               viewMode === 'list' ? 'bg-brand-50 text-brand-700' : 'text-gray-500 hover:bg-gray-90'
             )}
           >
@@ -557,7 +579,8 @@ export function KnowledgePage() {
             aria-pressed={viewMode === 'grid'}
             onClick={() => setViewMode('grid')}
             className={cn(
-              'flex items-center justify-center w-8 h-8 rounded-[8px] transition-colors',
+              'flex h-8 w-8 items-center justify-center rounded-md transition-colors',
+              FOCUS_RING,
               viewMode === 'grid' ? 'bg-brand-50 text-brand-700' : 'text-gray-500 hover:bg-gray-90'
             )}
           >
@@ -591,9 +614,7 @@ export function KnowledgePage() {
             canAuthor={canAuthor}
             canDelete={canDelete}
             onEdit={() => openEditForm(art)}
-            onDelete={() => {
-              if (window.confirm('Excluir este artigo?')) deleteMutation.mutate(art.id);
-            }}
+            onDelete={() => setArticleToDelete(art)}
           />
         ))}
       </div>
@@ -622,7 +643,7 @@ export function KnowledgePage() {
             description={canAuthor ? undefined : 'Quando houver artigos, eles aparecem aqui.'}
             action={
               canAuthor && !isFormOpen ? (
-                <EzButton type="button" size="small" onClick={openNewForm}>
+                <EzButton type="button" size="small" className={KNOWLEDGE_PRIMARY} onClick={openNewForm}>
                   + Novo artigo
                 </EzButton>
               ) : undefined
@@ -630,6 +651,18 @@ export function KnowledgePage() {
           />
         )
       )}
+
+      <EzDialog
+        open={articleToDelete !== null}
+        variant="danger"
+        title="Excluir artigo"
+        message={`Excluir o artigo "${articleToDelete?.title ?? ''}"?`}
+        onCancel={() => setArticleToDelete(null)}
+        onConfirm={() => {
+          if (articleToDelete) deleteMutation.mutate(articleToDelete.id);
+          setArticleToDelete(null);
+        }}
+      />
 
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-2 mt-6">

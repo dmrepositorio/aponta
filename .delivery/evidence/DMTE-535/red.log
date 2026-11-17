@@ -1,0 +1,2591 @@
+
+ RUN  v4.1.11 /home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-535-1ea62b3be6ac/workdir/red-wt/apps/web
+
+ ❯ |web| src/components/knowledge/KnowledgeFoldersGrid.test.tsx (9 tests | 4 failed) 2892ms
+     ✓ renders folders fetched from the API with their article count 128ms
+     ✓ calls onOpenFolder when a folder card is clicked 112ms
+     ✓ does not show the "+ Nova pasta" button when the user cannot author 48ms
+     ✓ allows a canAuthor user to create a new folder  399ms
+     × allows a canAuthor user to delete a folder after confirming 1062ms
+     × keeps the folder when the delete dialog is cancelled 1065ms
+     × uses the control height, the legible primary and aligned text actions 46ms
+     × shows the article count in a text color with enough contrast 17ms
+     ✓ shows an empty state when there are no folders 8ms
+ ❯ |web| src/pages/KnowledgePage.test.tsx (48 tests | 13 failed) 11800ms
+     ✓ shows the folders grid first, not the article list 127ms
+     ✓ opens a folder and lists only its articles, filtered by folderId 141ms
+     ✓ shows a breadcrumb back to the folders grid once inside a folder 190ms
+     ✓ does not show the new-article form or edit/delete buttons to a CLIENT 140ms
+     ✓ shows the Interno badge only for a PRIVATE article (visibility-based, not the old isPublic) 57ms
+     ✓ defaults a new article to "Público" and hides the Compartilhar button  334ms
+     ✓ shows the Compartilhar button once "Privado" is selected, and opens the sharing dialog  414ms
+     ✓ shows the new-article form to an AGENT and creates a PUBLIC article inside the open folder  1089ms
+     ✓ selects an agent group and a client in the share dialog, and sends them (plus auto-share) in the create payload  1233ms
+     ✓ allows an AGENT to update an existing article, pre-populating the access type and sharing lists  752ms
+     ✓ allows filtering by search keyword and tag inside a folder 100ms
+     ✓ allows selecting more than one tag at once (OR filter) 140ms
+     ✓ shows the author and last-updated date on each article 41ms
+     ✓ sends the chosen sort order to the API 54ms
+     ✓ toggles between list and grid view modes 103ms
+     ✓ paginates articles beyond the first page 127ms
+     × allows deleting an article 1117ms
+     ✓ renders article content as real HTML, not escaped text 92ms
+     ✓ shows the attachment count only for articles that have attachments, and the links once expanded 94ms
+     ✓ never shows attachment upload controls to a CLIENT, not even when the card is expanded 114ms
+     ✓ keeps upload and remove out of the cards and manages attachments inside the edit form 272ms
+     ✓ shows no attachment manager in the new-article form 129ms
+     ✓ loads the edit form with EzRichText pre-filled with the existing article content 130ms
+       ✓ keeps the search field mounted, with its text and focus, while typing against a slow API  417ms
+       ✓ keeps the header and shows the loading state only in the list area while a folder opens 206ms
+       ✓ sends the full typed search to the API and lists the result of that query  514ms
+       ✓ collapses the card to title, meta, a plain-text excerpt, five tags and the attachment count 121ms
+       ✓ expands and collapses the card, revealing the full body, every tag and the attachments 153ms
+       ✓ offers no expand button when nothing is hidden 45ms
+       ✓ offers no expand button when the body is only empty markup 52ms
+       ✓ keeps the title on its own line, with the tag, meta and actions outside its row 66ms
+       ✓ puts the active tag filters in their own row, apart from the search and the new-article button 116ms
+       × tells an empty folder apart from a search, offering to create the first article to authors 284ms
+       ✓ shows readers an empty folder without a create action 55ms
+       ✓ offers "Limpar busca e filtros" when a search finds nothing, and clearing resets search and tags but keeps the sort 218ms
+       ✓ also offers to clear when only a tag filter finds nothing 102ms
+       ✓ shows a retryable error, not the empty message, when the query fails 75ms
+         × keeps the header and sort rows on the control height token, with no loose radius 73ms
+         × keeps the Compartilhar button at the height of the access combo 219ms
+         × aligns the card text actions with the card content, without the DS side padding 58ms
+         × uses the legible primary on the primary actions of the screen 60ms
+         × gives the clickable tag, the filter remove button and the view toggles the DS focus ring 47ms
+         × marks the active tag filter with aria-pressed and a decorative check, not only a color 54ms
+         × shows Interno as a classification (petroleum with a lock), not as a yellow alert 62ms
+         × keeps "+ Novo artigo" on screen, disabled, while the form is open, and focuses the title 401ms
+         × focuses the title when the edit form opens from a card 149ms
+         × aligns "+ Novo item de catálogo" to the start of the form as a DS tertiary button 176ms
+         × asks for confirmation in a dialog before deleting, and cancel or Escape keep the article 1074ms
+
+ Test Files  2 failed (2)
+      Tests  17 failed | 40 passed (57)
+   Start at  22:04:13
+   Duration  15.46s (transform 3.25s, setup 281ms, import 5.15s, tests 14.69s, environment 1.31s)
+
+stderr | src/pages/KnowledgePage.test.tsx > KnowledgePage > defaults a new article to "Público" and hides the Compartilhar button
+[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues.
+
+stderr | src/pages/KnowledgePage.test.tsx > KnowledgePage > shows the Compartilhar button once "Privado" is selected, and opens the sharing dialog
+[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues.
+
+stderr | src/pages/KnowledgePage.test.tsx > KnowledgePage > shows the new-article form to an AGENT and creates a PUBLIC article inside the open folder
+[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues.
+
+stderr | src/pages/KnowledgePage.test.tsx > KnowledgePage > selects an agent group and a client in the share dialog, and sends them (plus auto-share) in the create payload
+[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues.
+
+stderr | src/pages/KnowledgePage.test.tsx > KnowledgePage > allows an AGENT to update an existing article, pre-populating the access type and sharing lists
+[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues.
+
+stderr | src/pages/KnowledgePage.test.tsx > KnowledgePage > keeps upload and remove out of the cards and manages attachments inside the edit form
+[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues.
+
+stderr | src/pages/KnowledgePage.test.tsx > KnowledgePage > shows no attachment manager in the new-article form
+[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues.
+
+stderr | src/pages/KnowledgePage.test.tsx > KnowledgePage > loads the edit form with EzRichText pre-filled with the existing article content
+[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues.
+
+stderr | src/pages/KnowledgePage.test.tsx > KnowledgePage > article card, header and empty states > tells an empty folder apart from a search, offering to create the first article to authors
+[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues.
+
+stderr | src/pages/KnowledgePage.test.tsx > KnowledgePage > article card, header and empty states > proportion, focus and color semantics (DMTE-535) > keeps the Compartilhar button at the height of the access combo
+[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues.
+
+stderr | src/pages/KnowledgePage.test.tsx > KnowledgePage > article card, header and empty states > proportion, focus and color semantics (DMTE-535) > keeps "+ Novo artigo" on screen, disabled, while the form is open, and focuses the title
+[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues.
+
+stderr | src/pages/KnowledgePage.test.tsx > KnowledgePage > article card, header and empty states > proportion, focus and color semantics (DMTE-535) > focuses the title when the edit form opens from a card
+[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues.
+
+stderr | src/pages/KnowledgePage.test.tsx > KnowledgePage > article card, header and empty states > proportion, focus and color semantics (DMTE-535) > aligns "+ Novo item de catálogo" to the start of the form as a DS tertiary button
+[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues.
+
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 17 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |web| src/pages/KnowledgePage.test.tsx > KnowledgePage > allows deleting an article
+TestingLibraryElementError: Unable to find role="dialog"
+
+Ignored nodes: comments, script, style
+[36m<body[39m
+  [33mstyle[39m=[32m""[39m
+[36m>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"p-8 flex-1 overflow-y-auto"[39m
+    [36m>[39m
+      [36m<nav[39m
+        [33maria-label[39m=[32m"Breadcrumb"[39m
+        [33mclass[39m=[32m"flex items-center text-[14px] mb-4"[39m
+      [36m>[39m
+        [36m<ol[39m
+          [33mclass[39m=[32m"flex items-center space-x-1.5 md:space-x-2"[39m
+        [36m>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"inline-flex items-center gap-1.5 transition-colors font-medium text-gray-500 hover:text-brand-600 cursor-pointer"[39m
+            [36m>[39m
+              [0mPastas[0m
+            [36m</button>[39m
+          [36m</li>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-right w-4 h-4 text-gray-300 mx-1 shrink-0"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m9 18 6-6-6-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span[39m
+              [33maria-current[39m=[32m"page"[39m
+              [33mclass[39m=[32m"inline-flex items-center gap-1.5 transition-colors font-medium text-brand-600 cursor-default pointer-events-none"[39m
+            [36m>[39m
+              [0mSuporte[0m
+            [36m</span>[39m
+          [36m</li>[39m
+        [36m</ol>[39m
+      [36m</nav>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-4"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"min-w-0"[39m
+        [36m>[39m
+          [36m<h1[39m
+            [33mclass[39m=[32m"text-[20px] font-semibold text-gray-900"[39m
+          [36m>[39m
+            [0mBase de Conhecimento (FAQ)[0m
+          [36m</h1>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex flex-col gap-3 md:flex-row md:items-center"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-col gap-1.5 w-full md:w-[280px]"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"[39m
+            [36m>[39m
+              [36m<input[39m
+                [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+                [33mplaceholder[39m=[32m"Buscar palavra-chave..."[39m
+                [33mtitle[39m=[32m"busca por palavra-chave"[39m
+                [33mtype[39m=[32m"search"[39m
+                [33mvalue[39m=[32m""[39m
+              [36m/>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-brand-500 text-gray-70 border border-brand-500 hover:bg-brand-700 hover:border-brand-700 disabled:bg-gray-400 disabled:border-gray-400 disabled:text-gray-70 h-[32px] text-xs px-4 shrink-0 self-start md:self-auto"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative z-10 flex items-center gap-2"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"font-normal"[39m
+              [36m>[39m
+                [0m+ Novo artigo[0m
+              [36m</span>[39m
+            [36m</div>[39m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center justify-between mb-4 gap-3"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"w-[220px]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-col w-full gap-1.5"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border bg-white rounded-[12px] h-[42px] focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300"[39m
+              [36m>[39m
+                [36m<select[39m
+                  [33maria-hidden[39m=[32m"true"[39m
+                  [33maria-label[39m=[32m"Ordenar por"[39m
+                  [33mclass[39m=[32m"sr-only"[39m
+                  [33mid[39m=[32m"article-sort"[39m
+                  [33mtabindex[39m=[32m"-1"[39m
+                [36m>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"updated_desc"[39m
+                  [36m>[39m
+                    [0mÚltima atualização[0m
+                  [36m</option>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"title_asc"[39m
+                  [36m>[39m
+                    [0mA - Z[0m
+                  [36m</option>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"title_desc"[39m
+                  [36m>[39m
+                    [0mZ - A[0m
+                  [36m</option>[39m
+                [36m</select>[39m
+                [36m<button[39m
+                  [33maria-expanded[39m=[32m"false"[39m
+                  [33maria-haspopup[39m=[32m"listbox"[39m
+                  [33maria-label[39m=[32m"Ordenar por"[39m
+                  [33mclass[39m=[32m"flex h-full w-full items-center justify-between gap-2 bg-transparent text-left text-gray-900 outline-none pl-4 pr-3 text-[14px]"[39m
+                  [33mrole[39m=[3...
+
+Ignored nodes: comments, script, style
+[36m<body[39m
+  [33mstyle[39m=[32m""[39m
+[36m>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"p-8 flex-1 overflow-y-auto"[39m
+    [36m>[39m
+      [36m<nav[39m
+        [33maria-label[39m=[32m"Breadcrumb"[39m
+        [33mclass[39m=[32m"flex items-center text-[14px] mb-4"[39m
+      [36m>[39m
+        [36m<ol[39m
+          [33mclass[39m=[32m"flex items-center space-x-1.5 md:space-x-2"[39m
+        [36m>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"inline-flex items-center gap-1.5 transition-colors font-medium text-gray-500 hover:text-brand-600 cursor-pointer"[39m
+            [36m>[39m
+              [0mPastas[0m
+            [36m</button>[39m
+          [36m</li>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-right w-4 h-4 text-gray-300 mx-1 shrink-0"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m9 18 6-6-6-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span[39m
+              [33maria-current[39m=[32m"page"[39m
+              [33mclass[39m=[32m"inline-flex items-center gap-1.5 transition-colors font-medium text-brand-600 cursor-default pointer-events-none"[39m
+            [36m>[39m
+              [0mSuporte[0m
+            [36m</span>[39m
+          [36m</li>[39m
+        [36m</ol>[39m
+      [36m</nav>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-4"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"min-w-0"[39m
+        [36m>[39m
+          [36m<h1[39m
+            [33mclass[39m=[32m"text-[20px] font-semibold text-gray-900"[39m
+          [36m>[39m
+            [0mBase de Conhecimento (FAQ)[0m
+          [36m</h1>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex flex-col gap-3 md:flex-row md:items-center"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-col gap-1.5 w-full md:w-[280px]"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"[39m
+            [36m>[39m
+              [36m<input[39m
+                [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+                [33mplaceholder[39m=[32m"Buscar palavra-chave..."[39m
+                [33mtitle[39m=[32m"busca por palavra-chave"[39m
+                [33mtype[39m=[32m"search"[39m
+                [33mvalue[39m=[32m""[39m
+              [36m/>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-brand-500 text-gray-70 border border-brand-500 hover:bg-brand-700 hover:border-brand-700 disabled:bg-gray-400 disabled:border-gray-400 disabled:text-gray-70 h-[32px] text-xs px-4 shrink-0 self-start md:self-auto"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative z-10 flex items-center gap-2"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"font-normal"[39m
+              [36m>[39m
+                [0m+ Novo artigo[0m
+              [36m</span>[39m
+            [36m</div>[39m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center justify-between mb-4 gap-3"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"w-[220px]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-col w-full gap-1.5"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border bg-white rounded-[12px] h-[42px] focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300"[39m
+              [36m>[39m
+                [36m<select[39m
+                  [33maria-hidden[39m=[32m"true"[39m
+                  [33maria-label[39m=[32m"Ordenar por"[39m
+                  [33mclass[39m=[32m"sr-only"[39m
+                  [33mid[39m=[32m"article-sort"[39m
+                  [33mtabindex[39m=[32m"-1"[39m
+                [36m>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"updated_desc"[39m
+                  [36m>[39m
+                    [0mÚltima atualização[0m
+                  [36m</option>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"title_asc"[39m
+                  [36m>[39m
+                    [0mA - Z[0m
+                  [36m</option>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"title_desc"[39m
+                  [36m>[39m
+                    [0mZ - A[0m
+                  [36m</option>[39m
+                [36m</select>[39m
+                [36m<button[39m
+                  [33maria-expanded[39m=[32m"false"[39m
+                  [33maria-haspopup[39m=[32m"listbox"[39m
+                  [33maria-label[39m=[32m"Ordenar por"[39m
+                  [33mclass[39m=[32m"flex h-full w-full items-center justify-between gap-2 bg-transparent text-left text-gray-900 outline-none pl-4 pr-3 text-[14px]"[39m
+                  [33mrole[39m=[3...
+ ❯ waitForWrapper ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/pages/KnowledgePage.test.tsx:524:33
+    522|     await user.click(deleteBtns[0]);
+    523|
+    524|     const dialog = await screen.findByRole('dialog');
+       |                                 ^
+    525|     expect(within(dialog).getByText('Excluir artigo')).toBeInTheDocume…
+    526|     expect(within(dialog).getByText('Excluir o artigo "Como abrir um c…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/17]⎯
+
+ FAIL  |web| src/pages/KnowledgePage.test.tsx > KnowledgePage > article card, header and empty states > tells an empty folder apart from a search, offering to create the first article to authors
+TestingLibraryElementError: Unable to find an accessible element with the role "button" and name "+ Novo artigo"
+
+Here are the accessible roles:
+
+  navigation:
+
+  Name "Breadcrumb":
+  [36m<nav[39m
+    [33maria-label[39m=[32m"Breadcrumb"[39m
+    [33mclass[39m=[32m"flex items-center text-[14px] mb-4"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  list:
+
+  Name "":
+  [36m<ol[39m
+    [33mclass[39m=[32m"flex items-center space-x-1.5 md:space-x-2"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  listitem:
+
+  Name "":
+  [36m<li[39m
+    [33mclass[39m=[32m"flex items-center"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<li[39m
+    [33mclass[39m=[32m"flex items-center"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  button:
+
+  Name "Pastas":
+  [36m<button[39m
+    [33mclass[39m=[32m"inline-flex items-center gap-1.5 transition-colors font-medium text-gray-500 hover:text-brand-600 cursor-pointer"[39m
+  [36m/>[39m
+
+  Name "Negrito":
+  [36m<button[39m
+    [33mclass[39m=[32m"p-1.5 rounded transition-colors text-gray-600 hover:bg-gray-100 hover:text-gray-900"[39m
+    [33mtitle[39m=[32m"Negrito"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Itálico":
+  [36m<button[39m
+    [33mclass[39m=[32m"p-1.5 rounded transition-colors text-gray-600 hover:bg-gray-100 hover:text-gray-900"[39m
+    [33mtitle[39m=[32m"Itálico"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Sublinhado":
+  [36m<button[39m
+    [33mclass[39m=[32m"p-1.5 rounded transition-colors text-gray-600 hover:bg-gray-100 hover:text-gray-900"[39m
+    [33mtitle[39m=[32m"Sublinhado"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Tachado":
+  [36m<button[39m
+    [33mclass[39m=[32m"p-1.5 rounded transition-colors text-gray-600 hover:bg-gray-100 hover:text-gray-900"[39m
+    [33mtitle[39m=[32m"Tachado"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Realce":
+  [36m<button[39m
+    [33mclass[39m=[32m"p-1.5 rounded transition-colors text-gray-600 hover:bg-gray-100 hover:text-gray-900"[39m
+    [33mtitle[39m=[32m"Realce"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Cor do texto":
+  [36m<button[39m
+    [33mclass[39m=[32m"p-1.5 rounded transition-colors text-gray-600 hover:bg-gray-100 hover:text-gray-900"[39m
+    [33mtitle[39m=[32m"Cor do texto"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Citação":
+  [36m<button[39m
+    [33mclass[39m=[32m"p-1.5 rounded transition-colors text-gray-600 hover:bg-gray-100 hover:text-gray-900"[39m
+    [33mtitle[39m=[32m"Citação"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Alinhar à esquerda":
+  [36m<button[39m
+    [33mclass[39m=[32m"p-1.5 rounded transition-colors text-gray-600 hover:bg-gray-100 hover:text-gray-900"[39m
+    [33mtitle[39m=[32m"Alinhar à esquerda"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Centralizar":
+  [36m<button[39m
+    [33mclass[39m=[32m"p-1.5 rounded transition-colors text-gray-600 hover:bg-gray-100 hover:text-gray-900"[39m
+    [33mtitle[39m=[32m"Centralizar"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Alinhar à direita":
+  [36m<button[39m
+    [33mclass[39m=[32m"p-1.5 rounded transition-colors text-gray-600 hover:bg-gray-100 hover:text-gray-900"[39m
+    [33mtitle[39m=[32m"Alinhar à direita"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Justificar":
+  [36m<button[39m
+    [33mclass[39m=[32m"p-1.5 rounded transition-colors text-gray-600 hover:bg-gray-100 hover:text-gray-900"[39m
+    [33mtitle[39m=[32m"Justificar"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Lista":
+  [36m<button[39m
+    [33mclass[39m=[32m"p-1.5 rounded transition-colors text-gray-600 hover:bg-gray-100 hover:text-gray-900"[39m
+    [33mtitle[39m=[32m"Lista"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Lista Numerada":
+  [36m<button[39m
+    [33mclass[39m=[32m"p-1.5 rounded transition-colors text-gray-600 hover:bg-gray-100 hover:text-gray-900"[39m
+    [33mtitle[39m=[32m"Lista Numerada"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Inserir Link":
+  [36m<button[39m
+    [33mclass[39m=[32m"p-1.5 rounded transition-colors text-gray-600 hover:bg-gray-100 hover:text-gray-900"[39m
+    [33mtitle[39m=[32m"Inserir Link"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Inserir Imagem (URL)":
+  [36m<button[39m
+    [33mclass[39m=[32m"p-1.5 rounded transition-colors text-gray-600 hover:bg-gray-100 hover:text-gray-900"[39m
+    [33mtitle[39m=[32m"Inserir Imagem (URL)"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Inserir tabela":
+  [36m<button[39m
+    [33mclass[39m=[32m"p-1.5 rounded transition-colors text-gray-600 hover:bg-gray-100 hover:text-gray-900"[39m
+    [33mtitle[39m=[32m"Inserir tabela"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Desfazer":
+  [36m<button[39m
+    [33mclass[39m=[32m"p-1.5 rounded transition-colors text-gray-600 opacity-50 cursor-not-allowed hover:bg-transparent hover:text-gray-600"[39m
+    [33mdisabled[39m=[32m""[39m
+    [33mtitle[39m=[32m"Desfazer"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Refazer":
+  [36m<button[39m
+    [33mclass[39m=[32m"p-1.5 rounded transition-colors text-gray-600 opacity-50 cursor-not-allowed hover:bg-transparent hover:text-gray-600"[39m
+    [33mdisabled[39m=[32m""[39m
+    [33mtitle[39m=[32m"Refazer"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Código-fonte":
+  [36m<button[39m
+    [33mclass[39m=[32m"p-1.5 rounded transition-colors text-gray-600 hover:bg-gray-100 hover:text-gray-900"[39m
+    [33mtitle[39m=[32m"Código-fonte"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Visualizar Preview":
+  [36m<button[39m
+    [33mclass[39m=[32m"p-1.5 rounded transition-colors text-gray-600 hover:bg-gray-100 hover:text-gray-900"[39m
+    [33mtitle[39m=[32m"Visualizar Preview"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "+ Novo item de catálogo":
+  [36m<button[39m
+    [33mclass[39m=[32m"text-sm text-brand-700 hover:underline"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Salvar":
+  [36m<button[39m
+    [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-brand-500 text-gray-70 border border-brand-500 hover:bg-brand-700 hover:border-brand-700 disabled:bg-gray-400 disabled:border-gray-400 disabled:text-gray-70 h-[42px] text-sm px-4"[39m
+    [33mtype[39m=[32m"submit"[39m
+  [36m/>[39m
+
+  Name "Cancelar":
+  [36m<button[39m
+    [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent text-brand-600 border border-gray-200 hover:bg-gray-80 hover:border-gray-90 disabled:bg-gray-80 disabled:border-gray-200 disabled:text-gray-400 h-[42px] text-sm px-4"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Exibir em lista":
+  [36m<button[39m
+    [33maria-label[39m=[32m"Exibir em lista"[39m
+    [33maria-pressed[39m=[32m"true"[39m
+    [33mclass[39m=[32m"flex items-center justify-center w-8 h-8 rounded-[8px] transition-colors bg-brand-50 text-brand-700"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Exibir em grade":
+  [36m<button[39m
+    [33maria-label[39m=[32m"Exibir em grade"[39m
+    [33maria-pressed[39m=[32m"false"[39m
+    [33mclass[39m=[32m"flex items-center justify-center w-8 h-8 rounded-[8px] transition-colors text-gray-500 hover:bg-gray-90"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  heading:
+
+  Name "Base de Conhecimento (FAQ)":
+  [36m<h1[39m
+    [33mclass[39m=[32m"text-[20px] font-semibold text-gray-900"[39m
+  [36m/>[39m
+
+  Name "Esta pasta ainda não tem artigos.":
+  [36m<h3[39m
+    [33mclass[39m=[32m"text-[16px] font-semibold text-gray-900 mb-1"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  searchbox:
+
+  Name "busca por palavra-chave":
+  [36m<input[39m
+    [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+    [33mplaceholder[39m=[32m"Buscar palavra-chave..."[39m
+    [33mtitle[39m=[32m"busca por palavra-chave"[39m
+    [33mtype[39m=[32m"search"[39m
+    [33mvalue[39m=[32m""[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  textbox:
+
+  Name "Título *":
+  [36m<input[39m
+    [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+    [33mid[39m=[32m"article-title"[39m
+    [33mrequired[39m=[32m""[39m
+    [33mtype[39m=[32m"text"[39m
+    [33mvalue[39m=[32m""[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<div[39m
+    [33mautocapitalize[39m=[32m"sentences"[39m
+    [33mautocorrect[39m=[32m"on"[39m
+    [33mclass[39m=[32m"tiptap ProseMirror prose prose-sm max-w-none focus:outline-none p-4 text-gray-900 min-h-[120px]"[39m
+    [33mcontenteditable[39m=[32m"true"[39m
+    [33mlang[39m=[32m"pt-BR"[39m
+    [33mrole[39m=[32m"textbox"[39m
+    [33mspellcheck[39m=[32m"true"[39m
+    [33mtabindex[39m=[32m"0"[39m
+    [33mtranslate[39m=[32m"no"[39m
+  [36m/>[39m
+
+  Name "Tags (separadas por vírgula)":
+  [36m<input[39m
+    [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+    [33mid[39m=[32m"article-tags"[39m
+    [33mplaceholder[39m=[32m"ex: acesso, senha, rh"[39m
+    [33mtype[39m=[32m"text"[39m
+    [33mvalue[39m=[32m""[39m
+  [36m/>[39m
+
+  Name "Catálogo de serviços":
+  [36m<input[39m
+    [33mautocomplete[39m=[32m"off"[39m
+    [33mclass[39m=[32m"flex-1 min-w-[120px] bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400"[39m
+    [33mid[39m=[32m"article-service-catalog-items"[39m
+    [33mplaceholder[39m=[32m"Associar itens do catálogo de serviços..."[39m
+    [33mtype[39m=[32m"text"[39m
+    [33mvalue[39m=[32m""[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  paragraph:
+
+  Name "":
+  [36m<p />[39m
+
+  --------------------------------------------------
+  combobox:
+
+  Name "Tipo de acesso":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33maria-haspopup[39m=[32m"listbox"[39m
+    [33maria-label[39m=[32m"Tipo de acesso"[39m
+    [33mclass[39m=[32m"flex h-full w-full items-center justify-between gap-2 bg-transparent text-left text-gray-900 outline-none pl-4 pr-3 text-[14px]"[39m
+    [33mrole[39m=[32m"combobox"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Ordenar por":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33maria-haspopup[39m=[32m"listbox"[39m
+    [33maria-label[39m=[32m"Ordenar por"[39m
+    [33mclass[39m=[32m"flex h-full w-full items-center justify-between gap-2 bg-transparent text-left text-gray-900 outline-none pl-4 pr-3 text-[14px]"[39m
+    [33mrole[39m=[32m"combobox"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body[39m
+  [33mstyle[39m=[32m""[39m
+[36m>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"p-8 flex-1 overflow-y-auto"[39m
+    [36m>[39m
+      [36m<nav[39m
+        [33maria-label[39m=[32m"Breadcrumb"[39m
+        [33mclass[39m=[32m"flex items-center text-[14px] mb-4"[39m
+      [36m>[39m
+        [36m<ol[39m
+          [33mclass[39m=[32m"flex items-center space-x-1.5 md:space-x-2"[39m
+        [36m>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"inline-flex items-center gap-1.5 transition-colors font-medium text-gray-500 hover:text-brand-600 cursor-pointer"[39m
+            [36m>[39m
+              [0mPastas[0m
+            [36m</button>[39m
+          [36m</li>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-right w-4 h-4 text-gray-300 mx-1 shrink-0"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m9 18 6-6-6-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span[39m
+              [33maria-current[39m=[32m"page"[39m
+              [33mclass[39m=[32m"inline-flex items-center gap-1.5 transition-colors font-medium text-brand-600 cursor-default pointer-events-none"[39m
+            [36m>[39m
+              [0mSuporte[0m
+            [36m</span>[39m
+          [36m</li>[39m
+        [36m</ol>[39m
+      [36m</nav>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-4"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"min-w-0"[39m
+        [36m>[39m
+          [36m<h1[39m
+            [33mclass[39m=[32m"text-[20px] font-semibold text-gray-900"[39m
+          [36m>[39m
+            [0mBase de Conhecimento (FAQ)[0m
+          [36m</h1>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex flex-col gap-3 md:flex-row md:items-center"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-col gap-1.5 w-full md:w-[280px]"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"[39m
+            [36m>[39m
+              [36m<input[39m
+                [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+                [33mplaceholder[39m=[32m"Buscar palavra-chave..."[39m
+                [33mtitle[39m=[32m"busca por palavra-chave"[39m
+                [33mtype[39m=[32m"search"[39m
+                [33mvalue[39m=[32m""[39m
+              [36m/>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<form[39m
+        [33mclass[39m=[32m"mb-6"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex flex-col w-full bg-white rounded-[16px] border border-gray-100 transition-all p-4 space-y-3"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-col w-full gap-1.5"[39m
+          [36m>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"text-[14px] font-medium leading-none mb-0.5 select-none text-gray-900"[39m
+              [33mfor[39m=[32m"article-title"[39m
+            [36m>[39m
+              [0mTítulo[0m
+              [36m<span[39m
+                [33mclass[39m=[32m"ml-1 text-red-600"[39m
+              [36m>[39m
+                [0m*[0m
+              [36m</span>[39m
+            [36m</label>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"[39m
+            [36m>[39m
+              [36m<input[39m
+                [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+                [33mid[39m=[32m"article-title"[39m
+                [33mrequired[39m=[32m""[39m
+                [33mtype[39m=[32m"text"[39m
+                [33mvalue[39m=[32m""[39m
+              [36m/>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-col w-full gap-1.5"[39m
+          [36m>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"text-[14px] font-medium leading-none mb-0.5 select-none text-gray-900"[39m
+            [36m>[39m
+              [0mConteúdo[0m
+            [36m</label>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex flex-col w-full border rounded-[12px] bg-white overflow-hidden transition-colors border-gray-200 focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center gap-1 p-1.5 border-b border-gray-200 bg-gray-80 flex-wrap"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"p-1.5 rounded transition-colors text-gray-600 hover:bg-gray-100 hover:text-gray-900"[39m
+                  [33mtitle[39m=[32m"Negrito"[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [36m<svg[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"lucide lucide-bold w-4 h-4"[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mheight[39m=[32m"24"[39m
+                    [33mstroke[39m=[32m"currentColor"[39m
+                    [33mstroke-linecap[39m=[32m"round"[39m
+                    [33mstroke-linejoin[39m=[32m"round"[39m
+                 ...
+ ❯ Object.getElementError ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:109:15
+ ❯ src/pages/KnowledgePage.test.tsx:907:32
+    905|       expect(screen.getByLabelText(/título/i)).toBeInTheDocument();
+    906|       // O botão do cabeçalho fica na tela, desabilitado; o do estado …
+    907|       const remaining = screen.getAllByRole('button', { name: '+ Novo …
+       |                                ^
+    908|       expect(remaining).toHaveLength(1);
+    909|       expect(remaining[0]).toBeDisabled();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/17]⎯
+
+ FAIL  |web| src/pages/KnowledgePage.test.tsx > KnowledgePage > article card, header and empty states > proportion, focus and color semantics (DMTE-535) > keeps the header and sort rows on the control height token, with no loose radius
+Error: [2mexpect([22m[31melement[39m[2m).toHaveClass([22m[32m[32m"h-[42px]"[32m[39m[2m)[22m
+
+Expected the element to have class:
+[32m  h-[42px][39m
+Received:
+[31m  relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-brand-500 text-gray-70 border border-brand-500 hover:bg-brand-700 hover:border-brand-700 disabled:bg-gray-400 disabled:border-gray-400 disabled:text-gray-70 h-[32px] text-xs px-4 shrink-0 self-start md:self-auto[39m
+ ❯ src/pages/KnowledgePage.test.tsx:1011:71
+    1009|         await openAs('ADMIN');
+    1010|
+    1011|         expect(screen.getByRole('button', { name: '+ Novo artigo' })).…
+       |                                                                       ^
+    1012|         const toggle = screen.getByRole('button', { name: 'Exibir em l…
+    1013|         expect(toggle).toHaveClass('h-[var(--control-height-md)]', 'ro…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/17]⎯
+
+ FAIL  |web| src/pages/KnowledgePage.test.tsx > KnowledgePage > article card, header and empty states > proportion, focus and color semantics (DMTE-535) > keeps the Compartilhar button at the height of the access combo
+Error: [2mexpect([22m[31melement[39m[2m).toHaveClass([22m[32m[32m"h-[42px]"[32m[39m[2m)[22m
+
+Expected the element to have class:
+[32m  h-[42px][39m
+Received:
+[31m  relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent text-brand-600 border border-gray-200 hover:bg-gray-80 hover:border-gray-90 disabled:bg-gray-80 disabled:border-gray-200 disabled:text-gray-400 h-[32px] text-xs px-4[39m
+ ❯ src/pages/KnowledgePage.test.tsx:1025:70
+    1023|         fireEvent.change(screen.getByLabelText(/tipo de acesso/i, { se…
+    1024|
+    1025|         expect(screen.getByRole('button', { name: 'Compartilhar' })).t…
+       |                                                                      ^
+    1026|       });
+    1027|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/17]⎯
+
+ FAIL  |web| src/pages/KnowledgePage.test.tsx > KnowledgePage > article card, header and empty states > proportion, focus and color semantics (DMTE-535) > aligns the card text actions with the card content, without the DS side padding
+Error: [2mexpect([22m[31melement[39m[2m).toHaveClass([22m[32m[32m"px-0"[32m[39m[2m)[22m
+
+Expected the element to have class:
+[32m  px-0[39m
+Received:
+[31m  relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent text-brand-600 hover:text-brand-800 disabled:text-gray-400 disabled:bg-transparent h-[32px] text-xs px-4[39m
+ ❯ src/pages/KnowledgePage.test.tsx:1033:62
+    1031|
+    1032|         for (const name of ['Ler artigo completo', 'Editar', 'Excluir'…
+    1033|           expect(within(card).getByRole('button', { name })).toHaveCla…
+       |                                                              ^
+    1034|         }
+    1035|       });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/17]⎯
+
+ FAIL  |web| src/pages/KnowledgePage.test.tsx > KnowledgePage > article card, header and empty states > proportion, focus and color semantics (DMTE-535) > uses the legible primary on the primary actions of the screen
+Error: [2mexpect([22m[31melement[39m[2m).toHaveClass([22m[32m[32m"bg-brand-600 border-brand-600"[32m[39m[2m)[22m
+
+Expected the element to have class:
+[32m  bg-brand-600 border-brand-600[39m
+Received:
+[31m  relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-brand-500 text-gray-70 border border-brand-500 hover:bg-brand-700 hover:border-brand-700 disabled:bg-gray-400 disabled:border-gray-400 disabled:text-gray-70 h-[32px] text-xs px-4 shrink-0 self-start md:self-auto[39m
+ ❯ src/pages/KnowledgePage.test.tsx:1040:71
+    1038|         const user = await openAs('ADMIN');
+    1039|         const primary = ['bg-brand-600', 'border-brand-600'];
+    1040|         expect(screen.getByRole('button', { name: '+ Novo artigo' })).…
+       |                                                                       ^
+    1041|
+    1042|         await user.click(screen.getByRole('button', { name: '+ Novo ar…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/17]⎯
+
+ FAIL  |web| src/pages/KnowledgePage.test.tsx > KnowledgePage > article card, header and empty states > proportion, focus and color semantics (DMTE-535) > gives the clickable tag, the filter remove button and the view toggles the DS focus ring
+Error: [2mexpect([22m[31melement[39m[2m).toHaveClass([22m[32m[32m"rounded-full focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2"[32m[39m[2m)[22m
+
+Expected the element to have class:
+[32m  rounded-full focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2[39m
+Received:
+[31m[39m
+ ❯ src/pages/KnowledgePage.test.tsx:1054:21
+    1052|
+    1053|         const tag = within(card).getByRole('button', { name: /#senha/ …
+    1054|         expect(tag).toHaveClass('rounded-full', ...ring);
+       |                     ^
+    1055|         for (const name of ['Exibir em lista', 'Exibir em grade']) {
+    1056|           expect(screen.getByRole('button', { name })).toHaveClass(...…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/17]⎯
+
+ FAIL  |web| src/pages/KnowledgePage.test.tsx > KnowledgePage > article card, header and empty states > proportion, focus and color semantics (DMTE-535) > marks the active tag filter with aria-pressed and a decorative check, not only a color
+Error: [2mexpect([22m[31melement[39m[2m).toHaveAttribute([22m[32m[32m"aria-pressed"[32m[39m[2m, [22m[32m[32m"false"[32m[39m[2m) // element.getAttribute("aria-pressed") === "false"[22m
+
+Expected the element to have attribute:
+[32m  aria-pressed="false"[39m
+Received:
+[31m  null[39m
+ ❯ src/pages/KnowledgePage.test.tsx:1068:31
+    1066|         const tag = (name: RegExp) => within(cardOf('Artigo com tags')…
+    1067|
+    1068|         expect(tag(/#senha/)).toHaveAttribute('aria-pressed', 'false');
+       |                               ^
+    1069|         expect(tag(/#senha/).querySelector('svg')).toBeNull();
+    1070|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/17]⎯
+
+ FAIL  |web| src/pages/KnowledgePage.test.tsx > KnowledgePage > article card, header and empty states > proportion, focus and color semantics (DMTE-535) > shows Interno as a classification (petroleum with a lock), not as a yellow alert
+Error: [2mexpect([22m[31melement[39m[2m).toHaveClass([22m[32m[32m"bg-petroleum-100"[32m[39m[2m)[22m
+
+Expected the element to have class:
+[32m  bg-petroleum-100[39m
+Received:
+[31m  inline-flex items-center justify-center rounded-[24px] px-2.5 py-1 min-w-[32px] min-h-[24px] text-[12px] font-medium leading-none select-none transition-colors border bg-yellow-100 text-yellow-800 border-yellow-300[39m
+ ❯ src/pages/KnowledgePage.test.tsx:1081:21
+    1079|         const tag = within(cardOf('Artigo com tags')).getByText('Inter…
+    1080|
+    1081|         expect(tag).toHaveClass('bg-petroleum-100');
+       |                     ^
+    1082|         expect(tag.className).not.toMatch(/yellow/);
+    1083|         expect(tag.querySelector('svg')).toHaveAttribute('aria-hidden'…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/17]⎯
+
+ FAIL  |web| src/pages/KnowledgePage.test.tsx > KnowledgePage > article card, header and empty states > proportion, focus and color semantics (DMTE-535) > keeps "+ Novo artigo" on screen, disabled, while the form is open, and focuses the title
+TestingLibraryElementError: Unable to find an accessible element with the role "button" and name "+ Novo artigo"
+
+Here are the accessible roles:
+
+  navigation:
+
+  Name "Breadcrumb":
+  [36m<nav[39m
+    [33maria-label[39m=[32m"Breadcrumb"[39m
+    [33mclass[39m=[32m"flex items-center text-[14px] mb-4"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  list:
+
+  Name "":
+  [36m<ol[39m
+    [33mclass[39m=[32m"flex items-center space-x-1.5 md:space-x-2"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  listitem:
+
+  Name "":
+  [36m<li[39m
+    [33mclass[39m=[32m"flex items-center"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<li[39m
+    [33mclass[39m=[32m"flex items-center"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  button:
+
+  Name "Pastas":
+  [36m<button[39m
+    [33mclass[39m=[32m"inline-flex items-center gap-1.5 transition-colors font-medium text-gray-500 hover:text-brand-600 cursor-pointer"[39m
+  [36m/>[39m
+
+  Name "Negrito":
+  [36m<button[39m
+    [33mclass[39m=[32m"p-1.5 rounded transition-colors text-gray-600 hover:bg-gray-100 hover:text-gray-900"[39m
+    [33mtitle[39m=[32m"Negrito"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Itálico":
+  [36m<button[39m
+    [33mclass[39m=[32m"p-1.5 rounded transition-colors text-gray-600 hover:bg-gray-100 hover:text-gray-900"[39m
+    [33mtitle[39m=[32m"Itálico"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Sublinhado":
+  [36m<button[39m
+    [33mclass[39m=[32m"p-1.5 rounded transition-colors text-gray-600 hover:bg-gray-100 hover:text-gray-900"[39m
+    [33mtitle[39m=[32m"Sublinhado"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Tachado":
+  [36m<button[39m
+    [33mclass[39m=[32m"p-1.5 rounded transition-colors text-gray-600 hover:bg-gray-100 hover:text-gray-900"[39m
+    [33mtitle[39m=[32m"Tachado"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Realce":
+  [36m<button[39m
+    [33mclass[39m=[32m"p-1.5 rounded transition-colors text-gray-600 hover:bg-gray-100 hover:text-gray-900"[39m
+    [33mtitle[39m=[32m"Realce"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Cor do texto":
+  [36m<button[39m
+    [33mclass[39m=[32m"p-1.5 rounded transition-colors text-gray-600 hover:bg-gray-100 hover:text-gray-900"[39m
+    [33mtitle[39m=[32m"Cor do texto"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Citação":
+  [36m<button[39m
+    [33mclass[39m=[32m"p-1.5 rounded transition-colors text-gray-600 hover:bg-gray-100 hover:text-gray-900"[39m
+    [33mtitle[39m=[32m"Citação"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Alinhar à esquerda":
+  [36m<button[39m
+    [33mclass[39m=[32m"p-1.5 rounded transition-colors text-gray-600 hover:bg-gray-100 hover:text-gray-900"[39m
+    [33mtitle[39m=[32m"Alinhar à esquerda"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Centralizar":
+  [36m<button[39m
+    [33mclass[39m=[32m"p-1.5 rounded transition-colors text-gray-600 hover:bg-gray-100 hover:text-gray-900"[39m
+    [33mtitle[39m=[32m"Centralizar"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Alinhar à direita":
+  [36m<button[39m
+    [33mclass[39m=[32m"p-1.5 rounded transition-colors text-gray-600 hover:bg-gray-100 hover:text-gray-900"[39m
+    [33mtitle[39m=[32m"Alinhar à direita"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Justificar":
+  [36m<button[39m
+    [33mclass[39m=[32m"p-1.5 rounded transition-colors text-gray-600 hover:bg-gray-100 hover:text-gray-900"[39m
+    [33mtitle[39m=[32m"Justificar"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Lista":
+  [36m<button[39m
+    [33mclass[39m=[32m"p-1.5 rounded transition-colors text-gray-600 hover:bg-gray-100 hover:text-gray-900"[39m
+    [33mtitle[39m=[32m"Lista"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Lista Numerada":
+  [36m<button[39m
+    [33mclass[39m=[32m"p-1.5 rounded transition-colors text-gray-600 hover:bg-gray-100 hover:text-gray-900"[39m
+    [33mtitle[39m=[32m"Lista Numerada"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Inserir Link":
+  [36m<button[39m
+    [33mclass[39m=[32m"p-1.5 rounded transition-colors text-gray-600 hover:bg-gray-100 hover:text-gray-900"[39m
+    [33mtitle[39m=[32m"Inserir Link"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Inserir Imagem (URL)":
+  [36m<button[39m
+    [33mclass[39m=[32m"p-1.5 rounded transition-colors text-gray-600 hover:bg-gray-100 hover:text-gray-900"[39m
+    [33mtitle[39m=[32m"Inserir Imagem (URL)"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Inserir tabela":
+  [36m<button[39m
+    [33mclass[39m=[32m"p-1.5 rounded transition-colors text-gray-600 hover:bg-gray-100 hover:text-gray-900"[39m
+    [33mtitle[39m=[32m"Inserir tabela"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Desfazer":
+  [36m<button[39m
+    [33mclass[39m=[32m"p-1.5 rounded transition-colors text-gray-600 opacity-50 cursor-not-allowed hover:bg-transparent hover:text-gray-600"[39m
+    [33mdisabled[39m=[32m""[39m
+    [33mtitle[39m=[32m"Desfazer"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Refazer":
+  [36m<button[39m
+    [33mclass[39m=[32m"p-1.5 rounded transition-colors text-gray-600 opacity-50 cursor-not-allowed hover:bg-transparent hover:text-gray-600"[39m
+    [33mdisabled[39m=[32m""[39m
+    [33mtitle[39m=[32m"Refazer"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Código-fonte":
+  [36m<button[39m
+    [33mclass[39m=[32m"p-1.5 rounded transition-colors text-gray-600 hover:bg-gray-100 hover:text-gray-900"[39m
+    [33mtitle[39m=[32m"Código-fonte"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Visualizar Preview":
+  [36m<button[39m
+    [33mclass[39m=[32m"p-1.5 rounded transition-colors text-gray-600 hover:bg-gray-100 hover:text-gray-900"[39m
+    [33mtitle[39m=[32m"Visualizar Preview"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "+ Novo item de catálogo":
+  [36m<button[39m
+    [33mclass[39m=[32m"text-sm text-brand-700 hover:underline"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Salvar":
+  [36m<button[39m
+    [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-brand-500 text-gray-70 border border-brand-500 hover:bg-brand-700 hover:border-brand-700 disabled:bg-gray-400 disabled:border-gray-400 disabled:text-gray-70 h-[42px] text-sm px-4"[39m
+    [33mtype[39m=[32m"submit"[39m
+  [36m/>[39m
+
+  Name "Cancelar":
+  [36m<button[39m
+    [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent text-brand-600 border border-gray-200 hover:bg-gray-80 hover:border-gray-90 disabled:bg-gray-80 disabled:border-gray-200 disabled:text-gray-400 h-[42px] text-sm px-4"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Exibir em lista":
+  [36m<button[39m
+    [33maria-label[39m=[32m"Exibir em lista"[39m
+    [33maria-pressed[39m=[32m"true"[39m
+    [33mclass[39m=[32m"flex items-center justify-center w-8 h-8 rounded-[8px] transition-colors bg-brand-50 text-brand-700"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Exibir em grade":
+  [36m<button[39m
+    [33maria-label[39m=[32m"Exibir em grade"[39m
+    [33maria-pressed[39m=[32m"false"[39m
+    [33mclass[39m=[32m"flex items-center justify-center w-8 h-8 rounded-[8px] transition-colors text-gray-500 hover:bg-gray-90"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "#senha":
+  [36m<button[39m
+    [33mtitle[39m=[32m"Filtrar por senha"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "#ajuda":
+  [36m<button[39m
+    [33mtitle[39m=[32m"Filtrar por ajuda"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Ler artigo completo":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent text-brand-600 hover:text-brand-800 disabled:text-gray-400 disabled:bg-transparent h-[32px] text-xs px-4"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Editar":
+  [36m<button[39m
+    [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent text-brand-600 hover:text-brand-800 disabled:text-gray-400 disabled:bg-transparent h-[32px] text-xs px-4"[39m
+  [36m/>[39m
+
+  Name "Excluir":
+  [36m<button[39m
+    [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent disabled:text-gray-400 disabled:bg-transparent h-[32px] text-xs px-4 text-red-600 hover:text-red-700"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  heading:
+
+  Name "Base de Conhecimento (FAQ)":
+  [36m<h1[39m
+    [33mclass[39m=[32m"text-[20px] font-semibold text-gray-900"[39m
+  [36m/>[39m
+
+  Name "Artigo com tags":
+  [36m<h2[39m
+    [33mclass[39m=[32m"break-words text-[18px] font-semibold text-gray-900"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  searchbox:
+
+  Name "busca por palavra-chave":
+  [36m<input[39m
+    [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+    [33mplaceholder[39m=[32m"Buscar palavra-chave..."[39m
+    [33mtitle[39m=[32m"busca por palavra-chave"[39m
+    [33mtype[39m=[32m"search"[39m
+    [33mvalue[39m=[32m""[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  textbox:
+
+  Name "Título *":
+  [36m<input[39m
+    [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+    [33mid[39m=[32m"article-title"[39m
+    [33mrequired[39m=[32m""[39m
+    [33mtype[39m=[32m"text"[39m
+    [33mvalue[39m=[32m""[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<div[39m
+    [33mautocapitalize[39m=[32m"sentences"[39m
+    [33mautocorrect[39m=[32m"on"[39m
+    [33mclass[39m=[32m"tiptap ProseMirror prose prose-sm max-w-none focus:outline-none p-4 text-gray-900 min-h-[120px]"[39m
+    [33mcontenteditable[39m=[32m"true"[39m
+    [33mlang[39m=[32m"pt-BR"[39m
+    [33mrole[39m=[32m"textbox"[39m
+    [33mspellcheck[39m=[32m"true"[39m
+    [33mtabindex[39m=[32m"0"[39m
+    [33mtranslate[39m=[32m"no"[39m
+  [36m/>[39m
+
+  Name "Tags (separadas por vírgula)":
+  [36m<input[39m
+    [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+    [33mid[39m=[32m"article-tags"[39m
+    [33mplaceholder[39m=[32m"ex: acesso, senha, rh"[39m
+    [33mtype[39m=[32m"text"[39m
+    [33mvalue[39m=[32m""[39m
+  [36m/>[39m
+
+  Name "Catálogo de serviços":
+  [36m<input[39m
+    [33mautocomplete[39m=[32m"off"[39m
+    [33mclass[39m=[32m"flex-1 min-w-[120px] bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400"[39m
+    [33mid[39m=[32m"article-service-catalog-items"[39m
+    [33mplaceholder[39m=[32m"Associar itens do catálogo de serviços..."[39m
+    [33mtype[39m=[32m"text"[39m
+    [33mvalue[39m=[32m""[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  paragraph:
+
+  Name "":
+  [36m<p />[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-xs text-gray-500"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"line-clamp-3 break-words text-sm text-gray-700"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  combobox:
+
+  Name "Tipo de acesso":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33maria-haspopup[39m=[32m"listbox"[39m
+    [33maria-label[39m=[32m"Tipo de acesso"[39m
+    [33mclass[39m=[32m"flex h-full w-full items-center justify-between gap-2 bg-transparent text-left text-gray-900 outline-none pl-4 pr-3 text-[14px]"[39m
+    [33mrole[39m=[32m"combobox"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Ordenar por":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33maria-haspopup[39m=[32m"listbox"[39m
+    [33maria-label[39m=[32m"Ordenar por"[39m
+    [33mclass[39m=[32m"flex h-full w-full items-center justify-between gap-2 bg-transparent text-left text-gray-900 outline-none pl-4 pr-3 text-[14px]"[39m
+    [33mrole[39m=[32m"combobox"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  article:
+
+  Name "":
+  [36m<article[39m
+    [33mclass[39m=[32m"flex min-w-0"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body[39m
+  [33mstyle[39m=[32m""[39m
+[36m>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"p-8 flex-1 overflow-y-auto"[39m
+    [36m>[39m
+      [36m<nav[39m
+        [33maria-label[39m=[32m"Breadcrumb"[39m
+        [33mclass[39m=[32m"flex items-center text-[14px] mb-4"[39m
+      [36m>[39m
+        [36m<ol[39m
+          [33mclass[39m=[32m"flex items-center space-x-1.5 md:space-x-2"[39m
+        [36m>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"inline-flex items-center gap-1.5 transition-colors font-medium text-gray-500 hover:text-brand-600 cursor-pointer"[39m
+            [36m>[39m
+              [0mPastas[0m
+            [36m</button>[39m
+          [36m</li>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-right w-4 h-4 text-gray-300 mx-1 shrink-0"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m9 18 6-6-6-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span[39m
+              [33maria-current[39m=[32m"page"[39m
+              [33mclass[39m=[32m"inline-flex items-center gap-1.5 transition-colors font-medium text-brand-600 cursor-default pointer-events-none"[39m
+            [36m>[39m
+              [0mSuporte[0m
+            [36m</span>[39m
+          [36m</li>[39m
+        [36m</ol>[39m
+      [36m</nav>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-4"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"min-w-0"[39m
+        [36m>[39m
+          [36m<h1[39m
+            [33mclass[39m=[32m"text-[20px] font-semibold text-gray-900"[39m
+          [36m>[39m
+            [0mBase de Conhecimento (FAQ)[0m
+          [36m</h1>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex flex-col gap-3 md:flex-row md:items-center"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-col gap-1.5 w-full md:w-[280px]"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"[39m
+            [36m>[39m
+              [36m<input[39m
+                [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+                [33mplaceholder[39m=[32m"Buscar palavra-chave..."[39m
+                [33mtitle[39m=[32m"busca por palavra-chave"[39m
+                [33mtype[39m=[32m"search"[39m
+                [33mvalue[39m=[32m""[39m
+              [36m/>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<form[39m
+        [33mclass[39m=[32m"mb-6"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex flex-col w-full bg-white rounded-[16px] border border-gray-100 transition-all p-4 space-y-3"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-col w-full gap-1.5"[39m
+          [36m>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"text-[14px] font-medium leading-none mb-0.5 select-none text-gray-900"[39m
+              [33mfor[39m=[32m"article-title"[39m
+            [36m>[39m
+              [0mTítulo[0m
+              [36m<span[39m
+                [33mclass[39m=[32m"ml-1 text-red-600"[39m
+              [36m>[39m
+                [0m*[0m
+              [36m</span>[39m
+            [36m</label>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"[39m
+            [36m>[39m
+              [36m<input[39m
+                [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+                [33mid[39m=[32m"article-title"[39m
+                [33mrequired[39m=[32m""[39m
+                [33mtype[39m=[32m"text"[39m
+                [33mvalue[39m=[32m""[39m
+              [36m/>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-col w-full gap-1.5"[39m
+          [36m>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"text-[14px] font-medium leading-none mb-0.5 select-none text-gray-900"[39m
+            [36m>[39m
+              [0mConteúdo[0m
+            [36m</label>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex flex-col w-full border rounded-[12px] bg-white overflow-hidden transition-colors border-gray-200 focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center gap-1 p-1.5 border-b border-gray-200 bg-gray-80 flex-wrap"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33mclass[39m=[32m"p-1.5 rounded transition-colors text-gray-600 hover:bg-gray-100 hover:text-gray-900"[39m
+                  [33mtitle[39m=[32m"Negrito"[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [36m<svg[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"lucide lucide-bold w-4 h-4"[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mheight[39m=[32m"24"[39m
+                    [33mstroke[39m=[32m"currentColor"[39m
+                    [33mstroke-linecap[39m=[32m"round"[39m
+                    [33mstroke-linejoin[39m=[32m"round"[39m
+                 ...
+ ❯ Object.getElementError ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/pages/KnowledgePage.test.tsx:1090:31
+    1088|
+    1089|         await user.click(screen.getByRole('button', { name: '+ Novo ar…
+    1090|         const button = screen.getByRole('button', { name: '+ Novo arti…
+       |                               ^
+    1091|         expect(button).toBeDisabled();
+    1092|         expect(button).toHaveAttribute('title', 'O formulário de artig…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/17]⎯
+
+ FAIL  |web| src/pages/KnowledgePage.test.tsx > KnowledgePage > article card, header and empty states > proportion, focus and color semantics (DMTE-535) > focuses the title when the edit form opens from a card
+Error: [2mexpect([22m[31melement[39m[2m).toHaveFocus()[22m
+
+Expected element with focus:
+  [32m<input
+  class="flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"
+  id="article-title"
+  required=""
+  type="text"
+  value="Artigo com tags"
+/>[39m
+Received element with focus:
+  [31m<button
+  class="relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent text-brand-600 hover:text-brand-800 disabled:text-gray-400 disabled:bg-transparent h-[32px] text-xs px-4"
+>
+  <div
+    class="relative z-10 flex items-center gap-2"
+  >
+    <span
+      class="font-medium"
+    >
+      Editar
+    </span>
+  </div>
+  <span
+    class="pointer-events-none absolute w-[20px] h-[20px] rounded-full scale-0 animate-ripple z-0 bg-brand-600/15"
+    style="left: -10px; top: -10px;"
+  />
+</button>[39m
+ ❯ src/pages/KnowledgePage.test.tsx:1104:50
+    1102|         await user.click(within(cardOf('Artigo com tags')).getByRole('…
+    1103|
+    1104|         expect(screen.getByLabelText(/título/i)).toHaveFocus();
+       |                                                  ^
+    1105|       });
+    1106|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/17]⎯
+
+ FAIL  |web| src/pages/KnowledgePage.test.tsx > KnowledgePage > article card, header and empty states > proportion, focus and color semantics (DMTE-535) > aligns "+ Novo item de catálogo" to the start of the form as a DS tertiary button
+Error: [2mexpect([22m[31melement[39m[2m).toHaveClass([22m[32m[32m"self-start px-0"[32m[39m[2m)[22m
+
+Expected the element to have class:
+[32m  self-start px-0[39m
+Received:
+[31m  text-sm text-brand-700 hover:underline[39m
+ ❯ src/pages/KnowledgePage.test.tsx:1111:81
+    1109|         await user.click(screen.getByRole('button', { name: '+ Novo ar…
+    1110|
+    1111|         expect(screen.getByRole('button', { name: '+ Novo item de catá…
+       |                                                                                 ^
+    1112|       });
+    1113|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/17]⎯
+
+ FAIL  |web| src/pages/KnowledgePage.test.tsx > KnowledgePage > article card, header and empty states > proportion, focus and color semantics (DMTE-535) > asks for confirmation in a dialog before deleting, and cancel or Escape keep the article
+TestingLibraryElementError: Unable to find role="dialog"
+
+Ignored nodes: comments, script, style
+[36m<body[39m
+  [33mstyle[39m=[32m""[39m
+[36m>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"p-8 flex-1 overflow-y-auto"[39m
+    [36m>[39m
+      [36m<nav[39m
+        [33maria-label[39m=[32m"Breadcrumb"[39m
+        [33mclass[39m=[32m"flex items-center text-[14px] mb-4"[39m
+      [36m>[39m
+        [36m<ol[39m
+          [33mclass[39m=[32m"flex items-center space-x-1.5 md:space-x-2"[39m
+        [36m>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"inline-flex items-center gap-1.5 transition-colors font-medium text-gray-500 hover:text-brand-600 cursor-pointer"[39m
+            [36m>[39m
+              [0mPastas[0m
+            [36m</button>[39m
+          [36m</li>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-right w-4 h-4 text-gray-300 mx-1 shrink-0"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m9 18 6-6-6-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span[39m
+              [33maria-current[39m=[32m"page"[39m
+              [33mclass[39m=[32m"inline-flex items-center gap-1.5 transition-colors font-medium text-brand-600 cursor-default pointer-events-none"[39m
+            [36m>[39m
+              [0mSuporte[0m
+            [36m</span>[39m
+          [36m</li>[39m
+        [36m</ol>[39m
+      [36m</nav>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-4"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"min-w-0"[39m
+        [36m>[39m
+          [36m<h1[39m
+            [33mclass[39m=[32m"text-[20px] font-semibold text-gray-900"[39m
+          [36m>[39m
+            [0mBase de Conhecimento (FAQ)[0m
+          [36m</h1>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex flex-col gap-3 md:flex-row md:items-center"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-col gap-1.5 w-full md:w-[280px]"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"[39m
+            [36m>[39m
+              [36m<input[39m
+                [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+                [33mplaceholder[39m=[32m"Buscar palavra-chave..."[39m
+                [33mtitle[39m=[32m"busca por palavra-chave"[39m
+                [33mtype[39m=[32m"search"[39m
+                [33mvalue[39m=[32m""[39m
+              [36m/>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-brand-500 text-gray-70 border border-brand-500 hover:bg-brand-700 hover:border-brand-700 disabled:bg-gray-400 disabled:border-gray-400 disabled:text-gray-70 h-[32px] text-xs px-4 shrink-0 self-start md:self-auto"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative z-10 flex items-center gap-2"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"font-normal"[39m
+              [36m>[39m
+                [0m+ Novo artigo[0m
+              [36m</span>[39m
+            [36m</div>[39m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center justify-between mb-4 gap-3"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"w-[220px]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-col w-full gap-1.5"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border bg-white rounded-[12px] h-[42px] focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300"[39m
+              [36m>[39m
+                [36m<select[39m
+                  [33maria-hidden[39m=[32m"true"[39m
+                  [33maria-label[39m=[32m"Ordenar por"[39m
+                  [33mclass[39m=[32m"sr-only"[39m
+                  [33mid[39m=[32m"article-sort"[39m
+                  [33mtabindex[39m=[32m"-1"[39m
+                [36m>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"updated_desc"[39m
+                  [36m>[39m
+                    [0mÚltima atualização[0m
+                  [36m</option>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"title_asc"[39m
+                  [36m>[39m
+                    [0mA - Z[0m
+                  [36m</option>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"title_desc"[39m
+                  [36m>[39m
+                    [0mZ - A[0m
+                  [36m</option>[39m
+                [36m</select>[39m
+                [36m<button[39m
+                  [33maria-expanded[39m=[32m"false"[39m
+                  [33maria-haspopup[39m=[32m"listbox"[39m
+                  [33maria-label[39m=[32m"Ordenar por"[39m
+                  [33mclass[39m=[32m"flex h-full w-full items-center justify-between gap-2 bg-transparent text-left text-gray-900 outline-none pl-4 pr-3 text-[14px]"[39m
+                  [33mrole[39m=[3...
+
+Ignored nodes: comments, script, style
+[36m<body[39m
+  [33mstyle[39m=[32m""[39m
+[36m>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"p-8 flex-1 overflow-y-auto"[39m
+    [36m>[39m
+      [36m<nav[39m
+        [33maria-label[39m=[32m"Breadcrumb"[39m
+        [33mclass[39m=[32m"flex items-center text-[14px] mb-4"[39m
+      [36m>[39m
+        [36m<ol[39m
+          [33mclass[39m=[32m"flex items-center space-x-1.5 md:space-x-2"[39m
+        [36m>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"inline-flex items-center gap-1.5 transition-colors font-medium text-gray-500 hover:text-brand-600 cursor-pointer"[39m
+            [36m>[39m
+              [0mPastas[0m
+            [36m</button>[39m
+          [36m</li>[39m
+          [36m<li[39m
+            [33mclass[39m=[32m"flex items-center"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-chevron-right w-4 h-4 text-gray-300 mx-1 shrink-0"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m9 18 6-6-6-6"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span[39m
+              [33maria-current[39m=[32m"page"[39m
+              [33mclass[39m=[32m"inline-flex items-center gap-1.5 transition-colors font-medium text-brand-600 cursor-default pointer-events-none"[39m
+            [36m>[39m
+              [0mSuporte[0m
+            [36m</span>[39m
+          [36m</li>[39m
+        [36m</ol>[39m
+      [36m</nav>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-4"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"min-w-0"[39m
+        [36m>[39m
+          [36m<h1[39m
+            [33mclass[39m=[32m"text-[20px] font-semibold text-gray-900"[39m
+          [36m>[39m
+            [0mBase de Conhecimento (FAQ)[0m
+          [36m</h1>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex flex-col gap-3 md:flex-row md:items-center"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-col gap-1.5 w-full md:w-[280px]"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"[39m
+            [36m>[39m
+              [36m<input[39m
+                [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+                [33mplaceholder[39m=[32m"Buscar palavra-chave..."[39m
+                [33mtitle[39m=[32m"busca por palavra-chave"[39m
+                [33mtype[39m=[32m"search"[39m
+                [33mvalue[39m=[32m""[39m
+              [36m/>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-brand-500 text-gray-70 border border-brand-500 hover:bg-brand-700 hover:border-brand-700 disabled:bg-gray-400 disabled:border-gray-400 disabled:text-gray-70 h-[32px] text-xs px-4 shrink-0 self-start md:self-auto"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative z-10 flex items-center gap-2"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"font-normal"[39m
+              [36m>[39m
+                [0m+ Novo artigo[0m
+              [36m</span>[39m
+            [36m</div>[39m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center justify-between mb-4 gap-3"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"w-[220px]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-col w-full gap-1.5"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border bg-white rounded-[12px] h-[42px] focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300"[39m
+              [36m>[39m
+                [36m<select[39m
+                  [33maria-hidden[39m=[32m"true"[39m
+                  [33maria-label[39m=[32m"Ordenar por"[39m
+                  [33mclass[39m=[32m"sr-only"[39m
+                  [33mid[39m=[32m"article-sort"[39m
+                  [33mtabindex[39m=[32m"-1"[39m
+                [36m>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"updated_desc"[39m
+                  [36m>[39m
+                    [0mÚltima atualização[0m
+                  [36m</option>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"title_asc"[39m
+                  [36m>[39m
+                    [0mA - Z[0m
+                  [36m</option>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"title_desc"[39m
+                  [36m>[39m
+                    [0mZ - A[0m
+                  [36m</option>[39m
+                [36m</select>[39m
+                [36m<button[39m
+                  [33maria-expanded[39m=[32m"false"[39m
+                  [33maria-haspopup[39m=[32m"listbox"[39m
+                  [33maria-label[39m=[32m"Ordenar por"[39m
+                  [33mclass[39m=[32m"flex h-full w-full items-center justify-between gap-2 bg-transparent text-left text-gray-900 outline-none pl-4 pr-3 text-[14px]"[39m
+                  [33mrole[39m=[3...
+ ❯ waitForWrapper ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/pages/KnowledgePage.test.tsx:1119:35
+    1117|
+    1118|         await user.click(within(cardOf('Artigo com tags')).getByRole('…
+    1119|         let dialog = await screen.findByRole('dialog');
+       |                                   ^
+    1120|         await user.click(within(dialog).getByRole('button', { name: 'C…
+    1121|         expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/17]⎯
+
+ FAIL  |web| src/components/knowledge/KnowledgeFoldersGrid.test.tsx > KnowledgeFoldersGrid > allows a canAuthor user to delete a folder after confirming
+TestingLibraryElementError: Unable to find role="dialog"
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center justify-between mb-6"[39m
+      [36m>[39m
+        [36m<h1[39m
+          [33mclass[39m=[32m"text-[20px] font-semibold text-gray-900"[39m
+        [36m>[39m
+          [0mBase de Conhecimento[0m
+        [36m</h1>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-brand-500 text-gray-70 border border-brand-500 hover:bg-brand-700 hover:border-brand-700 disabled:bg-gray-400 disabled:border-gray-400 disabled:text-gray-70 h-[32px] text-xs px-4"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"relative z-10 flex items-center gap-2"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"font-normal"[39m
+            [36m>[39m
+              [0m+ Nova pasta[0m
+            [36m</span>[39m
+          [36m</div>[39m
+        [36m</button>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex flex-col w-full bg-white rounded-[16px] border border-gray-100 transition-all p-4"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"flex items-start gap-3 w-full text-left"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"text-2xl leading-none"[39m
+            [36m>[39m
+              [0m💰[0m
+            [36m</span>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex-1"[39m
+            [36m>[39m
+              [36m<h2[39m
+                [33mclass[39m=[32m"text-[16px] font-semibold text-gray-900"[39m
+              [36m>[39m
+                [0mFinanceiro[0m
+              [36m</h2>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"text-sm text-gray-500"[39m
+              [36m>[39m
+                [0mNotas fiscais[0m
+              [36m</p>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"text-xs text-gray-400 mt-1"[39m
+              [36m>[39m
+                [0m3[0m
+                [0m [0m
+                [0martigos[0m
+              [36m</p>[39m
+            [36m</div>[39m
+          [36m</button>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex gap-2 mt-3 pt-3 border-t border-gray-100"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent text-brand-600 hover:text-brand-800 disabled:text-gray-400 disabled:bg-transparent h-[32px] text-xs px-4"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"relative z-10 flex items-center gap-2"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"font-medium"[39m
+                [36m>[39m
+                  [0mEditar[0m
+                [36m</span>[39m
+              [36m</div>[39m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent disabled:text-gray-400 disabled:bg-transparent h-[32px] text-xs px-4 text-red-600 hover:text-red-700"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"relative z-10 flex items-center gap-2"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"font-medium"[39m
+                [36m>[39m
+                  [0mExcluir[0m
+                [36m</span>[39m
+              [36m</div>[39m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex flex-col w-full bg-white rounded-[16px] border border-gray-100 transition-all p-4"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"flex items-start gap-3 w-full text-left"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"text-2xl leading-none"[39m
+            [36m>[39m
+              [0m💻[0m
+            [36m</span>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex-1"[39m
+            [36m>[39m
+              [36m<h2[39m
+                [33mclass[39m=[32m"text-[16px] font-semibold text-gray-900"[39m
+              [36m>[39m
+                [0mTI[0m
+              [36m</h2>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"text-xs text-gray-400 mt-1"[39m
+              [36m>[39m
+                [0m0[0m
+                [0m [0m
+                [0martigos[0m
+              [36m</p>[39m
+            [36m</div>[39m
+          [36m</button>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex gap-2 mt-3 pt-3 border-t border-gray-100"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent text-brand-600 hover:text-brand-800 disabled:text-gray-400 disabled:bg-transparent h-[32px] text-xs px-4"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"relative z-10 flex items-center gap-2"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"font-medium"[39m
+                [36m>[39m
+                  [0mEditar[0m
+                [36m</span>[39m
+              [36m</div>[39m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent disabled:text-gray-400 disabled:bg-transparent h-[32px] text-xs px-4 text-red-600 hover:text-red-700"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"relative z-10 flex items-center gap-2"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"font-medium"[39m
+                [36m>[39m
+                  [0mExcluir[0m
+                [36m</span>[39m
+              [36m</div>[39m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center justify-between mb-6"[39m
+      [36m>[39m
+        [36m<h1[39m
+          [33mclass[39m=[32m"text-[20px] font-semibold text-gray-900"[39m
+        [36m>[39m
+          [0mBase de Conhecimento[0m
+        [36m</h1>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-brand-500 text-gray-70 border border-brand-500 hover:bg-brand-700 hover:border-brand-700 disabled:bg-gray-400 disabled:border-gray-400 disabled:text-gray-70 h-[32px] text-xs px-4"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"relative z-10 flex items-center gap-2"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"font-normal"[39m
+            [36m>[39m
+              [0m+ Nova pasta[0m
+            [36m</span>[39m
+          [36m</div>[39m
+        [36m</button>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex flex-col w-full bg-white rounded-[16px] border border-gray-100 transition-all p-4"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"flex items-start gap-3 w-full text-left"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"text-2xl leading-none"[39m
+            [36m>[39m
+              [0m💰[0m
+            [36m</span>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex-1"[39m
+            [36m>[39m
+              [36m<h2[39m
+                [33mclass[39m=[32m"text-[16px] font-semibold text-gray-900"[39m
+              [36m>[39m
+                [0mFinanceiro[0m
+              [36m</h2>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"text-sm text-gray-500"[39m
+              [36m>[39m
+                [0mNotas fiscais[0m
+              [36m</p>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"text-xs text-gray-400 mt-1"[39m
+              [36m>[39m
+                [0m3[0m
+                [0m [0m
+                [0martigos[0m
+              [36m</p>[39m
+            [36m</div>[39m
+          [36m</button>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex gap-2 mt-3 pt-3 border-t border-gray-100"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent text-brand-600 hover:text-brand-800 disabled:text-gray-400 disabled:bg-transparent h-[32px] text-xs px-4"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"relative z-10 flex items-center gap-2"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"font-medium"[39m
+                [36m>[39m
+                  [0mEditar[0m
+                [36m</span>[39m
+              [36m</div>[39m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent disabled:text-gray-400 disabled:bg-transparent h-[32px] text-xs px-4 text-red-600 hover:text-red-700"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"relative z-10 flex items-center gap-2"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"font-medium"[39m
+                [36m>[39m
+                  [0mExcluir[0m
+                [36m</span>[39m
+              [36m</div>[39m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex flex-col w-full bg-white rounded-[16px] border border-gray-100 transition-all p-4"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"flex items-start gap-3 w-full text-left"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"text-2xl leading-none"[39m
+            [36m>[39m
+              [0m💻[0m
+            [36m</span>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex-1"[39m
+            [36m>[39m
+              [36m<h2[39m
+                [33mclass[39m=[32m"text-[16px] font-semibold text-gray-900"[39m
+              [36m>[39m
+                [0mTI[0m
+              [36m</h2>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"text-xs text-gray-400 mt-1"[39m
+              [36m>[39m
+                [0m0[0m
+                [0m [0m
+                [0martigos[0m
+              [36m</p>[39m
+            [36m</div>[39m
+          [36m</button>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex gap-2 mt-3 pt-3 border-t border-gray-100"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent text-brand-600 hover:text-brand-800 disabled:text-gray-400 disabled:bg-transparent h-[32px] text-xs px-4"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"relative z-10 flex items-center gap-2"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"font-medium"[39m
+                [36m>[39m
+                  [0mEditar[0m
+                [36m</span>[39m
+              [36m</div>[39m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent disabled:text-gray-400 disabled:bg-transparent h-[32px] text-xs px-4 text-red-600 hover:text-red-700"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"relative z-10 flex items-center gap-2"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"font-medium"[39m
+                [36m>[39m
+                  [0mExcluir[0m
+                [36m</span>[39m
+              [36m</div>[39m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ waitForWrapper ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/components/knowledge/KnowledgeFoldersGrid.test.tsx:121:33
+    119|     await user.click(deleteButtons[0]);
+    120|
+    121|     const dialog = await screen.findByRole('dialog');
+       |                                 ^
+    122|     expect(within(dialog).getByText('Excluir pasta')).toBeInTheDocumen…
+    123|     expect(within(dialog).getByText('Excluir a pasta "Financeiro"?')).…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/17]⎯
+
+ FAIL  |web| src/components/knowledge/KnowledgeFoldersGrid.test.tsx > KnowledgeFoldersGrid > keeps the folder when the delete dialog is cancelled
+TestingLibraryElementError: Unable to find role="dialog"
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center justify-between mb-6"[39m
+      [36m>[39m
+        [36m<h1[39m
+          [33mclass[39m=[32m"text-[20px] font-semibold text-gray-900"[39m
+        [36m>[39m
+          [0mBase de Conhecimento[0m
+        [36m</h1>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-brand-500 text-gray-70 border border-brand-500 hover:bg-brand-700 hover:border-brand-700 disabled:bg-gray-400 disabled:border-gray-400 disabled:text-gray-70 h-[32px] text-xs px-4"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"relative z-10 flex items-center gap-2"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"font-normal"[39m
+            [36m>[39m
+              [0m+ Nova pasta[0m
+            [36m</span>[39m
+          [36m</div>[39m
+        [36m</button>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex flex-col w-full bg-white rounded-[16px] border border-gray-100 transition-all p-4"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"flex items-start gap-3 w-full text-left"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"text-2xl leading-none"[39m
+            [36m>[39m
+              [0m💰[0m
+            [36m</span>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex-1"[39m
+            [36m>[39m
+              [36m<h2[39m
+                [33mclass[39m=[32m"text-[16px] font-semibold text-gray-900"[39m
+              [36m>[39m
+                [0mFinanceiro[0m
+              [36m</h2>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"text-sm text-gray-500"[39m
+              [36m>[39m
+                [0mNotas fiscais[0m
+              [36m</p>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"text-xs text-gray-400 mt-1"[39m
+              [36m>[39m
+                [0m3[0m
+                [0m [0m
+                [0martigos[0m
+              [36m</p>[39m
+            [36m</div>[39m
+          [36m</button>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex gap-2 mt-3 pt-3 border-t border-gray-100"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent text-brand-600 hover:text-brand-800 disabled:text-gray-400 disabled:bg-transparent h-[32px] text-xs px-4"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"relative z-10 flex items-center gap-2"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"font-medium"[39m
+                [36m>[39m
+                  [0mEditar[0m
+                [36m</span>[39m
+              [36m</div>[39m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent disabled:text-gray-400 disabled:bg-transparent h-[32px] text-xs px-4 text-red-600 hover:text-red-700"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"relative z-10 flex items-center gap-2"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"font-medium"[39m
+                [36m>[39m
+                  [0mExcluir[0m
+                [36m</span>[39m
+              [36m</div>[39m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex flex-col w-full bg-white rounded-[16px] border border-gray-100 transition-all p-4"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"flex items-start gap-3 w-full text-left"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"text-2xl leading-none"[39m
+            [36m>[39m
+              [0m💻[0m
+            [36m</span>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex-1"[39m
+            [36m>[39m
+              [36m<h2[39m
+                [33mclass[39m=[32m"text-[16px] font-semibold text-gray-900"[39m
+              [36m>[39m
+                [0mTI[0m
+              [36m</h2>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"text-xs text-gray-400 mt-1"[39m
+              [36m>[39m
+                [0m0[0m
+                [0m [0m
+                [0martigos[0m
+              [36m</p>[39m
+            [36m</div>[39m
+          [36m</button>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex gap-2 mt-3 pt-3 border-t border-gray-100"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent text-brand-600 hover:text-brand-800 disabled:text-gray-400 disabled:bg-transparent h-[32px] text-xs px-4"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"relative z-10 flex items-center gap-2"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"font-medium"[39m
+                [36m>[39m
+                  [0mEditar[0m
+                [36m</span>[39m
+              [36m</div>[39m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent disabled:text-gray-400 disabled:bg-transparent h-[32px] text-xs px-4 text-red-600 hover:text-red-700"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"relative z-10 flex items-center gap-2"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"font-medium"[39m
+                [36m>[39m
+                  [0mExcluir[0m
+                [36m</span>[39m
+              [36m</div>[39m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center justify-between mb-6"[39m
+      [36m>[39m
+        [36m<h1[39m
+          [33mclass[39m=[32m"text-[20px] font-semibold text-gray-900"[39m
+        [36m>[39m
+          [0mBase de Conhecimento[0m
+        [36m</h1>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-brand-500 text-gray-70 border border-brand-500 hover:bg-brand-700 hover:border-brand-700 disabled:bg-gray-400 disabled:border-gray-400 disabled:text-gray-70 h-[32px] text-xs px-4"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"relative z-10 flex items-center gap-2"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"font-normal"[39m
+            [36m>[39m
+              [0m+ Nova pasta[0m
+            [36m</span>[39m
+          [36m</div>[39m
+        [36m</button>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex flex-col w-full bg-white rounded-[16px] border border-gray-100 transition-all p-4"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"flex items-start gap-3 w-full text-left"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"text-2xl leading-none"[39m
+            [36m>[39m
+              [0m💰[0m
+            [36m</span>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex-1"[39m
+            [36m>[39m
+              [36m<h2[39m
+                [33mclass[39m=[32m"text-[16px] font-semibold text-gray-900"[39m
+              [36m>[39m
+                [0mFinanceiro[0m
+              [36m</h2>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"text-sm text-gray-500"[39m
+              [36m>[39m
+                [0mNotas fiscais[0m
+              [36m</p>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"text-xs text-gray-400 mt-1"[39m
+              [36m>[39m
+                [0m3[0m
+                [0m [0m
+                [0martigos[0m
+              [36m</p>[39m
+            [36m</div>[39m
+          [36m</button>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex gap-2 mt-3 pt-3 border-t border-gray-100"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent text-brand-600 hover:text-brand-800 disabled:text-gray-400 disabled:bg-transparent h-[32px] text-xs px-4"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"relative z-10 flex items-center gap-2"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"font-medium"[39m
+                [36m>[39m
+                  [0mEditar[0m
+                [36m</span>[39m
+              [36m</div>[39m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent disabled:text-gray-400 disabled:bg-transparent h-[32px] text-xs px-4 text-red-600 hover:text-red-700"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"relative z-10 flex items-center gap-2"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"font-medium"[39m
+                [36m>[39m
+                  [0mExcluir[0m
+                [36m</span>[39m
+              [36m</div>[39m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex flex-col w-full bg-white rounded-[16px] border border-gray-100 transition-all p-4"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"flex items-start gap-3 w-full text-left"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"text-2xl leading-none"[39m
+            [36m>[39m
+              [0m💻[0m
+            [36m</span>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex-1"[39m
+            [36m>[39m
+              [36m<h2[39m
+                [33mclass[39m=[32m"text-[16px] font-semibold text-gray-900"[39m
+              [36m>[39m
+                [0mTI[0m
+              [36m</h2>[39m
+              [36m<p[39m
+                [33mclass[39m=[32m"text-xs text-gray-400 mt-1"[39m
+              [36m>[39m
+                [0m0[0m
+                [0m [0m
+                [0martigos[0m
+              [36m</p>[39m
+            [36m</div>[39m
+          [36m</button>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex gap-2 mt-3 pt-3 border-t border-gray-100"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent text-brand-600 hover:text-brand-800 disabled:text-gray-400 disabled:bg-transparent h-[32px] text-xs px-4"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"relative z-10 flex items-center gap-2"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"font-medium"[39m
+                [36m>[39m
+                  [0mEditar[0m
+                [36m</span>[39m
+              [36m</div>[39m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent disabled:text-gray-400 disabled:bg-transparent h-[32px] text-xs px-4 text-red-600 hover:text-red-700"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"relative z-10 flex items-center gap-2"[39m
+              [36m>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"font-medium"[39m
+                [36m>[39m
+                  [0mExcluir[0m
+                [36m</span>[39m
+              [36m</div>[39m
+            [36m</button>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ waitForWrapper ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/components/knowledge/KnowledgeFoldersGrid.test.tsx:139:42
+    137|
+    138|     await user.click(screen.getAllByRole('button', { name: /excluir/i …
+    139|     await user.click(within(await screen.findByRole('dialog')).getByRo…
+       |                                          ^
+    140|
+    141|     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/17]⎯
+
+ FAIL  |web| src/components/knowledge/KnowledgeFoldersGrid.test.tsx > KnowledgeFoldersGrid > uses the control height, the legible primary and aligned text actions
+Error: [2mexpect([22m[31melement[39m[2m).toHaveClass([22m[32m[32m"h-[42px] bg-brand-600 border-brand-600"[32m[39m[2m)[22m
+
+Expected the element to have class:
+[32m  h-[42px] bg-brand-600 border-brand-600[39m
+Received:
+[31m  relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-brand-500 text-gray-70 border border-brand-500 hover:bg-brand-700 hover:border-brand-700 disabled:bg-gray-400 disabled:border-gray-400 disabled:text-gray-70 h-[32px] text-xs px-4[39m
+ ❯ src/components/knowledge/KnowledgeFoldersGrid.test.tsx:150:66
+    148|     await waitFor(() => expect(screen.getByText('Financeiro')).toBeInT…
+    149|
+    150|     expect(screen.getByRole('button', { name: '+ Nova pasta' })).toHav…
+       |                                                                  ^
+    151|     for (const name of ['Editar', 'Excluir']) {
+    152|       for (const button of screen.getAllByRole('button', { name })) ex…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/17]⎯
+
+ FAIL  |web| src/components/knowledge/KnowledgeFoldersGrid.test.tsx > KnowledgeFoldersGrid > shows the article count in a text color with enough contrast
+Error: [2mexpect([22m[31melement[39m[2m).toHaveClass([22m[32m[32m"text-gray-500"[32m[39m[2m)[22m
+
+Expected the element to have class:
+[32m  text-gray-500[39m
+Received:
+[31m  text-xs text-gray-400 mt-1[39m
+ ❯ src/components/knowledge/KnowledgeFoldersGrid.test.tsx:163:43
+    161|     await waitFor(() => expect(screen.getByText('3 artigos')).toBeInTh…
+    162|
+    163|     expect(screen.getByText('3 artigos')).toHaveClass('text-gray-500');
+       |                                           ^
+    164|     expect(screen.getByText('3 artigos').className).not.toMatch(/text-…
+    165|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/17]⎯
+

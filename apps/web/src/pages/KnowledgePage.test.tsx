@@ -521,9 +521,17 @@ describe('KnowledgePage', () => {
     const deleteBtns = screen.getAllByRole('button', { name: /excluir/i });
     await user.click(deleteBtns[0]);
 
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByText('Excluir artigo')).toBeInTheDocument();
+    expect(within(dialog).getByText('Excluir o artigo "Como abrir um chamado"?')).toBeInTheDocument();
+    expect(api.delete).not.toHaveBeenCalled();
+    await user.click(within(dialog).getByRole('button', { name: 'Confirmar' }));
+
     await waitFor(() => {
       expect(api.delete).toHaveBeenCalledWith('/articles/article-1');
     });
+    expect(window.confirm).not.toHaveBeenCalled();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
   it('renders article content as real HTML, not escaped text', async () => {
@@ -895,7 +903,10 @@ describe('KnowledgePage', () => {
       expect(buttons).toHaveLength(2);
       await user.click(buttons[1]);
       expect(screen.getByLabelText(/título/i)).toBeInTheDocument();
-      expect(screen.queryByRole('button', { name: '+ Novo artigo' })).not.toBeInTheDocument();
+      // O botão do cabeçalho fica na tela, desabilitado; o do estado vazio sai.
+      const remaining = screen.getAllByRole('button', { name: '+ Novo artigo' });
+      expect(remaining).toHaveLength(1);
+      expect(remaining[0]).toBeDisabled();
     });
 
     it('shows readers an empty folder without a create action', async () => {
@@ -969,6 +980,154 @@ describe('KnowledgePage', () => {
 
       expect(await screen.findByText('Como abrir um chamado')).toBeInTheDocument();
       expect(screen.queryByText('Não foi possível carregar os artigos.')).not.toBeInTheDocument();
+    });
+
+    describe('proportion, focus and color semantics (DMTE-535)', () => {
+      const tagged = {
+        id: 'article-tagged',
+        title: 'Artigo com tags',
+        content: '<p>Corpo do artigo</p>',
+        visibility: 'PRIVATE',
+        tags: ['senha', 'ajuda'],
+        author: { id: 'u-1', name: 'Fulano' },
+        updatedAt: '2026-01-10T10:00:00.000Z',
+        attachments: [],
+      };
+
+      async function openAs(role: 'ADMIN' | 'CLIENT', list: unknown[] = [tagged]) {
+        mockArticles(list);
+        loginAs(role);
+        const user = userEvent.setup();
+        renderPage();
+        await waitFor(() => expect(screen.getByText('Suporte')).toBeInTheDocument());
+        await user.click(screen.getByText('Suporte'));
+        await waitFor(() => expect(screen.getByText(String((list[0] as { title: string }).title))).toBeInTheDocument());
+        return user;
+      }
+
+      it('keeps the header and sort rows on the control height token, with no loose radius', async () => {
+        await openAs('ADMIN');
+
+        expect(screen.getByRole('button', { name: '+ Novo artigo' })).toHaveClass('h-[42px]');
+        const toggle = screen.getByRole('button', { name: 'Exibir em lista' }).parentElement!;
+        expect(toggle).toHaveClass('h-[var(--control-height-md)]', 'rounded-control');
+        expect(toggle.className).not.toMatch(/rounded-\[/);
+        for (const name of ['Exibir em lista', 'Exibir em grade']) {
+          expect(screen.getByRole('button', { name }).className).not.toMatch(/rounded-\[/);
+        }
+      });
+
+      it('keeps the Compartilhar button at the height of the access combo', async () => {
+        const user = await openAs('ADMIN');
+        await user.click(screen.getByRole('button', { name: '+ Novo artigo' }));
+        fireEvent.change(screen.getByLabelText(/tipo de acesso/i, { selector: 'select' }), { target: { value: 'PRIVATE' } });
+
+        expect(screen.getByRole('button', { name: 'Compartilhar' })).toHaveClass('h-[42px]');
+      });
+
+      it('aligns the card text actions with the card content, without the DS side padding', async () => {
+        await openAs('ADMIN');
+        const card = cardOf('Artigo com tags');
+
+        for (const name of ['Ler artigo completo', 'Editar', 'Excluir']) {
+          expect(within(card).getByRole('button', { name })).toHaveClass('px-0');
+        }
+      });
+
+      it('uses the legible primary on the primary actions of the screen', async () => {
+        const user = await openAs('ADMIN');
+        const primary = ['bg-brand-600', 'border-brand-600'];
+        expect(screen.getByRole('button', { name: '+ Novo artigo' })).toHaveClass(...primary);
+
+        await user.click(screen.getByRole('button', { name: '+ Novo artigo' }));
+        expect(screen.getByRole('button', { name: 'Salvar' })).toHaveClass(...primary);
+        await user.click(screen.getByRole('button', { name: '+ Novo item de catálogo' }));
+        expect(screen.getByRole('button', { name: 'Adicionar' })).toHaveClass(...primary);
+      });
+
+      it('gives the clickable tag, the filter remove button and the view toggles the DS focus ring', async () => {
+        const user = await openAs('ADMIN');
+        const ring = ['focus-visible:ring-4', 'focus-visible:ring-brand-200', 'focus-visible:ring-offset-2'];
+        const card = cardOf('Artigo com tags');
+
+        const tag = within(card).getByRole('button', { name: /#senha/ });
+        expect(tag).toHaveClass('rounded-full', ...ring);
+        for (const name of ['Exibir em lista', 'Exibir em grade']) {
+          expect(screen.getByRole('button', { name })).toHaveClass(...ring);
+        }
+
+        await user.click(tag);
+        expect(screen.getByLabelText('Remover filtro de tag senha')).toHaveClass('rounded-full', ...ring);
+      });
+
+      it('marks the active tag filter with aria-pressed and a decorative check, not only a color', async () => {
+        const user = await openAs('ADMIN');
+        // A lista remonta quando o filtro muda: busca o card de novo a cada leitura.
+        const tag = (name: RegExp) => within(cardOf('Artigo com tags')).getByRole('button', { name });
+
+        expect(tag(/#senha/)).toHaveAttribute('aria-pressed', 'false');
+        expect(tag(/#senha/).querySelector('svg')).toBeNull();
+
+        await user.click(tag(/#senha/));
+        await waitFor(() => expect(tag(/#senha/)).toHaveAttribute('aria-pressed', 'true'));
+        expect(tag(/#senha/).querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
+        expect(tag(/#ajuda/)).toHaveAttribute('aria-pressed', 'false');
+      });
+
+      it('shows Interno as a classification (petroleum with a lock), not as a yellow alert', async () => {
+        await openAs('ADMIN');
+        const tag = within(cardOf('Artigo com tags')).getByText('Interno').closest('div')!;
+
+        expect(tag).toHaveClass('bg-petroleum-100');
+        expect(tag.className).not.toMatch(/yellow/);
+        expect(tag.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
+      });
+
+      it('keeps "+ Novo artigo" on screen, disabled, while the form is open, and focuses the title', async () => {
+        const user = await openAs('ADMIN');
+
+        await user.click(screen.getByRole('button', { name: '+ Novo artigo' }));
+        const button = screen.getByRole('button', { name: '+ Novo artigo' });
+        expect(button).toBeDisabled();
+        expect(button).toHaveAttribute('title', 'O formulário de artigo já está aberto.');
+        expect(screen.getByLabelText(/título/i)).toHaveFocus();
+
+        await user.click(screen.getByRole('button', { name: 'Cancelar' }));
+        expect(screen.getByRole('button', { name: '+ Novo artigo' })).toBeEnabled();
+      });
+
+      it('focuses the title when the edit form opens from a card', async () => {
+        const user = await openAs('ADMIN');
+
+        await user.click(within(cardOf('Artigo com tags')).getByRole('button', { name: 'Editar' }));
+
+        expect(screen.getByLabelText(/título/i)).toHaveFocus();
+      });
+
+      it('aligns "+ Novo item de catálogo" to the start of the form as a DS tertiary button', async () => {
+        const user = await openAs('ADMIN');
+        await user.click(screen.getByRole('button', { name: '+ Novo artigo' }));
+
+        expect(screen.getByRole('button', { name: '+ Novo item de catálogo' })).toHaveClass('self-start', 'px-0');
+      });
+
+      it('asks for confirmation in a dialog before deleting, and cancel or Escape keep the article', async () => {
+        vi.mocked(api.delete).mockResolvedValue({ data: {} });
+        const user = await openAs('ADMIN');
+
+        await user.click(within(cardOf('Artigo com tags')).getByRole('button', { name: 'Excluir' }));
+        let dialog = await screen.findByRole('dialog');
+        await user.click(within(dialog).getByRole('button', { name: 'Cancelar' }));
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
+        await user.click(within(cardOf('Artigo com tags')).getByRole('button', { name: 'Excluir' }));
+        dialog = await screen.findByRole('dialog');
+        await user.keyboard('{Escape}');
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
+        expect(api.delete).not.toHaveBeenCalled();
+        expect(window.confirm).not.toHaveBeenCalled();
+      });
     });
 
     async function openSupportFolder_(user: ReturnType<typeof userEvent.setup>, title: string) {

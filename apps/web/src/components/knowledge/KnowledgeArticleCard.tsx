@@ -1,8 +1,10 @@
 import { useMemo, useState } from 'react';
-import { Paperclip } from 'lucide-react';
+import { Check, Lock, Paperclip } from 'lucide-react';
 import { EzButton, EzCardItem, EzTag } from '../ds';
+import { cn } from '../ds/utils';
 import { articleExcerpt } from './articleExcerpt';
 import { KnowledgeArticleAttachments, type KnowledgeAttachment } from './KnowledgeArticleAttachments';
+import { FOCUS_RING } from './knowledgeStyles';
 
 const COLLAPSED_TAGS = 5;
 
@@ -70,7 +72,11 @@ export function KnowledgeArticleCard({
           updatedAt ||
           attachments.length > 0) && (
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            {article.visibility === 'PRIVATE' && <EzTag label="Interno" variant="yellow" />}
+            {article.visibility === 'PRIVATE' && <EzTag
+                label="Interno"
+                variant="petroleum"
+                leftIcon={<Lock className="h-3 w-3" aria-hidden="true" />}
+              />}
             {(article.author?.name || updatedAt) && (
               <p className="text-xs text-gray-500">
                 {article.author?.name && <span>Por {article.author.name}</span>}
@@ -111,8 +117,21 @@ export function KnowledgeArticleCard({
         {tags.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {visibleTags.map((t) => (
-              <button key={t} type="button" onClick={() => onToggleTag(t)} title={`Filtrar por ${t}`}>
-                <EzTag label={`#${t}`} variant={selectedTags.includes(t) ? 'ocean' : 'gray'} />
+              <button
+                key={t}
+                type="button"
+                onClick={() => onToggleTag(t)}
+                title={`Filtrar por ${t}`}
+                aria-pressed={selectedTags.includes(t)}
+                className={cn('rounded-full', FOCUS_RING)}
+              >
+                <EzTag
+                  label={`#${t}`}
+                  variant={selectedTags.includes(t) ? 'ocean' : 'gray'}
+                  leftIcon={
+                    selectedTags.includes(t) ? <Check className="h-3 w-3" aria-hidden="true" /> : undefined
+                  }
+                />
               </button>
             ))}
             {hiddenTags > 0 && <EzTag label={`+${hiddenTags}`} variant="gray" />}
@@ -128,12 +147,13 @@ export function KnowledgeArticleCard({
         )}
 
         {(hasHiddenContent || canAuthor) && (
-          <div className="flex flex-wrap items-center gap-2 pt-1">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-1">
             {hasHiddenContent && (
               <EzButton
                 type="button"
                 variant="tertiary"
                 size="small"
+                className="px-0"
                 aria-expanded={expanded}
                 aria-controls={expanded ? bodyId : undefined}
                 onClick={() => setExpanded((value) => !value)}
@@ -142,15 +162,15 @@ export function KnowledgeArticleCard({
               </EzButton>
             )}
             {canAuthor && (
-              <div className="ml-auto flex flex-wrap gap-2">
-                <EzButton variant="tertiary" size="small" onClick={onEdit}>
+              <div className="ml-auto flex flex-wrap gap-4">
+                <EzButton variant="tertiary" size="small" className="px-0" onClick={onEdit}>
                   Editar
                 </EzButton>
                 {canDelete && (
                   <EzButton
                     variant="tertiary"
                     size="small"
-                    className="text-red-600 hover:text-red-700"
+                    className="px-0 text-red-600 hover:text-red-700"
                     onClick={onDelete}
                   >
                     Excluir
