@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { api } from '../lib/api';
 import { BusinessHoursEditor } from './BusinessHoursEditor';
-import { MesaSaveProvider } from './mesaSave';
+import { MesaSaveProvider, useMesaPending } from './mesaSave';
 
 vi.mock('../lib/api', () => ({
   api: {
@@ -287,5 +287,31 @@ describe('BusinessHoursEditor', () => {
 
     await user.click(screen.getByRole('button', { name: /salvar expediente/i }));
     expect(await screen.findByRole('status')).toHaveTextContent('Alterações salvas.');
+  });
+
+  it('DMTE-533 AC-04: adding and then removing a window leaves nothing pending', async () => {
+    vi.mocked(api.get).mockResolvedValue({
+      data: { businessHours: [{ id: 'bh-1', weekday: 1, startTime: '08:00', endTime: '18:00' }], holidays: [] },
+    });
+    function Probe() {
+      return <p>{useMesaPending() ? 'pendente' : 'limpo'}</p>;
+    }
+    const user = userEvent.setup();
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MesaSaveProvider>
+          <Probe />
+          <BusinessHoursEditor serviceDeskId="sd-1" />
+        </MesaSaveProvider>
+      </QueryClientProvider>,
+    );
+    await screen.findByTestId('business-hour-row-0');
+    expect(screen.getByText('limpo')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /adicionar horário/i }));
+    expect(screen.getByText('pendente')).toBeInTheDocument();
+    await user.click(within(screen.getByTestId('business-hour-row-1')).getByRole('button', { name: /remover/i }));
+    expect(screen.getByText('limpo')).toBeInTheDocument();
   });
 });

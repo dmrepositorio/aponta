@@ -127,6 +127,16 @@ describe('MesaFlagEditor', () => {
       expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     });
 
+    it('AC-02: the close button removes the failure notice', async () => {
+      vi.mocked(api.patch).mockRejectedValue(new Error('rede'));
+      const user = userEvent.setup();
+      renderEditor();
+      await user.click(screen.getByRole('button', { name: 'Salvar' }));
+      const alert = await screen.findByRole('alert');
+      await user.click(within(alert).getByRole('button'));
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    });
+
     it('AC-02: the success notice goes away by itself after 5 s and the failure one stays until closed', async () => {
       vi.useFakeTimers();
       vi.mocked(api.patch).mockResolvedValueOnce({ data: {} });

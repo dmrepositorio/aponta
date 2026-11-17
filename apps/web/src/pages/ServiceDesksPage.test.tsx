@@ -865,4 +865,57 @@ describe('DMTE-533: um só modelo de salvamento, com retorno', () => {
     await screen.findByRole('status');
     expect(fire()).toBe(false);
   });
+
+  it('AC-05: clicking the tab that is already active never asks and leaves the edit alone', async () => {
+    const user = await openDesk('Parâmetros');
+    await user.click(screen.getByLabelText('Permitir cancelar ticket'));
+    await user.click(screen.getByRole('tab', { name: 'Parâmetros' }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Permitir cancelar ticket')).not.toBeChecked();
+    expect(screen.getByText(PENDING)).toBeInTheDocument();
+  });
+
+  it('AC-05: Duplicar asks too, Escape keeps the edit and Confirmar opens the copy', async () => {
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    renderPage();
+    await screen.findByText('Suporte N1');
+    await user.click(screen.getAllByRole('checkbox')[1]);
+    await user.click(screen.getByText('Suporte N1'));
+    await user.click(await screen.findByRole('tab', { name: 'Parâmetros' }));
+    await user.click(screen.getByLabelText('Permitir cancelar ticket'));
+
+    await user.click(screen.getByTestId('ez-toolbar-clone-button'));
+    expect(await screen.findByRole('dialog')).toBeInTheDocument();
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(screen.getByRole('tab', { name: 'Parâmetros' })).toBeInTheDocument();
+    expect(screen.getByLabelText('Permitir cancelar ticket')).not.toBeChecked();
+
+    await user.click(screen.getByTestId('ez-toolbar-clone-button'));
+    await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Confirmar' }));
+    expect(await screen.findByDisplayValue('Suporte N1 (Cópia)')).toBeInTheDocument();
+  });
+
+  it('AC-02: a failed save in Cliente e SLA and in Estágios shows the alert and keeps the edit', async () => {
+    const user = await openDesk('Clientes');
+    await user.click(await screen.findByRole('button', { name: /editar cliente e sla/i }));
+    const input = screen.getByLabelText(/1ª resposta \(pad\. 1h\)/i);
+    await user.type(input, '2');
+    vi.mocked(api.patch).mockRejectedValueOnce(new Error('rede'));
+    await user.click(screen.getByRole('button', { name: /salvar cliente e sla/i }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('Não foi possível salvar.');
+    expect(screen.getByLabelText(/1ª resposta \(pad\. 1h\)/i)).toHaveValue(2);
+    expect(screen.getByText(PENDING)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Cancelar' }));
+    expect(screen.queryByText(PENDING)).not.toBeInTheDocument();
+    await user.click(screen.getByRole('tab', { name: 'Estágio' }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    vi.mocked(api.post).mockRejectedValueOnce(new Error('rede'));
+    await user.type(await screen.findByLabelText('Novo estágio'), 'Em análise');
+    await user.click(screen.getByRole('button', { name: '+ Estágio' }));
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('Não foi possível salvar.'));
+    expect(screen.getByLabelText('Novo estágio')).toHaveValue('Em análise');
+  });
 });
