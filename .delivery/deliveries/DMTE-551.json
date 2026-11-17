@@ -19,126 +19,106 @@
     },
     {
       "id": "AC-03",
-      "description": "cadastro, troca de senha e redefinição aplicam a mesma regra e recusam com 400 e mensagem que diz o que falta; senhas existentes continuam entrando.",
+      "description": "cadastro, troca de senha e definição pelo link aplicam a mesma regra e recusam com 400 e mensagem que diz o que falta; senhas existentes continuam entrando.",
       "tests": []
     },
     {
       "id": "AC-04",
-      "description": "o pedido de redefinição responde igual (mesmo status e corpo) para e-mail existente, inexistente e de conta inativa; só a conta existente e ativa recebe e-mail.",
+      "description": "depois da troca de senha em Minha Conta ou da definição pelo link, um JWT emitido antes é recusado e o login com a senha nova funciona; a sessão que trocou a senha recebe um token novo e continua válida.",
       "tests": []
     },
     {
       "id": "AC-05",
-      "description": "o link guarda só o hash do token, vale 30 minutos, vale uma vez, e um pedido novo invalida o anterior; token expirado, usado, inventado ou de pedido substituído é recusado com a mesma resposta.",
+      "description": "com porta diferente de 465 o transporte de e-mail exige TLS; o comportamento sem SMTP configurado não muda.",
       "tests": []
     },
     {
       "id": "AC-06",
-      "description": "depois da redefinição, um JWT emitido antes é recusado e o login com a senha nova funciona; a troca de senha em Minha Conta também invalida os outros tokens e mantém a sessão que trocou.",
+      "description": "payloads de injeção (aspas, `;`, `--`, `' OR '1'='1`) nos campos de senha, código, token e `state` dos endpoints desta entrega não alteram o resultado nem causam erro 500, e nenhum deles usa SQL cru.",
       "tests": []
     },
     {
       "id": "AC-07",
-      "description": "o pedido é limitado a 3 por e-mail por hora e pelo limite por origem; o excesso responde 429 sem enviar e-mail.",
+      "description": "no web, as telas de cadastro, de troca de senha e de definição de senha mostram a regra e o que falta, e exibem o erro do servidor, com a API simulada.",
       "tests": []
     },
     {
       "id": "AC-08",
-      "description": "o link do e-mail usa `APP_PUBLIC_URL`; sem SMTP configurado o pedido responde igual e nenhum e-mail sai; com porta diferente de 465 o transporte exige TLS.",
-      "tests": []
-    },
-    {
-      "id": "AC-09",
-      "description": "payloads de injeção (aspas, `;`, `--`, `' OR '1'='1`) em e-mail, token e senha não alteram o resultado nem causam erro 500 nos endpoints novos, e nenhum deles usa SQL cru.",
-      "tests": []
-    },
-    {
-      "id": "AC-10",
-      "description": "a flag `redefinicao-senha-email` desligada esconde \"Esqueci a senha\" e faz os endpoints recusarem sem enviar e-mail.",
-      "tests": []
-    },
-    {
-      "id": "AC-11",
-      "description": "no web, a tela de login tem \"Esqueci a senha\", a página de pedido e a de redefinição mostram a regra e os erros, e o fluxo completo funciona com a API simulada.",
-      "tests": []
-    },
-    {
-      "id": "AC-12",
       "description": "a ativação gera segredo pendente, só ativa com um código TOTP válido (conferido contra os vetores do RFC 6238) e mostra 10 códigos de recuperação uma única vez; segredo e códigos não aparecem em resposta posterior nem em log.",
       "tests": []
     },
     {
-      "id": "AC-13",
+      "id": "AC-09",
       "description": "o segredo fica cifrado e os códigos de recuperação ficam como hash; sem `TWO_FACTOR_ENCRYPTION_KEY` a ativação é recusada e o login de quem não tem segundo fator segue normal.",
       "tests": []
     },
     {
-      "id": "AC-14",
+      "id": "AC-10",
       "description": "quem tem segundo fator, ao entrar com a senha correta, recebe só um token de desafio (que não acessa nenhuma outra rota) e o JWT completo só sai com código válido do aplicativo ou de recuperação; quem não tem entra direto.",
       "tests": []
     },
     {
-      "id": "AC-15",
+      "id": "AC-11",
       "description": "um código de recuperação funciona uma vez; código TOTP repetido na mesma janela é recusado; mais de 5 tentativas por minuto recebem 429.",
       "tests": []
     },
     {
-      "id": "AC-16",
-      "description": "desativar o segundo fator exige senha atual e código válido; sem os dois, recusa.",
+      "id": "AC-12",
+      "description": "desativar o próprio segundo fator exige senha atual e código válido; sem os dois, recusa.",
       "tests": []
     },
     {
-      "id": "AC-17",
-      "description": "`ADMIN` desativa o segundo fator de outro usuário e o evento (quem, afetado, quando, tipo) é gravado; qualquer outro papel recebe 403.",
+      "id": "AC-13",
+      "description": "a permissão `DISABLE_USER_TWO_FACTOR` está no catálogo; quem a tem (ADMIN pelo bypass) desativa o segundo fator de outro usuário e o evento (quem, afetado, quando, tipo) é gravado; quem não a tem recebe 403 e nenhum grupo a recebe por padrão.",
       "tests": []
     },
     {
-      "id": "AC-18",
+      "id": "AC-14",
       "description": "o desafio continua valendo para quem já ativou mesmo com a flag `autenticacao-dois-fatores` desligada; a flag só esconde e recusa a ativação.",
       "tests": []
     },
     {
-      "id": "AC-19",
+      "id": "AC-15",
       "description": "tokens de API e do servidor MCP continuam autenticando sem segundo fator.",
       "tests": []
     },
     {
-      "id": "AC-20",
-      "description": "no web, Minha Conta tem a seção Segurança (ativar, mostrar QR e códigos, desativar), o login mostra o campo de código com opção de código de recuperação, e a tela de usuários tem a ação de administrador.",
+      "id": "AC-16",
+      "description": "no web, Minha Conta tem a seção Segurança (ativar, mostrar QR e códigos, desativar), o login mostra o campo de código com opção de código de recuperação, e a aba Segurança do formulário de usuário tem a ação do administrador, escondida de quem não tem a permissão.",
       "tests": []
     },
     {
-      "id": "AC-21",
+      "id": "AC-17",
       "description": "com provedor simulado, o retorno com e-mail verificado de conta existente e ativa liga a identidade, devolve o código de troca de uso único e o web o troca por JWT; o JWT nunca aparece na URL.",
       "tests": []
     },
     {
-      "id": "AC-22",
-      "description": "o login social nunca cria usuário; conta inexistente, inativa ou e-mail sem verificação (inclusive Facebook sem e-mail verificado) falha com mensagem clara e sem ligar identidade.",
+      "id": "AC-18",
+      "description": "o login social nunca cria usuário; conta inexistente, inativa, com convite pendente ou e-mail sem verificação (inclusive Facebook sem e-mail verificado) falha com mensagem clara e sem ligar identidade.",
       "tests": []
     },
     {
-      "id": "AC-23",
+      "id": "AC-19",
       "description": "estado inválido, reutilizado ou expirado, `nonce` divergente (Google) e código de troca reutilizado são recusados.",
       "tests": []
     },
     {
-      "id": "AC-24",
+      "id": "AC-20",
       "description": "depois de ligada, a entrada é pelo identificador do provedor, não mais pelo e-mail; papel e organização do usuário não mudam.",
       "tests": []
     },
     {
-      "id": "AC-25",
+      "id": "AC-21",
       "description": "quem tem segundo fator é desafiado depois do login social do mesmo modo que depois da senha.",
       "tests": []
     },
     {
-      "id": "AC-26",
+      "id": "AC-22",
       "description": "cada provedor tem sua flag e variáveis; sem elas o botão não aparece e a rota recusa; as três flags são independentes.",
       "tests": []
     },
     {
-      "id": "AC-27",
+      "id": "AC-23",
       "description": "nenhum segredo de provedor, de SMTP ou chave de cifra aparece no repositório, em fixtures, em log ou na resposta de qualquer endpoint.",
       "tests": []
     }
