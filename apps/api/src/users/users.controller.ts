@@ -2,6 +2,7 @@ import { BadRequestException, Body, Controller, Get, Param, ParseUUIDPipe, Patch
 import { Role } from '@prisma/client';
 import { UsersService } from './users.service';
 import { PasswordFlowService } from './password-flow.service';
+import { PasswordFlowFlagGuard } from './password-flow-flag.guard';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../auth/guards/permissions.guard';
 import { RequirePermission } from '../auth/decorators/require-permission.decorator';
@@ -88,6 +89,7 @@ export class UsersController {
   }
 
   @Post(':id/invite')
+  @UseGuards(PasswordFlowFlagGuard)
   @RequirePermission('SEND_USER_INVITES_AND_RESETS')
   async invite(@Req() req: AuthenticatedRequest, @Param('id', ParseUUIDPipe) id: string) {
     await this.passwordFlow.sendInvite(id, req.user.id);
@@ -95,6 +97,7 @@ export class UsersController {
   }
 
   @Post(':id/password-reset')
+  @UseGuards(PasswordFlowFlagGuard)
   @RequirePermission('SEND_USER_INVITES_AND_RESETS')
   async passwordReset(@Req() req: AuthenticatedRequest, @Param('id', ParseUUIDPipe) id: string) {
     await this.passwordFlow.sendReset(id, req.user.id);

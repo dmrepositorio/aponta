@@ -8,6 +8,7 @@ import { RegisterDto } from '../users/dto/register.dto';
 import { ChangePasswordDto } from '../users/dto/change-password.dto';
 import { UpdateProfileDto } from '../users/dto/update-profile.dto';
 import { PasswordFlowService } from '../users/password-flow.service';
+import { PasswordFlowFlagGuard } from '../users/password-flow-flag.guard';
 import { ForgotPasswordDto, SetPasswordDto } from '../users/dto/password-flow.dto';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
@@ -59,6 +60,7 @@ export class AuthController {
 
   // Públicas (DMTE-550). O limite por origem é do throttler; o por e-mail do "esqueci" fica no serviço.
   @UseInterceptors(noStore)
+  @UseGuards(PasswordFlowFlagGuard)
   @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @Post('password/set')
   async setPassword(@Body() dto: SetPasswordDto) {
@@ -67,6 +69,7 @@ export class AuthController {
   }
 
   @UseInterceptors(noStore)
+  @UseGuards(PasswordFlowFlagGuard)
   @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @Post('forgot-password')
   async forgotPassword(@Body() dto: ForgotPasswordDto) {

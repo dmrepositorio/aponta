@@ -50,7 +50,7 @@ export class PasswordFlowService {
     this.assertEnabled();
     const user = await this.users.findById(userId);
     if (!user) throw new NotFoundException('Usuário não encontrado');
-    if (user.password) throw new ConflictException('Só usuário com convite pendente recebe convite.');
+    if (user.password || !user.active) throw new ConflictException('Só usuário ativo com convite pendente recebe convite.');
     await this.issueAndSend(user, 'INVITE', 72 * HOUR, actorId);
   }
 
@@ -77,12 +77,11 @@ export class PasswordFlowService {
 
   async setPassword(token: string, password: string): Promise<void> {
     this.assertEnabled();
+    // O hash vem antes de consumir o token: uma falha no bcrypt não queima o link.
+    const hash = await bcrypt.hash(password, SALT_ROUNDS);
     const claimed = await this.tokens.consume(token);
     if (!claimed) throw new BadRequestException(INVALID_LINK);
-    await this.prisma.user.update({
-      where: { id: claimed.userId },
-      data: { password: await bcrypt.hash(password, SALT_ROUNDS) },
-    });
+    await this.prisma.user.update({ where: { id: claimed.userId }, data: { password: hash } });
   }
 
   private countForgotAttempt(email: string): void {
@@ -119,7 +118,7 @@ export class PasswordFlowService {
     const link = `${base}/definir-senha#t=${token}`;
     let sent = false;
     try {
-      sent = await this.mail.sendEmail({ to: user.email, ...this.message(user.name, purpose, ttlMs, link) });
+      sent = await this.mail.sendEmail({ to: user.email, ...this.message(user.name, purpose, ttlMs, link) }, { toPendingUser: true });
     } catch {
       // Falha de SMTP é tratada abaixo; a mensagem do erro pode trazer o link, então não é registrada.
     }

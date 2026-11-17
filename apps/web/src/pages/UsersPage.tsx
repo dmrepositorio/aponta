@@ -81,20 +81,29 @@ function userColumns(onOpen: (id: string) => void): ColumnDef<UserListItem>[] {
     {
       id: 'name',
       header: 'Nome',
-      size: 240,
+      size: 170,
+      meta: { truncate: true },
       accessorFn: (u) => u.name,
       cell: ({ row }) => (
-        <div className="min-w-0">
+        <div className="min-w-0 max-w-[170px]">
           <button
             type="button"
+            title={row.original.name}
             onClick={() => onOpen(row.original.id)}
             className="block max-w-full truncate text-left font-medium text-brand-700 hover:underline cursor-pointer"
           >
             {row.original.name}
           </button>
-          <div className="truncate text-xs text-gray-500">{row.original.email}</div>
+          <div className="truncate text-xs text-gray-500" title={row.original.email}>{row.original.email}</div>
         </div>
       ),
+    },
+    {
+      id: 'status',
+      header: 'Status',
+      size: 144,
+      accessorFn: statusOf,
+      cell: ({ row }) => <ActiveTag active={row.original.active} pending={row.original.pending} />,
     },
     {
       id: 'permissionGroups',
@@ -132,13 +141,6 @@ function userColumns(onOpen: (id: string) => void): ColumnDef<UserListItem>[] {
       size: 170,
       meta: { hideBelowSm: true },
       accessorFn: (u) => ROLE_LABELS[u.role] ?? u.role,
-    },
-    {
-      id: 'status',
-      header: 'Status',
-      size: 150,
-      accessorFn: statusOf,
-      cell: ({ row }) => <ActiveTag active={row.original.active} pending={row.original.pending} />,
     },
   ];
 }
@@ -367,13 +369,14 @@ function UsersPageContent() {
                   <fieldset className="space-y-1.5">
                     <legend className="mb-1 text-xs font-medium text-gray-700">Tipo</legend>
                     {Object.entries(ROLE_LABELS).map(([role, text]) => (
-                      <EzCheck
-                        key={role}
-                        id={`filter-role-${role}`}
-                        label={text}
-                        checked={filters.roles.includes(role)}
-                        onChange={() => toggleRole(role)}
-                      />
+                      <div key={role}>
+                        <EzCheck
+                          id={`filter-role-${role}`}
+                          label={text}
+                          checked={filters.roles.includes(role)}
+                          onChange={() => toggleRole(role)}
+                        />
+                      </div>
                     ))}
                   </fieldset>
 

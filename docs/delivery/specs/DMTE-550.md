@@ -179,3 +179,13 @@ Tickets (sub-issues desta SPEC, em ordem):
 - Evidência visual: capturas de Usuários, do formulário, do modal e da página `/definir-senha` em 390, 1024 e 1440 px, antes e depois, com dados sintéticos, anexadas ao PR. O aceite visual é do Alfredo.
 - Tier 3: comportamento de produto com schema, migration, permissões, segurança e e-mail. Impacto em RBAC: cada ação passa a ter chave própria. Sem dado real em fixtures.
 - Autorização: nenhuma mudança de produção sem o merge pela fila; o envio real de e-mail depende da flag e do SMTP.
+- Desvios e limites da implementação (registrados na etapa Developer; não mudam os critérios):
+  - AC-24: o modal "Esqueci minha senha" usa `EzModal` com a prop nova `trapFocus` (desligada por padrão, com story `FocoPreso`), porque o `EzDialog` só aceita texto e não prende o foco.
+  - AC-03: Tipo, Status, busca e os filtros de grupo rodam no servidor; os filtros dinâmicos do painel valem só para a página carregada.
+  - D2: as ações "Ativar" e "Inativar" em lote ficam numa faixa abaixo da toolbar (escondida abaixo de 640 px), não dentro dela.
+  - AC-30: a 390 px a coluna Status fica parcialmente visível na grade (o cabeçalho de Nome já fixa uma largura mínima); o botão primário mede 42 px (`EzButton` medium), abaixo dos 44 px da toolbar do DS.
+  - D8: a trava do último ADMIN vale na inativação; trocar o tipo do último ADMIN pelo `PATCH /users/:id` não é barrado. A inativação simultânea de dois administradores não é serializável.
+  - D13: o limite de 5 por minuto por e-mail do "esqueci" é um contador em memória por processo; com mais de uma instância precisa ir para um armazenamento compartilhado. O `main.ts` não define `trust proxy`, então atrás do nginx o limite por origem vê um único IP (o login já tinha o mesmo comportamento).
+  - D5: a unicidade de e-mail sem diferença de caixa é checada em código; o índice único do banco continua sensível à caixa (um índice em `lower(email)` falharia na migration se já houver e-mails duplicados por caixa).
+  - D16: senha de até 128 caracteres, mas o bcrypt só usa os 72 primeiros bytes.
+  - D17: o filtro de e-mail para convite pendente está no `MailService` (um ponto só); só o convite do próprio usuário usa `toPendingUser`.
