@@ -802,3 +802,67 @@ describe('ContractsPage grid (DMTE-536)', () => {
     expect(drawer).toHaveClass('absolute', 'xl:relative');
   });
 });
+
+// Erro do formulário (SPEC DMTE-539): o alerta vai para a vista e recebe o foco, para quem está no botão Salvar.
+describe('ContractsPage form errors (DMTE-539)', () => {
+  const scrollIntoView = vi.fn();
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    useAuthStore.setState({ token: null, user: null });
+    localStorage.clear();
+    Element.prototype.scrollIntoView = scrollIntoView;
+  });
+
+  async function openNewForm() {
+    vi.mocked(api.get).mockImplementation(async (url) => ({
+      data: url === '/organizations' ? [{ id: 'org-1', name: 'Empresa A' }] : [],
+    }));
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    renderPage();
+    await user.click(await screen.findByRole('button', { name: 'Novo contrato' }));
+    await screen.findByRole('option', { name: 'Empresa A', hidden: true });
+    return user;
+  }
+
+  it('moves focus to the validation alert and scrolls it into view when the form is invalid', async () => {
+    const user = await openNewForm();
+
+    await user.click(screen.getByRole('button', { name: 'Salvar contrato' }));
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent('Selecione a empresa.');
+    expect(alert.parentElement).toHaveFocus();
+    expect(scrollIntoView).toHaveBeenCalledWith({ block: 'center' });
+  });
+
+  it('moves focus to the alert with the API message when saving fails', async () => {
+    vi.mocked(api.post).mockRejectedValue({
+      response: { data: { message: 'Contrato duplicado.' } },
+    });
+    const user = await openNewForm();
+    fireEvent.change(await screen.findByLabelText(/Empresa/, { selector: 'select' }), {
+      target: { value: 'org-1' },
+    });
+
+    await user.click(screen.getByRole('button', { name: 'Salvar contrato' }));
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent('Contrato duplicado.');
+    await waitFor(() => expect(alert.parentElement).toHaveFocus());
+    expect(scrollIntoView).toHaveBeenCalledWith({ block: 'center' });
+  });
+
+  it('moves focus again on every failed attempt, even with the same message', async () => {
+    const user = await openNewForm();
+
+    await user.click(screen.getByRole('button', { name: 'Salvar contrato' }));
+    expect((await screen.findByRole('alert')).parentElement).toHaveFocus();
+    expect(scrollIntoView).toHaveBeenCalledTimes(1);
+
+    await user.click(screen.getByRole('button', { name: 'Salvar contrato' }));
+    expect(screen.getByRole('alert').parentElement).toHaveFocus();
+    expect(scrollIntoView).toHaveBeenCalledTimes(2);
+  });
+});
