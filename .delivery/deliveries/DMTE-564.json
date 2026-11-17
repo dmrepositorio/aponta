@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "delivery": "DMTE-564",
+  "repository": "dmrepositorio/aponta",
+  "github_issue": 340,
+  "multica_id": "01a1eb54-f99c-78ae-8cc0-252d4b269af0",
+  "cycle": "2026-11-09/2026-11-22",
+  "tier": 2,
+  "criteria": [
+    {
+      "id": "AC-01",
+      "description": "`/settings` usa `EzPageLayout` + `EzPageHeader` (título na faixa branca) e o conteúdo não fica numa coluna centrada.",
+      "tests": []
+    },
+    {
+      "id": "AC-02",
+      "description": "o skeleton reproduz os grupos (subtítulo + linhas): 3 grupos e 6 linhas para ADMIN, 1 grupo e 1 linha para os demais perfis.",
+      "tests": []
+    },
+    {
+      "id": "AC-03",
+      "description": "a visibilidade por permissão e os testes já existentes de `SettingsPage` seguem verdes.",
+      "tests": []
+    }
+  ],
+  "spec": "docs/delivery/specs/DMTE-564.md",
+  "tdd": {
+    "mode": "required",
+    "red": ".delivery/evidence/DMTE-564/red.json",
+    "green": ".delivery/evidence/DMTE-564/green.json"
+  },
+  "design_system": {
+    "applicable": true,
+    "reused": []
+  }
+}
