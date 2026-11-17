@@ -79,3 +79,15 @@ _Avoid_: Última coluna
 **Preferência de tela**:
 Escolha de apresentação de um usuário numa tela (agrupar por, campos visíveis, colunas recolhidas); vale para aquele usuário em qualquer navegador.
 _Avoid_: Configuração local, personalização
+
+**Convite**:
+E-mail com link de uso único em que a pessoa cadastrada pelo administrador define a própria senha pela primeira vez.
+_Avoid_: Ativação, senha provisória
+
+**Convite pendente**:
+Situação de um usuário cadastrado que ainda não definiu a senha; ele aparece na lista, mas não entra no sistema nem recebe atribuições.
+_Avoid_: Usuário não ativado, usuário provisório
+
+**Redefinição de senha**:
+E-mail com link de uso único em que quem já tem senha define uma nova, pedida pelo administrador ou pelo próprio usuário na tela de login.
+_Avoid_: Recuperação de senha, reset
