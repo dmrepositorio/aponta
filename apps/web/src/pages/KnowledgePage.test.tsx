@@ -982,6 +982,52 @@ describe('KnowledgePage', () => {
       expect(screen.queryByText('Não foi possível carregar os artigos.')).not.toBeInTheDocument();
     });
 
+    describe('when the refresh fails with a cached list (DMTE-548)', () => {
+      const STALE = /Não foi possível atualizar os artigos/;
+
+      async function openFolderThenFailRefresh() {
+        let fail = false;
+        mockArticles(() => (fail ? Promise.reject(new Error('boom')) : articles));
+        loginAs('CLIENT');
+        const user = userEvent.setup();
+        renderPage();
+        await waitFor(() => expect(screen.getByText('Suporte')).toBeInTheDocument());
+        await user.click(screen.getByText('Suporte'));
+        expect(await screen.findByText('Como abrir um chamado')).toBeInTheDocument();
+
+        fail = true;
+        // Volta de foco da janela: o refetch real do React Query, com a mesma chave.
+        fireEvent(window, new Event('visibilitychange'));
+        const alert = await screen.findByRole('alert');
+        return { user, alert, restore: () => (fail = false) };
+      }
+
+      it('keeps the cached list under a stale-list warning when a refetch fails', async () => {
+        const { alert } = await openFolderThenFailRefresh();
+
+        expect(alert).toHaveTextContent(STALE);
+        expect(alert).toHaveTextContent(/pode estar desatualizada/);
+        expect(within(alert).getByRole('button', { name: 'Tentar novamente' })).toBeInTheDocument();
+        expect(screen.getByText('Como abrir um chamado')).toBeInTheDocument();
+        expect(screen.queryByText('Não foi possível carregar os artigos.')).not.toBeInTheDocument();
+        const list = screen.getByTestId('knowledge-articles');
+        expect(
+          alert.compareDocumentPosition(list) & Node.DOCUMENT_POSITION_FOLLOWING,
+        ).toBeTruthy();
+      });
+
+      it('replaces the list and drops the warning when "Tentar novamente" succeeds', async () => {
+        const { user, alert, restore } = await openFolderThenFailRefresh();
+        restore();
+
+        await user.click(within(alert).getByRole('button', { name: 'Tentar novamente' }));
+
+        await waitFor(() => expect(screen.queryByText(STALE)).not.toBeInTheDocument());
+        expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+        expect(screen.getByText('Como abrir um chamado')).toBeInTheDocument();
+      });
+    });
+
     describe('proportion, focus and color semantics (DMTE-535)', () => {
       const tagged = {
         id: 'article-tagged',
