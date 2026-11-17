@@ -47,7 +47,8 @@
       "id": "AC-06",
       "description": "`POST /users` exige `CREATE_USERS` (403 sem ela, mesmo com a tela manipulada), valida o DTO, cria o usuário sem senha, vincula o grupo de permissões padrão do tipo mais os escolhidos, e responde 409 com mensagem fixa para e-mail já cadastrado (sem diferença de caixa).",
       "tests": [
-        "apps/api/src/users/users.admin.http.spec.ts: testes com o prefixo AC-06:"
+        "apps/api/src/users/users.admin.http.spec.ts: testes com o prefixo AC-06:",
+        "apps/api/src/users/email-case.http.spec.ts: testes com o prefixo r2:"
       ]
     },
     {
@@ -69,7 +70,8 @@
       "id": "AC-09",
       "description": "`PATCH /users/:id` aceita nome, e-mail, telefone, ramal, cliente, grupo de atendentes, grupos de permissões e tipo; exige `MANAGE_USERS` e, para alterar o tipo, também `CHANGE_USER_ROLE` (403 sem ela); e-mail único sem diferença de caixa; cliente e grupos inexistentes respondem 400/404.",
       "tests": [
-        "apps/api/src/users/users.admin.http.spec.ts: testes com o prefixo AC-09:"
+        "apps/api/src/users/users.admin.http.spec.ts: testes com o prefixo AC-09:",
+        "apps/api/src/users/users.find-by-email.spec.ts: testes com o prefixo r2:"
       ]
     },
     {
@@ -155,7 +157,8 @@
         "apps/api/src/users/users.service.rules.spec.ts: testes com o prefixo AC-20:",
         "apps/api/src/mail/mail.service.pending.spec.ts: testes com o prefixo AC-20:",
         "apps/web/src/pages/UsersPage.test.tsx: testes com o prefixo AC-20:",
-        "apps/web/src/components/ActiveTag.test.tsx: testes com o prefixo AC-20:"
+        "apps/web/src/components/ActiveTag.test.tsx: testes com o prefixo AC-20:",
+        "apps/api/src/mail/mail.service.pending.spec.ts: teste r2 (consulta pela chave única)"
       ]
     },
     {
@@ -243,8 +246,8 @@
   "spec": "docs/delivery/specs/DMTE-550.md",
   "tdd": {
     "mode": "required",
-    "red": ".delivery/evidence/DMTE-550/red.json",
-    "green": ".delivery/evidence/DMTE-550/green.json"
+    "red": ".delivery/evidence/DMTE-550/red-r2.json",
+    "green": ".delivery/evidence/DMTE-550/green-r2.json"
   },
   "design_system": {
     "applicable": true,
