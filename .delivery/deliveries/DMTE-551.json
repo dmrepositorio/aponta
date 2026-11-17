@@ -10,117 +10,231 @@
     {
       "id": "AC-01",
       "description": "a regra de senha recusa senha com menos de 10 caracteres ou sem maiúscula, minúscula, número ou símbolo, e aceita uma que cumpre tudo.",
-      "tests": []
+      "tests": [
+        "apps/api/src/auth/password-policy.spec.ts: testes com o prefixo AC-01:"
+      ]
     },
     {
       "id": "AC-02",
       "description": "a regra recusa senha que contém parte do nome (3 letras ou mais), a parte local do e-mail ou o domínio, sem diferenciar maiúsculas, acentos ou números e símbolos colados (`joao2026`, `Joao!123`, `JOÃO_1`).",
-      "tests": []
+      "tests": [
+        "apps/api/src/auth/password-policy.spec.ts: testes com o prefixo AC-02:"
+      ]
     },
     {
       "id": "AC-03",
       "description": "cadastro, troca de senha e definição pelo link aplicam a mesma regra e recusam com 400 e mensagem que diz o que falta; senhas existentes continuam entrando.",
-      "tests": []
+      "tests": [
+        "apps/api/src/auth/password-policy.http.spec.ts: testes com o prefixo AC-03:",
+        "apps/api/src/auth/password-policy.max.http.spec.ts: testes com o prefixo AC-03:"
+      ]
     },
     {
       "id": "AC-04",
       "description": "depois da troca de senha em Minha Conta ou da definição pelo link, um JWT emitido antes é recusado e o login com a senha nova funciona; a sessão que trocou a senha recebe um token novo e continua válida.",
-      "tests": []
+      "tests": [
+        "apps/api/src/auth/password-version.strategy.http.spec.ts: testes com o prefixo AC-04:",
+        "apps/api/src/auth/password-version.http.spec.ts: testes com o prefixo AC-04:",
+        "apps/web/src/pages/MyAccountPage.session.test.tsx: testes com o prefixo AC-04:"
+      ],
+      "tdd_required": false,
+      "reason": "TDD comprovado por par auxiliar do mesmo coletor (RED antes da implementação, GREEN no mesmo comando): .delivery/evidence/DMTE-551/red-t2/red-web-t2.json e o green correspondente; o manifest aceita um par oficial por entrega (o do T1, AC-01 a AC-03)"
     },
     {
       "id": "AC-05",
       "description": "com porta diferente de 465 o transporte de e-mail exige TLS; o comportamento sem SMTP configurado não muda.",
-      "tests": []
+      "tests": [
+        "apps/api/src/mail/mail.service.tls.spec.ts: testes com o prefixo AC-05:"
+      ],
+      "tdd_required": false,
+      "reason": "TDD comprovado por par auxiliar do mesmo coletor (RED antes da implementação, GREEN no mesmo comando): .delivery/evidence/DMTE-551/red-t3.json e o green correspondente; o manifest aceita um par oficial por entrega (o do T1, AC-01 a AC-03)"
     },
     {
       "id": "AC-06",
       "description": "payloads de injeção (aspas, `;`, `--`, `' OR '1'='1`) nos campos de senha, código, token e `state` dos endpoints desta entrega não alteram o resultado nem causam erro 500, e nenhum deles usa SQL cru.",
-      "tests": []
+      "tests": [
+        "apps/api/src/two-factor/two-factor.http.spec.ts: AC-06",
+        "apps/api/src/social-auth/social-auth.google.http.spec.ts: AC-06"
+      ],
+      "tdd_required": false,
+      "reason": "TDD comprovado por par auxiliar do mesmo coletor (RED antes da implementação, GREEN no mesmo comando): .delivery/evidence/DMTE-551/red-t4/red-t7.json e o green correspondente; o manifest aceita um par oficial por entrega (o do T1, AC-01 a AC-03)"
     },
     {
       "id": "AC-07",
       "description": "no web, as telas de cadastro, de troca de senha e de definição de senha mostram a regra e o que falta, e exibem o erro do servidor, com a API simulada.",
-      "tests": []
+      "tests": [
+        "apps/web/src/components/PasswordRules.test.tsx: testes com o prefixo AC-07:",
+        "apps/web/src/pages/passwordRules.pages.test.tsx: testes com o prefixo AC-07:"
+      ],
+      "tdd_required": false,
+      "reason": "TDD comprovado por par auxiliar do mesmo coletor (RED antes da implementação, GREEN no mesmo comando): .delivery/evidence/DMTE-551/red-web-t1.json e o green correspondente; o manifest aceita um par oficial por entrega (o do T1, AC-01 a AC-03)"
     },
     {
       "id": "AC-08",
       "description": "a ativação gera segredo pendente, só ativa com um código TOTP válido (conferido contra os vetores do RFC 6238) e mostra 10 códigos de recuperação uma única vez; segredo e códigos não aparecem em resposta posterior nem em log.",
-      "tests": []
+      "tests": [
+        "apps/api/src/two-factor/totp.spec.ts: testes com o prefixo AC-08:",
+        "apps/api/src/two-factor/two-factor.http.spec.ts: testes com o prefixo AC-08:"
+      ],
+      "tdd_required": false,
+      "reason": "TDD comprovado por par auxiliar do mesmo coletor (RED antes da implementação, GREEN no mesmo comando): .delivery/evidence/DMTE-551/red-t4.json e o green correspondente; o manifest aceita um par oficial por entrega (o do T1, AC-01 a AC-03)"
     },
     {
       "id": "AC-09",
       "description": "o segredo fica cifrado e os códigos de recuperação ficam como hash; sem `TWO_FACTOR_ENCRYPTION_KEY` a ativação é recusada e o login de quem não tem segundo fator segue normal.",
-      "tests": []
+      "tests": [
+        "apps/api/src/two-factor/two-factor.http.spec.ts: testes com o prefixo AC-09:"
+      ],
+      "tdd_required": false,
+      "reason": "TDD comprovado por par auxiliar do mesmo coletor (RED antes da implementação, GREEN no mesmo comando): .delivery/evidence/DMTE-551/red-t4.json e o green correspondente; o manifest aceita um par oficial por entrega (o do T1, AC-01 a AC-03)"
     },
     {
       "id": "AC-10",
       "description": "quem tem segundo fator, ao entrar com a senha correta, recebe só um token de desafio (que não acessa nenhuma outra rota) e o JWT completo só sai com código válido do aplicativo ou de recuperação; quem não tem entra direto.",
-      "tests": []
+      "tests": [
+        "apps/api/src/two-factor/two-factor-login.http.spec.ts: testes com o prefixo AC-10:",
+        "apps/api/src/two-factor/two-factor-login.strategy.http.spec.ts: AC-10"
+      ],
+      "tdd_required": false,
+      "reason": "TDD comprovado por par auxiliar do mesmo coletor (RED antes da implementação, GREEN no mesmo comando): .delivery/evidence/DMTE-551/red-t5.json e o green correspondente; o manifest aceita um par oficial por entrega (o do T1, AC-01 a AC-03)"
     },
     {
       "id": "AC-11",
       "description": "um código de recuperação funciona uma vez; código TOTP repetido na mesma janela é recusado; mais de 5 tentativas por minuto recebem 429.",
-      "tests": []
+      "tests": [
+        "apps/api/src/two-factor/two-factor-login.http.spec.ts: testes com o prefixo AC-11:",
+        "apps/api/src/two-factor/two-factor.race.http.spec.ts: testes com o prefixo AC-11:"
+      ],
+      "tdd_required": false,
+      "reason": "TDD comprovado por par auxiliar do mesmo coletor (RED antes da implementação, GREEN no mesmo comando): .delivery/evidence/DMTE-551/red-t4/red-t5/red-fix1.json e o green correspondente; o manifest aceita um par oficial por entrega (o do T1, AC-01 a AC-03)"
     },
     {
       "id": "AC-12",
       "description": "desativar o próprio segundo fator exige senha atual e código válido; sem os dois, recusa.",
-      "tests": []
+      "tests": [
+        "apps/api/src/two-factor/two-factor.http.spec.ts: testes com o prefixo AC-12:"
+      ],
+      "tdd_required": false,
+      "reason": "TDD comprovado por par auxiliar do mesmo coletor (RED antes da implementação, GREEN no mesmo comando): .delivery/evidence/DMTE-551/red-t4.json e o green correspondente; o manifest aceita um par oficial por entrega (o do T1, AC-01 a AC-03)"
     },
     {
       "id": "AC-13",
       "description": "a permissão `DISABLE_USER_TWO_FACTOR` está no catálogo; quem a tem (ADMIN pelo bypass) desativa o segundo fator de outro usuário e o evento (quem, afetado, quando, tipo) é gravado; quem não a tem recebe 403 e nenhum grupo a recebe por padrão.",
-      "tests": []
+      "tests": [
+        "apps/api/src/two-factor/two-factor.admin.http.spec.ts: testes com o prefixo AC-13:"
+      ],
+      "tdd_required": false,
+      "reason": "TDD comprovado por par auxiliar do mesmo coletor (RED antes da implementação, GREEN no mesmo comando): .delivery/evidence/DMTE-551/red-t6.json e o green correspondente; o manifest aceita um par oficial por entrega (o do T1, AC-01 a AC-03)"
     },
     {
       "id": "AC-14",
       "description": "o desafio continua valendo para quem já ativou mesmo com a flag `autenticacao-dois-fatores` desligada; a flag só esconde e recusa a ativação.",
-      "tests": []
+      "tests": [
+        "apps/api/src/two-factor/two-factor.http.spec.ts: testes com o prefixo AC-14:",
+        "apps/api/src/two-factor/two-factor-login.http.spec.ts: AC-14"
+      ],
+      "tdd_required": false,
+      "reason": "TDD comprovado por par auxiliar do mesmo coletor (RED antes da implementação, GREEN no mesmo comando): .delivery/evidence/DMTE-551/red-t4/red-t5.json e o green correspondente; o manifest aceita um par oficial por entrega (o do T1, AC-01 a AC-03)"
     },
     {
       "id": "AC-15",
       "description": "tokens de API e do servidor MCP continuam autenticando sem segundo fator.",
-      "tests": []
+      "tests": [
+        "apps/api/src/two-factor/two-factor-login.strategy.http.spec.ts: AC-15"
+      ],
+      "tdd_required": false,
+      "reason": "TDD comprovado por par auxiliar do mesmo coletor (RED antes da implementação, GREEN no mesmo comando): .delivery/evidence/DMTE-551/red-t5.json e o green correspondente; o manifest aceita um par oficial por entrega (o do T1, AC-01 a AC-03)"
     },
     {
       "id": "AC-16",
       "description": "no web, Minha Conta tem a seção Segurança (ativar, mostrar QR e códigos, desativar), o login mostra o campo de código com opção de código de recuperação, e a aba Segurança do formulário de usuário tem a ação do administrador, escondida de quem não tem a permissão.",
-      "tests": []
+      "tests": [
+        "apps/web/src/components/TwoFactorSection.test.tsx",
+        "apps/web/src/pages/LoginPage.twofactor.test.tsx",
+        "apps/web/src/components/users/UserForm.twofactor.test.tsx",
+        "apps/api/src/two-factor/two-factor.visibility.http.spec.ts"
+      ],
+      "tdd_required": false,
+      "reason": "TDD comprovado por par auxiliar do mesmo coletor (RED antes da implementação, GREEN no mesmo comando): .delivery/evidence/DMTE-551/red-web-t4/red-web-t5/red-web-t6/red-t6b.json e o green correspondente; o manifest aceita um par oficial por entrega (o do T1, AC-01 a AC-03)"
     },
     {
       "id": "AC-17",
       "description": "com provedor simulado, o retorno com e-mail verificado de conta existente e ativa liga a identidade, devolve o código de troca de uso único e o web o troca por JWT; o JWT nunca aparece na URL.",
-      "tests": []
+      "tests": [
+        "apps/api/src/social-auth/social-auth.google.http.spec.ts",
+        "apps/api/src/social-auth/social-auth.github.http.spec.ts",
+        "apps/api/src/social-auth/social-auth.facebook.http.spec.ts",
+        "apps/web/src/pages/LoginPage.social.test.tsx: testes com o prefixo AC-17:"
+      ],
+      "tdd_required": false,
+      "reason": "TDD comprovado por par auxiliar do mesmo coletor (RED antes da implementação, GREEN no mesmo comando): .delivery/evidence/DMTE-551/red-t7/red-t8/red-t9/red-web-t7.json e o green correspondente; o manifest aceita um par oficial por entrega (o do T1, AC-01 a AC-03)"
     },
     {
       "id": "AC-18",
       "description": "o login social nunca cria usuário; conta inexistente, inativa, com convite pendente ou e-mail sem verificação (inclusive Facebook sem e-mail verificado) falha com mensagem clara e sem ligar identidade.",
-      "tests": []
+      "tests": [
+        "apps/api/src/social-auth/social-auth.google.http.spec.ts: testes com o prefixo AC-18:",
+        "apps/api/src/social-auth/social-auth.github.http.spec.ts: AC-18",
+        "apps/api/src/social-auth/social-auth.facebook.http.spec.ts: AC-18"
+      ],
+      "tdd_required": false,
+      "reason": "TDD comprovado por par auxiliar do mesmo coletor (RED antes da implementação, GREEN no mesmo comando): .delivery/evidence/DMTE-551/red-t7/red-t8/red-t9/red-web-t7.json e o green correspondente; o manifest aceita um par oficial por entrega (o do T1, AC-01 a AC-03)"
     },
     {
       "id": "AC-19",
       "description": "estado inválido, reutilizado ou expirado, `nonce` divergente (Google) e código de troca reutilizado são recusados.",
-      "tests": []
+      "tests": [
+        "apps/api/src/social-auth/social-auth.google.http.spec.ts: testes com o prefixo AC-19:",
+        "apps/api/src/social-auth/social-auth.github.http.spec.ts: AC-19",
+        "apps/api/src/social-auth/social-auth.facebook.http.spec.ts: AC-19"
+      ],
+      "tdd_required": false,
+      "reason": "TDD comprovado por par auxiliar do mesmo coletor (RED antes da implementação, GREEN no mesmo comando): .delivery/evidence/DMTE-551/red-t7/red-t8/red-t9.json e o green correspondente; o manifest aceita um par oficial por entrega (o do T1, AC-01 a AC-03)"
     },
     {
       "id": "AC-20",
       "description": "depois de ligada, a entrada é pelo identificador do provedor, não mais pelo e-mail; papel e organização do usuário não mudam.",
-      "tests": []
+      "tests": [
+        "apps/api/src/social-auth/social-auth.google.http.spec.ts: testes com o prefixo AC-20:",
+        "apps/api/src/social-auth/social-auth.github.http.spec.ts: AC-20",
+        "apps/api/src/social-auth/social-auth.facebook.http.spec.ts: AC-20"
+      ],
+      "tdd_required": false,
+      "reason": "TDD comprovado por par auxiliar do mesmo coletor (RED antes da implementação, GREEN no mesmo comando): .delivery/evidence/DMTE-551/red-t7/red-t8/red-t9.json e o green correspondente; o manifest aceita um par oficial por entrega (o do T1, AC-01 a AC-03)"
     },
     {
       "id": "AC-21",
       "description": "quem tem segundo fator é desafiado depois do login social do mesmo modo que depois da senha.",
-      "tests": []
+      "tests": [
+        "apps/api/src/social-auth/social-auth.google.http.spec.ts: AC-21",
+        "apps/web/src/pages/LoginPage.social.test.tsx: AC-21"
+      ],
+      "tdd_required": false,
+      "reason": "TDD comprovado por par auxiliar do mesmo coletor (RED antes da implementação, GREEN no mesmo comando): .delivery/evidence/DMTE-551/red-t7/red-web-t7.json e o green correspondente; o manifest aceita um par oficial por entrega (o do T1, AC-01 a AC-03)"
     },
     {
       "id": "AC-22",
       "description": "cada provedor tem sua flag e variáveis; sem elas o botão não aparece e a rota recusa; as três flags são independentes.",
-      "tests": []
+      "tests": [
+        "apps/api/src/social-auth/social-auth.google.http.spec.ts: testes com o prefixo AC-22:",
+        "apps/api/src/social-auth/social-auth.github.http.spec.ts: AC-22",
+        "apps/api/src/social-auth/social-auth.facebook.http.spec.ts: AC-22",
+        "apps/web/src/pages/LoginPage.social.test.tsx: AC-22",
+        "apps/web/src/pages/LoginPage.providers.test.tsx: AC-22"
+      ],
+      "tdd_required": false,
+      "reason": "TDD comprovado por par auxiliar do mesmo coletor (RED antes da implementação, GREEN no mesmo comando): .delivery/evidence/DMTE-551/red-t7/red-t8/red-t9/red-web-t7.json e o green correspondente; o manifest aceita um par oficial por entrega (o do T1, AC-01 a AC-03)"
     },
     {
       "id": "AC-23",
       "description": "nenhum segredo de provedor, de SMTP ou chave de cifra aparece no repositório, em fixtures, em log ou na resposta de qualquer endpoint.",
-      "tests": []
+      "tests": [
+        "apps/api/src/social-auth/social-auth.google.http.spec.ts: AC-23",
+        "apps/api/src/social-auth/social-auth.github.http.spec.ts: AC-23",
+        "apps/api/src/social-auth/social-auth.facebook.http.spec.ts: AC-23"
+      ],
+      "tdd_required": false,
+      "reason": "TDD comprovado por par auxiliar do mesmo coletor (RED antes da implementação, GREEN no mesmo comando): .delivery/evidence/DMTE-551/red-t7/red-t8/red-t9.json e o green correspondente; o manifest aceita um par oficial por entrega (o do T1, AC-01 a AC-03)"
     }
   ],
   "spec": "docs/delivery/specs/DMTE-551.md",
@@ -131,6 +245,13 @@
   },
   "design_system": {
     "applicable": true,
-    "reused": []
+    "reused": [
+      "EzAlert",
+      "EzButton",
+      "EzCardItem",
+      "EzDialog",
+      "EzTextInput"
+    ],
+    "reason": "Sem componente novo no DS: PasswordRules e TwoFactorSection são componentes da aplicação sobre EzAlert, EzButton, EzCardItem, EzDialog e EzTextInput; os botões de provedor do login usam as classes de token já usadas pelo DS (gray, brand, rounded-[12px], altura de 42 px)."
   }
 }

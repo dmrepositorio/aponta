@@ -94,6 +94,7 @@ export function TwoFactorSection() {
             label="Código do aplicativo"
             inputMode="numeric"
             autoComplete="one-time-code"
+            spellCheck={false}
             value={code}
             onChange={(e) => setCode(e.target.value)}
           />
@@ -123,6 +124,7 @@ export function TwoFactorSection() {
             id="two-factor-disable-code"
             label="Código do aplicativo ou de recuperação"
             autoComplete="one-time-code"
+            spellCheck={false}
             value={code}
             onChange={(e) => setCode(e.target.value)}
           />
