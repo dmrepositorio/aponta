@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "phase": "red",
+  "started_at": "2026-11-17T12:23:10.753613+00:00",
+  "finished_at": "2026-11-17T12:28:30.739733+00:00",
+  "command": [
+    "pnpm",
+    "nx",
+    "run-many",
+    "-t",
+    "test",
+    "-p",
+    "web",
+    "api",
+    "--skip-nx-cache"
+  ],
+  "base_sha": "dcfdef083328015894bfecb357c790fe9e9f14da",
+  "head_sha": "dcfdef083328015894bfecb357c790fe9e9f14da",
+  "exit_code": 1,
+  "tests": {
+    "apps/web/src/pages/OrganizationsPage.test.tsx": "3914ecbc322ef240b384a4d14e36842ebd2886b879261d398d9762be3ab676cc",
+    "apps/api/src/organizations/dto/organization-document.dto.spec.ts": "b825510c62d8670b411dd744f35dd9dbc813b66634cb4367b1d59ae61c98d647",
+    "apps/api/src/organizations/organizations.service.spec.ts": "0d1b52ed8807e4486fa9ada371aed6aec4cd523141926a568be5b981fd5ddd61"
+  },
+  "criteria": [
+    "AC-01",
+    "AC-02",
+    "AC-03",
+    "AC-04",
+    "AC-05"
+  ],
+  "source_hashes": {
+    "apps/api/src/organizations/dto/organization-document.dto.spec.ts": "b825510c62d8670b411dd744f35dd9dbc813b66634cb4367b1d59ae61c98d647",
+    "apps/api/src/organizations/organizations.service.spec.ts": "0d1b52ed8807e4486fa9ada371aed6aec4cd523141926a568be5b981fd5ddd61",
+    "apps/web/src/pages/OrganizationsPage.test.tsx": "3914ecbc322ef240b384a4d14e36842ebd2886b879261d398d9762be3ab676cc"
+  },
+  "log": ".delivery/evidence/DMTE-554/red.log",
+  "log_sha256": "9aa3af1442d00cc6c2ca5bbcb1f42a4cfe2fd93fce010fc0f2cb5db78107d615"
+}

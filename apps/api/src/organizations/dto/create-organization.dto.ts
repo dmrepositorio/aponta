@@ -1,5 +1,6 @@
 import { IsString, IsNotEmpty, IsOptional, IsEnum, IsBoolean, IsInt, Min, Max } from 'class-validator';
 import { DocumentType } from '@prisma/client';
+import { BlankToUndefined } from './blank-document.transform';
 
 export class CreateOrganizationDto {
   @IsString()
@@ -12,11 +13,13 @@ export class CreateOrganizationDto {
 
   @IsOptional()
   @IsString()
+  @BlankToUndefined()
   cnpj?: string;
 
   /** Tiflux-parity: documento único PF (CPF) além do CNPJ já existente (gap #1 do #49, issue #56). */
   @IsOptional()
   @IsString()
+  @BlankToUndefined()
   cpf?: string;
 
   @IsOptional()

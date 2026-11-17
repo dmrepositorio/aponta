@@ -12,7 +12,7 @@ Identidade: DMTE-554, issue dmrepositorio/aponta#309, Tier 1, pai Multica `01a1e
 ## Decisões
 
 1. **API.** `cnpj` e `cpf` em branco nos DTOs viram `undefined` na criação e `null` na atualização (`@Transform`). O serviço traduz `P2002` em `ConflictException` com mensagem legível ("Já existe um cliente com este CNPJ." / "CPF."), em `create` e `update`.
-2. **Web.** `createMutation` ganha `onError` que mostra a mensagem da API (ou "Não foi possível cadastrar o cliente.") num `EzAlert variant="error"` (`role="alert"`) dentro do formulário, que mantém o que foi digitado. O payload deixa de enviar `cnpj`/`cpf` vazios.
+2. **Web.** `updateOrgMutation` (edição de cliente já cadastrado) tinha a mesma falha silenciosa: passa a usar o `inlineError` da página. `createMutation` ganha `onError` que mostra a mensagem da API (ou "Não foi possível cadastrar o cliente.") num `EzAlert variant="error"` (`role="alert"`) dentro do formulário, que mantém o que foi digitado. O payload deixa de enviar `cnpj`/`cpf` vazios.
 3. **Fora do escopo:** dado de produção já gravado com `cnpj = ''` (precisa de migração/limpeza decidida pelo responsável); consulta aos logs de produção; novos campos.
 
 ## Acceptance criteria
@@ -21,13 +21,15 @@ Identidade: DMTE-554, issue dmrepositorio/aponta#309, Tier 1, pai Multica `01a1e
 - AC-02: com a API falhando sem mensagem (erro de rede), o formulário mostra "Não foi possível cadastrar o cliente.".
 - AC-03: o cadastro sem CNPJ/CPF não envia `cnpj` nem `cpf` em branco à API.
 - AC-04: nos DTOs de cliente, `cnpj` e `cpf` em branco viram `undefined` na criação e `null` na atualização; valor preenchido é mantido.
-- AC-05: `create` e `update` de cliente respondem 409 com mensagem legível quando `cnpj` ou `cpf` já existe; outros erros de banco seguem como estão.
+- AC-05: `create` e `update` de cliente respondem 409 com mensagem legível quando `cnpj` ou `cpf` já existe; outros erros de banco seguem como estão. O `P2002` é lido nos dois formatos do Prisma 7: `meta.target` e `meta.driverAdapterError.cause.constraint` (`index`/`fields`), que é o que o `@prisma/adapter-pg` do projeto entrega.
+- AC-06: com a API recusando a edição de um cliente já cadastrado, a tela mostra a mensagem da API num alerta (`role="alert"`).
 
 ## Testes (seams: a página pela Testing Library; os DTOs pelo `ValidationPipe` real; o serviço com Prisma simulado)
 
 - AC-01, AC-02, AC-03: `apps/web/src/pages/OrganizationsPage.test.tsx`, bloco "cadastro manual: falha ao salvar (DMTE-554)".
 - AC-04: `apps/api/src/organizations/dto/organization-document.dto.spec.ts`.
-- AC-05: `apps/api/src/organizations/organizations.service.spec.ts`.
+- AC-05: `apps/api/src/organizations/organizations.service.spec.ts` e, para o formato do adapter-pg, `organizations.duplicate-document.spec.ts`.
+- AC-06: `apps/web/src/pages/OrganizationsPage.update-error.test.tsx`.
 - Banco real: não há seam de integração com Postgres no projeto para este fluxo; a unicidade é coberta pelo teste do serviço com `PrismaClientKnownRequestError` P2002.
 
 ## Avaliação de design

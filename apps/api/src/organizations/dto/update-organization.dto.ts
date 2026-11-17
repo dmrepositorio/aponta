@@ -1,5 +1,6 @@
 import { IsString, IsNotEmpty, IsOptional, IsEnum, IsBoolean, IsInt, Min, Max } from 'class-validator';
 import { DocumentType } from '@prisma/client';
+import { BlankToNull } from './blank-document.transform';
 
 export class UpdateOrganizationDto {
   @IsOptional()
@@ -13,10 +14,12 @@ export class UpdateOrganizationDto {
 
   @IsOptional()
   @IsString()
+  @BlankToNull()
   cnpj?: string;
 
   @IsOptional()
   @IsString()
+  @BlankToNull()
   cpf?: string;
 
   @IsOptional()

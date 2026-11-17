@@ -41,8 +41,18 @@
       "description": "`create` e `update` de cliente respondem 409 com mensagem legível quando `cnpj` ou `cpf` já existe; outros erros de banco seguem como estão.",
       "tests": [
         "apps/api/src/organizations/organizations.service.spec.ts: answers 409 with a readable message when the cnpj is already registered (DMTE-554)",
-        "apps/api/src/organizations/organizations.service.spec.ts: answers 409 with a readable message when the new cnpj belongs to another client (DMTE-554)"
+        "apps/api/src/organizations/organizations.service.spec.ts: answers 409 with a readable message when the new cnpj belongs to another client (DMTE-554)",
+        "apps/api/src/organizations/organizations.duplicate-document.spec.ts: answers 409 with a readable message for index Organization_cnpj_key"
       ]
+    },
+    {
+      "id": "AC-06",
+      "description": "com a API recusando a edição de um cliente já cadastrado, a tela mostra a mensagem da API num alerta (`role=\"alert\"`).",
+      "tests": [
+        "apps/web/src/pages/OrganizationsPage.update-error.test.tsx: shows the API message in an alert when the PATCH of the registration is refused"
+      ],
+      "tdd_required": false,
+      "reason": "Achado durante a implementação, depois de o RED do coletor já estar gravado. O RED foi observado (teste novo falhou por asserção, 'Unable to find role=alert', contra o código sem a correção) mas fora do coletor; regravar o RED agora exigiria reverter código pronto. O teste passa no GREEN do coletor. Pendência de conformidade registrada no pai."
     }
   ],
   "spec": "docs/delivery/specs/DMTE-554.md",
