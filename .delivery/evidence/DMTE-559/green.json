@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "phase": "green",
+  "started_at": "2026-11-17T18:42:03.736430+00:00",
+  "finished_at": "2026-11-17T18:48:04.867397+00:00",
+  "command": [
+    "pnpm",
+    "nx",
+    "run-many",
+    "-t",
+    "test",
+    "-p",
+    "web",
+    "api",
+    "--skip-nx-cache"
+  ],
+  "base_sha": "35b982f7db2d478d2e8359ca5e601c2fbf3655e8",
+  "head_sha": "400c847685941efc1da93a7fe857ca4d3c43cb51",
+  "exit_code": 0,
+  "tests": {
+    "apps/api/src/organizations/dto/organization-document.dto.spec.ts": "8e4f8146e18bdfc74b7da128f228f1612f0936f87c418fa31999a636cb16e507",
+    "apps/api/src/organizations/organizations.cnpj-unico.spec.ts": "df90738ca23e1dce204f3fd8d21b7ff50f6cb7e7ae642b5f84166753cc2f83de",
+    "apps/api/src/organizations/organizations.service.spec.ts": "473500c6a00224edbfc6ff6ce3bce2649bb64e7c952311ab6983e4c053c55ef4",
+    "apps/web/src/pages/OrganizationsPage.update-error.test.tsx": "c34ecd75eea82f592c5f80eb2d57667ce9826dc6f68ef75b707660d3b2608e25",
+    "apps/web/src/pages/OrganizationsPage.test.tsx": "268a77a23e67c01d0097c6265a93104e0c16205e0961fbef5552331aa98a1477"
+  },
+  "criteria": [
+    "AC-01",
+    "AC-02",
+    "AC-03",
+    "AC-04",
+    "AC-05",
+    "AC-06",
+    "AC-07",
+    "AC-08",
+    "AC-09"
+  ],
+  "source_hashes": {
+    "apps/api/src/organizations/dto/blank-document.transform.ts": "199404d0bfd4341738a343e7c46820b62b40470d54e4b895cdfbd16ad20a5467",
+    "apps/api/src/organizations/dto/create-organization.dto.ts": "4661c56630b66eabc5622be94004af47f0ae7901199580bff55f13366de1c4c2",
+    "apps/api/src/organizations/dto/organization-document.dto.spec.ts": "8e4f8146e18bdfc74b7da128f228f1612f0936f87c418fa31999a636cb16e507",
+    "apps/api/src/organizations/dto/update-organization.dto.ts": "0e2be771a72c5f38230a771e1e0a0c9e4fbbb90f0ae229d3324e6d3066bc8481",
+    "apps/api/src/organizations/organizations.cnpj-unico.spec.ts": "df90738ca23e1dce204f3fd8d21b7ff50f6cb7e7ae642b5f84166753cc2f83de",
+    "apps/api/src/organizations/organizations.service.spec.ts": "473500c6a00224edbfc6ff6ce3bce2649bb64e7c952311ab6983e4c053c55ef4",
+    "apps/api/src/organizations/organizations.service.ts": "8174cb6d685fd502eb51836e3f7183a075d51fa2c04a34c380df1a0048802962",
+    "apps/web/src/pages/OrganizationsPage.test.tsx": "268a77a23e67c01d0097c6265a93104e0c16205e0961fbef5552331aa98a1477",
+    "apps/web/src/pages/OrganizationsPage.tsx": "2da803cb73b7d87e15b57d6b033d6e10d5d9f6b99e5650fa2ca17a188575f2f6",
+    "apps/web/src/pages/OrganizationsPage.update-error.test.tsx": "c34ecd75eea82f592c5f80eb2d57667ce9826dc6f68ef75b707660d3b2608e25"
+  },
+  "log": ".delivery/evidence/DMTE-559/green.log",
+  "log_sha256": "1666f239b54526f7d6f398751c7786c0bc2a0352c18f54be5e33bded4e1a825c"
+}

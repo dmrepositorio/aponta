@@ -13,6 +13,7 @@ describe('OrganizationsService', () => {
       organizationDeskEvent: {create:jest.fn()},
       organization: {
         create: jest.fn(),
+        findFirst: jest.fn().mockResolvedValue(null),
         findMany: jest.fn().mockResolvedValue([]),
         findUnique: jest.fn(),
         update: jest.fn(),
