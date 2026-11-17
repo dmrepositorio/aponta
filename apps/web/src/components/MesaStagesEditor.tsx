@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { api } from '../lib/api';
 import { EzButton, EzCheck, EzTextInput } from './ds';
+import { useMesaSave } from './mesaSave';
 
 export interface DeskStage {
   id: string;
@@ -18,6 +19,14 @@ export function MesaStagesEditor({ deskId }: { deskId: string }) {
   const [editing, setEditing] = useState<DeskStage | null>(null);
   const [editName, setEditName] = useState('');
   const [editTransitions, setEditTransitions] = useState<string[]>([]);
+
+  const dirty =
+    newName.trim() !== '' ||
+    (editing !== null &&
+      (editName !== editing.name ||
+        editTransitions.length !== editing.transitionToIds.length ||
+        editTransitions.some((id) => !editing.transitionToIds.includes(id))));
+  const notice = useMesaSave(dirty);
 
   const { data: stages = [], isLoading } = useQuery({
     queryKey: ['service-desk-stages', deskId],
@@ -37,7 +46,9 @@ export function MesaStagesEditor({ deskId }: { deskId: string }) {
     onSuccess: () => {
       setNewName('');
       void invalidate();
+      notice.saved();
     },
+    onError: notice.failed,
   });
 
   const updateMutation = useMutation({
@@ -51,14 +62,20 @@ export function MesaStagesEditor({ deskId }: { deskId: string }) {
     onSuccess: () => {
       setEditing(null);
       void invalidate();
+      notice.saved();
     },
+    onError: notice.failed,
   });
 
   const deleteMutation = useMutation({
     mutationFn: async (stageId: string) => {
       await api.delete(`/service-desks/${deskId}/stages/${stageId}`);
     },
-    onSuccess: () => void invalidate(),
+    onSuccess: () => {
+      void invalidate();
+      notice.saved();
+    },
+    onError: notice.failed,
   });
 
   if (isLoading) {

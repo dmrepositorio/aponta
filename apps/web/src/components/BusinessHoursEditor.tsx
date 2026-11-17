@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/api';
 import { EzAlert, EzButton, EzComboBox, EzTextInput } from './ds';
+import { useMesaSave } from './mesaSave';
 
 interface BusinessHourWindow {
   id?: string;
@@ -64,6 +65,7 @@ export function BusinessHoursEditor({
   // the component renders straight from server data (read-only summary).
   const [draft, setDraft] = useState<BusinessHoursConfig | null>(null);
   const isDirty = draft !== null;
+  const notice = useMesaSave(isDirty);
   const windows = draft?.businessHours ?? data?.businessHours ?? [];
   const holidays = draft?.holidays ?? data?.holidays ?? [];
 
@@ -104,7 +106,9 @@ export function BusinessHoursEditor({
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey });
       setDraft(null);
+      notice.saved();
     },
+    onError: notice.failed,
   });
 
   const importHolidaysMutation = useMutation({
@@ -395,12 +399,6 @@ export function BusinessHoursEditor({
           </EzAlert>
         )}
       </div>
-
-      {mutation.isError && (
-        <EzAlert variant="error" role="alert">
-          Falha ao salvar o expediente. Tente novamente.
-        </EzAlert>
-      )}
 
       {isDirty && (
         <div className="flex justify-end gap-2">

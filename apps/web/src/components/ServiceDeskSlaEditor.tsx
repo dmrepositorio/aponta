@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/api';
-import { EzAlert, EzButton, EzComboBox, EzTextInput } from './ds';
+import { EzButton, EzComboBox, EzTextInput } from './ds';
+import { useMesaSave } from './mesaSave';
 
 interface Organization {
   id: string;
@@ -46,6 +47,19 @@ function toApiValue(s: string): number | null {
  * + "Meta de SLA". A blank field falls back to the global default for
  * that priority (see `calculateSla`/`buildSlaOverrides` on the API).
  */
+function toSlaValues(initial: ServiceDeskSlaFields): Record<string, string> {
+  return {
+    CriticalResponse: toFormValue(initial.slaCriticalResponseHours),
+    CriticalResolve: toFormValue(initial.slaCriticalResolveHours),
+    HighResponse: toFormValue(initial.slaHighResponseHours),
+    HighResolve: toFormValue(initial.slaHighResolveHours),
+    MediumResponse: toFormValue(initial.slaMediumResponseHours),
+    MediumResolve: toFormValue(initial.slaMediumResolveHours),
+    LowResponse: toFormValue(initial.slaLowResponseHours),
+    LowResolve: toFormValue(initial.slaLowResolveHours),
+  };
+}
+
 export function ServiceDeskSlaEditor({
   deskId,
   initial,
@@ -56,16 +70,13 @@ export function ServiceDeskSlaEditor({
   const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(false);
   const [organizationId, setOrganizationId] = useState(initial.organizationId ?? '');
-  const [slaValues, setSlaValues] = useState<Record<string, string>>(() => ({
-    CriticalResponse: toFormValue(initial.slaCriticalResponseHours),
-    CriticalResolve: toFormValue(initial.slaCriticalResolveHours),
-    HighResponse: toFormValue(initial.slaHighResponseHours),
-    HighResolve: toFormValue(initial.slaHighResolveHours),
-    MediumResponse: toFormValue(initial.slaMediumResponseHours),
-    MediumResolve: toFormValue(initial.slaMediumResolveHours),
-    LowResponse: toFormValue(initial.slaLowResponseHours),
-    LowResolve: toFormValue(initial.slaLowResolveHours),
-  }));
+  const [slaValues, setSlaValues] = useState<Record<string, string>>(() => toSlaValues(initial));
+  const initialSla = toSlaValues(initial);
+  const dirty =
+    isEditing &&
+    (organizationId !== (initial.organizationId ?? '') ||
+      Object.keys(initialSla).some((key) => slaValues[key] !== initialSla[key]));
+  const notice = useMesaSave(dirty);
 
   const { data: organizations } = useQuery({
     queryKey: ['organizations', 'all-for-desk-link'],
@@ -93,8 +104,16 @@ export function ServiceDeskSlaEditor({
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['service-desks'] });
       setIsEditing(false);
+      notice.saved();
     },
+    onError: notice.failed,
   });
+
+  const cancel = () => {
+    setOrganizationId(initial.organizationId ?? '');
+    setSlaValues(initialSla);
+    setIsEditing(false);
+  };
 
   if (!isEditing) {
     return (
@@ -168,12 +187,8 @@ export function ServiceDeskSlaEditor({
         </div>
       </div>
 
-      {mutation.isError && (
-        <EzAlert variant="error">Falha ao salvar. Tente novamente.</EzAlert>
-      )}
-
       <div className="flex gap-2 justify-end">
-        <EzButton type="button" variant="secondary" size="small" onClick={() => setIsEditing(false)}>
+        <EzButton type="button" variant="secondary" size="small" onClick={cancel}>
           Cancelar
         </EzButton>
         <EzButton

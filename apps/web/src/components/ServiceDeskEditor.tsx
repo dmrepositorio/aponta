@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/api';
 import { EzButton, EzCheck } from './ds';
+import { useMesaSave } from './mesaSave';
 
 export function ServiceDeskEditor({ desk, agents }: { desk: any; agents: any[] }) {
   const queryClient = useQueryClient();
@@ -10,6 +11,12 @@ export function ServiceDeskEditor({ desk, agents }: { desk: any; agents: any[] }
     desk.agents?.map((a: any) => a.id) || []
   );
 
+  const savedAgents: string[] = desk.agents?.map((a: any) => a.id) || [];
+  const dirty =
+    isEditing &&
+    (selectedAgents.length !== savedAgents.length || selectedAgents.some((id) => !savedAgents.includes(id)));
+  const notice = useMesaSave(dirty);
+
   const mutation = useMutation({
     mutationFn: async (agentIds: string[]) => {
       await api.patch(`/service-desks/${desk.id}`, { agentIds });
@@ -17,7 +24,9 @@ export function ServiceDeskEditor({ desk, agents }: { desk: any; agents: any[] }
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['service-desks'] });
       setIsEditing(false);
+      notice.saved();
     },
+    onError: notice.failed,
   });
 
   const handleSave = () => {
@@ -57,7 +66,10 @@ export function ServiceDeskEditor({ desk, agents }: { desk: any; agents: any[] }
             type="button"
             variant="secondary"
             size="small"
-            onClick={() => setIsEditing(false)}
+            onClick={() => {
+              setSelectedAgents(savedAgents);
+              setIsEditing(false);
+            }}
           >
             Cancelar
           </EzButton>
