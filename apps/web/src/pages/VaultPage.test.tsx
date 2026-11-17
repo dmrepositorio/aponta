@@ -1,8 +1,8 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { api } from '../lib/api';
 import { useAuthStore } from '../stores/authStore';
 import { VaultPage } from './VaultPage';
@@ -237,32 +237,6 @@ describe('VaultPage', () => {
     expect(screen.queryByText('ftpuser')).not.toBeInTheDocument();
   });
 
-  it('reveals a row in place when the lock icon is clicked, auditing the reveal server-side', async () => {
-    mockDefaultGets();
-    vi.mocked(api.post).mockImplementation(async (url: string, body: any) => {
-      if (body.field === 'username') return { data: { value: 'ftpuser' } };
-      return { data: { value: 'fake-password-123' } };
-    });
-    loginAs('ADMIN');
-    const user = userEvent.setup();
-    renderPage();
-
-    await waitFor(() => {
-      expect(screen.getByText('Servidor FTP')).toBeInTheDocument();
-    });
-
-    const row = screen.getByText('Servidor FTP').closest('tr') as HTMLElement;
-    const revealBtn = within(row).getByTitle('Revelar linha');
-    await user.click(revealBtn);
-
-    await waitFor(() => {
-      expect(screen.getByText('ftpuser')).toBeInTheDocument();
-      expect(screen.getByText('fake-password-123')).toBeInTheDocument();
-    });
-    expect(api.post).toHaveBeenCalledWith('/vault/credentials/cred-1/reveal', { field: 'username', intent: 'reveal' });
-    expect(api.post).toHaveBeenCalledWith('/vault/credentials/cred-1/reveal', { field: 'password', intent: 'reveal' });
-  });
-
   it('navigates to /vault/audit when ADMIN clicks "Auditoria"', async () => {
     mockDefaultGets();
     loginAs('ADMIN');
@@ -293,7 +267,7 @@ describe('VaultPage', () => {
     });
 
     const row = screen.getByText('Servidor FTP').closest('tr') as HTMLElement;
-    await user.click(within(row).getByTitle('Revelar linha'));
+    await user.click(within(row).getByRole('button', { name: 'Revelar senha de Servidor FTP' }));
     await waitFor(() => {
       expect(screen.getByText('fake-password-123')).toBeInTheDocument();
     });
@@ -534,34 +508,6 @@ describe('VaultPage', () => {
     expect(openLink).toHaveAttribute('target', '_blank');
   });
 
-  it('hides a previously revealed row again when the lock icon is clicked a second time', async () => {
-    mockDefaultGets();
-    vi.mocked(api.post).mockResolvedValue({ data: { value: 'fake-password-123' } });
-    loginAs('ADMIN');
-    const user = userEvent.setup();
-    renderPage();
-
-    await waitFor(() => {
-      expect(screen.getByText('Servidor FTP')).toBeInTheDocument();
-    });
-
-    const row = screen.getByText('Servidor FTP').closest('tr') as HTMLElement;
-    await user.click(within(row).getByTitle('Revelar linha'));
-
-    await waitFor(() => {
-      expect(within(row).getByTitle('Ocultar')).toBeInTheDocument();
-    });
-    const callsAfterReveal = vi.mocked(api.post).mock.calls.length;
-
-    await user.click(within(row).getByTitle('Ocultar'));
-
-    await waitFor(() => {
-      expect(within(row).getByTitle('Revelar linha')).toBeInTheDocument();
-    });
-    expect(screen.getAllByText('••••••••').length).toBeGreaterThan(0);
-    expect(vi.mocked(api.post).mock.calls.length).toBe(callsAfterReveal);
-  });
-
   it('renders pagination when there is more than one page and refetches for the clicked page', async () => {
     vi.mocked(api.get).mockImplementation(async (url: string) => {
       if (url === '/vault/folders') return { data: folders };
@@ -631,5 +577,318 @@ describe('VaultPage', () => {
     await user.click(screen.getByRole('button', { name: 'Cancelar' }));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(api.post).not.toHaveBeenCalledWith('/vault/credentials', expect.anything());
+  });
+});
+
+describe('VaultPage — row actions and per-field reveal (DMTE-544)', () => {
+  const REVEAL_VALUES: Record<string, string> = { username: 'ftpuser', password: 'fake-password-123' };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    useAuthStore.setState({ token: null, user: null });
+    window.confirm = vi.fn(() => true);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  function mockReveal() {
+    vi.mocked(api.post).mockImplementation(async (_url: string, body: any) => ({ data: { value: REVEAL_VALUES[body.field] } }));
+  }
+
+  function setClipboard(writeText: unknown) {
+    Object.defineProperty(navigator, 'clipboard', { value: writeText === undefined ? undefined : { writeText }, configurable: true });
+  }
+
+  async function renderLoaded(options: { fakeTimers?: boolean; role?: 'ADMIN' | 'AGENT' } = {}) {
+    if (options.fakeTimers) vi.useFakeTimers({ shouldAdvanceTime: true });
+    mockDefaultGets();
+    loginAs(options.role ?? 'ADMIN');
+    const user = userEvent.setup(options.fakeTimers ? { advanceTimers: vi.advanceTimersByTime } : undefined);
+    const view = renderPage();
+    await waitFor(() => expect(screen.getByText('Servidor FTP')).toBeInTheDocument());
+    return { user, ...view };
+  }
+
+  const ftpRow = () => screen.getByText('Servidor FTP').closest('tr') as HTMLElement;
+  const eye = (field: 'usuário' | 'senha', name = 'Servidor FTP') => screen.getByRole('button', { name: `Revelar ${field} de ${name}` });
+  const advance = (ms: number) => act(async () => { vi.advanceTimersByTime(ms); });
+  const revealCalls = () => vi.mocked(api.post).mock.calls.filter(([, body]) => (body as any).intent === 'reveal');
+
+  it('gives every row and folder icon button an accessible name with the action and the item', async () => {
+    const { user } = await renderLoaded();
+    const row = within(ftpRow());
+    for (const name of [
+      'Copiar usuário de Servidor FTP',
+      'Copiar senha de Servidor FTP',
+      'Copiar URL de Servidor FTP',
+      'Editar Servidor FTP',
+      'Excluir Servidor FTP',
+    ]) {
+      expect(row.getByRole('button', { name })).toBeInTheDocument();
+    }
+    expect(row.getByRole('link', { name: 'Abrir URL de Servidor FTP' })).toHaveAttribute('href', 'https://ftp.example.com');
+
+    await user.click(screen.getByTestId('tree-node-f1'));
+    expect(await screen.findByRole('button', { name: 'Editar pasta Servidores' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Remover pasta Servidores' })).toBeInTheDocument();
+  });
+
+  it('renders the icon buttons at 32px with the DS focus ring', async () => {
+    const { user } = await renderLoaded();
+    const row = within(ftpRow());
+    const controls = [
+      row.getByRole('button', { name: 'Copiar usuário de Servidor FTP' }),
+      row.getByRole('button', { name: 'Copiar senha de Servidor FTP' }),
+      row.getByRole('button', { name: 'Copiar URL de Servidor FTP' }),
+      row.getByRole('button', { name: 'Revelar usuário de Servidor FTP' }),
+      row.getByRole('button', { name: 'Revelar senha de Servidor FTP' }),
+      row.getByRole('button', { name: 'Editar Servidor FTP' }),
+      row.getByRole('button', { name: 'Excluir Servidor FTP' }),
+      row.getByRole('link', { name: 'Abrir URL de Servidor FTP' }),
+    ];
+    await user.click(screen.getByTestId('tree-node-f1'));
+    controls.push(
+      await screen.findByRole('button', { name: 'Editar pasta Servidores' }),
+      screen.getByRole('button', { name: 'Remover pasta Servidores' }),
+    );
+    for (const control of controls) {
+      expect(control).toHaveClass('h-[32px]', 'w-[32px]', 'ez-focus');
+    }
+  });
+
+  it('confirms a successful copy in a polite status region that clears by itself', async () => {
+    const { user } = await renderLoaded({ fakeTimers: true });
+    mockReveal();
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    setClipboard(writeText);
+
+    const status = screen.getByRole('status');
+    expect(status).toHaveAttribute('aria-live', 'polite');
+    expect(status).toBeEmptyDOMElement();
+
+    await user.click(screen.getByRole('button', { name: 'Copiar senha de Servidor FTP' }));
+    expect(await within(status).findByText('Senha copiada')).toBeInTheDocument();
+    expect(writeText).toHaveBeenCalledWith('fake-password-123');
+    expect(screen.queryByText('fake-password-123')).not.toBeInTheDocument();
+
+    await advance(5000);
+    expect(status).toBeEmptyDOMElement();
+
+    await user.click(screen.getByRole('button', { name: 'Copiar usuário de Servidor FTP' }));
+    expect(await within(status).findByText('Usuário copiado')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Copiar URL de Servidor FTP' }));
+    expect(await within(status).findByText('URL copiada')).toBeInTheDocument();
+  });
+
+  it('shows a visible error when the copy fails (reveal rejected, clipboard rejected or missing)', async () => {
+    const { user } = await renderLoaded();
+
+    vi.mocked(api.post).mockRejectedValue(new Error('403'));
+    setClipboard(vi.fn().mockResolvedValue(undefined));
+    await user.click(screen.getByRole('button', { name: 'Copiar senha de Servidor FTP' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('Não foi possível copiar a senha.');
+
+    mockReveal();
+    setClipboard(vi.fn().mockRejectedValue(new Error('denied')));
+    await user.click(screen.getByRole('button', { name: 'Copiar usuário de Servidor FTP' }));
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('Não foi possível copiar o usuário.'));
+
+    setClipboard(undefined);
+    await user.click(screen.getByRole('button', { name: 'Copiar URL de Servidor FTP' }));
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('Não foi possível copiar a URL.'));
+
+    setClipboard(vi.fn().mockRejectedValue(new Error('denied')));
+    await user.click(screen.getByRole('button', { name: 'Copiar URL de Servidor FTP' }));
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('Não foi possível copiar a URL.'));
+    expect(screen.queryByText('Senha copiada')).not.toBeInTheDocument();
+  });
+
+  it('reveals one field at a time with a pressed toggle, one audited call per field, and no lock in the name column', async () => {
+    const { user } = await renderLoaded();
+    mockReveal();
+
+    expect(within(ftpRow()).queryByTitle('Revelar linha')).not.toBeInTheDocument();
+    expect(eye('senha')).toHaveAttribute('aria-pressed', 'false');
+    expect(eye('usuário')).toHaveAttribute('aria-pressed', 'false');
+
+    await user.click(eye('senha'));
+    expect(await screen.findByText('fake-password-123')).toBeInTheDocument();
+    expect(eye('senha')).toHaveAttribute('aria-pressed', 'true');
+    expect(eye('usuário')).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.queryByText('ftpuser')).not.toBeInTheDocument();
+    expect(revealCalls()).toEqual([['/vault/credentials/cred-1/reveal', { field: 'password', intent: 'reveal' }]]);
+
+    await user.click(eye('usuário'));
+    expect(await screen.findByText('ftpuser')).toBeInTheDocument();
+    expect(revealCalls()).toHaveLength(2);
+
+    await user.click(eye('senha'));
+    await waitFor(() => expect(screen.queryByText('fake-password-123')).not.toBeInTheDocument());
+    expect(eye('senha')).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByText('ftpuser')).toBeInTheDocument();
+    expect(revealCalls()).toHaveLength(2);
+  });
+
+  it('only offers an eye for the fields a credential has', async () => {
+    await renderLoaded();
+    expect(screen.queryByRole('button', { name: 'Revelar usuário de VPN Interna' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Revelar senha de VPN Interna' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Revelar senha de Backup Interno' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Revelar usuário de Backup Interno' })).toBeInTheDocument();
+  });
+
+  it('keeps the field masked and shows an error when the reveal fails', async () => {
+    const { user } = await renderLoaded();
+    vi.mocked(api.post).mockRejectedValue(new Error('500'));
+
+    await user.click(eye('senha'));
+    expect(await screen.findByRole('alert')).toHaveTextContent('Não foi possível revelar a senha.');
+    expect(eye('senha')).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.queryByText('fake-password-123')).not.toBeInTheDocument();
+
+    await user.click(eye('usuário'));
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('Não foi possível revelar o usuário.'));
+  });
+
+  it('disables the eye while its reveal is in flight, so a second click makes no second call', async () => {
+    const { user } = await renderLoaded();
+    let resolveReveal: (value: unknown) => void = () => undefined;
+    vi.mocked(api.post).mockImplementation(() => new Promise((resolve) => { resolveReveal = resolve; }));
+
+    await user.click(eye('senha'));
+    await waitFor(() => expect(eye('senha')).toBeDisabled());
+    await user.click(eye('senha'));
+    expect(revealCalls()).toHaveLength(1);
+
+    await act(async () => resolveReveal({ data: { value: 'fake-password-123' } }));
+    expect(await screen.findByText('fake-password-123')).toBeInTheDocument();
+    expect(eye('senha')).toBeEnabled();
+  });
+
+  it('masks each revealed field again 30 seconds after it was revealed, counted per field', async () => {
+    const { user } = await renderLoaded({ fakeTimers: true });
+    mockReveal();
+
+    await user.click(eye('senha'));
+    expect(await screen.findByText('fake-password-123')).toBeInTheDocument();
+    await advance(20_000);
+    await user.click(eye('usuário'));
+    expect(await screen.findByText('ftpuser')).toBeInTheDocument();
+
+    await advance(9_000);
+    expect(screen.getByText('fake-password-123')).toBeInTheDocument();
+    await advance(1_500);
+    expect(screen.queryByText('fake-password-123')).not.toBeInTheDocument();
+    expect(eye('senha')).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.getByText('ftpuser')).toBeInTheDocument();
+
+    await advance(20_000);
+    expect(screen.queryByText('ftpuser')).not.toBeInTheDocument();
+    expect(eye('usuário')).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('cancels the old timer when a field is hidden by hand and revealed again', async () => {
+    const { user } = await renderLoaded({ fakeTimers: true });
+    mockReveal();
+
+    await user.click(eye('senha'));
+    expect(await screen.findByText('fake-password-123')).toBeInTheDocument();
+    await advance(10_000);
+    await user.click(eye('senha'));
+    await waitFor(() => expect(screen.queryByText('fake-password-123')).not.toBeInTheDocument());
+    await advance(10_000);
+    await user.click(eye('senha'));
+    expect(await screen.findByText('fake-password-123')).toBeInTheDocument();
+
+    await advance(25_000); // 35s after the first reveal, 25s after the second
+    expect(screen.getByText('fake-password-123')).toBeInTheDocument();
+    await advance(6_000);
+    expect(screen.queryByText('fake-password-123')).not.toBeInTheDocument();
+  });
+
+  it('leaves no reveal timer running after the page unmounts', async () => {
+    async function timersLeftAfterUnmount(reveal: boolean) {
+      vi.clearAllTimers();
+      const { user, unmount } = await renderLoaded({ fakeTimers: true });
+      mockReveal();
+      if (reveal) {
+        await user.click(eye('senha'));
+        await screen.findByText('fake-password-123');
+      }
+      unmount();
+      const left = vi.getTimerCount();
+      vi.useRealTimers();
+      return left;
+    }
+    const without = await timersLeftAfterUnmount(false);
+    const withReveal = await timersLeftAfterUnmount(true);
+    expect(withReveal).toBe(without);
+  });
+
+  it('masks every revealed field when the user searches', async () => {
+    const { user } = await renderLoaded();
+    mockReveal();
+    await user.click(eye('senha'));
+    await user.click(eye('usuário'));
+    expect(await screen.findByText('ftpuser')).toBeInTheDocument();
+
+    await user.type(screen.getByPlaceholderText('Buscar senha...'), 'f');
+
+    await waitFor(() => expect(screen.queryByText('fake-password-123')).not.toBeInTheDocument());
+    expect(screen.queryByText('ftpuser')).not.toBeInTheDocument();
+    expect(eye('senha')).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('masks every revealed field when the user changes page', async () => {
+    vi.mocked(api.get).mockImplementation(async (url: string) => {
+      if (url === '/vault/folders') return { data: folders };
+      return { data: { data: credentials, meta: { total: 25, page: 1, limit: 10, totalPages: 2 } } };
+    });
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    renderPage();
+    await waitFor(() => expect(screen.getByText('Servidor FTP')).toBeInTheDocument());
+    mockReveal();
+
+    await user.click(eye('senha'));
+    expect(await screen.findByText('fake-password-123')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: '2' }));
+
+    await waitFor(() => expect(screen.queryByText('fake-password-123')).not.toBeInTheDocument());
+  });
+
+  it('masks every revealed field after a credential is saved or deleted', async () => {
+    const { user } = await renderLoaded();
+    mockReveal();
+    vi.mocked(api.patch).mockResolvedValue({ data: {} });
+    vi.mocked(api.delete).mockResolvedValue({ data: {} });
+
+    await user.click(eye('senha'));
+    expect(await screen.findByText('fake-password-123')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Editar Servidor FTP' }));
+    await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Salvar' }));
+    await waitFor(() => expect(screen.queryByText('fake-password-123')).not.toBeInTheDocument());
+
+    await user.click(eye('senha'));
+    expect(await screen.findByText('fake-password-123')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Excluir Servidor FTP' }));
+    await waitFor(() => expect(screen.queryByText('fake-password-123')).not.toBeInTheDocument());
+  });
+
+  it('drops a reveal response that arrives after the values were cleared', async () => {
+    const { user } = await renderLoaded();
+    let resolveReveal: (value: unknown) => void = () => undefined;
+    vi.mocked(api.post).mockImplementation(() => new Promise((resolve) => { resolveReveal = resolve; }));
+
+    await user.click(eye('senha'));
+    await waitFor(() => expect(eye('senha')).toBeDisabled());
+    await user.type(screen.getByPlaceholderText('Buscar senha...'), 'f');
+    await act(async () => resolveReveal({ data: { value: 'fake-password-123' } }));
+
+    expect(screen.queryByText('fake-password-123')).not.toBeInTheDocument();
+    expect(eye('senha')).toHaveAttribute('aria-pressed', 'false');
   });
 });
