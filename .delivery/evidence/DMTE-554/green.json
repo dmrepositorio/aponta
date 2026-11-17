@@ -1,8 +1,8 @@
 {
   "version": 1,
   "phase": "green",
-  "started_at": "2026-11-17T12:44:15.453712+00:00",
-  "finished_at": "2026-11-17T12:48:41.876387+00:00",
+  "started_at": "2026-11-17T12:52:46.848787+00:00",
+  "finished_at": "2026-11-17T12:57:29.619970+00:00",
   "command": [
     "pnpm",
     "nx",
@@ -15,7 +15,7 @@
     "--skip-nx-cache"
   ],
   "base_sha": "bba27622a05d386565e1ce09b8134a92ac77a620",
-  "head_sha": "9e96a8db4822c0e21d6450a531aacde358624866",
+  "head_sha": "c6b333dfee66b7a5547bfd98d7c8f28b29f7c44d",
   "exit_code": 0,
   "tests": {
     "apps/web/src/pages/OrganizationsPage.test.tsx": "3914ecbc322ef240b384a4d14e36842ebd2886b879261d398d9762be3ab676cc",
@@ -38,9 +38,9 @@
     "apps/api/src/organizations/organizations.service.spec.ts": "0d1b52ed8807e4486fa9ada371aed6aec4cd523141926a568be5b981fd5ddd61",
     "apps/api/src/organizations/organizations.service.ts": "439637aa1e35e2560860db790bd8f116ae97a2e936c82b1067a4d8d20bd909f4",
     "apps/web/src/pages/OrganizationsPage.test.tsx": "3914ecbc322ef240b384a4d14e36842ebd2886b879261d398d9762be3ab676cc",
-    "apps/web/src/pages/OrganizationsPage.tsx": "e05f7fdb00661b03a59ffe97d7ec5286c7f53144a0c45bd59ef2124eb298ec8e",
-    "apps/web/src/pages/OrganizationsPage.update-error.test.tsx": "ac1da3b9659c8e55d36dece9f19dd65fd1dfc2039b9e9cb6c6e1f365d32b98c3"
+    "apps/web/src/pages/OrganizationsPage.tsx": "b5fc57db416821144607b4904151c6d1b0f8bb371d1d88504c32bd7bdd5206e0",
+    "apps/web/src/pages/OrganizationsPage.update-error.test.tsx": "5b910d5db6960c8d92698d36f9825265990ec10fba8a059b9adb557786db9c05"
   },
   "log": ".delivery/evidence/DMTE-554/green.log",
-  "log_sha256": "3638378d34b9a8b01ddbaf9175b46890f834209fc0ac928d0b99176566db6505"
+  "log_sha256": "424050824d846626762e28f5292e7dc43f7ad5270f7d0b6d06530f251afd922d"
 }
