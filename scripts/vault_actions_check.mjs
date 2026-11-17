@@ -159,17 +159,14 @@ async function run(baseUrl) {
       // Foco por teclado: um Tab antes, para o navegador tratar o foco como de teclado (:focus-visible)
       await page.keyboard.press('Tab');
       const focusRows = [];
-      for (const name of [`Copiar senha de ${CREDENTIAL}`, `Revelar senha de ${CREDENTIAL}`, `Editar ${CREDENTIAL}`, `Excluir ${CREDENTIAL}`]) {
-        await rowOf().getByRole('button', { name }).focus();
+      const controlCount = await rowOf().locator('button, a').count();
+      for (let i = 0; i < controlCount; i += 1) {
+        await rowOf().locator('button, a').nth(i).focus();
         await settle(page);
         const f = await page.evaluate(focusStyle);
-        data[`foco-${width}-${name}`] = f;
-        if (f.outlineStyle !== 'solid' || f.outlineWidth !== '2px' || f.outlineColor !== FOCUS) focusRows.push(`${name}: ${f.outlineStyle} ${f.outlineWidth} ${f.outlineColor} (esperado solid 2px ${FOCUS})`);
+        data[`foco-${width}-${f.label}`] = f;
+        if (f.outlineStyle !== 'solid' || f.outlineWidth !== '2px' || f.outlineColor !== FOCUS) focusRows.push(`${f.label}: ${f.outlineStyle} ${f.outlineWidth} ${f.outlineColor} (esperado solid 2px ${FOCUS})`);
       }
-      await rowOf().getByRole('link', { name: `Abrir URL de ${CREDENTIAL}` }).focus();
-      await settle(page);
-      const linkFocus = await page.evaluate(focusStyle);
-      if (linkFocus.outlineStyle !== 'solid' || linkFocus.outlineWidth !== '2px' || linkFocus.outlineColor !== FOCUS) focusRows.push(`Abrir URL: ${linkFocus.outlineStyle} ${linkFocus.outlineWidth} ${linkFocus.outlineColor}`);
       await shot('foco');
       check(`Foco por teclado ${width} px (contorno 2 px ${FOCUS})`, focusRows);
 
