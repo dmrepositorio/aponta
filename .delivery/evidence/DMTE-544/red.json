@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "phase": "red",
+  "started_at": "2026-11-17T21:04:40.461838+00:00",
+  "finished_at": "2026-11-17T21:05:38.182797+00:00",
+  "command": [
+    "pnpm",
+    "--dir",
+    "apps/web",
+    "exec",
+    "vitest",
+    "run",
+    "src/pages/VaultPage.test.tsx"
+  ],
+  "base_sha": "ca109a3ddc317e67db7f254c3745d93d5d5a7595",
+  "head_sha": "219e50ca6ad0762183423d5c5eba9e378dd3640d",
+  "exit_code": 1,
+  "tests": {
+    "apps/web/src/pages/VaultPage.test.tsx": "fc0302669f6b201573f06f5efd56c73c109f724c5691e919bd23ad079510665e"
+  },
+  "criteria": [
+    "AC-01",
+    "AC-02",
+    "AC-03",
+    "AC-04",
+    "AC-05",
+    "AC-06",
+    "AC-07",
+    "AC-08"
+  ],
+  "source_hashes": {
+    "apps/web/src/pages/VaultPage.test.tsx": "fc0302669f6b201573f06f5efd56c73c109f724c5691e919bd23ad079510665e"
+  },
+  "log": ".delivery/evidence/DMTE-544/red.log",
+  "log_sha256": "9dc59986dc5b463756580892d615af41510722726cf4e8b9331de692b353f5a8"
+}

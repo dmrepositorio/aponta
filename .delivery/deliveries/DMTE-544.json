@@ -1,0 +1,117 @@
+{
+  "version": 1,
+  "delivery": "DMTE-544",
+  "repository": "dmrepositorio/aponta",
+  "github_issue": 289,
+  "multica_id": "01a1e5d1-18c0-7495-b10e-93e3647f292d",
+  "cycle": "2026-11-09/2026-11-22",
+  "tier": 2,
+  "criteria": [
+    {
+      "id": "AC-01",
+      "description": "cada botão de ícone da linha (copiar usuário, copiar senha, copiar URL, editar, excluir) e do cabeçalho da pasta (editar, remover) tem nome acessível `aria-label` com a ação e o nome da credencial/pasta, e o link \"Abrir URL\" também; nenhum depende só de `title`.",
+      "tests": [
+        "apps/web/src/pages/VaultPage.test.tsx: gives every row and folder icon button an accessible name with the action and the item"
+      ]
+    },
+    {
+      "id": "AC-02",
+      "description": "esses controles são `EzButton` tertiary small de ícone (32×32 px, `ez-focus`) e o link \"Abrir URL\" usa as mesmas medidas e `ez-focus`; nenhum arquivo de `components/ds/` muda.",
+      "tests": [
+        "apps/web/src/pages/VaultPage.test.tsx: renders the icon buttons at 32px with the DS focus ring"
+      ]
+    },
+    {
+      "id": "AC-03",
+      "description": "copiar usuário, senha ou URL com sucesso mostra \"Usuário copiado\", \"Senha copiada\" ou \"URL copiada\" numa região `role=\"status\"` com `aria-live=\"polite\"`, que some sozinha (~4 s); o valor copiado nunca é renderizado.",
+      "tests": [
+        "apps/web/src/pages/VaultPage.test.tsx: confirms a successful copy in a polite status region that clears by itself"
+      ]
+    },
+    {
+      "id": "AC-04",
+      "description": "se o reveal (`intent: 'copy'`) falhar ou `navigator.clipboard.writeText` rejeitar ou não existir, aparece um `EzAlert` de erro visível (\"Não foi possível copiar a senha.\"/\"o usuário\"/\"a URL\"), sem promise rejeitada não tratada.",
+      "tests": [
+        "apps/web/src/pages/VaultPage.test.tsx: shows a visible error when the copy fails (reveal rejected, clipboard rejected or missing)"
+      ]
+    },
+    {
+      "id": "AC-05",
+      "description": "a coluna Nome não tem mais o cadeado; Usuário e Senha têm botão de olho (só quando o campo existe) com `aria-pressed` `false`/`true`, rótulo `Revelar usuário de …`/`Revelar senha de …`; clicar revela somente aquele campo, com uma chamada `intent: 'reveal'` e `field` correspondente, e o outro continua mascarado; clicar de novo oculta sem nova chamada.",
+      "tests": [
+        "apps/web/src/pages/VaultPage.test.tsx: reveals one field at a time with a pressed toggle, one audited call per field, and no lock in the name column",
+        "apps/web/src/pages/VaultPage.test.tsx: only offers an eye for the fields a credential has"
+      ]
+    },
+    {
+      "id": "AC-06",
+      "description": "se o reveal falhar, aparece o erro visível, o campo continua mascarado, `aria-pressed` continua `false` e não há promise rejeitada; enquanto a chamada está em voo o botão do campo fica desabilitado (sem chamada duplicada).",
+      "tests": [
+        "apps/web/src/pages/VaultPage.test.tsx: keeps the field masked and shows an error when the reveal fails",
+        "apps/web/src/pages/VaultPage.test.tsx: disables the eye while its reveal is in flight, so a second click makes no second call",
+        "apps/web/src/pages/VaultPage.test.tsx: keeps the eye disabled and busy until a discarded reveal settles, so no second call starts"
+      ]
+    },
+    {
+      "id": "AC-07",
+      "description": "30 s depois de revelado, cada campo volta a mascarado e `aria-pressed` a `false`, contados por campo; ocultar à mão cancela o timer (não oculta de novo um campo revelado depois) e nenhum timer sobrevive ao desmontar a tela.",
+      "tests": [
+        "apps/web/src/pages/VaultPage.test.tsx: masks each revealed field again 30 seconds after it was revealed, counted per field",
+        "apps/web/src/pages/VaultPage.test.tsx: cancels the old timer when a field is hidden by hand and revealed again",
+        "apps/web/src/pages/VaultPage.test.tsx: clears the 30s reveal timer when the page unmounts",
+        "apps/web/src/pages/VaultPage.test.tsx: starts no reveal timer when the page unmounts with a reveal still in flight"
+      ]
+    },
+    {
+      "id": "AC-08",
+      "description": "buscar, paginar, trocar de pasta, salvar ou excluir credencial oculta todos os campos revelados; um reveal em voo que responde depois dessa limpeza não mostra o valor.",
+      "tests": [
+        "apps/web/src/pages/VaultPage.test.tsx: masks every revealed field when the user searches",
+        "apps/web/src/pages/VaultPage.test.tsx: masks every revealed field when the user changes page",
+        "apps/web/src/pages/VaultPage.test.tsx: masks every revealed field after a credential is saved or deleted",
+        "apps/web/src/pages/VaultPage.test.tsx: drops a reveal response that arrives after the values were cleared",
+        "apps/web/src/pages/VaultPage.test.tsx: hides revealed values when the selected folder is removed",
+        "apps/web/src/pages/VaultPage.test.tsx: selecting a non-root folder shows its header actions and resets page/revealed state"
+      ]
+    },
+    {
+      "id": "AC-09",
+      "description": "em Chromium a 1440 e 390 px, na tela de Cofre com dados sintéticos: cada botão de ícone da linha mede ≥ 32×32 px (rect medido), o foco por teclado tem contorno de 2 px em `rgb(0, 133, 97)`, a confirmação \"Senha copiada\" fica visível, o olho de Senha revela só a senha, e todos os botões de ação ficam alcançáveis (dentro da área visível do cartão ou com o cartão rolando na horizontal) sem a página ganhar rolagem horizontal; a altura da linha não passa da medida na base.",
+      "tests": [
+        "scripts/vault_actions_check.mjs: Chromium a 1440 e 390 px, alvos de 32 px, foco em rgb(0, 133, 97) com 2 px, confirmação visível, olho por campo e botões alcançáveis"
+      ],
+      "tdd_required": false,
+      "reason": "Medida de alvo, foco e layout em navegador (jsdom não mede layout nem resolve contorno); o comportamento causador é coberto por AC-01 a AC-08 e AC-11"
+    },
+    {
+      "id": "AC-10",
+      "description": "contrato de entrega: manifest `.delivery/deliveries/DMTE-544.json` válido (`check` passa), avaliação de DS registrada como \"sem alteração em `components/ds/`; reutiliza `EzButton` e `EzAlert`\", RED/GREEN do coletor para AC-01 a AC-08.",
+      "tests": [
+        "python3 scripts/aponta_delivery.py check --manifest .delivery/deliveries/DMTE-544.json: manifesto, RED/GREEN e avaliação de DS"
+      ],
+      "tdd_required": false,
+      "reason": "Contrato de entrega verificado pelo próprio `check`; sem comportamento de produto"
+    },
+    {
+      "id": "AC-11",
+      "description": "depois de revelar ou copiar um campo, nenhum valor em texto claro fica no cache de mutations do `QueryClient` (nem no resultado da última mutation da tela), com o valor ainda visível na célula quando revelado.",
+      "tests": [
+        "apps/web/src/pages/VaultPage.test.tsx: keeps no revealed or copied value in the query client after use"
+      ]
+    }
+  ],
+  "spec": "docs/delivery/specs/DMTE-544.md",
+  "tdd": {
+    "mode": "required",
+    "red": ".delivery/evidence/DMTE-544/red-r3.json",
+    "green": ".delivery/evidence/DMTE-544/green-r4.json"
+  },
+  "design_system": {
+    "applicable": true,
+    "reused": [
+      "EzButton",
+      "EzAlert"
+    ],
+    "reason": "Sem alteração em apps/web/src/components/ds; a tela reutiliza EzButton (tertiary small, ez-focus) e EzAlert existentes, sem componente ou história nova"
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "phase": "green",
+  "started_at": "2026-11-17T21:20:35.417889+00:00",
+  "finished_at": "2026-11-17T21:20:56.066273+00:00",
+  "command": [
+    "pnpm",
+    "exec",
+    "nx",
+    "test",
+    "web",
+    "--run",
+    "src/pages/SettingsPage.test.tsx"
+  ],
+  "base_sha": "ca109a3ddc317e67db7f254c3745d93d5d5a7595",
+  "head_sha": "a8c7c363c721a6dec6345ccb41c5f4483c4cb65e",
+  "exit_code": 0,
+  "tests": {
+    "apps/web/src/pages/SettingsPage.test.tsx": "550ea1008e0726007ae40c3b45a932543abd0ff5cf8f8df4fd0b03fdab0a3522"
+  },
+  "criteria": [
+    "AC-01",
+    "AC-02"
+  ],
+  "source_hashes": {
+    "apps/web/src/pages/SettingsPage.test.tsx": "550ea1008e0726007ae40c3b45a932543abd0ff5cf8f8df4fd0b03fdab0a3522",
+    "apps/web/src/pages/SettingsPage.tsx": "830c6b4bcd8e08a094b642ef8697f2cdce3d55621db97b42c03dc8a6a2d65565"
+  },
+  "log": ".delivery/evidence/DMTE-564/green.log",
+  "log_sha256": "ffc79b5a13c03a09573c65ab3dc2698a2a0a3921023461d039d7e25751ec94fe"
+}

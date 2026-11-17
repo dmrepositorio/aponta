@@ -249,15 +249,52 @@ describe('SettingsPage: auditoria de interface (DMTE-524)', () => {
     ).toEqual(['Conta']);
   });
 
-  it('centers the content in a max-w-2xl column', async () => {
+  it('renders the title in the page header band and keeps the content out of a centered column', async () => {
     mockMe({ isAdmin: true, permissions: [] });
-    renderSettingsPage();
+    const { container } = renderSettingsPage();
 
     await screen.findByRole('link', { name: /minha conta/i });
 
-    const column = screen.getByRole('heading', { level: 1, name: 'Configurações' }).closest('.max-w-2xl');
-    expect(column).not.toBeNull();
-    expect(column?.className).toContain('mx-auto');
+    const title = screen.getByRole('heading', { level: 1, name: 'Configurações' });
+    expect(title.closest('.bg-white.border-b')).not.toBeNull();
+    expect(container.querySelector('.mx-auto, [class*="max-w-"]')).toBeNull();
+  });
+
+  it('gives the skeleton the shape of the groups: 3 groups and 6 rows for an admin, 1 and 1 for other roles', async () => {
+    let respond: (value: unknown) => void = () => undefined;
+    vi.mocked(api.get).mockReturnValue(
+      new Promise((resolve) => {
+        respond = resolve;
+      }),
+    );
+
+    const { container, unmount } = renderSettingsPage();
+
+    const busy = container.querySelector('[aria-busy="true"]') as HTMLElement;
+    expect(within(busy).getAllByRole('list')).toHaveLength(3);
+    const skeletonRows = within(busy).getAllByRole('listitem');
+    expect(skeletonRows).toHaveLength(6);
+    for (const row of skeletonRows) {
+      expect(row.className).toContain('min-h-[var(--control-height-md)]');
+    }
+
+    await act(async () => {
+      respond({ data: { id: 'admin-1', isAdmin: true, permissions: [] } });
+    });
+    await screen.findByRole('link', { name: /^usuários$/i });
+    expect(screen.getAllByRole('list')).toHaveLength(3);
+    expect(screen.getAllByRole('listitem')).toHaveLength(6);
+    unmount();
+
+    useAuthStore.setState({
+      token: 'fake-token',
+      user: { sub: 'u-1', email: 'client@aponta.com', role: 'CLIENT' },
+    });
+    vi.mocked(api.get).mockReturnValue(new Promise(() => undefined));
+    const other = renderSettingsPage();
+    const otherBusy = other.container.querySelector('[aria-busy="true"]') as HTMLElement;
+    expect(within(otherBusy).getAllByRole('list')).toHaveLength(1);
+    expect(within(otherBusy).getAllByRole('listitem')).toHaveLength(1);
   });
 
   it('falls back to Minha conta right after the first GET /auth/me failure, while retries are pending', async () => {
