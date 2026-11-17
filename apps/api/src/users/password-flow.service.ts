@@ -9,6 +9,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { ThrottlerException } from '@nestjs/throttler';
 import * as bcrypt from 'bcryptjs';
+import { assertPasswordPolicy } from '../auth/password-policy';
 import { FeatureFlagsService } from '../feature-flags/feature-flags.service';
 import { MailService } from '../mail/mail.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -77,6 +78,11 @@ export class PasswordFlowService {
 
   async setPassword(token: string, password: string): Promise<void> {
     this.assertEnabled();
+    // A regra de senha vem antes de consumir o token: senha fraca não queima o link.
+    const ownerId = await this.tokens.peek(token);
+    const owner = ownerId ? await this.users.findById(ownerId) : null;
+    if (!owner) throw new BadRequestException(INVALID_LINK);
+    assertPasswordPolicy(password, owner);
     // O hash vem antes de consumir o token: uma falha no bcrypt não queima o link.
     const hash = await bcrypt.hash(password, SALT_ROUNDS);
     const claimed = await this.tokens.consume(token);

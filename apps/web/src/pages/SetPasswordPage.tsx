@@ -1,8 +1,10 @@
-import { FormEvent, useEffect, useRef, useState } from 'react';
+import { FormEvent, ReactNode, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { api } from '../lib/api';
 import { EzAlert, EzButton, EzCardItem, EzTextInput } from '../components/ds';
+import { PasswordRules, PolicyErrors } from '../components/PasswordRules';
+import { policyMessages } from '../lib/passwordRules';
 
 /**
  * Página pública do link de convite e de redefinição (DMTE-550 D12/AC-19). O token vem no fragmento
@@ -10,7 +12,7 @@ import { EzAlert, EzButton, EzCardItem, EzTextInput } from '../components/ds';
  * guarda só em memória até o POST, que leva `token` e `password` e mais nada.
  */
 const TOKEN_FORMAT = /^[0-9a-f]{64}$/i;
-const PASSWORD_ERROR = 'A senha deve ter de 8 a 128 caracteres.';
+const PASSWORD_ERROR = 'A senha deve ter de 10 a 128 caracteres.';
 
 type Phase = 'checking' | 'form' | 'invalid' | 'done';
 
@@ -28,7 +30,7 @@ export function SetPasswordPage() {
   const [password, setPassword] = useState('');
   const [confirmation, setConfirmation] = useState('');
   const [errors, setErrors] = useState<{ password?: string; confirmation?: string }>({});
-  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<ReactNode>(null);
   const [sending, setSending] = useState(false);
   const passwordInput = useRef<HTMLInputElement>(null);
   const confirmationInput = useRef<HTMLInputElement>(null);
@@ -48,7 +50,7 @@ export function SetPasswordPage() {
     event.preventDefault();
     if (sending || !token.current) return;
     const next: typeof errors = {};
-    if (password.length < 8 || password.length > 128) next.password = PASSWORD_ERROR;
+    if (password.length < 10 || password.length > 128) next.password = PASSWORD_ERROR;
     else if (confirmation !== password) next.confirmation = 'As senhas não conferem.';
     setErrors(next);
     if (next.password) return passwordInput.current?.focus();
@@ -63,8 +65,11 @@ export function SetPasswordPage() {
       setPhase('done');
     } catch (error) {
       const status = axios.isAxiosError(error) ? error.response?.status : undefined;
+      const rules = policyMessages(error);
+      // Senha recusada pela regra: o link continua valendo, a pessoa corrige e tenta de novo.
+      if (rules) setSubmitError(<PolicyErrors messages={rules} />);
       // 400 (link recusado) e 404 (recurso desligado) têm a mesma resposta fixa, sem o texto do servidor.
-      if (status === 400 || status === 404) setPhase('invalid');
+      else if (status === 400 || status === 404) setPhase('invalid');
       else setSubmitError('Algo deu errado. Tente novamente.');
     } finally {
       setSending(false);
@@ -88,8 +93,9 @@ export function SetPasswordPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 hasError={!!errors.password}
-                message={errors.password ?? 'De 8 a 128 caracteres.'}
+                message={errors.password}
               />
+              <PasswordRules password={password} />
               <EzTextInput
                 ref={confirmationInput}
                 id="confirm-password"

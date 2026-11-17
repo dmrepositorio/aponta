@@ -42,6 +42,13 @@ export class PasswordTokensService {
     });
   }
 
+  /** Dono do token se ele ainda vale, sem consumi-lo: a regra de senha precisa do nome e do e-mail antes de queimar o link. */
+  async peek(rawToken: string, now: Date = new Date()): Promise<string | null> {
+    if (!/^[0-9a-f]{64}$/.test(rawToken)) return null;
+    const token = await this.prisma.passwordToken.findUnique({ where: { tokenHash: sha256(rawToken) } });
+    return token && token.usedAt == null && token.expiresAt > now ? token.userId : null;
+  }
+
   /**
    * Uso único e atômico: a marca de uso só grava se o token ainda não foi usado e não expirou
    * (um UPDATE condicional; duas tentativas simultâneas, só uma muda uma linha).

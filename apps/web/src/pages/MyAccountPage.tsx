@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import axios from 'axios';
@@ -7,12 +7,14 @@ import { api } from '../lib/api';
 import { useAuthStore } from '../stores/authStore';
 import { useApiTokens } from '../hooks/useApiTokens';
 import { EzAlert, EzButton, EzTabs, EzTextInput } from '../components/ds';
+import { PasswordRules, PolicyErrors } from '../components/PasswordRules';
+import { policyMessages } from '../lib/passwordRules';
 
 const changePasswordSchema = z.object({
   currentPassword: z.string().min(1, 'Senha atual é obrigatória'),
   newPassword: z
     .string()
-    .min(8, 'A nova senha deve ter pelo menos 8 caracteres'),
+    .min(10, 'A nova senha deve ter pelo menos 10 caracteres'),
 });
 type ChangePasswordFormValues = z.infer<typeof changePasswordSchema>;
 
@@ -158,12 +160,14 @@ function ProfileTab() {
 }
 
 function SecurityTab() {
-  const [submitError, setSubmitError] = useState<string | null>(null);
+  const email = useAuthStore((state) => state.user?.email);
+  const [submitError, setSubmitError] = useState<ReactNode>(null);
   const [success, setSuccess] = useState(false);
   const {
     register,
     handleSubmit,
     reset,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<ChangePasswordFormValues>({
     resolver: zodResolver(changePasswordSchema),
@@ -178,7 +182,10 @@ function SecurityTab() {
       setSuccess(true);
       reset();
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.status === 401) {
+      const rules = policyMessages(error);
+      if (rules) {
+        setSubmitError(<PolicyErrors messages={rules} />);
+      } else if (axios.isAxiosError(error) && error.response?.status === 401) {
         setSubmitError('Senha atual incorreta.');
       } else {
         setSubmitError('Algo deu errado. Tente novamente.');
@@ -213,6 +220,7 @@ function SecurityTab() {
         message={errors.newPassword?.message}
         {...register('newPassword')}
       />
+      <PasswordRules password={watch('newPassword') ?? ''} email={email} />
 
       {submitError && (
         <EzAlert variant="error" role="alert">

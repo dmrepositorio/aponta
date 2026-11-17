@@ -1,0 +1,523 @@
+
+ RUN  v4.1.11 /home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-551-8067d53caffe/workdir/aponta/apps/web
+
+ ❯ |web| src/components/PasswordRules.test.tsx (3 tests | 3 failed) 227ms
+     × AC-07: lista as cinco exigências, todas pendentes com a senha vazia 199ms
+     × AC-07: marca como atendida cada exigência que a senha já cumpre e deixa pendente o que falta 13ms
+     × AC-07: só mostra a exigência de nome e e-mail quando a tela conhece o nome ou o e-mail 7ms
+ ❯ |web| src/pages/passwordRules.pages.test.tsx (5 tests | 4 failed) 3648ms
+     × AC-07: o cadastro mostra a regra e confere nome e e-mail enquanto a pessoa digita 287ms
+     × AC-07: o cadastro mostra o que o servidor recusou na senha, sem dizer "algo deu errado" 2490ms
+     × AC-07: a definição pelo link mostra a regra e, se o servidor recusar a senha, mostra o motivo e mantém o formulário 40ms
+     ✓ AC-07: a definição pelo link continua tratando link recusado (400 com texto) como link inválido  698ms
+     × AC-07: a troca de senha mostra a regra e o motivo recusado pelo servidor 126ms
+
+ Test Files  2 failed (2)
+      Tests  7 failed | 1 passed (8)
+   Start at  14:57:55
+   Duration  14.66s (transform 7.61s, setup 543ms, import 10.22s, tests 3.88s, environment 1.59s)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |web| src/components/PasswordRules.test.tsx > PasswordRules > AC-07: lista as cinco exigências, todas pendentes com a senha vazia
+TestingLibraryElementError: Unable to find an accessible element with the role "list" and name `/regras da senha/i`
+
+There are no accessible roles. But there might be some inaccessible roles. If you wish to access them, then set the `hidden` option to `true`. Learn more about this here: https://testing-library.com/docs/dom-testing-library/api-queries#byrole
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div />[39m
+[36m</body>[39m
+ ❯ Object.getElementError ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ rules src/components/PasswordRules.test.tsx:6:28
+      4|
+      5| // DMTE-551 T1, AC-07: a tela mostra a regra da senha e o que falta, e…
+      6| const rules = () => screen.getByRole('list', { name: /regras da senha/…
+       |                            ^
+      7| const item = (name: RegExp) => within(rules()).getByRole('listitem', {…
+      8|
+ ❯ src/components/PasswordRules.test.tsx:13:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/7]⎯
+
+ FAIL  |web| src/components/PasswordRules.test.tsx > PasswordRules > AC-07: marca como atendida cada exigência que a senha já cumpre e deixa pendente o que falta
+TestingLibraryElementError: Unable to find an accessible element with the role "list" and name `/regras da senha/i`
+
+There are no accessible roles. But there might be some inaccessible roles. If you wish to access them, then set the `hidden` option to `true`. Learn more about this here: https://testing-library.com/docs/dom-testing-library/api-queries#byrole
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div />[39m
+[36m</body>[39m
+ ❯ Object.getElementError ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ rules src/components/PasswordRules.test.tsx:6:28
+      4|
+      5| // DMTE-551 T1, AC-07: a tela mostra a regra da senha e o que falta, e…
+      6| const rules = () => screen.getByRole('list', { name: /regras da senha/…
+       |                            ^
+      7| const item = (name: RegExp) => within(rules()).getByRole('listitem', {…
+      8|
+ ❯ item src/components/PasswordRules.test.tsx:7:39
+ ❯ src/components/PasswordRules.test.tsx:23:14
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/7]⎯
+
+ FAIL  |web| src/components/PasswordRules.test.tsx > PasswordRules > AC-07: só mostra a exigência de nome e e-mail quando a tela conhece o nome ou o e-mail
+TestingLibraryElementError: Unable to find an accessible element with the role "list" and name `/regras da senha/i`
+
+There are no accessible roles. But there might be some inaccessible roles. If you wish to access them, then set the `hidden` option to `true`. Learn more about this here: https://testing-library.com/docs/dom-testing-library/api-queries#byrole
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div />[39m
+[36m</body>[39m
+ ❯ Object.getElementError ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ rules src/components/PasswordRules.test.tsx:6:28
+      4|
+      5| // DMTE-551 T1, AC-07: a tela mostra a regra da senha e o que falta, e…
+      6| const rules = () => screen.getByRole('list', { name: /regras da senha/…
+       |                            ^
+      7| const item = (name: RegExp) => within(rules()).getByRole('listitem', {…
+      8|
+ ❯ src/components/PasswordRules.test.tsx:30:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/7]⎯
+
+ FAIL  |web| src/pages/passwordRules.pages.test.tsx > Regra de senha nas telas (DMTE-551) > AC-07: o cadastro mostra a regra e confere nome e e-mail enquanto a pessoa digita
+Error: [2mexpect([22m[31mreceived[39m[2m).toBeInTheDocument()[22m
+
+[31mreceived[39m value must be an HTMLElement or an SVGElement.
+Received has type:  Null
+Received has value: [31mnull[39m
+ ❯ src/pages/passwordRules.pages.test.tsx:30:25
+     28|     const user = userEvent.setup();
+     29|     render(<MemoryRouter><RegisterPage /></MemoryRouter>);
+     30|     expect(rulesList()).toBeInTheDocument();
+       |                         ^
+     31|
+     32|     await user.type(screen.getByLabelText(/nome/i), 'Jane Doe');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/7]⎯
+
+ FAIL  |web| src/pages/passwordRules.pages.test.tsx > Regra de senha nas telas (DMTE-551) > AC-07: o cadastro mostra o que o servidor recusou na senha, sem dizer "algo deu errado"
+TestingLibraryElementError: Unable to find an element with the text: A senha precisa ter pelo menos 10 caracteres.. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"flex min-h-screen items-center justify-center bg-gray-80 text-gray-900"[39m
+    [36m>[39m
+      [36m<form[39m
+        [33mclass[39m=[32m"w-full max-w-sm"[39m
+        [33mnovalidate[39m=[32m""[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex flex-col w-full bg-white rounded-[16px] border border-gray-100 transition-all shadow-sm hover:shadow-md space-y-4 p-6"[39m
+        [36m>[39m
+          [36m<h1[39m
+            [33mclass[39m=[32m"text-[20px] font-semibold text-gray-900"[39m
+          [36m>[39m
+            [0mCriar conta[0m
+          [36m</h1>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-col w-full gap-1.5"[39m
+          [36m>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"text-[14px] font-medium leading-none mb-0.5 select-none text-gray-900"[39m
+              [33mfor[39m=[32m"name"[39m
+            [36m>[39m
+              [0mNome[0m
+            [36m</label>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"[39m
+            [36m>[39m
+              [36m<input[39m
+                [33mautocomplete[39m=[32m"name"[39m
+                [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+                [33mid[39m=[32m"name"[39m
+                [33mname[39m=[32m"name"[39m
+                [33mtype[39m=[32m"text"[39m
+              [36m/>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-col w-full gap-1.5"[39m
+          [36m>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"text-[14px] font-medium leading-none mb-0.5 select-none text-gray-900"[39m
+              [33mfor[39m=[32m"email"[39m
+            [36m>[39m
+              [0mE-mail[0m
+            [36m</label>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"[39m
+            [36m>[39m
+              [36m<input[39m
+                [33mautocomplete[39m=[32m"email"[39m
+                [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+                [33mid[39m=[32m"email"[39m
+                [33mname[39m=[32m"email"[39m
+                [33mtype[39m=[32m"email"[39m
+              [36m/>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-col w-full gap-1.5"[39m
+          [36m>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"text-[14px] font-medium leading-none mb-0.5 select-none text-gray-900"[39m
+              [33mfor[39m=[32m"password"[39m
+            [36m>[39m
+              [0mSenha[0m
+            [36m</label>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"[39m
+            [36m>[39m
+              [36m<input[39m
+                [33mautocomplete[39m=[32m"new-password"[39m
+                [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4"[39m
+                [33mid[39m=[32m"password"[39m
+                [33mname[39m=[32m"password"[39m
+                [33mtype[39m=[32m"password"[39m
+              [36m/>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center justify-center shrink-0 pr-3 pl-2 text-gray-500"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33maria-label[39m=[32m"Mostrar senha"[39m
+                  [33mclass[39m=[32m"p-0.5 rounded hover:text-gray-700 transition-colors ez-focus"[39m
+                  [33mtabindex[39m=[32m"-1"[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [36m<svg[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"lucide lucide-eye w-4 h-4"[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mheight[39m=[32m"24"[39m
+                    [33mstroke[39m=[32m"currentColor"[39m
+                    [33mstroke-linecap[39m=[32m"round"[39m
+                    [33mstroke-linejoin[39m=[32m"round"[39m
+                    [33mstroke-width[39m=[32m"2"[39m
+                    [33mviewBox[39m=[32m"0 0 24 24"[39m
+                    [33mwidth[39m=[32m"24"[39m
+                    [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                  [36m>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"[39m
+                    [36m/>[39m
+                    [36m<circle[39m
+                      [33mcx[39m=[32m"12"[39m
+                      [33mcy[39m=[32m"12"[39m
+                      [33mr[39m=[32m"3"[39m
+                    [36m/>[39m
+                  [36m</svg>[39m
+                [36m</button>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"relative flex w-full flex-col sm:flex-row sm:items-start gap-3 p-4 rounded-[12px] border transition-colors bg-red-100 border-red-200 text-red-800"[39m
+            [33mrole[39m=[32m"alert"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"shrink-0 mt-0.5 text-red-600"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"lucide lucide-circle-alert lucide-alert-circle w-5 h-5"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"24"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [33mwidth[39m=[32m"24"[39m
+                [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<circle[39m
+                  [33mcx[39m=[32m"12"[39m
+                  [33mcy[39m=[32m"12"[39m
+                  [33mr[39m=[32m"10"[39m
+                [36m/>[39m
+                [36m<line[39m
+                  [33mx1[39m=[32m"12"[39m
+                  [33mx2[39m=[32m"12"[39m
+                  [33my1[39m=[32m"8"[39m
+                  [33my2[39m=[32m"12"[39m
+                [36m/>[39m
+                [36m<line[39m
+                  [33mx1[39m=[32m"12"[39m
+                  [33mx2[39m=[32m"12.01"[39m
+                  [33my1[39m=[32m"16"[39m
+                  [33my2[39m=[32m"16"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex flex-1 flex-col gap-1"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"text-[14px] leading-relaxed font-medium"[39m
+              [36m>[39m
+                [0mAlgo deu errado. Tente novamente.[0m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none ez-focus active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-brand-500 text-gray-70 border border-brand-500 hover:bg-brand-700 hover:border-brand-700 disabled:bg-gray-400 disabled:border-gray-400 disabled:text-gray-70 h-[42px] text-sm px-4 w-full"[39m
+            [33mtype[39m=[32m"submit"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative z-10 flex items-center gap-2"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"font-normal"[39m
+              [36m>[39m
+                [0mCriar conta[0m
+              [36m</span>[39m
+            [36m</div>[39m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</form>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"flex min-h-screen items-center justify-center bg-gray-80 text-gray-900"[39m
+    [36m>[39m
+      [36m<form[39m
+        [33mclass[39m=[32m"w-full max-w-sm"[39m
+        [33mnovalidate[39m=[32m""[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex flex-col w-full bg-white rounded-[16px] border border-gray-100 transition-all shadow-sm hover:shadow-md space-y-4 p-6"[39m
+        [36m>[39m
+          [36m<h1[39m
+            [33mclass[39m=[32m"text-[20px] font-semibold text-gray-900"[39m
+          [36m>[39m
+            [0mCriar conta[0m
+          [36m</h1>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-col w-full gap-1.5"[39m
+          [36m>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"text-[14px] font-medium leading-none mb-0.5 select-none text-gray-900"[39m
+              [33mfor[39m=[32m"name"[39m
+            [36m>[39m
+              [0mNome[0m
+            [36m</label>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"[39m
+            [36m>[39m
+              [36m<input[39m
+                [33mautocomplete[39m=[32m"name"[39m
+                [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+                [33mid[39m=[32m"name"[39m
+                [33mname[39m=[32m"name"[39m
+                [33mtype[39m=[32m"text"[39m
+              [36m/>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-col w-full gap-1.5"[39m
+          [36m>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"text-[14px] font-medium leading-none mb-0.5 select-none text-gray-900"[39m
+              [33mfor[39m=[32m"email"[39m
+            [36m>[39m
+              [0mE-mail[0m
+            [36m</label>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"[39m
+            [36m>[39m
+              [36m<input[39m
+                [33mautocomplete[39m=[32m"email"[39m
+                [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+                [33mid[39m=[32m"email"[39m
+                [33mname[39m=[32m"email"[39m
+                [33mtype[39m=[32m"email"[39m
+              [36m/>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-col w-full gap-1.5"[39m
+          [36m>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"text-[14px] font-medium leading-none mb-0.5 select-none text-gray-900"[39m
+              [33mfor[39m=[32m"password"[39m
+            [36m>[39m
+              [0mSenha[0m
+            [36m</label>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"[39m
+            [36m>[39m
+              [36m<input[39m
+                [33mautocomplete[39m=[32m"new-password"[39m
+                [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4"[39m
+                [33mid[39m=[32m"password"[39m
+                [33mname[39m=[32m"password"[39m
+                [33mtype[39m=[32m"password"[39m
+              [36m/>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center justify-center shrink-0 pr-3 pl-2 text-gray-500"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33maria-label[39m=[32m"Mostrar senha"[39m
+                  [33mclass[39m=[32m"p-0.5 rounded hover:text-gray-700 transition-colors ez-focus"[39m
+                  [33mtabindex[39m=[32m"-1"[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [36m<svg[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"lucide lucide-eye w-4 h-4"[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mheight[39m=[32m"24"[39m
+                    [33mstroke[39m=[32m"currentColor"[39m
+                    [33mstroke-linecap[39m=[32m"round"[39m
+                    [33mstroke-linejoin[39m=[32m"round"[39m
+                    [33mstroke-width[39m=[32m"2"[39m
+                    [33mviewBox[39m=[32m"0 0 24 24"[39m
+                    [33mwidth[39m=[32m"24"[39m
+                    [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                  [36m>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"[39m
+                    [36m/>[39m
+                    [36m<circle[39m
+                      [33mcx[39m=[32m"12"[39m
+                      [33mcy[39m=[32m"12"[39m
+                      [33mr[39m=[32m"3"[39m
+                    [36m/>[39m
+                  [36m</svg>[39m
+                [36m</button>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"relative flex w-full flex-col sm:flex-row sm:items-start gap-3 p-4 rounded-[12px] border transition-colors bg-red-100 border-red-200 text-red-800"[39m
+            [33mrole[39m=[32m"alert"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"shrink-0 mt-0.5 text-red-600"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"lucide lucide-circle-alert lucide-alert-circle w-5 h-5"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"24"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [33mwidth[39m=[32m"24"[39m
+                [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<circle[39m
+                  [33mcx[39m=[32m"12"[39m
+                  [33mcy[39m=[32m"12"[39m
+                  [33mr[39m=[32m"10"[39m
+                [36m/>[39m
+                [36m<line[39m
+                  [33mx1[39m=[32m"12"[39m
+                  [33mx2[39m=[32m"12"[39m
+                  [33my1[39m=[32m"8"[39m
+                  [33my2[39m=[32m"12"[39m
+                [36m/>[39m
+                [36m<line[39m
+                  [33mx1[39m=[32m"12"[39m
+                  [33mx2[39m=[32m"12.01"[39m
+                  [33my1[39m=[32m"16"[39m
+                  [33my2[39m=[32m"16"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex flex-1 flex-col gap-1"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"text-[14px] leading-relaxed font-medium"[39m
+              [36m>[39m
+                [0mAlgo deu errado. Tente novamente.[0m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none ez-focus active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-brand-500 text-gray-70 border border-brand-500 hover:bg-brand-700 hover:border-brand-700 disabled:bg-gray-400 disabled:border-gray-400 disabled:text-gray-70 h-[42px] text-sm px-4 w-full"[39m
+            [33mtype[39m=[32m"submit"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative z-10 flex items-center gap-2"[39m
+            [36m>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"font-normal"[39m
+              [36m>[39m
+                [0mCriar conta[0m
+              [36m</span>[39m
+            [36m</div>[39m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</form>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ waitForWrapper ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/pages/passwordRules.pages.test.tsx:49:25
+     47|     await user.click(screen.getByRole('button', { name: /criar conta/i…
+     48|
+     49|     expect(await screen.findByText(serverRules[0])).toBeInTheDocument(…
+       |                         ^
+     50|     expect(screen.queryByText(/algo deu errado/i)).not.toBeInTheDocume…
+     51|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/7]⎯
+
+ FAIL  |web| src/pages/passwordRules.pages.test.tsx > Regra de senha nas telas (DMTE-551) > AC-07: a definição pelo link mostra a regra e, se o servidor recusar a senha, mostra o motivo e mantém o formulário
+Error: [2mexpect([22m[31mreceived[39m[2m).toBeInTheDocument()[22m
+
+[31mreceived[39m value must be an HTMLElement or an SVGElement.
+Received has type:  Null
+Received has value: [31mnull[39m
+ ❯ src/pages/passwordRules.pages.test.tsx:58:25
+     56|     vi.mocked(api.post).mockRejectedValueOnce(badRequest(serverRules));
+     57|     render(<BrowserRouter><SetPasswordPage /></BrowserRouter>);
+     58|     expect(rulesList()).toBeInTheDocument();
+       |                         ^
+     59|
+     60|     await user.type(screen.getByLabelText(/^nova senha/i), 'Abcdefgh');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/7]⎯
+
+ FAIL  |web| src/pages/passwordRules.pages.test.tsx > Regra de senha nas telas (DMTE-551) > AC-07: a troca de senha mostra a regra e o motivo recusado pelo servidor
+Error: [2mexpect([22m[31mreceived[39m[2m).toBeInTheDocument()[22m
+
+[31mreceived[39m value must be an HTMLElement or an SVGElement.
+Received has type:  Null
+Received has value: [31mnull[39m
+ ❯ src/pages/passwordRules.pages.test.tsx:93:25
+     91|
+     92|     await user.click(await screen.findByRole('tab', { name: /segurança…
+     93|     expect(rulesList()).toBeInTheDocument();
+       |                         ^
+     94|     await user.type(screen.getByLabelText(/senha atual/i), 'Senha#Anti…
+     95|     await user.type(screen.getByLabelText(/nova senha/i), 'curta');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/7]⎯
+

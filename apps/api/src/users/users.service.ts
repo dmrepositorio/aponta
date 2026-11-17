@@ -7,6 +7,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
+import { assertPasswordPolicy } from '../auth/password-policy';
 import { Prisma, Role } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -89,6 +90,7 @@ export class UsersService {
       throw new ConflictException('Email already in use');
     }
 
+    assertPasswordPolicy(dto.password, dto);
     const hashedPassword = await bcrypt.hash(dto.password, SALT_ROUNDS);
 
     let user: User;
@@ -244,6 +246,7 @@ export class UsersService {
       throw new UnauthorizedException('Current password is incorrect');
     }
 
+    assertPasswordPolicy(newPassword, user);
     const hashedNewPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
     await this.prisma.user.update({
       where: { id: userId },
