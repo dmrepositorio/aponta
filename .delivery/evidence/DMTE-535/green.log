@@ -1,37 +1,24 @@
 
  RUN  v4.1.11 /home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-535-1ea62b3be6ac/workdir/aponta/apps/web
 
- ✓ |web| src/components/knowledge/KnowledgeFoldersGrid.test.tsx (9 tests) 3730ms
-     ✓ renders folders fetched from the API with their article count  331ms
-     ✓ calls onOpenFolder when a folder card is clicked  536ms
-     ✓ allows a canAuthor user to create a new folder  1411ms
-     ✓ allows a canAuthor user to delete a folder after confirming  341ms
-     ✓ uses the control height, the legible primary and aligned text actions  549ms
- ✓ |web| src/pages/KnowledgePage.test.tsx (48 tests) 21782ms
-     ✓ opens a folder and lists only its articles, filtered by folderId  949ms
-     ✓ shows a breadcrumb back to the folders grid once inside a folder  602ms
-     ✓ does not show the new-article form or edit/delete buttons to a CLIENT  414ms
-     ✓ defaults a new article to "Público" and hides the Compartilhar button  1014ms
-     ✓ shows the Compartilhar button once "Privado" is selected, and opens the sharing dialog  1037ms
-     ✓ shows the new-article form to an AGENT and creates a PUBLIC article inside the open folder  3174ms
-     ✓ selects an agent group and a client in the share dialog, and sends them (plus auto-share) in the create payload  2826ms
-     ✓ allows an AGENT to update an existing article, pre-populating the access type and sharing lists  1555ms
-     ✓ allows selecting more than one tag at once (OR filter)  358ms
-     ✓ paginates articles beyond the first page  318ms
-     ✓ keeps upload and remove out of the cards and manages attachments inside the edit form  564ms
-       ✓ keeps the search field mounted, with its text and focus, while typing against a slow API  443ms
-       ✓ sends the full typed search to the API and lists the result of that query  561ms
-       ✓ tells an empty folder apart from a search, offering to create the first article to authors  379ms
-         ✓ keeps the Compartilhar button at the height of the access combo  392ms
-         ✓ uses the legible primary on the primary actions of the screen  584ms
-         ✓ gives the clickable tag, the filter remove button and the view toggles the DS focus ring  336ms
-         ✓ keeps "+ Novo artigo" on screen, disabled, while the form is open, and focuses the title  403ms
-         ✓ asks for confirmation in a dialog before deleting, and cancel or Escape keep the article  422ms
+ ✓ |web| src/components/knowledge/KnowledgeFoldersGrid.test.tsx (9 tests) 1679ms
+     ✓ allows a canAuthor user to create a new folder  534ms
+ ✓ |web| src/pages/KnowledgePage.test.tsx (48 tests) 11760ms
+     ✓ opens a folder and lists only its articles, filtered by folderId  445ms
+     ✓ defaults a new article to "Público" and hides the Compartilhar button  531ms
+     ✓ shows the Compartilhar button once "Privado" is selected, and opens the sharing dialog  619ms
+     ✓ shows the new-article form to an AGENT and creates a PUBLIC article inside the open folder  1822ms
+     ✓ selects an agent group and a client in the share dialog, and sends them (plus auto-share) in the create payload  1209ms
+     ✓ allows an AGENT to update an existing article, pre-populating the access type and sharing lists  661ms
+     ✓ keeps upload and remove out of the cards and manages attachments inside the edit form  360ms
+       ✓ keeps the search field mounted, with its text and focus, while typing against a slow API  400ms
+       ✓ sends the full typed search to the API and lists the result of that query  478ms
+         ✓ keeps "+ Novo artigo" on screen, disabled, while the form is open, and focuses the title  355ms
 
  Test Files  2 passed (2)
       Tests  57 passed (57)
-   Start at  22:19:53
-   Duration  37.07s (transform 12.31s, setup 1.53s, import 22.50s, tests 25.51s, environment 4.97s)
+   Start at  22:22:15
+   Duration  16.87s (transform 4.50s, setup 289ms, import 6.91s, tests 13.44s, environment 1.96s)
 
 stderr | src/pages/KnowledgePage.test.tsx > KnowledgePage > defaults a new article to "Público" and hides the Compartilhar button
 [tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues.

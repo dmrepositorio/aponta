@@ -1,8 +1,8 @@
 {
   "version": 1,
   "phase": "green",
-  "started_at": "2026-11-17T01:19:50.379788+00:00",
-  "finished_at": "2026-11-17T01:20:30.981809+00:00",
+  "started_at": "2026-11-17T01:22:08.744131+00:00",
+  "finished_at": "2026-11-17T01:22:32.274707+00:00",
   "command": [
     "pnpm",
     "--dir",
@@ -14,7 +14,7 @@
     "src/components/knowledge/KnowledgeFoldersGrid.test.tsx"
   ],
   "base_sha": "374023f6872baa42e6dd2e686fefaede4302f042",
-  "head_sha": "654a938ddf144a10165b8837543af4547e6e232f",
+  "head_sha": "1f00310aa08bc1d00f872d6c31dd04bcafa8fe69",
   "exit_code": 0,
   "tests": {
     "apps/web/src/pages/KnowledgePage.test.tsx": "0b3192e9372420f4b65457ac969cdffae38c92c981969e6f65f7e0c0ab343fa0",
@@ -32,14 +32,14 @@
     "AC-09"
   ],
   "source_hashes": {
-    "apps/web/src/components/knowledge/KnowledgeArticleCard.tsx": "1e5bff862fed26f2fe8229d19433bbe51e89746b2f86dcf94d58e2c5877b04bf",
+    "apps/web/src/components/knowledge/KnowledgeArticleCard.tsx": "fc4594626167587b30de5a3e72c3c311e0b4a26eea55b706e936daa2b590b918",
     "apps/web/src/components/knowledge/KnowledgeFoldersGrid.test.tsx": "b19abc0d13849330ede20385cd98097803090533a4908b1c1b2b4c8b73feca41",
-    "apps/web/src/components/knowledge/KnowledgeFoldersGrid.tsx": "aab1d6aa69976f65fc726425ab2dfbe98539d66ac4ed8164982ac2b0505d8f73",
+    "apps/web/src/components/knowledge/KnowledgeFoldersGrid.tsx": "31f38565539a8c4c1592d7919358de463103ac3d1f48f09f6f9a7bcfe4d5e91c",
     "apps/web/src/components/knowledge/knowledgeStyles.ts": "e0a2ab70959d3578f6588967392ea058cdaa6d5603ea7393b6d24ae2a221618d",
     "apps/web/src/pages/KnowledgePage.test.tsx": "0b3192e9372420f4b65457ac969cdffae38c92c981969e6f65f7e0c0ab343fa0",
     "apps/web/src/pages/KnowledgePage.tsx": "04834c6db324084de358ffa27e62284cb8d84b2d8959edc89762b70fbaad934d",
     "scripts/knowledge_proportion_check.mjs": "8495ff385668bb0cd9bed24ec2fa5e3d1acdb05f48bd093edd5445c1a22e706c"
   },
   "log": ".delivery/evidence/DMTE-535/green.log",
-  "log_sha256": "60025c6622a2092de48ce6b0f4a49820bcb7df67e084b6c309ccd2a0d5908d70"
+  "log_sha256": "59af38af4d99f225a8bf5a3210cbf4461487aea9fefb60445e66fcd56a01ebc0"
 }

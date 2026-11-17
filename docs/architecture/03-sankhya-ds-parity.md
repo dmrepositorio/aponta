@@ -227,3 +227,13 @@ Nenhum token, prop ou componente novo no DS; o resto reaproveita o que existe.
 - **Alvos de 32 px** (WCAG 2.5.8) em "Mais ações" do cartão (`EzDropdown` por `className`) e em "Recolher coluna", com margem negativa para o cabeçalho manter a altura. O botão de recolher ganha `aria-label` "Recolher coluna <nome>" e o anel `focus-visible:ring-brand-500` que o botão de expandir já usa.
 - **Avatares do filtro de responsável:** anel `focus-visible:ring-brand-600` e `z-10` ao focar, para o avatar focado não ficar coberto pelo vizinho; alvo de 28 px mantido.
 - **`EzSlaChip`:** escreve "Resp." (resposta) ou "Solução" (resolução) antes do tempo, e só a palavra quando não há prazo. `aria-label` e `title` seguem com o texto completo.
+
+## Conhecimento: proporção, tokens, foco e semântica de cor (DMTE-535)
+
+Nenhum token, prop ou componente novo no DS; o resto reaproveita o que existe. Medido em Chromium (390 e 1440 px, `scripts/knowledge_proportion_check.mjs`, dados sintéticos; evidência técnica, o aceite visual é do Alfredo).
+
+- **Uma altura por linha:** `--control-height-md` (42 px) no cabeçalho (busca, `+ Novo artigo`) e na ordenação (combo e alternador Lista/Grade com `rounded-control`); `+ Nova pasta` e `Compartilhar` também em 42 px.
+- **Terciárias** do card (`Ler artigo completo`, `Editar`, `Excluir`) com `px-0`, alinhadas à borda do conteúdo; `tailwind-merge` deixa o `px-0` vencer o `px-4` do `EzButton`.
+- **Exceção declarada, primário local:** `bg-brand-600` (4,64:1) nos primários da tela, por `KNOWLEDGE_PRIMARY` em `components/knowledge/knowledgeStyles.ts`. O `EzButton` primário segue em `brand-500` (3,94:1) nas outras telas; corrigir no DS inteiro é entrega própria, e então a constante sai. O "Confirmar" do `EzDialog` fica em `brand-500` até lá.
+- **Foco:** `FOCUS_RING` repete o anel do `EzButton` (`ring-4 ring-brand-200 ring-offset-2`) na tag clicável, no "×" do filtro e no alternador. A tag clicável tem `aria-pressed` e `Check` quando ativa.
+- **Cor:** "Interno" em `petroleum` com cadeado; amarelo fica para alerta. Exclusão de artigo e de pasta por `EzDialog` (`danger`), não `window.confirm`.

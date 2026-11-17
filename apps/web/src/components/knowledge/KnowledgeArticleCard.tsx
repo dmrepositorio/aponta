@@ -72,11 +72,13 @@ export function KnowledgeArticleCard({
           updatedAt ||
           attachments.length > 0) && (
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            {article.visibility === 'PRIVATE' && <EzTag
+            {article.visibility === 'PRIVATE' && (
+              <EzTag
                 label="Interno"
                 variant="petroleum"
                 leftIcon={<Lock className="h-3 w-3" aria-hidden="true" />}
-              />}
+              />
+            )}
             {(article.author?.name || updatedAt) && (
               <p className="text-xs text-gray-500">
                 {article.author?.name && <span>Por {article.author.name}</span>}
@@ -116,24 +118,25 @@ export function KnowledgeArticleCard({
 
         {tags.length > 0 && (
           <div className="flex flex-wrap gap-2">
-            {visibleTags.map((t) => (
-              <button
-                key={t}
-                type="button"
-                onClick={() => onToggleTag(t)}
-                title={`Filtrar por ${t}`}
-                aria-pressed={selectedTags.includes(t)}
-                className={cn('rounded-full', FOCUS_RING)}
-              >
-                <EzTag
-                  label={`#${t}`}
-                  variant={selectedTags.includes(t) ? 'ocean' : 'gray'}
-                  leftIcon={
-                    selectedTags.includes(t) ? <Check className="h-3 w-3" aria-hidden="true" /> : undefined
-                  }
-                />
-              </button>
-            ))}
+            {visibleTags.map((t) => {
+              const active = selectedTags.includes(t);
+              return (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => onToggleTag(t)}
+                  title={`Filtrar por ${t}`}
+                  aria-pressed={active}
+                  className={cn('rounded-full', FOCUS_RING)}
+                >
+                  <EzTag
+                    label={`#${t}`}
+                    variant={active ? 'ocean' : 'gray'}
+                    leftIcon={active ? <Check className="h-3 w-3" aria-hidden="true" /> : undefined}
+                  />
+                </button>
+              );
+            })}
             {hiddenTags > 0 && <EzTag label={`+${hiddenTags}`} variant="gray" />}
           </div>
         )}

@@ -91,7 +91,6 @@ export function KnowledgeFoldersGrid({ onOpenFolder, canAuthor }: KnowledgeFolde
     saveMutation.mutate();
   };
 
-
   if (isLoading) {
     return (
       <div className="p-8">
