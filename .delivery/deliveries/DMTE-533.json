@@ -22,7 +22,9 @@
       "tests": [
         "apps/web/src/pages/ServiceDesksPage.test.tsx: AC-02: a failed save shows one alert with the next step and keeps the edit",
         "apps/web/src/components/MesaFlagEditor.test.tsx: shows an error when saving flags fails",
-        "apps/web/src/components/MesaFlagEditor.test.tsx: AC-02: the success notice goes away by itself after 5 s and the failure one stays until closed"
+        "apps/web/src/components/MesaFlagEditor.test.tsx: AC-02: the success notice goes away by itself after 5 s and the failure one stays until closed",
+        "apps/web/src/pages/ServiceDesksPage.test.tsx: AC-02: a failed save in Cliente e SLA and in Estágios shows the alert and keeps the edit",
+        "apps/web/src/components/MesaFlagEditor.test.tsx: AC-02: the close button removes the failure notice"
       ]
     },
     {
@@ -38,7 +40,8 @@
       "description": "com alteração não salva na aba ativa, a linha \"Alterações não salvas nesta aba.\" aparece abaixo das abas; ao desfazer a alteração, ao salvar com sucesso ou ao descartar, ela some; sem alteração, nunca aparece.",
       "tests": [
         "apps/web/src/pages/ServiceDesksPage.test.tsx: AC-04, AC-05: an unsaved flag shows the pending line and asks before leaving the tab; Cancelar keeps it, Confirmar discards it",
-        "apps/web/src/pages/ServiceDesksPage.test.tsx: AC-04: undoing the edit clears the pending line, and leaving a clean tab never asks"
+        "apps/web/src/pages/ServiceDesksPage.test.tsx: AC-04: undoing the edit clears the pending line, and leaving a clean tab never asks",
+        "apps/web/src/components/BusinessHoursEditor.test.tsx: DMTE-533 AC-04: adding and then removing a window leaves nothing pending"
       ]
     },
     {
@@ -46,7 +49,9 @@
       "description": "com alteração não salva, trocar de aba, voltar à lista, abrir outra mesa, \"Nova Mesa\" ou \"Duplicar\" abre `EzDialog` \"Descartar alterações?\"; \"Cancelar\" (e Escape) mantém a aba, a mesa e a edição; \"Confirmar\" descarta e executa a ação. Sem alteração, nenhuma dessas ações abre o diálogo.",
       "tests": [
         "apps/web/src/pages/ServiceDesksPage.test.tsx: AC-04, AC-05: an unsaved flag shows the pending line and asks before leaving the tab; Cancelar keeps it, Confirmar discards it",
-        "apps/web/src/pages/ServiceDesksPage.test.tsx: AC-05: the back button and a new desk also ask before discarding"
+        "apps/web/src/pages/ServiceDesksPage.test.tsx: AC-05: the back button and a new desk also ask before discarding",
+        "apps/web/src/pages/ServiceDesksPage.test.tsx: AC-05: clicking the tab that is already active never asks and leaves the edit alone",
+        "apps/web/src/pages/ServiceDesksPage.test.tsx: AC-05: Duplicar asks too, Escape keeps the edit and Confirmar opens the copy"
       ]
     },
     {
@@ -103,8 +108,8 @@
   "spec": "docs/delivery/specs/DMTE-533.md",
   "tdd": {
     "mode": "required",
-    "red": ".delivery/evidence/DMTE-533/red.json",
-    "green": ".delivery/evidence/DMTE-533/green.json"
+    "red": ".delivery/evidence/DMTE-533/red-r3.json",
+    "green": ".delivery/evidence/DMTE-533/green-r3.json"
   },
   "design_system": {
     "applicable": true,
