@@ -61,6 +61,7 @@ describe('KnowledgeArticleCard', () => {
     expect(document.querySelector('.article-content')).toBeNull();
     expect(screen.queryByRole('link', { name: /manual\.pdf/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /recolher/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /ler artigo completo/i })).not.toBeInTheDocument();
   });
 
   it('stays collapsed when the hidden content comes back after the update', async () => {

@@ -11,7 +11,7 @@ Identidade: DMTE-548, issue dmrepositorio/aponta#307, Tier 2, ciclo 2026-11-09/2
 
 1. **Sem edição no DS nem na API.** A correção fica em `KnowledgeArticleCard.tsx` e `KnowledgePage.tsx`.
 2. **Card.** Quando `hasHiddenContent` é `false`, o card volta a recolhido na mesma renderização (`if (expanded && !hasHiddenContent) setExpanded(false)` no corpo do componente, padrão do React para ajustar estado a partir de props, sem efeito e sem quadro intermediário). Invariante: o card nunca fica expandido sem o botão. Se o conteúdo escondido voltar depois, o card continua recolhido (o usuário reabre por escolha).
-3. **Erro com lista em cache.** Quando a atualização falha e há `articles`, a lista fica na tela (é a última informação boa) e o alerta passa a ficar **acima** dela, como aviso (`EzAlert variant="warning"`, que já tem `role="alert"`), com a ação "Tentar novamente" no próprio alerta (`action`): "Não foi possível atualizar os artigos. A lista abaixo pode estar desatualizada." Quando não há `articles` (primeira carga), nada muda: alerta de erro "Não foi possível carregar os artigos." com "Tentar novamente", sem lista e sem a mensagem de pasta vazia. Quando a nova tentativa funciona, o aviso some e a lista é a nova.
+3. **Erro com lista em cache.** Quando a atualização falha e há `articles`, a lista fica na tela (é a última informação boa) e o alerta passa a ficar **acima** dela, como aviso (`EzAlert variant="warning"`, que já tem `role="alert"`), com a ação "Tentar novamente" no próprio alerta (`action`): "Não foi possível atualizar os artigos. A lista abaixo pode estar desatualizada." Quando não há `articles` (primeira carga), nada muda: alerta de erro "Não foi possível carregar os artigos." com "Tentar novamente", sem lista e sem a mensagem de pasta vazia. Quando a nova tentativa funciona, o aviso some e a lista é a nova. "Lista em cache" quer dizer com pelo menos um artigo: cache vazio (`[]`) que falha na atualização também mostra o erro de carga, porque não há lista a avisar (e o estado de pasta vazia não aparece com `isError`).
 4. **Fora desta entrega**: o `h1` do conteúdo duplicando o da página, a DMTE-535, `placeholderData`/`keepPreviousData` na troca de busca (mudaria o que o usuário vê a cada digitação; é outra decisão), qualquer mudança de API ou DS.
 
 ## Acceptance criteria
@@ -21,14 +21,16 @@ Identidade: DMTE-548, issue dmrepositorio/aponta#307, Tier 2, ciclo 2026-11-09/2
 - AC-03: quando a atualização da lista falha e há lista em cache, a lista continua na tela e um aviso (`role="alert"`) acima dela diz que a atualização falhou e que a lista pode estar desatualizada, com o botão "Tentar novamente"; "Não foi possível carregar os artigos." não aparece.
 - AC-04: "Tentar novamente" com sucesso mostra a lista nova e remove o aviso.
 - AC-05: sem lista em cache (primeira carga que falha) o comportamento atual se mantém: alerta "Não foi possível carregar os artigos." com "Tentar novamente", sem lista e sem mensagem de pasta vazia.
-- AC-06: nenhum arquivo de `apps/web/src/components/ds/` nem de `apps/api` é alterado.
+- AC-06: com a lista em cache vazia (`[]`), a falha de atualização mostra o erro "Não foi possível carregar os artigos.", sem o aviso de lista desatualizada e sem a mensagem de pasta vazia.
+- AC-07: nenhum arquivo de `apps/web/src/components/ds/` nem de `apps/api` é alterado.
 
 ## Testes (seams: o card pelo componente, a lista pela página; vitest + Testing Library)
 
 - AC-01, AC-02: novo `apps/web/src/components/knowledge/KnowledgeArticleCard.test.tsx`, expande o card e atualiza as props com `rerender` (é o que o salvamento faz: o React Query entrega o mesmo artigo com o conteúdo novo).
 - AC-03, AC-04: `apps/web/src/pages/KnowledgePage.test.tsx`: abre a pasta com a API respondendo, faz a API falhar e dispara um refetch real (volta de foco da janela, `visibilitychange`), confere lista e aviso; depois a API volta e "Tentar novamente" troca a lista.
 - AC-05: o teste existente "shows a retryable error, not the empty message, when the query fails" já cobre; segue passando sem mudança.
-- AC-06: `git diff` do PR sem arquivo em `components/ds/` nem em `apps/api`.
+- AC-06: `KnowledgePage.test.tsx`, cache vazio que falha na atualização.
+- AC-07: `git diff` do PR sem arquivo em `components/ds/` nem em `apps/api`.
 
 ## Avaliação de design (impeccable e web-design-guidelines, lidas nesta etapa)
 

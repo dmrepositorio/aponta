@@ -46,6 +46,13 @@
     },
     {
       "id": "AC-06",
+      "description": "com a lista em cache vazia (`[]`), a falha de atualização mostra o erro \"Não foi possível carregar os artigos.\", sem o aviso de lista desatualizada e sem a mensagem de pasta vazia.",
+      "tests": [
+        "apps/web/src/pages/KnowledgePage.test.tsx: shows the load error, not the stale-list warning, when the cached list is empty"
+      ]
+    },
+    {
+      "id": "AC-07",
       "description": "nenhum arquivo de `apps/web/src/components/ds/` nem de `apps/api` é alterado.",
       "tests": [
         "git diff do PR: nenhum arquivo em apps/web/src/components/ds/ nem em apps/api"
