@@ -112,7 +112,8 @@ export function SettingsPage() {
               </div>
               <ul className="divide-y divide-gray-90">
                 {Array.from({ length: rows }, (_, row) => (
-                  <li key={row} className="flex min-h-[var(--control-height-md)] items-center px-4">
+                  // box-content: o divisor de 1 px entra na altura da linha, como na linha real (SettingsLink dentro de <li>).
+                  <li key={row} className="box-content flex min-h-[var(--control-height-md)] items-center px-4">
                     <div className="h-4 w-1/3 animate-pulse rounded-control bg-gray-90" />
                   </li>
                 ))}

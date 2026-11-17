@@ -41,9 +41,8 @@
     "applicable": true,
     "reused": [
       "EzPageLayout",
-      "EzPageHeader",
       "EzCardItem"
     ],
-    "reason": "Reaproveita o shell EzPageLayout + EzPageHeader e o EzCardItem do DS, como as telas vizinhas (ScheduledJobsPage, UsersPage). Nenhum componente, token ou estilo do DS foi criado ou alterado, então não há story nova."
+    "reason": "Reaproveita EzPageLayout (que exporta também EzPageHeader, o cabeçalho com o título) e EzCardItem do DS, como as telas vizinhas (ScheduledJobsPage, UsersPage). Nenhum componente, token ou estilo do DS foi criado ou alterado, então não há story nova."
   }
 }
