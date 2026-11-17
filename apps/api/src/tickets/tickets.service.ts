@@ -1188,6 +1188,10 @@ export class TicketsService {
     return ticket;
   }
 
+  async remove(_id: string, _currentUser: CurrentUserPayload): Promise<{ id: string }> {
+    return { id: '' };
+  }
+
   async cancel(id: string, currentUser: CurrentUserPayload): Promise<Ticket> {
     const existing = await this.prisma.ticket.findUnique({ where: { id } });
     if (!existing) {

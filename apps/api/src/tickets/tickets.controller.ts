@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -121,6 +122,12 @@ export class TicketsController {
   @ApiOperation({ summary: 'Cancel a ticket', description: 'Closes the ticket as cancelled when the mesa allows it' })
   cancel(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
     return this.ticketsService.cancel(id, req.user);
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: 'Excluir ticket', description: 'Exige DELETE_TICKETS no grupo de permissões (sem bypass de ADMIN)' })
+  remove(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
+    return this.ticketsService.remove(id, req.user);
   }
 
   @Post(':id/sla/add-hours')

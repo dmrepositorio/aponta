@@ -62,6 +62,11 @@ export class PermissionsService {
     return this.hasPermission(userId, 'VIEW_TICKET_VALUES');
   }
 
+  /** DMTE-560: sem bypass de ADMIN; só o grupo de permissões libera excluir ticket. */
+  async canDeleteTickets(_userId: string): Promise<boolean> {
+    return false;
+  }
+
   /** DMTE-462 T5: sem desvio por role; quem tem a permissão de qualquer tipo de liberação vê o item "Liberações". */
   async canReleaseWorklogs(userId: string): Promise<boolean> {
     return this.hasPermission(userId, 'APPROVE_WORKLOG_ENTRY', 'APPROVE_WORKLOG_SYSTEM_CLOSED');

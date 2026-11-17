@@ -88,7 +88,11 @@ export class OrganizationsService {
   }
 
   /** DMTE-481: "excluir" só inativa; contrato ativo ou ticket aberto bloqueiam (409). */
-  async remove(id: string) {
+  async deletionCheck(_ids: string[], _canDeleteTickets: boolean): Promise<unknown[]> {
+    return [];
+  }
+
+  async remove(id: string, _canDeleteTickets = false, _actorId = '') {
     await this.findOne(id); // Check exists
     if (await this.prisma.contract.findFirst({ where: { organizationId: id, active: true }, select: { id: true } })) {
       throw new ConflictException('Não é possível excluir o cliente: há contrato ativo. Encerre o contrato antes.');

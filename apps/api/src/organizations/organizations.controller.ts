@@ -5,6 +5,8 @@ import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
 import { CreateOrganizationAddressDto } from './dto/create-organization-address.dto';
 import { CreateOrganizationContactDto } from './dto/create-organization-contact.dto';
+import { DeletionCheckDto } from './dto/deletion-check.dto';
+import { PermissionsService } from '../permissions/permissions.service';
 import { CreateAgentGroupDto } from './dto/create-agent-group.dto';
 import { UpdateAgentGroupDto } from './dto/update-agent-group.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -18,6 +20,7 @@ export class OrganizationsController {
   constructor(
     private readonly organizationsService: OrganizationsService,
     private readonly cnpjLookupService: CnpjLookupService,
+    private readonly permissionsService: PermissionsService,
   ) {}
 
   @Get('cnpj-lookup')
@@ -55,8 +58,15 @@ export class OrganizationsController {
   @Delete(':id')
   @UseGuards(PermissionsGuard)
   @RequirePermission('MANAGE_CLIENTS_AND_RESOURCE_GROUPS')
-  remove(@Param('id') id: string) {
-    return this.organizationsService.remove(id);
+  remove(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
+    return this.organizationsService.remove(id, false, user.id);
+  }
+
+  @Post('deletion-check')
+  @UseGuards(PermissionsGuard)
+  @RequirePermission('MANAGE_CLIENTS_AND_RESOURCE_GROUPS')
+  deletionCheck(@Body() dto: DeletionCheckDto, @CurrentUser() _user: CurrentUserPayload) {
+    return this.organizationsService.deletionCheck(dto.ids, false);
   }
 
   @Post(':id/addresses')

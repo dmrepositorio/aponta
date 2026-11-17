@@ -1,4 +1,4 @@
-import { ConflictException, NotFoundException } from '@nestjs/common';
+import { ConflictException, Logger, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { OrganizationsService } from './organizations.service';
 
@@ -10,7 +10,7 @@ describe('OrganizationsService', () => {
     mockPrisma = {
       $transaction: jest.fn(callback=>callback(mockPrisma)),
       $queryRaw: jest.fn().mockResolvedValue([]),
-      organizationDeskEvent: {create:jest.fn()},
+      organizationDeskEvent: {create:jest.fn(), deleteMany: jest.fn()},
       organization: {
         create: jest.fn(),
         findMany: jest.fn().mockResolvedValue([]),
@@ -268,57 +268,279 @@ describe('OrganizationsService', () => {
     });
   });
 
-  describe('remove', () => {
-    it('throws NotFoundException without deleting when the organization does not exist', async () => {
+  const counts = {
+    addresses: 0, contacts: 0, agentGroups: 0, technicalGroupLinks: 0, articlesSharedWith: 0, deskEvents: 0,
+    serviceDesks: 0, contracts: 0, users: 0, credentials: 0, credentialFolders: 0, appointments: 0,
+  };
+  const orgRow = (over: Record<string, unknown> = {}, count: Partial<typeof counts> = {}) => ({
+    id: 'org-1',
+    name: 'Acme',
+    _count: { ...counts, ...count },
+    serviceDesks: [], contracts: [], users: [], credentials: [], credentialFolders: [], appointments: [],
+    ...over,
+  });
+  const ticketRow = (over: Record<string, unknown> = {}, count: Record<string, number> = {}) => ({
+    id: 'tk-1', protocol: 'TCK-1', title: 'Impressora',
+    requester: { organizationId: null },
+    _count: { worklogs: 0, preAppointments: 0, subTickets: 0, ...count },
+    ...over,
+  });
+  const blockerOf = (result: any[], code: string, index = 0) => result[index].blockers.find((b: any) => b.code === code);
+
+  const checkOne = async (canDeleteTickets: boolean) => {
+    const result = await service.deletionCheck(['org-1'], canDeleteTickets);
+    expect(result).toHaveLength(1);
+    return result[0] as any;
+  };
+
+  describe('deletionCheck (DMTE-560 T2)', () => {
+    beforeEach(() => {
+      mockPrisma.organization.findUnique.mockResolvedValue(orgRow());
+      mockPrisma.ticket.findMany = jest.fn().mockResolvedValue([]);
+    });
+
+    it('AC-08: devolve por cliente id, nome, canDelete, bloqueios e o que sairia junto; cliente livre pode excluir', async () => {
+      mockPrisma.organization.findUnique.mockResolvedValue(
+        orgRow({}, { addresses: 2, contacts: 1, agentGroups: 3, technicalGroupLinks: 4, articlesSharedWith: 5, deskEvents: 6 }),
+      );
+
+      const result = await service.deletionCheck(['org-1'], true);
+
+      expect(result).toEqual([
+        {
+          id: 'org-1', name: 'Acme', canDelete: true, blockers: [],
+          cascade: { addresses: 2, contacts: 1, agentGroups: 3, technicalGroups: 4, sharedArticles: 5, deskEvents: 6 },
+        },
+      ]);
+    });
+
+    it('AC-08: cliente inexistente responde 404', async () => {
       mockPrisma.organization.findUnique.mockResolvedValue(null);
 
-      await expect(service.remove('missing-id')).rejects.toThrow(NotFoundException);
-      expect(mockPrisma.organization.delete).not.toHaveBeenCalled();
+      await expect(service.deletionCheck(['missing'], true)).rejects.toThrow(NotFoundException);
     });
 
-    it('DMTE-481 AC-01: recusa com 409 quando o cliente tem contrato ativo, sem alterar o cliente', async () => {
-      mockPrisma.organization.findUnique.mockResolvedValue({ id: 'org-1', users: [] });
-      mockPrisma.contract.findFirst.mockResolvedValue({ id: 'ct-1' });
+    it.each([
+      ['TICKETS', () => mockPrisma.ticket.findMany.mockResolvedValue([ticketRow()]), {}],
+      ['SERVICE_DESKS', null, { serviceDesks: 1 }],
+      ['CONTRACTS', null, { contracts: 1 }],
+      ['USERS', null, { users: 1 }],
+      ['VAULT', null, { credentials: 1 }],
+      ['VAULT', null, { credentialFolders: 1 }],
+      ['APPOINTMENTS', null, { appointments: 1 }],
+    ])('AC-09: %s bloqueia sozinho a exclusão', async (code, setup, count) => {
+      if (setup) (setup as () => void)();
+      mockPrisma.organization.findUnique.mockResolvedValue(orgRow({}, count as never));
 
-      await expect(service.remove('org-1')).rejects.toThrow(ConflictException);
-      await expect(service.remove('org-1')).rejects.toThrow(/contrato ativo/i);
-      expect(mockPrisma.contract.findFirst).toHaveBeenCalledWith(
-        expect.objectContaining({ where: { organizationId: 'org-1', active: true } }),
+      const entry = await checkOne(true);
+
+      expect(entry.canDelete).toBe(false);
+      expect(entry.blockers.map((b: any) => b.code)).toEqual([code]);
+      expect(blockerOf([entry], code).count).toBe(1);
+    });
+
+    it('AC-09: pergunta ao banco por ticket de qualquer status, do cliente comercial ou de solicitante do cliente', async () => {
+      await service.deletionCheck(['org-1'], true);
+
+      expect(mockPrisma.ticket.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { OR: [{ commercialOrganizationId: 'org-1' }, { requester: { organizationId: 'org-1' } }] } }),
       );
-      expect(mockPrisma.organization.update).not.toHaveBeenCalled();
-      expect(mockPrisma.organization.delete).not.toHaveBeenCalled();
     });
 
-    it('DMTE-481 AC-02: recusa com 409 quando há ticket aberto do cliente (solicitante ou cliente comercial)', async () => {
-      mockPrisma.organization.findUnique.mockResolvedValue({ id: 'org-1', users: [] });
-      mockPrisma.ticket.findFirst.mockResolvedValue({ id: 'tk-1' });
-
-      await expect(service.remove('org-1')).rejects.toThrow(ConflictException);
-      await expect(service.remove('org-1')).rejects.toThrow(/ticket aberto/i);
-      expect(mockPrisma.ticket.findFirst).toHaveBeenCalledWith(
-        expect.objectContaining({
-          where: {
-            status: { notIn: ['RESOLVED', 'CLOSED'] },
-            OR: [{ commercialOrganizationId: 'org-1' }, { requester: { organizationId: 'org-1' } }],
+    it('AC-10: devolve todos os bloqueios numa resposta, com contagem, até 5 itens e a saída de cada um', async () => {
+      mockPrisma.organization.findUnique.mockResolvedValue(
+        orgRow(
+          {
+            serviceDesks: [{ id: 'd1', name: 'Mesa N1' }],
+            contracts: [{ id: 'c1', name: 'Contrato A' }, { id: 'c2', name: null }],
+            users: [{ id: 'u1', name: 'Ana' }],
+            credentials: [{ id: 'k1', name: 'VPN' }],
+            credentialFolders: [{ id: 'f1', name: 'Servidores' }],
+            appointments: [{ id: 'a1', title: 'Visita' }],
           },
-        }),
+          { serviceDesks: 1, contracts: 9, users: 1, credentials: 1, credentialFolders: 1, appointments: 1 },
+        ),
       );
+
+      const entry = await checkOne(true);
+
+      expect(entry.blockers.map((b: any) => b.code)).toEqual(['SERVICE_DESKS', 'CONTRACTS', 'USERS', 'VAULT', 'APPOINTMENTS']);
+      expect(blockerOf([entry], 'CONTRACTS')).toMatchObject({
+        count: 9,
+        items: [{ id: 'c1', label: 'Contrato A' }, { id: 'c2', label: 'Contrato sem nome' }],
+        resolvable: true,
+        howToResolve: expect.stringMatching(/contrato/i),
+        message: expect.stringMatching(/9.*contrato/i),
+      });
+      expect(blockerOf([entry], 'SERVICE_DESKS')).toMatchObject({ resolvable: true, howToResolve: expect.stringMatching(/desvincule.*Relacionamentos/i) });
+      expect(blockerOf([entry], 'VAULT')).toMatchObject({
+        count: 2,
+        items: [{ id: 'k1', label: 'VPN' }, { id: 'f1', label: 'Servidores' }],
+        resolvable: true,
+        howToResolve: expect.stringMatching(/cofre/i),
+      });
+      expect(blockerOf([entry], 'APPOINTMENTS')).toMatchObject({ resolvable: true, howToResolve: expect.stringMatching(/agenda/i) });
+    });
+
+    it('AC-10: USERS nunca é resolvível (não existe exclusão de usuário) e não traz saída', async () => {
+      mockPrisma.organization.findUnique.mockResolvedValue(orgRow({ users: [{ id: 'u1', name: 'Ana' }] }, { users: 1 }));
+
+      const entry = await checkOne(true);
+
+      expect(blockerOf([entry], 'USERS')).toMatchObject({ resolvable: false, howToResolve: null });
+    });
+
+    it('AC-10: pede ao banco no máximo 5 itens de cada vínculo', async () => {
+      await service.deletionCheck(['org-1'], true);
+
+      expect(mockPrisma.organization.findUnique).toHaveBeenCalledTimes(1);
+      const select = mockPrisma.organization.findUnique.mock.calls[0][0].select;
+      for (const key of ['serviceDesks', 'contracts', 'users', 'credentials', 'credentialFolders', 'appointments']) {
+        expect(select[key]).toMatchObject({ take: 5 });
+      }
+    });
+
+    it('AC-11: ticket sem motivo, com permissão, é resolvível: basta excluí-lo em Tickets', async () => {
+      mockPrisma.ticket.findMany.mockResolvedValue([ticketRow()]);
+
+      const entry = await checkOne(true);
+
+      expect(blockerOf([entry], 'TICKETS')).toMatchObject({
+        count: 1,
+        items: [{ id: 'tk-1', label: 'TCK-1: Impressora', reasons: [] }],
+        resolvable: true,
+        howToResolve: expect.stringMatching(/exclua.*Tickets/i),
+      });
+    });
+
+    it('AC-11: apontamento e sub-tickets são motivos que se resolvem (o ticket continua resolvível)', async () => {
+      mockPrisma.ticket.findMany.mockResolvedValue([
+        ticketRow({}, { worklogs: 1 }),
+        ticketRow({ id: 'tk-2', protocol: 'TCK-2' }, { subTickets: 1 }),
+      ]);
+
+      const entry = await checkOne(true);
+      const tickets = blockerOf([entry], 'TICKETS');
+
+      expect(tickets.items.map((i: any) => i.reasons)).toEqual([['tem apontamento'], ['tem sub-tickets']]);
+      expect(tickets.resolvable).toBe(true);
+    });
+
+    it('AC-11: ticket aberto pelo cliente não se resolve; o motivo aparece no item e não há saída', async () => {
+      mockPrisma.ticket.findMany.mockResolvedValue([ticketRow({ requester: { organizationId: 'org-1' } })]);
+
+      const entry = await checkOne(true);
+
+      expect(blockerOf([entry], 'TICKETS')).toMatchObject({
+        items: [{ reasons: ['aberto pelo cliente'] }],
+        resolvable: false,
+        howToResolve: null,
+      });
+    });
+
+    it('AC-11: sem DELETE_TICKETS o usuário não resolve os tickets, mesmo os livres', async () => {
+      mockPrisma.ticket.findMany.mockResolvedValue([ticketRow()]);
+
+      const entry = await checkOne(false);
+
+      expect(blockerOf([entry], 'TICKETS')).toMatchObject({
+        items: [{ reasons: ['sem permissão para excluir tickets'] }],
+        resolvable: false,
+        howToResolve: null,
+      });
+    });
+
+    it('AC-11: mostra só 5 tickets, mas conta todos e decide a saída olhando todos', async () => {
+      const many = Array.from({ length: 6 }, (_, i) => ticketRow({ id: `tk-${i}`, protocol: `TCK-${i}`, requester: { organizationId: i === 5 ? 'org-1' : null } }));
+      mockPrisma.ticket.findMany.mockResolvedValue(many);
+
+      const entry = await checkOne(true);
+      const tickets = blockerOf([entry], 'TICKETS');
+
+      expect(tickets.count).toBe(6);
+      expect(tickets.items).toHaveLength(5);
+      expect(tickets.resolvable).toBe(false);
+    });
+
+    it('AC-08: consulta vários clientes de uma vez, na ordem pedida', async () => {
+      mockPrisma.organization.findUnique
+        .mockResolvedValueOnce(orgRow({ id: 'org-1' }))
+        .mockResolvedValueOnce(orgRow({ id: 'org-2', name: 'Beta' }, { contracts: 1 }));
+
+      const result = await service.deletionCheck(['org-1', 'org-2'], true);
+
+      expect(result.map((r: any) => [r.id, r.canDelete])).toEqual([['org-1', true], ['org-2', false]]);
+    });
+  });
+
+  describe('remove (DMTE-560 T2)', () => {
+    beforeEach(() => {
+      mockPrisma.organization.findUnique.mockResolvedValue(orgRow());
+      mockPrisma.ticket.findMany = jest.fn().mockResolvedValue([]);
+      mockPrisma.organizationDeskEvent.deleteMany = jest.fn();
+    });
+
+    it('AC-12: sem bloqueios apaga o cliente (e o histórico de mesa) de verdade, numa transação, e não apenas inativa', async () => {
+      const result = await service.remove('org-1', true, 'user-1');
+
+      expect(result).toEqual({ id: 'org-1' });
+      expect(mockPrisma.$transaction).toHaveBeenCalledTimes(1);
+      expect(mockPrisma.organizationDeskEvent.deleteMany).toHaveBeenCalledWith({ where: { organizationId: 'org-1' } });
+      expect(mockPrisma.organization.delete).toHaveBeenCalledWith({ where: { id: 'org-1' } });
       expect(mockPrisma.organization.update).not.toHaveBeenCalled();
+    });
+
+    it('AC-13: trava a linha do cliente antes de checar e de apagar', async () => {
+      await service.remove('org-1', true, 'user-1');
+
+      expect(mockPrisma.$queryRaw).toHaveBeenCalledTimes(1);
+      const lock = mockPrisma.$queryRaw.mock.invocationCallOrder[0];
+      expect(lock).toBeLessThan(mockPrisma.organization.findUnique.mock.invocationCallOrder[0]);
+      expect(lock).toBeLessThan(mockPrisma.organization.delete.mock.invocationCallOrder[0]);
+    });
+
+    it('AC-13: com bloqueios responde 409 com a mesma lista da consulta e não apaga nada', async () => {
+      mockPrisma.organization.findUnique.mockResolvedValue(
+        orgRow({ contracts: [{ id: 'c1', name: 'Contrato A' }] }, { contracts: 1, serviceDesks: 1 }),
+      );
+      const expected = await checkOne(true);
+
+      const error = await service.remove('org-1', true, 'user-1').catch((e) => e);
+
+      expect(error).toBeInstanceOf(ConflictException);
+      expect(error.getResponse()).toMatchObject({ message: expect.stringMatching(/não é possível excluir/i), blockers: expected.blockers });
+      expect(mockPrisma.organizationDeskEvent.deleteMany).not.toHaveBeenCalled();
       expect(mockPrisma.organization.delete).not.toHaveBeenCalled();
     });
 
-    it('DMTE-481 AC-03: sem restrições apenas inativa o cliente, sem apagar o registro', async () => {
-      mockPrisma.organization.findUnique.mockResolvedValue({ id: 'org-1', users: [] });
-      mockPrisma.organization.update.mockResolvedValue({ id: 'org-1', active: false });
+    it('AC-13: violação de chave estrangeira por gravação concorrente vira 409, não 500', async () => {
+      mockPrisma.organization.delete.mockRejectedValue(
+        new Prisma.PrismaClientKnownRequestError('Foreign key constraint violated', { code: 'P2003', clientVersion: '7.10.0' }),
+      );
 
-      const result = await service.remove('org-1');
+      const error = await service.remove('org-1', true, 'user-1').catch((e) => e);
 
-      expect(mockPrisma.organization.update).toHaveBeenCalledWith({
-        where: { id: 'org-1' },
-        data: { active: false },
-      });
+      expect(error).toBeInstanceOf(ConflictException);
+      expect(error.message).toMatch(/vínculo/i);
+    });
+
+    it('AC-14: cliente inexistente responde 404 sem apagar', async () => {
+      mockPrisma.organization.findUnique.mockResolvedValue(null);
+
+      await expect(service.remove('missing-id', true, 'user-1')).rejects.toThrow(NotFoundException);
       expect(mockPrisma.organization.delete).not.toHaveBeenCalled();
-      expect(result).toEqual({ id: 'org-1', active: false });
+    });
+
+    it('AC-14: registra em log o id do cliente e do usuário, sem o nome nem outros dados do cliente', async () => {
+      const log = jest.spyOn(Logger.prototype, 'log').mockImplementation(() => undefined);
+
+      await service.remove('org-1', true, 'user-1');
+
+      const line = log.mock.calls.map((call) => String(call[0])).join('\n');
+      expect(line).toContain('org-1');
+      expect(line).toContain('user-1');
+      expect(line).not.toContain('Acme');
+      log.mockRestore();
     });
   });
 

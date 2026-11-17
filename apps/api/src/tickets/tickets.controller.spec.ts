@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { Reflector } from '@nestjs/core';
-import { ExecutionContext } from '@nestjs/common';
+import { ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { GUARDS_METADATA } from '@nestjs/common/constants';
 import { Role, TicketStatus } from '@prisma/client';
 import { TicketsController } from './tickets.controller';
@@ -22,7 +22,10 @@ const mockTicketsService = {
   findAudits: jest.fn(),
   cancel: jest.fn(),
   addSlaHours: jest.fn(),
+  remove: jest.fn(),
 };
+
+const mockPermissions = { hasPermission: jest.fn(), canDeleteTickets: jest.fn() };
 
 describe('TicketsController', () => {
   let controller: TicketsController;
@@ -32,7 +35,7 @@ describe('TicketsController', () => {
       controllers: [TicketsController],
       providers: [
         { provide: TicketsService, useValue: mockTicketsService },
-        { provide: PermissionsService, useValue: { hasPermission: jest.fn() } },
+        { provide: PermissionsService, useValue: mockPermissions },
       ],
     }).compile();
 
@@ -333,6 +336,31 @@ describe('TicketsController', () => {
       expect(Reflect.getMetadata(PERMISSIONS_KEY, controller.addSlaHours)).toEqual([
         'ADD_SLA_TIME',
       ]);
+    });
+  });
+  describe('remove (DMTE-560 T1)', () => {
+    const req = (role: Role) => ({ user: { id: 'u-1', role } }) as never;
+
+    it('AC-05: sem DELETE_TICKETS no grupo responde 403, inclusive para ADMIN, e não chama o serviço', async () => {
+      mockPermissions.canDeleteTickets.mockResolvedValue(false);
+
+      await expect(controller.remove('tk-1', req(Role.ADMIN))).rejects.toThrow(ForbiddenException);
+      expect(mockPermissions.canDeleteTickets).toHaveBeenCalledWith('u-1');
+      expect(mockTicketsService.remove).not.toHaveBeenCalled();
+    });
+
+    it('AC-01: com DELETE_TICKETS no grupo entrega ao serviço o id e o usuário', async () => {
+      mockPermissions.canDeleteTickets.mockResolvedValue(true);
+      mockTicketsService.remove.mockResolvedValue({ id: 'tk-1' });
+
+      const result = await controller.remove('tk-1', req(Role.AGENT));
+
+      expect(mockTicketsService.remove).toHaveBeenCalledWith('tk-1', { id: 'u-1', role: Role.AGENT });
+      expect(result).toEqual({ id: 'tk-1' });
+    });
+
+    it('AC-05: a rota não usa @RequirePermission, que daria o bypass de ADMIN do PermissionsGuard', () => {
+      expect(Reflect.getMetadata(PERMISSIONS_KEY, controller.remove)).toBeUndefined();
     });
   });
 });
