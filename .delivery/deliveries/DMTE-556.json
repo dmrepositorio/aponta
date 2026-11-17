@@ -9,32 +9,32 @@
   "criteria": [
     {
       "id": "AC-01",
-      "description": "com a BrasilAPI respondendo 404 e o provedor reserva respondendo 200, `lookup` devolve o cadastro mapeado para `CnpjLookupResult` e o `cnpj` só com dígitos.",
+      "description": "com a BrasilAPI respondendo 404 e a ReceitaWS respondendo 200, `lookup` devolve o cadastro mapeado para `CnpjLookupResult` (`cnpj` e CEP só com dígitos).",
       "tests": []
     },
     {
       "id": "AC-02",
-      "description": "com a BrasilAPI respondendo 5xx ou falhando na rede e o reserva respondendo 200, `lookup` devolve o cadastro do reserva.",
+      "description": "com a BrasilAPI respondendo 5xx ou falhando na rede, e a ReceitaWS falhando (429 ou rede), `lookup` devolve o cadastro da minhareceita.org.",
       "tests": []
     },
     {
       "id": "AC-03",
-      "description": "com a BrasilAPI e o reserva respondendo 404, `lookup` lança `NotFoundException`.",
+      "description": "com todos os provedores respondendo 404 (ou a ReceitaWS respondendo 200 com `status: \"ERROR\"`), `lookup` lança `NotFoundException`.",
       "tests": []
     },
     {
       "id": "AC-04",
-      "description": "com a BrasilAPI respondendo 404 ou 5xx e o reserva falhando (5xx ou rede), `lookup` lança `BadGatewayException`.",
+      "description": "sem nenhum cadastro encontrado e com pelo menos um provedor falhando (5xx, 429 ou rede), `lookup` lança `BadGatewayException`.",
       "tests": []
     },
     {
       "id": "AC-05",
-      "description": "com a BrasilAPI respondendo 200, o reserva não é chamado; com a BrasilAPI respondendo 400, o reserva também não é chamado e `lookup` lança `BadRequestException`.",
+      "description": "com a BrasilAPI respondendo 200, nenhum outro provedor é chamado; com a BrasilAPI respondendo 400, os outros também não são chamados e `lookup` lança `BadRequestException`.",
       "tests": []
     },
     {
       "id": "AC-06",
-      "description": "com a flag `consulta-cnpj-alternativa` desligada e a BrasilAPI respondendo 404, `lookup` lança `NotFoundException` sem chamar o reserva.",
+      "description": "com a flag `consulta-cnpj-alternativa` desligada e a BrasilAPI respondendo 404, `lookup` lança `NotFoundException` sem chamar outro provedor.",
       "tests": []
     },
     {

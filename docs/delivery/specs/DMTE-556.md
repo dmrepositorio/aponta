@@ -10,33 +10,34 @@ Identidade: DMTE-556, issue dmrepositorio/aponta#321, Tier 1, pai Multica `01a1e
 
 ## Decisões
 
-1. **Provedor reserva: minhareceita.org** (`GET https://minhareceita.org/<14 dígitos>`). Fonte aberta, sem chave, mesmo formato de campos da BrasilAPI (`razao_social`, `nome_fantasia`, `cep`, `logradouro`, `numero`, `bairro`, `municipio`, `uf`, `complemento`), então o mapeamento atual serve aos dois. Verificado em 2026-11-17 para o CNPJ do relato (200), para um CNPJ inexistente (400) e para o CNPJ de referência do teste (200). Proposta minha; o responsável pode trocar o provedor antes da implementação.
-2. **API.** `CnpjLookupService.lookup` consulta a BrasilAPI. Se ela responder 404, 5xx ou falhar na rede, consulta o provedor reserva. Resposta 400 da BrasilAPI (número inválido) não tem reserva e vira 400 para o cliente.
-   - reserva 200: devolve o cadastro;
-   - reserva 404 ou 400: 404 "CNPJ não encontrado";
-   - reserva falha (5xx ou rede) depois de a BrasilAPI dar 404 ou falhar: 502, porque não dá para afirmar que o CNPJ não existe.
-3. **Feature flag** `consulta-cnpj-alternativa` (owner `alfredo`, padrão `true`, remoção até 2026-12-18), porque a reserva é nova chamada externa (AGENTS.md). Desligada, o serviço volta a consultar só a BrasilAPI.
-4. **Web.** O `catch` da consulta separa: 400 ou 404 mostram a frase atual; qualquer outro caso mostra "Não foi possível consultar a Receita Federal agora. Tente novamente em instantes." O modal continua aberto e mantém o CNPJ digitado.
-5. **Fora do escopo:** validação local de dígitos verificadores, cache de consultas, troca de provedor principal, qualquer escrita em dados de cliente.
+1. **Cadeia de provedores, nesta ordem:** BrasilAPI (atual) → ReceitaWS (`GET https://receitaws.com.br/v1/cnpj/<14 dígitos>`, indicada pelo responsável) → minhareceita.org (`GET https://minhareceita.org/<14 dígitos>`, proposta minha; mesmos campos da BrasilAPI). Verificado em 2026-11-17 para o CNPJ do relato: ReceitaWS e minhareceita.org devolvem o cadastro. ReceitaWS usa campos próprios (`nome`, `fantasia`, `cep` com pontuação, `status`) e limita a 3 consultas por janela (`x-ratelimit-limit: 3`); por isso fica atrás da BrasilAPI e só é chamada quando ela falha. O 429 da ReceitaWS conta como falha do provedor.
+2. **API da própria Receita (Serpro, "Consulta CNPJ" do catálogo Conecta gov.br): fora desta entrega, pendência do responsável.** É contratada e exige credenciais; não encontrei página oficial que confirme trial, preço ou fluxo de token, e não há credencial no projeto. Para entrar na cadeia, o responsável precisa decidir a contratação e fornecer as credenciais pelo canal de segredos do projeto; vira ticket próprio.
+3. **API.** `CnpjLookupService.lookup` percorre a cadeia e devolve o primeiro cadastro encontrado, sempre como `CnpjLookupResult` (CEP só com dígitos).
+   - 400 de qualquer provedor (número inválido): para e lança `BadRequestException`, sem consultar os seguintes;
+   - 404 ou falha (5xx, 429, rede) de um provedor: segue para o próximo; ReceitaWS 200 com `status: "ERROR"` conta como 404;
+   - nenhum achou: `NotFoundException` só se todos responderam 404; se algum falhou, `BadGatewayException`, porque não dá para afirmar que o CNPJ não existe.
+4. **Feature flag** `consulta-cnpj-alternativa` (owner `alfredo`, padrão `true`, remoção até 2026-12-18), porque os provedores reserva são chamadas externas novas (AGENTS.md). Desligada, o serviço consulta só a BrasilAPI, como hoje.
+5. **Web.** O `catch` da consulta separa: 400 ou 404 mostram a frase atual; qualquer outro caso mostra "Não foi possível consultar a Receita Federal agora. Tente novamente em instantes." O modal continua aberto e mantém o CNPJ digitado.
+6. **Fora do escopo:** API oficial do Serpro (item 2), validação local de dígitos verificadores, cache de consultas, troca do provedor principal, qualquer escrita em dados de cliente.
 
 ## Acceptance criteria
 
-- AC-01: com a BrasilAPI respondendo 404 e o provedor reserva respondendo 200, `lookup` devolve o cadastro mapeado para `CnpjLookupResult` e o `cnpj` só com dígitos.
-- AC-02: com a BrasilAPI respondendo 5xx ou falhando na rede e o reserva respondendo 200, `lookup` devolve o cadastro do reserva.
-- AC-03: com a BrasilAPI e o reserva respondendo 404, `lookup` lança `NotFoundException`.
-- AC-04: com a BrasilAPI respondendo 404 ou 5xx e o reserva falhando (5xx ou rede), `lookup` lança `BadGatewayException`.
-- AC-05: com a BrasilAPI respondendo 200, o reserva não é chamado; com a BrasilAPI respondendo 400, o reserva também não é chamado e `lookup` lança `BadRequestException`.
-- AC-06: com a flag `consulta-cnpj-alternativa` desligada e a BrasilAPI respondendo 404, `lookup` lança `NotFoundException` sem chamar o reserva.
+- AC-01: com a BrasilAPI respondendo 404 e a ReceitaWS respondendo 200, `lookup` devolve o cadastro mapeado para `CnpjLookupResult` (`cnpj` e CEP só com dígitos).
+- AC-02: com a BrasilAPI respondendo 5xx ou falhando na rede, e a ReceitaWS falhando (429 ou rede), `lookup` devolve o cadastro da minhareceita.org.
+- AC-03: com todos os provedores respondendo 404 (ou a ReceitaWS respondendo 200 com `status: "ERROR"`), `lookup` lança `NotFoundException`.
+- AC-04: sem nenhum cadastro encontrado e com pelo menos um provedor falhando (5xx, 429 ou rede), `lookup` lança `BadGatewayException`.
+- AC-05: com a BrasilAPI respondendo 200, nenhum outro provedor é chamado; com a BrasilAPI respondendo 400, os outros também não são chamados e `lookup` lança `BadRequestException`.
+- AC-06: com a flag `consulta-cnpj-alternativa` desligada e a BrasilAPI respondendo 404, `lookup` lança `NotFoundException` sem chamar outro provedor.
 - AC-07: o registro de flags traz `consulta-cnpj-alternativa` com owner, padrão e data de remoção.
 - AC-08: no cadastro por CNPJ, quando a API responde 404 ou 400, o modal mostra "CNPJ não encontrado ou inválido na Receita Federal."; quando responde 502 ou falha sem resposta, mostra "Não foi possível consultar a Receita Federal agora. Tente novamente em instantes."; nos dois casos o modal segue aberto com o CNPJ digitado.
 
-## Testes (seams: serviço com `fetch` simulado, como em `cnpj-lookup.service.spec.ts`; página pela Testing Library)
+## Testes (seams: serviço com `fetch` simulado por URL, como em `cnpj-lookup.service.spec.ts`; página pela Testing Library)
 
 - AC-01 a AC-06: `apps/api/src/organizations/cnpj-lookup.service.spec.ts`.
-- AC-07: `apps/api/src/feature-flags/feature-flags.spec.ts` (o teste existente de data de remoção cobre o registro; incluir a chave na checagem).
+- AC-07: `apps/api/src/feature-flags/feature-flags.spec.ts`.
 - AC-08: `apps/web/src/pages/OrganizationsPage.test.tsx`, junto dos testes de `/organizations/cnpj-lookup`.
-- Sem fixture com dado real de cliente: os testes usam CNPJs sintéticos ou o de referência já presente no spec atual. O CNPJ do relato aparece só nesta SPEC e na issue, como evidência de origem.
-- Rede real: não entra no CI. A checagem contra o provedor reserva real foi feita à mão no planejamento e se repete na implementação, só leitura, uma chamada.
+- Sem fixture com dado real de cliente: os testes usam o CNPJ de referência já presente no spec atual. O CNPJ do relato aparece só nesta SPEC e na issue, como evidência de origem.
+- Rede real: não entra no CI. A checagem contra os provedores reais foi feita à mão no planejamento (só leitura, uma chamada por provedor) e se repete na implementação.
 
 ## Avaliação de design
 
@@ -44,6 +45,6 @@ Sem componente, prop ou token novo; só troca o texto de erro do modal existente
 
 ## Riscos
 
-- Limites de uso do provedor reserva não são garantidos (serviço gratuito de terceiros); por isso só é chamado quando a BrasilAPI falha, e a flag permite desligar.
-- O CNPJ consultado passa a ir também ao provedor reserva. É dado público de pessoa jurídica; sem dado de usuário nem credencial.
+- Limites de uso dos provedores reserva não são garantidos (serviços gratuitos de terceiros; a ReceitaWS declara 3 consultas por janela): só são chamados quando o anterior falha, a flag permite desligar, e a ordem põe a ReceitaWS atrás da BrasilAPI.
+- O CNPJ consultado pode ir também aos provedores reserva. É dado público de pessoa jurídica; sem dado de usuário nem credencial.
 - Sem impacto em RBAC nem tenant: a rota mantém `MANAGE_CLIENTS_AND_RESOURCE_GROUPS`.
