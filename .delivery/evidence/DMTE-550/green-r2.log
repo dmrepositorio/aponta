@@ -13,5 +13,5 @@
 [1mTest Suites: [22m[1m[32m3 passed[39m[22m, 3 total
 [1mTests:       [22m[1m[32m9 passed[39m[22m, 9 total
 [1mSnapshots:   [22m0 total
-[1mTime:[22m        [1m[33m2.23 s[39m[22m
+[1mTime:[22m        [1m[33m2.861 s[39m[22m
 [2mRan all test suites[22m[2m within paths[22m "src/users/email-case.http.spec.ts", "src/users/users.find-by-email.spec.ts", "src/mail/mail.service.pending.spec.ts"[2m.[22m

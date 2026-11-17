@@ -1,8 +1,8 @@
 {
   "version": 1,
   "phase": "green",
-  "started_at": "2026-11-17T15:54:37.664413+00:00",
-  "finished_at": "2026-11-17T15:54:41.560240+00:00",
+  "started_at": "2026-11-17T16:02:50.599822+00:00",
+  "finished_at": "2026-11-17T16:03:00.839426+00:00",
   "command": [
     "pnpm",
     "nx",
@@ -15,7 +15,7 @@
     "src/mail/mail.service.pending.spec.ts"
   ],
   "base_sha": "627972ad6a0378afa8e70cbc7add279c10b304e0",
-  "head_sha": "954e8f26da40f9f1c80d29ad2ade26dd64fe17ff",
+  "head_sha": "4cda7fca3289ea03c6deb779c2649d0bbc70b4a8",
   "exit_code": 0,
   "tests": {
     "apps/api/src/users/email-case.http.spec.ts": "0c292d979aa7ac199cd22a48bc944633ff095f754fd6b8055376d1fcd662ab92",
@@ -70,8 +70,9 @@
     "apps/api/src/feature-flags/feature-flags.ts": "efbf7fd9ee6377f9a8119ba0ca417e9f204e77393a41dca7da872829805b3a5e",
     "apps/api/src/mail/mail.module.ts": "9ac5a4482e79d27abe9617bcce352032b2a0430215e3b0f62490116d71348ff9",
     "apps/api/src/mail/mail.service.pending.spec.ts": "d985e05a3cfbd3ef0ebd7e036a22580870fd00960d98dce885369726d0385e25",
+    "apps/api/src/mail/mail.service.recipient.spec.ts": "83988d703242b1c4d454cccde0ed472f196e68776f45903396cc0221ca05445e",
     "apps/api/src/mail/mail.service.result.spec.ts": "1c75e5852672f3dcdf3ab93a0c99a8bd29452d071b0c7e5d7a7a4fc4ebff3abd",
-    "apps/api/src/mail/mail.service.ts": "0872dd022db0849b22994aa9d6dde8ef843fe389484e69fc45e5d311c15599cb",
+    "apps/api/src/mail/mail.service.ts": "2b538eab9272b5bf0d13368cd7aadac594199aa171b00b538669987cfaf3a7ee",
     "apps/api/src/permission-groups/permission-catalog.ts": "684513908efa731a3d81e3781387d1c20248fe1f7708e493b1acbbaa96cea634",
     "apps/api/src/permission-groups/permission-catalog.users.spec.ts": "70c632ce6a743a811b6a8bd6012acbcea73c7c3a280567cf3c0c6fa5d190f1c4",
     "apps/api/src/permissions/permissions.service.ts": "8e971869d1f84405b8e84b1fc243492d8716ba905d040cff8526e4810028cd93",
@@ -81,7 +82,7 @@
     "apps/api/src/users/dto/admin-create-user.dto.ts": "d515236716be336d6078b2cde382c3f66ea3fdcf66be89b8fc724ef8189742c6",
     "apps/api/src/users/dto/password-flow.dto.ts": "313bb75bd1399c73e1792ac173bbbce93f9456b289f4f1436cfe574017cffc19",
     "apps/api/src/users/dto/register.dto.ts": "5d1892f4f2e99a898eb915be31d6f03dd4c3b5bf17fdf40691ac35dcaa8ff1f5",
-    "apps/api/src/users/dto/transforms.ts": "4ccd8fb890b7b0b42905b401574bb4f1e870f104ff0c3a02d78686bc56f81aff",
+    "apps/api/src/users/dto/transforms.ts": "12ad6d36a38166578fb2e28e5b1ac5492b0d3894fbd0ed3a1135490501a62fad",
     "apps/api/src/users/dto/update-profile.dto.ts": "6ddb1c27cf888b1bbe5066c5e85946ffe9588779e1c07b200f2f216c3ca695b5",
     "apps/api/src/users/dto/update-user.dto.ts": "994bb4968b1575dd1b6800ae7335166fdc8384f1b88b0ba7b3a384ffa910433b",
     "apps/api/src/users/dto/update-users-active.dto.ts": "bde326c28489be429b4cb4775804e2bf9d480da761a02812d2077f186b4febc0",
@@ -100,7 +101,7 @@
     "apps/api/src/users/users.module.ts": "aee8d2762c65aa9fee0c3a5e6ab406812d3b5c158a06c81ef320211c6db52747",
     "apps/api/src/users/users.service.rules.spec.ts": "84ab81173d231cc89fd0c68b05c34df08be2195716838421b6e02c12709b5f68",
     "apps/api/src/users/users.service.spec.ts": "2f20f09e44b89dd006d2ec1c10d9ee34c334d00d3487f32565ebb019c8ada020",
-    "apps/api/src/users/users.service.ts": "68a5c9a3dfabb80ad559369aa892c66eefef103c88c571b983fe4bc7dcc36c16",
+    "apps/api/src/users/users.service.ts": "83a41656027f961c897ff4be3d065fa010839e43a9f3c86b91728ee5812978ce",
     "apps/api/tsconfig.app.json": "2d188bd32f490d52e7e67c16a115f381529ff86cf3e4b6717eeb69514720b7a1",
     "apps/web/nginx.conf": "77b7250d619d1442ed7ae92d7528b10ad76b5041025622d0b19d28c138224731",
     "apps/web/src/App.tsx": "19e1c3786e62efdcd8268a4af5104b9f1e5970561bf7ef50f41f2d7eefe609aa",
@@ -120,5 +121,5 @@
     "scripts/users_responsive_check.mjs": "633c536589592b0306285bc5c5c0c8c0a4c75568c44e32fc50e964a12d0dc70e"
   },
   "log": ".delivery/evidence/DMTE-550/green-r2.log",
-  "log_sha256": "9c4a7bcc08623dd4c6ac7a653dd536339d2ac8103d60de70f13ab949ed0434c6"
+  "log_sha256": "1175ef4221dcaaf80185a944c6a0d12dcd9079d12b61726ddb01da47a15bfe2d"
 }
