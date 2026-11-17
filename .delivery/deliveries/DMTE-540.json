@@ -1,0 +1,104 @@
+{
+  "version": 1,
+  "delivery": "DMTE-540",
+  "repository": "dmrepositorio/aponta",
+  "github_issue": 319,
+  "multica_id": "01a1e1dc-26c8-7ac5-9d76-e836b9d0a530",
+  "cycle": "2026-11-09/2026-11-22",
+  "tier": 2,
+  "criteria": [
+    {
+      "id": "AC-01",
+      "description": "nenhum arquivo de produção de `apps/web/src` (fora de testes e stories) contém `focus:ring-brand-200` nem `focus-visible:ring-brand-200`; os elementos migrados usam `ez-focus` ou `ez-focus-inset`.",
+      "tests": [
+        "apps/web/src/components/ds/focusToken.guard.test.ts: no production source keeps the brand-200 focus ring"
+      ]
+    },
+    {
+      "id": "AC-02",
+      "description": "`EzButton` (e `EzActionsButton`, `EzTaskbar`, `EzSearchPlus`) tem `ez-focus` e não tem `ring-brand-200`, `ring-4` nem `ring-offset-2` de foco; o teste do token (`styles.focus.test.ts`) continua passando, com `brand-600` a 4,5:1 ou mais sobre branco.",
+      "tests": [
+        "apps/web/src/components/ds/EzButton.test.tsx: uses the shared focus token instead of the brand-200 ring",
+        "apps/web/src/styles.focus.test.ts: keeps the focus color at 3:1 or more on every tab surface"
+      ]
+    },
+    {
+      "id": "AC-03",
+      "description": "`EzDialog` aceita `children`, `confirmLabel`, `cancelLabel` e `confirmDisabled`; sem essas props renderiza como hoje (\"Confirmar\", \"Cancelar\").",
+      "tests": [
+        "apps/web/src/components/ds/EzDialog.test.tsx: renders children, custom labels and a disabled confirm, and keeps the defaults"
+      ]
+    },
+    {
+      "id": "AC-04",
+      "description": "`EzDialog` com `variant=\"danger\"` foca o botão Cancelar ao abrir; o diálogo tem `aria-labelledby` apontando para o título.",
+      "tests": [
+        "apps/web/src/components/ds/EzDialog.test.tsx: focuses Cancelar when the danger dialog opens and names the dialog by its title"
+      ]
+    },
+    {
+      "id": "AC-05",
+      "description": "Excluir em Contratos abre o `EzDialog` e não chama `window.confirm`; o diálogo cita o contrato (um) ou lista os nomes (vários, até 5 mais \"e mais N\"); nenhuma chamada de exclusão acontece antes de Confirmar; Cancelar e Esc fecham sem excluir.",
+      "tests": [
+        "apps/web/src/pages/ContractsPage.test.tsx: asks for confirmation in a DS dialog that names the contract before deleting",
+        "apps/web/src/pages/ContractsPage.test.tsx: lists up to five contract names and counts the rest",
+        "apps/web/src/pages/ContractsPage.test.tsx: cancels the deletion without calling the API"
+      ]
+    },
+    {
+      "id": "AC-06",
+      "description": "com vários contratos e falhas parciais, cada falha aparece no diálogo com o nome do contrato e a mensagem do servidor, sem sobrescrever as outras; os excluídos saem da seleção e os que falharam continuam selecionados; \"Tentar novamente\" refaz só os que falharam; sem falhas o diálogo fecha.",
+      "tests": [
+        "apps/web/src/pages/ContractsPage.test.tsx: lists each failed contract with its own message and keeps only the failed ones selected",
+        "apps/web/src/pages/ContractsPage.test.tsx: retries only the contracts that failed"
+      ]
+    },
+    {
+      "id": "AC-07",
+      "description": "durante a exclusão em andamento, Confirmar fica desabilitado (sem envio duplo).",
+      "tests": [
+        "apps/web/src/pages/ContractsPage.test.tsx: disables Confirmar while the deletion is running"
+      ]
+    },
+    {
+      "id": "AC-08",
+      "description": "com o formulário de um contrato aberto, o botão Excluir da toolbar fica desabilitado; na lista, com seleção, continua habilitado e só para quem pode gerenciar contratos.",
+      "tests": [
+        "apps/web/src/pages/ContractsPage.test.tsx: disables the toolbar delete button while a contract form is open"
+      ]
+    },
+    {
+      "id": "AC-09",
+      "description": "em Chromium, o foco por teclado no `EzButton` desenha contorno de 2 px `rgb(0, 133, 97)` (`brand-600`), e o diálogo de exclusão a 1440 px e a 390 px não corta o conteúdo; medição e capturas no PR (jsdom não calcula estilo nem layout).",
+      "tests": [
+        "scripts/contracts_focus_check.mjs em Chromium: contorno de 2 px brand-600 no foco do EzButton e diálogo de exclusão a 1440 px e 390 px (resultado e capturas no PR)"
+      ],
+      "tdd_required": false,
+      "reason": "Estilo computado e layout em navegador (jsdom não calcula); a classe do foco é coberta por AC-01 e AC-02"
+    },
+    {
+      "id": "AC-10",
+      "description": "nenhum arquivo de `apps/api` muda; as mensagens de erro do servidor chegam ao usuário como vêm.",
+      "tests": [
+        "git diff do PR: nenhum arquivo em apps/api"
+      ],
+      "tdd_required": false,
+      "reason": "Restrição de escopo, verificada no diff do PR; não é comportamento"
+    }
+  ],
+  "spec": "docs/delivery/specs/DMTE-540.md",
+  "tdd": {
+    "mode": "required",
+    "red": ".delivery/evidence/DMTE-540/red.json",
+    "green": ".delivery/evidence/DMTE-540/green.json"
+  },
+  "design_system": {
+    "applicable": true,
+    "reused": [
+      "EzDialog",
+      "EzButton"
+    ],
+    "reason": "Migra o foco de todo o DS para o token único ez-focus/ez-focus-inset (DMTE-532) e dá ao EzDialog corpo, rótulos e foco inicial, sem quebrar quem o usa.",
+    "exception": "Só o EzDialog muda de API; ganha story com lista e com falhas. Os demais componentes mudam apenas a classe de foco, sem story nova."
+  }
+}
