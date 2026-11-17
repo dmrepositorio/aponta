@@ -1,0 +1,124 @@
+
+ RUN  v4.1.11 /home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-548-fa2f3cf3bd60/workdir/aponta/apps/web
+
+ ✓ |web| src/components/knowledge/KnowledgeArticleCard.test.tsx (2 tests) 322ms
+ ❯ |web| src/pages/KnowledgePage.test.tsx (51 tests | 1 failed) 8437ms
+     ✓ shows the folders grid first, not the article list 115ms
+     ✓ opens a folder and lists only its articles, filtered by folderId 162ms
+     ✓ shows a breadcrumb back to the folders grid once inside a folder 156ms
+     ✓ does not show the new-article form or edit/delete buttons to a CLIENT 102ms
+     ✓ shows the Interno badge only for a PRIVATE article (visibility-based, not the old isPublic) 51ms
+     ✓ defaults a new article to "Público" and hides the Compartilhar button 288ms
+     ✓ shows the Compartilhar button once "Privado" is selected, and opens the sharing dialog  353ms
+     ✓ shows the new-article form to an AGENT and creates a PUBLIC article inside the open folder  896ms
+     ✓ selects an agent group and a client in the share dialog, and sends them (plus auto-share) in the create payload  1155ms
+     ✓ allows an AGENT to update an existing article, pre-populating the access type and sharing lists  620ms
+     ✓ allows filtering by search keyword and tag inside a folder 104ms
+     ✓ allows selecting more than one tag at once (OR filter) 110ms
+     ✓ shows the author and last-updated date on each article 34ms
+     ✓ sends the chosen sort order to the API 36ms
+     ✓ toggles between list and grid view modes 67ms
+     ✓ paginates articles beyond the first page 102ms
+     ✓ allows deleting an article 105ms
+     ✓ renders article content as real HTML, not escaped text 50ms
+     ✓ shows the attachment count only for articles that have attachments, and the links once expanded 72ms
+     ✓ never shows attachment upload controls to a CLIENT, not even when the card is expanded 143ms
+     ✓ keeps upload and remove out of the cards and manages attachments inside the edit form 222ms
+     ✓ shows no attachment manager in the new-article form 100ms
+     ✓ loads the edit form with EzRichText pre-filled with the existing article content 117ms
+       ✓ keeps the search field mounted, with its text and focus, while typing against a slow API  351ms
+       ✓ keeps the header and shows the loading state only in the list area while a folder opens 184ms
+       ✓ sends the full typed search to the API and lists the result of that query  443ms
+       ✓ collapses the card to title, meta, a plain-text excerpt, five tags and the attachment count 63ms
+       ✓ expands and collapses the card, revealing the full body, every tag and the attachments 104ms
+       ✓ offers no expand button when nothing is hidden 41ms
+       ✓ offers no expand button when the body is only empty markup 46ms
+       ✓ keeps the title on its own line, with the tag, meta and actions outside its row 70ms
+       ✓ puts the active tag filters in their own row, apart from the search and the new-article button 85ms
+       ✓ tells an empty folder apart from a search, offering to create the first article to authors 137ms
+       ✓ shows readers an empty folder without a create action 54ms
+       ✓ offers "Limpar busca e filtros" when a search finds nothing, and clearing resets search and tags but keeps the sort 148ms
+       ✓ also offers to clear when only a tag filter finds nothing 89ms
+       ✓ shows a retryable error, not the empty message, when the query fails 59ms
+         ✓ keeps the cached list under a stale-list warning when a refetch fails 61ms
+         ✓ replaces the list and drops the warning when "Tentar novamente" succeeds 71ms
+         × shows the load error, not the stale-list warning, when the cached list is empty 45ms
+         ✓ keeps the header and sort rows on the control height token, with no loose radius 68ms
+         ✓ keeps the Compartilhar button at the height of the access combo 157ms
+         ✓ aligns the card text actions with the card content, without the DS side padding 46ms
+         ✓ uses the legible primary on the primary actions of the screen 219ms
+         ✓ gives the clickable tag, the filter remove button and the view toggles the DS focus ring 89ms
+         ✓ marks the active tag filter with aria-pressed and a decorative check, not only a color 98ms
+         ✓ shows Interno as a classification (petroleum with a lock), not as a yellow alert 31ms
+         ✓ keeps "+ Novo artigo" on screen, disabled, while the form is open, and focuses the title 178ms
+         ✓ focuses the title when the edit form opens from a card 78ms
+         ✓ aligns "+ Novo item de catálogo" to the start of the form as a DS tertiary button 133ms
+         ✓ asks for confirmation in a dialog before deleting, and cancel or Escape keep the article 117ms
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 52 passed (53)
+   Start at  01:44:33
+   Duration  11.53s (transform 3.20s, setup 181ms, import 4.76s, tests 8.76s, environment 879ms)
+
+stderr | src/pages/KnowledgePage.test.tsx > KnowledgePage > defaults a new article to "Público" and hides the Compartilhar button
+[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues.
+
+stderr | src/pages/KnowledgePage.test.tsx > KnowledgePage > shows the Compartilhar button once "Privado" is selected, and opens the sharing dialog
+[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues.
+
+stderr | src/pages/KnowledgePage.test.tsx > KnowledgePage > shows the new-article form to an AGENT and creates a PUBLIC article inside the open folder
+[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues.
+
+stderr | src/pages/KnowledgePage.test.tsx > KnowledgePage > selects an agent group and a client in the share dialog, and sends them (plus auto-share) in the create payload
+[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues.
+
+stderr | src/pages/KnowledgePage.test.tsx > KnowledgePage > allows an AGENT to update an existing article, pre-populating the access type and sharing lists
+[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues.
+
+stderr | src/pages/KnowledgePage.test.tsx > KnowledgePage > keeps upload and remove out of the cards and manages attachments inside the edit form
+[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues.
+
+stderr | src/pages/KnowledgePage.test.tsx > KnowledgePage > shows no attachment manager in the new-article form
+[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues.
+
+stderr | src/pages/KnowledgePage.test.tsx > KnowledgePage > loads the edit form with EzRichText pre-filled with the existing article content
+[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues.
+
+stderr | src/pages/KnowledgePage.test.tsx > KnowledgePage > article card, header and empty states > tells an empty folder apart from a search, offering to create the first article to authors
+[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues.
+
+stderr | src/pages/KnowledgePage.test.tsx > KnowledgePage > article card, header and empty states > proportion, focus and color semantics (DMTE-535) > keeps the Compartilhar button at the height of the access combo
+[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues.
+
+stderr | src/pages/KnowledgePage.test.tsx > KnowledgePage > article card, header and empty states > proportion, focus and color semantics (DMTE-535) > uses the legible primary on the primary actions of the screen
+[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues.
+
+stderr | src/pages/KnowledgePage.test.tsx > KnowledgePage > article card, header and empty states > proportion, focus and color semantics (DMTE-535) > keeps "+ Novo artigo" on screen, disabled, while the form is open, and focuses the title
+[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues.
+
+stderr | src/pages/KnowledgePage.test.tsx > KnowledgePage > article card, header and empty states > proportion, focus and color semantics (DMTE-535) > focuses the title when the edit form opens from a card
+[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues.
+
+stderr | src/pages/KnowledgePage.test.tsx > KnowledgePage > article card, header and empty states > proportion, focus and color semantics (DMTE-535) > aligns "+ Novo item de catálogo" to the start of the form as a DS tertiary button
+[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues.
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |web| src/pages/KnowledgePage.test.tsx > KnowledgePage > article card, header and empty states > when the refresh fails with a cached list (DMTE-548) > shows the load error, not the stale-list warning, when the cached list is empty
+Error: [2mexpect([22m[31melement[39m[2m).toHaveTextContent()[22m
+
+Expected element to have text content:
+[32m  Não foi possível carregar os artigos.[39m
+Received:
+[31m  Não foi possível atualizar os artigos. A lista abaixo pode estar desatualizada.Tentar novamente[39m
+ ❯ src/pages/KnowledgePage.test.tsx:1043:23
+    1041|         const { alert } = await openFolderThenFailRefresh([]);
+    1042|
+    1043|         expect(alert).toHaveTextContent('Não foi possível carregar os …
+       |                       ^
+    1044|         expect(screen.queryByText(STALE)).not.toBeInTheDocument();
+    1045|         expect(screen.queryByText('Esta pasta ainda não tem artigos.')…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
