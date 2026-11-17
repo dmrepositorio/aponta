@@ -250,6 +250,8 @@ export function ContractsPage() {
     );
   };
 
+  const retrying = (deleteDialog?.failures.length ?? 0) > 0;
+
   const openDetail = (id: string) => {
     const idx = filteredContracts.findIndex((contract) => contract.id === id);
     if (idx !== -1) {
@@ -549,14 +551,12 @@ export function ContractsPage() {
               : `Excluir ${deleteDialog.targets.length} contratos`
           }
           message={
-            deleteDialog.failures.length > 0
+            retrying
               ? 'Não foi possível excluir:'
               : 'Esta ação não pode ser desfeita.'
           }
-          confirmLabel={
-            deleteDialog.failures.length > 0 ? 'Tentar novamente' : 'Confirmar'
-          }
-          cancelLabel={deleteDialog.failures.length > 0 ? 'Fechar' : 'Cancelar'}
+          confirmLabel={retrying ? 'Tentar novamente' : 'Confirmar'}
+          cancelLabel={retrying ? 'Fechar' : 'Cancelar'}
           confirmDisabled={deleteDialog.running}
           onConfirm={() => void confirmDelete()}
           onCancel={() => {
@@ -564,7 +564,7 @@ export function ContractsPage() {
           }}
         >
           <ul className="mt-3 space-y-1">
-            {(deleteDialog.failures.length > 0
+            {(retrying
               ? deleteDialog.failures
               : deleteDialog.targets
                   .slice(0, MAX_LISTED_CONTRACTS)
@@ -580,7 +580,7 @@ export function ContractsPage() {
               </li>
             ))}
           </ul>
-          {deleteDialog.failures.length === 0 &&
+          {!retrying &&
             deleteDialog.targets.length > MAX_LISTED_CONTRACTS && (
               <p className="mt-1">
                 e mais {deleteDialog.targets.length - MAX_LISTED_CONTRACTS}

@@ -1,8 +1,8 @@
 {
   "version": 1,
   "phase": "green",
-  "started_at": "2026-11-17T13:32:05.921034+00:00",
-  "finished_at": "2026-11-17T13:32:38.773131+00:00",
+  "started_at": "2026-11-17T14:01:12.308581+00:00",
+  "finished_at": "2026-11-17T14:01:40.926059+00:00",
   "command": [
     "pnpm",
     "--dir",
@@ -16,7 +16,7 @@
     "src/pages/ContractsPage.test.tsx"
   ],
   "base_sha": "bba27622a05d386565e1ce09b8134a92ac77a620",
-  "head_sha": "77eed3ffb5c8e9eb412ead96d8e8b38668c37b75",
+  "head_sha": "697e01ff22ee74c8b371453a9be8b153cd06078b",
   "exit_code": 0,
   "tests": {
     "apps/web/src/components/ds/focusToken.guard.test.ts": "07bd51a4b533767927872d61b2eda94674170fde590b66af5edf65dda3378602",
@@ -44,7 +44,7 @@
     "apps/web/src/components/ds/EzCollapsibleBox.tsx": "25389a70cb85796507152a100f978c99a4475d0dc20c7f36aa0a92459db078bf",
     "apps/web/src/components/ds/EzDialog.stories.tsx": "9feb99af1179446fc56716d05bf016b758ef03d01b6bc72919ce41a78c706fe3",
     "apps/web/src/components/ds/EzDialog.test.tsx": "c8cb966006c3f741b5f8985f6c31fe98cea77c0b87d7ba1dfef70f535302932b",
-    "apps/web/src/components/ds/EzDialog.tsx": "341a01ed5979c65b1acab666e12af955bd75b055d51d9b32ceaaf3972d4766d9",
+    "apps/web/src/components/ds/EzDialog.tsx": "d163a9bc6600b1cbc5662f4f9a9aa4abe631ff00a65e7a286db4cc530914f4c8",
     "apps/web/src/components/ds/EzDropdown.tsx": "850670ef2d878f9bdb653e7a34b6bae7c090e7567c204b7314f53c390d73b81e",
     "apps/web/src/components/ds/EzEntityGrid.tsx": "7873bf45007141cc853a0ea0f858603c660304740c4d6b85cb20394ff53c560d",
     "apps/web/src/components/ds/EzEntityScreenConfigModal.tsx": "c5787af943dac5c66dd9997dad58503f1bcbad85504d2884f7fb71d64d157701",
@@ -66,7 +66,7 @@
     "apps/web/src/components/knowledge/knowledgeStyles.ts": "ee3f5fc77c073d3d6d77c0dae2ef8ee4b45180dc4ccefa26714a93a1d95593ed",
     "apps/web/src/components/tickets/TicketFormMode.tsx": "d691eecbd056c9165fb948de9f96b07e34f47956ef9a9a38df044c3f94a8ab34",
     "apps/web/src/pages/ContractsPage.test.tsx": "42cf07cb292b03d49d7509b652779e7f2fb71c089f6b11647014a9fe18e5ba12",
-    "apps/web/src/pages/ContractsPage.tsx": "c3bbfe863a42100ec5a99da2cbb306cf81cd171bd41e4f93b611f4c3b141cbd8",
+    "apps/web/src/pages/ContractsPage.tsx": "a8f5b55f37998ced3beb394a37c88e6599a5ab1b80c82e0a20e75d724b81b1b2",
     "apps/web/src/pages/CreateTicketPage.tsx": "4710a51bf89be86478b8be32371d6cb84bd509febd903dc56eea22d52aee5e40",
     "apps/web/src/pages/DashboardPage.test.tsx": "f9920d3a447483e53268a555324b1c3168deb8aba9ebc88dc663cb41a9410dc7",
     "apps/web/src/pages/DashboardPage.tsx": "5bfb19757093ce65a047f4d64afef472adf541a0efe4d70fa80212ec65ff0d59",
@@ -76,5 +76,5 @@
     "scripts/contracts_focus_check.mjs": "098f7118e1505ffe036da77d1e76d831a7d6f75ca5cef2e6e1051518bd7d21e5"
   },
   "log": ".delivery/evidence/DMTE-540/green.log",
-  "log_sha256": "cf360fa0aa786057ab9411710b10af513fc5627cd2044631c86a908b8113ef95"
+  "log_sha256": "b1efa4734c3c87e2241a49b7c57ce5612dbbd0d19cb9488a42c119ecebd7d811"
 }
