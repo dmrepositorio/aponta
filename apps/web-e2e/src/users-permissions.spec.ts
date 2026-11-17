@@ -98,7 +98,7 @@ test.describe('grupo de permissões concede MANAGE_USERS e a mudança reflete nu
 
       // 3. The target user logs in again. The grant is now live: the
       // "Usuários" item shows up, and the user can open the real Usuários
-      // page and operate on it (toggle their own "Usuário ativo").
+      // page and operate on it (edit own Ramal; no inativar without ACTIVATE_DEACTIVATE_USERS).
       await page.fill('[name="email"]', targetEmail);
       await page.fill('[name="password"]', 'Password123!');
       await page.click('button[type="submit"]');
@@ -109,24 +109,24 @@ test.describe('grupo de permissões concede MANAGE_USERS e a mudança reflete nu
       await page.getByRole('link', { name: 'Usuários', exact: true }).click();
       await expect(page).toHaveURL('/settings/users');
 
-      await page.getByPlaceholder('Buscar usuário por nome ou e-mail…').fill(targetName);
+      // A busca fica no painel de filtros (DMTE-550). Fecha o painel para a grade não ficar coberta.
+      await page.getByRole('button', { name: 'Filtros' }).click();
+      await page.getByLabel('Buscar usuário').fill(targetName);
+      await page.keyboard.press('Escape');
       await page.getByRole('button', { name: targetName }).click();
 
-      // A single physical click, not `.uncheck()`'s built-in poll-and-retry:
-      // the checkbox is React-controlled from query data (no optimistic
-      // update), so it only flips once the PATCH resolves and the query
-      // refetches — a retry loop would re-click (and re-toggle) it before
-      // that round trip lands.
-      const toggle = page.locator('#user-active-toggle');
-      await expect(toggle).toBeChecked();
-      const activeToggled = page.waitForResponse(
-        (r) => r.url().includes('/users/') && r.url().endsWith('/active') && r.request().method() === 'PATCH',
+      // MANAGE_USERS edita os dados do usuário: um Salvar só, resposta 200.
+      await page.getByLabel('Ramal').fill('4321');
+      const dataSaved = page.waitForResponse(
+        (r) => /\/users\/[^/]+$/.test(r.url()) && r.request().method() === 'PATCH',
         { timeout: 30_000 },
       );
-      await toggle.click();
-      expect((await activeToggled).status()).toBe(200);
-      await expect(toggle).not.toBeChecked();
-      await expect(page.getByText('Inativo', { exact: true })).toBeVisible();
+      await page.getByRole('button', { name: 'Salvar', exact: true }).click();
+      expect((await dataSaved).status()).toBe(200);
+
+      // O grupo do teste tem só MANAGE_USERS: sem ACTIVATE_DEACTIVATE_USERS, a ação de inativar fica desabilitada.
+      await page.getByRole('tab', { name: 'Segurança' }).click();
+      await expect(page.getByRole('button', { name: 'Inativar', exact: true })).toBeDisabled();
     } finally {
       await prisma.permissionGroupUser.deleteMany({ where: { permissionGroup: { name: groupName } } });
       await prisma.permissionGroup.deleteMany({ where: { name: groupName } });
