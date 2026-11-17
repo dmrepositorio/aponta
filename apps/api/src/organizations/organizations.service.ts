@@ -4,6 +4,7 @@ import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
 import { Prisma } from '@prisma/client';
 import { checkOrganizationDeletion, OrganizationDeletionCheck } from './organization-deletion';
+import { CurrentUserPayload } from '../tickets/decorators/current-user.decorator';
 import { CreateOrganizationAddressDto } from './dto/create-organization-address.dto';
 import { CreateOrganizationContactDto } from './dto/create-organization-contact.dto';
 
@@ -105,12 +106,12 @@ export class OrganizationsService {
   }
 
   /** DMTE-560: para cada cliente, o que impede a exclusão e o que sairia junto. */
-  async deletionCheck(ids: string[], canDeleteTickets: boolean): Promise<OrganizationDeletionCheck[]> {
+  async deletionCheck(ids: string[], canDeleteTickets: boolean, _user: Pick<CurrentUserPayload, 'id' | 'role'>): Promise<OrganizationDeletionCheck[]> {
     return Promise.all([...new Set(ids)].map((id) => checkOrganizationDeletion(this.prisma, id, canDeleteTickets)));
   }
 
   /** DMTE-560: exclusão definitiva (substitui o "só inativa" da DMTE-481); a checagem é refeita sob trava de linha. */
-  async remove(id: string, canDeleteTickets: boolean, actorId: string) {
+  async remove(id: string, canDeleteTickets: boolean, actor: Pick<CurrentUserPayload, 'id' | 'role'>) {
     try {
       await this.prisma.$transaction(
         async (db) => {
@@ -133,7 +134,7 @@ export class OrganizationsService {
       }
       throw error;
     }
-    this.logger.log(`Cliente ${id} excluído por ${actorId}`);
+    this.logger.log(`Cliente ${id} excluído por ${actor.id}`);
     return { id };
   }
 

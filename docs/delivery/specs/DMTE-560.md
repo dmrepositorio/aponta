@@ -85,6 +85,8 @@ Os testes da DMTE-481 que afirmam "a exclusão só inativa" são substituídos, 
 
 ## Further Notes
 
+- Rodada 2 (QA independente rejeitou o SHA `9d283fe`): apontamento anulado não é apagado junto com o ticket (guarda o estorno de apontamento faturado); decisão pendente do responsável se a exclusão de ticket deve passar a apagá-lo também. Decisão do implementador: bloquear e dizer a verdade, reversível por nova entrega.
+
 - Decisão que muda um comportamento já entregue: DMTE-481 (#199, #201) definiu "excluir só inativa"; esta SPEC a substitui por pedido do responsável.
 - Vínculo que o pedido não citava e que a análise do schema encontrou: sub-tickets (bloqueiam a exclusão do ticket), histórico de vínculo com mesa, contrato inativo, usuários, cofre, agenda e apontamento.
 - Não há ADR: a troca da regra está registrada aqui e a decisão é reversível por nova entrega.
@@ -118,6 +120,12 @@ Ticket T3, pop-up na tela Clientes:
 - AC-20: Cancelar e Esc fecham sem excluir; Confirmar fica desabilitado durante a exclusão; falha da consulta mostra a mensagem e não oferece Confirmar.
 - AC-21: o pop-up não exclui ticket: para tickets que bloqueiam, orienta a excluir em Tickets e tentar de novo.
 
+Correções da revisão independente (rodada 2):
+- AC-22: apontamento anulado (estornado, que fica no banco para auditoria) não conta como removível: o ticket continua sem poder ser excluído, com o motivo `HAS_VOIDED_WORKLOGS` (409 na exclusão do ticket) e "tem apontamento anulado (fica registrado para auditoria)" no `deletion-check`, que o marca sem saída; apontamento ativo continua sendo o motivo `HAS_WORKLOGS`, e o apontamento anulado não entra na contagem dele.
+- AC-23: no `deletion-check`, o bloqueio TICKETS só é resolvível por quem remove os apontamentos e pré-apontamentos ativos do ticket: um ADMIN ou o autor de todos eles; para os demais o motivo é "tem apontamento de outro usuário (só o autor ou um administrador remove)" e não há saída.
+- AC-24: na exclusão do ticket, uma gravação concorrente que quebre uma chave estrangeira (P2003) responde 409 ("apontamento ou sub-ticket"), não 500, sem apagar nada nem os arquivos dos anexos.
+- AC-25: o `deletion-check` não devolve título de ticket nem nome de credencial ou pasta do cofre: o ticket aparece pelo protocolo e o cofre pelo tipo ("Credencial", "Pasta").
+
 ## Matriz AC → verificação
 
 | AC | Seam | Verificação |
@@ -126,6 +134,7 @@ Ticket T3, pop-up na tela Clientes:
 | AC-06 | API | `permission-catalog.users.spec.ts`, `auth.controller.spec.ts` |
 | AC-07 | Web | `apps/web/src/pages/TicketDetailPage.test.tsx` |
 | AC-08 a AC-14 | API, Prisma simulado | `apps/api/src/organizations/organizations.service.spec.ts`, `organizations.controller.spec.ts` |
+| AC-22 a AC-25 | API, Prisma simulado | `tickets.service.spec.ts` (AC-22, AC-24) e `organizations.service.spec.ts` (AC-22, AC-23, AC-25) |
 | AC-15 | E2E, banco real | `apps/web-e2e/src/organization-delete.spec.ts` via `scripts/e2e_isolated.sh` |
 | AC-16 a AC-21 | Web | `apps/web/src/pages/OrganizationsPage.test.tsx` (substitui os casos da DMTE-481) |
 

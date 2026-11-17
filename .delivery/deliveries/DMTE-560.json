@@ -175,13 +175,43 @@
       "tests": [
         "apps/web/src/pages/OrganizationsPage.test.tsx: OrganizationsPage > exclusão de cliente (DMTE-560 T3) > AC-18 e AC-21: cliente bloqueado lista cada bloqueio com quantidade, exemplos, \"e mais N\" e a saída; Confirmar não exclui; o diálogo não exclui ticket"
       ]
+    },
+    {
+      "id": "AC-22",
+      "description": "apontamento anulado (estornado, que fica no banco para auditoria) não conta como removível: o ticket continua sem poder ser excluído, com o motivo `HAS_VOIDED_WORKLOGS` (409 na exclusão do ticket) e \"tem apontamento anulado (fica registrado para auditoria)\" no `deletion-check`, que o marca sem saída; apontamento ativo continua sendo o motivo `HAS_WORKLOGS`, e o apontamento anulado não entra na contagem dele.",
+      "tests": [
+        "apps/api/src/tickets/tickets.service.spec.ts: TicketsService > remove (DMTE-560 T1) > AC-22: apontamento anulado (estornado, fica no banco para auditoria) não se remove: recusa com 409 e diz que não há saída",
+        "apps/api/src/organizations/organizations.service.spec.ts: OrganizationsService > deletionCheck (DMTE-560 T2) > AC-22: apontamento anulado do ticket é motivo sem saída: o ticket e o cliente ficam sem solução, e o texto diz que o registro fica para auditoria"
+      ]
+    },
+    {
+      "id": "AC-23",
+      "description": "no `deletion-check`, o bloqueio TICKETS só é resolvível por quem remove os apontamentos e pré-apontamentos ativos do ticket: um ADMIN ou o autor de todos eles; para os demais o motivo é \"tem apontamento de outro usuário (só o autor ou um administrador remove)\" e não há saída.",
+      "tests": [
+        "apps/api/src/organizations/organizations.service.spec.ts: OrganizationsService > deletionCheck (DMTE-560 T2) > AC-23: apontamento ativo de outro usuário só se remove por ADMIN ou pelo autor: para quem não é, não há saída e o motivo diz isso",
+        "apps/api/src/organizations/organizations.service.spec.ts: OrganizationsService > deletionCheck (DMTE-560 T2) > AC-23: o autor de todos os apontamentos e pré-apontamentos resolve sozinho"
+      ]
+    },
+    {
+      "id": "AC-24",
+      "description": "na exclusão do ticket, uma gravação concorrente que quebre uma chave estrangeira (P2003) responde 409 (\"apontamento ou sub-ticket\"), não 500, sem apagar nada nem os arquivos dos anexos.",
+      "tests": [
+        "apps/api/src/tickets/tickets.service.spec.ts: TicketsService > remove (DMTE-560 T1) > AC-24: gravação concorrente que quebra uma chave estrangeira na exclusão vira 409, não 500, e nada é apagado"
+      ]
+    },
+    {
+      "id": "AC-25",
+      "description": "o `deletion-check` não devolve título de ticket nem nome de credencial ou pasta do cofre: o ticket aparece pelo protocolo e o cofre pelo tipo (\"Credencial\", \"Pasta\").",
+      "tests": [
+        "apps/api/src/organizations/organizations.service.spec.ts: OrganizationsService > deletionCheck (DMTE-560 T2) > AC-25: o cofre e os tickets não vazam nomes: credencial e pasta aparecem só pelo tipo e o ticket só pelo protocolo"
+      ]
     }
   ],
   "spec": "docs/delivery/specs/DMTE-560.md",
   "tdd": {
     "mode": "required",
-    "red": ".delivery/evidence/DMTE-560/red.json",
-    "green": ".delivery/evidence/DMTE-560/green.json"
+    "red": ".delivery/evidence/DMTE-560/red-r2.json",
+    "green": ".delivery/evidence/DMTE-560/green-r2.json"
   },
   "design_system": {
     "applicable": true,

@@ -15,7 +15,7 @@ test.describe('excluir cliente (real API/Postgres)', () => {
     const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
     const suffix = randomUUID();
     const ids = {
-      admin: randomUUID(), agent: randomUUID(), requester: randomUUID(),
+      admin: randomUUID(), agent: randomUUID(), requester: randomUUID(), agentGroup: randomUUID(), techGroup: randomUUID(), article: randomUUID(),
       free: randomUUID(), busy: randomUUID(), desk: randomUUID(), ticket: randomUUID(), contract: randomUUID(),
     };
     const token = () => {
@@ -39,10 +39,14 @@ test.describe('excluir cliente (real API/Postgres)', () => {
       await prisma.organizationContact.create({ data: { organizationId: ids.free, name: 'Contato E2E' } });
       await prisma.serviceDesk.create({ data: { id: ids.desk, name: `Mesa Excluir E2E ${suffix}`, agents: { connect: { id: ids.agent } } } });
       await prisma.organizationDeskEvent.create({ data: { organizationId: ids.free, serviceDeskId: ids.desk, linked: true } });
+      // As demais cascatas: grupo de atendentes, vínculo com grupo técnico e compartilhamento de artigo.
+      await prisma.agentGroup.create({ data: { id: ids.agentGroup, organizationId: ids.free, name: `Grupo E2E ${suffix}` } });
+      await prisma.technicalGroup.create({ data: { id: ids.techGroup, name: `Grupo técnico E2E ${suffix}`, organizationLinks: { create: { organizationId: ids.free } } } });
+      await prisma.article.create({ data: { id: ids.article, title: `Artigo E2E ${suffix}`, content: 'x', authorId: ids.admin, visibility: 'PRIVATE', allowedOrganizations: { connect: [{ id: ids.free }] } } });
 
       const check = await request.post('/api/organizations/deletion-check', { headers, data: { ids: [ids.free] } });
       expect(check.status(), await check.text()).toBe(201);
-      expect(await check.json()).toMatchObject([{ id: ids.free, canDelete: true, blockers: [], cascade: { addresses: 1, contacts: 1, deskEvents: 1 } }]);
+      expect(await check.json()).toMatchObject([{ id: ids.free, canDelete: true, blockers: [], cascade: { addresses: 1, contacts: 1, agentGroups: 1, technicalGroups: 1, sharedArticles: 1, deskEvents: 1 } }]);
 
       const removed = await request.delete(`/api/organizations/${ids.free}`, { headers });
       expect(removed.status(), await removed.text()).toBe(200);
@@ -51,6 +55,11 @@ test.describe('excluir cliente (real API/Postgres)', () => {
       expect(await prisma.organizationAddress.count({ where: { organizationId: ids.free } })).toBe(0);
       expect(await prisma.organizationContact.count({ where: { organizationId: ids.free } })).toBe(0);
       expect(await prisma.organizationDeskEvent.count({ where: { organizationId: ids.free } })).toBe(0);
+      expect(await prisma.agentGroup.count({ where: { id: ids.agentGroup } })).toBe(0);
+      expect(await prisma.technicalGroupOrganization.count({ where: { organizationId: ids.free } })).toBe(0);
+      expect(await prisma.technicalGroup.count({ where: { id: ids.techGroup } })).toBe(1); // o grupo técnico em si fica; só o vínculo sai
+      expect(await prisma.article.count({ where: { id: ids.article, allowedOrganizations: { some: { id: ids.free } } } })).toBe(0);
+      expect(await prisma.article.count({ where: { id: ids.article } })).toBe(1); // o artigo fica; só o compartilhamento sai
       const list = await request.get('/api/organizations', { headers });
       expect((await list.json()).map((o: { id: string }) => o.id)).not.toContain(ids.free);
 
@@ -75,6 +84,9 @@ test.describe('excluir cliente (real API/Postgres)', () => {
       expect((await refused.json()).blockers.map((b: { code: string }) => b.code).sort()).toEqual(['APPOINTMENTS', 'CONTRACTS', 'SERVICE_DESKS', 'TICKETS', 'USERS', 'VAULT']);
       expect(await prisma.organization.findUnique({ where: { id: ids.busy } })).not.toBeNull();
     } finally {
+      await prisma.article.deleteMany({ where: { id: ids.article } });
+      await prisma.technicalGroup.deleteMany({ where: { id: ids.techGroup } });
+      await prisma.agentGroup.deleteMany({ where: { id: ids.agentGroup } });
       await prisma.appointment.deleteMany({ where: { userId: ids.agent } });
       await prisma.credential.deleteMany({ where: { organizationId: ids.busy } });
       await prisma.ticket.deleteMany({ where: { id: ids.ticket } });

@@ -2145,7 +2145,9 @@ describe('TicketsService', () => {
       requester: { organizationId: null },
       serviceDesk: { agents: [], agentGroups: [], allowCrossDeskInteraction: false },
       attachments: [{ filename: 'a.pdf' }],
-      _count: { worklogs: 0, preAppointments: 0, subTickets: 0 },
+      worklogs: [],
+      preAppointments: [],
+      _count: { subTickets: 0 },
       ...over,
     });
     const given = (over: Record<string, unknown> = {}) =>
@@ -2183,7 +2185,7 @@ describe('TicketsService', () => {
     });
 
     it('AC-02: recusa com 409 enquanto houver apontamento, com a contagem e até 5 itens, sem apagar nada', async () => {
-      given({ _count: { worklogs: 7, preAppointments: 0, subTickets: 0 } });
+      given({ worklogs: Array.from({ length: 7 }, () => ({ authorId: 'a1', voidedAt: null })) });
       db().worklog.findMany.mockResolvedValue([{ id: 'w1', startTime: new Date('2026-11-10T12:00:00Z') }]);
 
       const error = await service.remove('tk-1', admin).catch((e) => e);
@@ -2193,13 +2195,13 @@ describe('TicketsService', () => {
         message: expect.stringMatching(/apontamento/i),
         reasons: [{ code: 'HAS_WORKLOGS', count: 7, items: [{ id: 'w1', label: 'Apontamento de 2026-11-10' }] }],
       });
-      expect(db().worklog.findMany).toHaveBeenCalledWith(expect.objectContaining({ take: 5 }));
+      expect(db().worklog.findMany).toHaveBeenCalledWith(expect.objectContaining({ take: 5, where: { ticketId: 'tk-1', voidedAt: null } }));
       expect(mockPrismaService.$transaction).not.toHaveBeenCalled();
       expect(tx.ticket.delete).not.toHaveBeenCalled();
     });
 
     it('AC-02: pré-apontamento também impede a exclusão', async () => {
-      given({ _count: { worklogs: 0, preAppointments: 1, subTickets: 0 } });
+      given({ preAppointments: [{ authorId: 'a1' }] });
       db().preAppointment.findMany.mockResolvedValue([{ id: 'p1', beginning: new Date('2026-11-11T09:00:00Z') }]);
 
       const error = await service.remove('tk-1', admin).catch((e) => e);
@@ -2223,7 +2225,7 @@ describe('TicketsService', () => {
     });
 
     it('AC-04: recusa com 409 o ticket que tem sub-tickets', async () => {
-      given({ _count: { worklogs: 0, preAppointments: 0, subTickets: 2 } });
+      given({ _count: { subTickets: 2 } });
 
       const error = await service.remove('tk-1', admin).catch((e) => e);
 
@@ -2233,6 +2235,31 @@ describe('TicketsService', () => {
         reasons: [{ code: 'HAS_SUB_TICKETS', count: 2 }],
       });
       expect(tx.ticket.delete).not.toHaveBeenCalled();
+    });
+
+    it('AC-22: apontamento anulado (estornado, fica no banco para auditoria) não se remove: recusa com 409 e diz que não há saída', async () => {
+      given({ worklogs: [{ authorId: 'a1', voidedAt: new Date('2026-11-12T10:00:00Z') }] });
+
+      const error = await service.remove('tk-1', admin).catch((e) => e);
+
+      expect(error).toBeInstanceOf(ConflictException);
+      expect(error.getResponse()).toMatchObject({
+        message: expect.stringMatching(/anulado.*auditoria/i),
+        reasons: [{ code: 'HAS_VOIDED_WORKLOGS', count: 1 }],
+      });
+      expect(error.getResponse().reasons.map((r: { code: string }) => r.code)).not.toContain('HAS_WORKLOGS');
+      expect(tx.ticket.delete).not.toHaveBeenCalled();
+    });
+
+    it('AC-24: gravação concorrente que quebra uma chave estrangeira na exclusão vira 409, não 500, e nada é apagado', async () => {
+      given();
+      tx.ticket.delete.mockRejectedValue(prismaKnownError('P2003'));
+
+      const error = await service.remove('tk-1', admin).catch((e) => e);
+
+      expect(error).toBeInstanceOf(ConflictException);
+      expect(error.message).toMatch(/apontamento ou sub-ticket/i);
+      expect(unlink).not.toHaveBeenCalled();
     });
 
     it('AC-05: ticket que o usuário não enxerga pela regra do GET responde 404, sem apagar', async () => {

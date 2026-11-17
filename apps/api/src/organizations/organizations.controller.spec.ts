@@ -141,10 +141,10 @@ describe('OrganizationsController', () => {
       mockOrganizationsService.remove.mockResolvedValue({ id: 'org-1' });
       mockPermissions.canDeleteTickets.mockResolvedValue(true);
 
-      const result = await controller.remove('org-1', { id: 'user-1' } as never);
+      const result = await controller.remove('org-1', { id: 'user-1', role: 'ADMIN' } as never);
 
       expect(mockPermissions.canDeleteTickets).toHaveBeenCalledWith('user-1');
-      expect(mockOrganizationsService.remove).toHaveBeenCalledWith('org-1', true, 'user-1');
+      expect(mockOrganizationsService.remove).toHaveBeenCalledWith('org-1', true, { id: 'user-1', role: 'ADMIN' });
       expect(result).toEqual({ id: 'org-1' });
     });
   });
@@ -154,10 +154,10 @@ describe('OrganizationsController', () => {
       mockOrganizationsService.deletionCheck.mockResolvedValue([{ id: 'org-1', canDelete: true }]);
       mockPermissions.canDeleteTickets.mockResolvedValue(false);
 
-      const result = await controller.deletionCheck({ ids: ['org-1', 'org-2'] }, { id: 'user-1' } as never);
+      const result = await controller.deletionCheck({ ids: ['org-1', 'org-2'] }, { id: 'user-1', role: 'AGENT' } as never);
 
       expect(mockPermissions.canDeleteTickets).toHaveBeenCalledWith('user-1');
-      expect(mockOrganizationsService.deletionCheck).toHaveBeenCalledWith(['org-1', 'org-2'], false);
+      expect(mockOrganizationsService.deletionCheck).toHaveBeenCalledWith(['org-1', 'org-2'], false, { id: 'user-1', role: 'AGENT' });
       expect(result).toEqual([{ id: 'org-1', canDelete: true }]);
     });
   });
