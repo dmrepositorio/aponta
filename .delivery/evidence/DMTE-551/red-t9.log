@@ -1,0 +1,189 @@
+
+> nx run api:test --runTestsByPath src/social-auth/social-auth.facebook.http.spec.ts
+
+> jest --passWithNoTests=true --runTestsByPath src/social-auth/social-auth.facebook.http.spec.ts
+
+
+
+
+ NX   Running target test for project api failed
+
+Failed tasks:
+
+- api:test
+
+Hint: run the command with --verbose for more details.
+
+[0m[7m[1m[31m FAIL [39m[22m[27m[0m [0m[7m[37m api [39m[27m[0m [2msrc/social-auth/[22m[1msocial-auth.facebook.http.spec.ts[22m ([0m[1m[41m6.49 s[49m[22m[0m)
+[1m[31m  [1m● [22m[1mLogin com Facebook (DMTE-551) › AC-22: o Facebook é oferecido só com a flag ligada e as variáveis configuradas, independente dos outros provedores[39m[22m
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 3[39m
+    [31m+ Received  + 1[39m
+
+    [2m  Object {[22m
+    [32m-   "providers": Array [[39m
+    [32m-     "facebook",[39m
+    [32m-   ],[39m
+    [31m+   "providers": Array [],[39m
+    [2m  }[22m
+
+[2m    [0m [90m 33 |[39m[22m
+[2m     [90m 34 |[39m   it([32m'AC-22: o Facebook é oferecido só com a flag ligada e as variáveis configuradas, independente dos outros provedores'[39m[33m,[39m [36masync[39m () [33m=>[39m {[22m
+[2m    [31m[1m>[22m[2m[39m[90m 35 |[39m     expect(([36mawait[39m [36mget[39m([32m'/auth/social/providers'[39m))[33m.[39mbody)[33m.[39mtoEqual({ providers[33m:[39m [[32m'facebook'[39m] })[33m;[39m[22m
+[2m     [90m    |[39m                                                        [31m[1m^[22m[2m[39m[22m
+[2m     [90m 36 |[39m[22m
+[2m     [90m 37 |[39m     h[33m.[39msetSocialFlag([32m'facebook'[39m[33m,[39m [36mfalse[39m)[33m;[39m[22m
+[2m     [90m 38 |[39m     expect(([36mawait[39m [36mget[39m([32m'/auth/social/providers'[39m))[33m.[39mbody)[33m.[39mtoEqual({ providers[33m:[39m [] })[33m;[39m[0m[22m
+
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/social-auth/social-auth.facebook.http.spec.ts[39m[0m[2m:35:56)[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mLogin com Facebook (DMTE-551) › AC-17: o início leva ao Facebook com escopo de e-mail, state e o redirect da API; sem PKCE (o Facebook não o documenta) nem nonce[39m[22m
+
+    TypeError: Invalid URL
+
+[2m    [0m [90m 20 |[39m   [36mconst[39m start [33m=[39m [36masync[39m () [33m=>[39m {[22m
+[2m     [90m 21 |[39m     [36mconst[39m res [33m=[39m [36mawait[39m [36mget[39m([32m'/auth/social/facebook/start'[39m)[33m;[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 22 |[39m     [36mconst[39m url [33m=[39m [36mnew[39m [33mURL[39m(res[33m.[39mheaders[33m.[39mlocation)[33m;[39m[22m
+[2m     [90m    |[39m                 [31m[1m^[22m[2m[39m[22m
+[2m     [90m 23 |[39m     h[33m.[39moauth[33m.[39mauthorize [33m=[39m { codeChallenge[33m:[39m [32m''[39m[33m,[39m nonce[33m:[39m [32m''[39m[33m,[39m redirectUri[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'redirect_uri'[39m) [33m?[39m[33m?[39m [32m''[39m }[33m;[39m[22m
+[2m     [90m 24 |[39m     [36mreturn[39m { res[33m,[39m url[33m,[39m state[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'state'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m cookie[33m:[39m [33mString[39m(res[33m.[39mheaders[[32m'set-cookie'[39m][33m?[39m[33m.[39m[[35m0[39m] [33m?[39m[33m?[39m [32m''[39m)[33m.[39msplit([32m';'[39m)[[35m0[39m] }[33m;[39m[22m
+[2m     [90m 25 |[39m   }[33m;[39m[0m[22m
+
+[2m      [2mat start ([22m[2m[0m[36msrc/social-auth/social-auth.facebook.http.spec.ts[39m[0m[2m:22:17)[22m[2m[22m
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/social-auth/social-auth.facebook.http.spec.ts[39m[0m[2m:48:26)[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mLogin com Facebook (DMTE-551) › AC-17: e-mail de conta existente e ativa entra: liga o id do Facebook e devolve o código de troca, sem JWT na URL[39m[22m
+
+    TypeError: Invalid URL
+
+[2m    [0m [90m 20 |[39m   [36mconst[39m start [33m=[39m [36masync[39m () [33m=>[39m {[22m
+[2m     [90m 21 |[39m     [36mconst[39m res [33m=[39m [36mawait[39m [36mget[39m([32m'/auth/social/facebook/start'[39m)[33m;[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 22 |[39m     [36mconst[39m url [33m=[39m [36mnew[39m [33mURL[39m(res[33m.[39mheaders[33m.[39mlocation)[33m;[39m[22m
+[2m     [90m    |[39m                 [31m[1m^[22m[2m[39m[22m
+[2m     [90m 23 |[39m     h[33m.[39moauth[33m.[39mauthorize [33m=[39m { codeChallenge[33m:[39m [32m''[39m[33m,[39m nonce[33m:[39m [32m''[39m[33m,[39m redirectUri[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'redirect_uri'[39m) [33m?[39m[33m?[39m [32m''[39m }[33m;[39m[22m
+[2m     [90m 24 |[39m     [36mreturn[39m { res[33m,[39m url[33m,[39m state[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'state'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m cookie[33m:[39m [33mString[39m(res[33m.[39mheaders[[32m'set-cookie'[39m][33m?[39m[33m.[39m[[35m0[39m] [33m?[39m[33m?[39m [32m''[39m)[33m.[39msplit([32m';'[39m)[[35m0[39m] }[33m;[39m[22m
+[2m     [90m 25 |[39m   }[33m;[39m[0m[22m
+
+[2m      [2mat start ([22m[2m[0m[36msrc/social-auth/social-auth.facebook.http.spec.ts[39m[0m[2m:22:17)[22m[2m[22m
+[2m      [2mat signIn ([22m[2m[0m[36msrc/social-auth/social-auth.facebook.http.spec.ts[39m[0m[2m:27:15)[22m[2m[22m
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/social-auth/social-auth.facebook.http.spec.ts[39m[0m[2m:62:17)[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mLogin com Facebook (DMTE-551) › AC-18: Facebook sem e-mail na resposta do Graph volta com "unverified", com mensagem clara, e nada é ligado[39m[22m
+
+    TypeError: Invalid URL
+
+[2m    [0m [90m 20 |[39m   [36mconst[39m start [33m=[39m [36masync[39m () [33m=>[39m {[22m
+[2m     [90m 21 |[39m     [36mconst[39m res [33m=[39m [36mawait[39m [36mget[39m([32m'/auth/social/facebook/start'[39m)[33m;[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 22 |[39m     [36mconst[39m url [33m=[39m [36mnew[39m [33mURL[39m(res[33m.[39mheaders[33m.[39mlocation)[33m;[39m[22m
+[2m     [90m    |[39m                 [31m[1m^[22m[2m[39m[22m
+[2m     [90m 23 |[39m     h[33m.[39moauth[33m.[39mauthorize [33m=[39m { codeChallenge[33m:[39m [32m''[39m[33m,[39m nonce[33m:[39m [32m''[39m[33m,[39m redirectUri[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'redirect_uri'[39m) [33m?[39m[33m?[39m [32m''[39m }[33m;[39m[22m
+[2m     [90m 24 |[39m     [36mreturn[39m { res[33m,[39m url[33m,[39m state[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'state'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m cookie[33m:[39m [33mString[39m(res[33m.[39mheaders[[32m'set-cookie'[39m][33m?[39m[33m.[39m[[35m0[39m] [33m?[39m[33m?[39m [32m''[39m)[33m.[39msplit([32m';'[39m)[[35m0[39m] }[33m;[39m[22m
+[2m     [90m 25 |[39m   }[33m;[39m[0m[22m
+
+[2m      [2mat start ([22m[2m[0m[36msrc/social-auth/social-auth.facebook.http.spec.ts[39m[0m[2m:22:17)[22m[2m[22m
+[2m      [2mat signIn ([22m[2m[0m[36msrc/social-auth/social-auth.facebook.http.spec.ts[39m[0m[2m:27:15)[22m[2m[22m
+[2m      [2mat [22m[2m[0m[36msrc/social-auth/social-auth.facebook.http.spec.ts[39m[0m[2m:78:20[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mLogin com Facebook (DMTE-551) › AC-18: Facebook e-mail vazio volta com "unverified", com mensagem clara, e nada é ligado[39m[22m
+
+    TypeError: Invalid URL
+
+[2m    [0m [90m 20 |[39m   [36mconst[39m start [33m=[39m [36masync[39m () [33m=>[39m {[22m
+[2m     [90m 21 |[39m     [36mconst[39m res [33m=[39m [36mawait[39m [36mget[39m([32m'/auth/social/facebook/start'[39m)[33m;[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 22 |[39m     [36mconst[39m url [33m=[39m [36mnew[39m [33mURL[39m(res[33m.[39mheaders[33m.[39mlocation)[33m;[39m[22m
+[2m     [90m    |[39m                 [31m[1m^[22m[2m[39m[22m
+[2m     [90m 23 |[39m     h[33m.[39moauth[33m.[39mauthorize [33m=[39m { codeChallenge[33m:[39m [32m''[39m[33m,[39m nonce[33m:[39m [32m''[39m[33m,[39m redirectUri[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'redirect_uri'[39m) [33m?[39m[33m?[39m [32m''[39m }[33m;[39m[22m
+[2m     [90m 24 |[39m     [36mreturn[39m { res[33m,[39m url[33m,[39m state[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'state'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m cookie[33m:[39m [33mString[39m(res[33m.[39mheaders[[32m'set-cookie'[39m][33m?[39m[33m.[39m[[35m0[39m] [33m?[39m[33m?[39m [32m''[39m)[33m.[39msplit([32m';'[39m)[[35m0[39m] }[33m;[39m[22m
+[2m     [90m 25 |[39m   }[33m;[39m[0m[22m
+
+[2m      [2mat start ([22m[2m[0m[36msrc/social-auth/social-auth.facebook.http.spec.ts[39m[0m[2m:22:17)[22m[2m[22m
+[2m      [2mat signIn ([22m[2m[0m[36msrc/social-auth/social-auth.facebook.http.spec.ts[39m[0m[2m:27:15)[22m[2m[22m
+[2m      [2mat [22m[2m[0m[36msrc/social-auth/social-auth.facebook.http.spec.ts[39m[0m[2m:78:20[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mLogin com Facebook (DMTE-551) › AC-18: Facebook e-mail que não é texto volta com "unverified", com mensagem clara, e nada é ligado[39m[22m
+
+    TypeError: Invalid URL
+
+[2m    [0m [90m 20 |[39m   [36mconst[39m start [33m=[39m [36masync[39m () [33m=>[39m {[22m
+[2m     [90m 21 |[39m     [36mconst[39m res [33m=[39m [36mawait[39m [36mget[39m([32m'/auth/social/facebook/start'[39m)[33m;[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 22 |[39m     [36mconst[39m url [33m=[39m [36mnew[39m [33mURL[39m(res[33m.[39mheaders[33m.[39mlocation)[33m;[39m[22m
+[2m     [90m    |[39m                 [31m[1m^[22m[2m[39m[22m
+[2m     [90m 23 |[39m     h[33m.[39moauth[33m.[39mauthorize [33m=[39m { codeChallenge[33m:[39m [32m''[39m[33m,[39m nonce[33m:[39m [32m''[39m[33m,[39m redirectUri[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'redirect_uri'[39m) [33m?[39m[33m?[39m [32m''[39m }[33m;[39m[22m
+[2m     [90m 24 |[39m     [36mreturn[39m { res[33m,[39m url[33m,[39m state[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'state'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m cookie[33m:[39m [33mString[39m(res[33m.[39mheaders[[32m'set-cookie'[39m][33m?[39m[33m.[39m[[35m0[39m] [33m?[39m[33m?[39m [32m''[39m)[33m.[39msplit([32m';'[39m)[[35m0[39m] }[33m;[39m[22m
+[2m     [90m 25 |[39m   }[33m;[39m[0m[22m
+
+[2m      [2mat start ([22m[2m[0m[36msrc/social-auth/social-auth.facebook.http.spec.ts[39m[0m[2m:22:17)[22m[2m[22m
+[2m      [2mat signIn ([22m[2m[0m[36msrc/social-auth/social-auth.facebook.http.spec.ts[39m[0m[2m:27:15)[22m[2m[22m
+[2m      [2mat [22m[2m[0m[36msrc/social-auth/social-auth.facebook.http.spec.ts[39m[0m[2m:78:20[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mLogin com Facebook (DMTE-551) › AC-18: nunca cria usuário, e inativo ou convite pendente não entram[39m[22m
+
+    TypeError: Invalid URL
+
+[2m    [0m [90m 20 |[39m   [36mconst[39m start [33m=[39m [36masync[39m () [33m=>[39m {[22m
+[2m     [90m 21 |[39m     [36mconst[39m res [33m=[39m [36mawait[39m [36mget[39m([32m'/auth/social/facebook/start'[39m)[33m;[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 22 |[39m     [36mconst[39m url [33m=[39m [36mnew[39m [33mURL[39m(res[33m.[39mheaders[33m.[39mlocation)[33m;[39m[22m
+[2m     [90m    |[39m                 [31m[1m^[22m[2m[39m[22m
+[2m     [90m 23 |[39m     h[33m.[39moauth[33m.[39mauthorize [33m=[39m { codeChallenge[33m:[39m [32m''[39m[33m,[39m nonce[33m:[39m [32m''[39m[33m,[39m redirectUri[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'redirect_uri'[39m) [33m?[39m[33m?[39m [32m''[39m }[33m;[39m[22m
+[2m     [90m 24 |[39m     [36mreturn[39m { res[33m,[39m url[33m,[39m state[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'state'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m cookie[33m:[39m [33mString[39m(res[33m.[39mheaders[[32m'set-cookie'[39m][33m?[39m[33m.[39m[[35m0[39m] [33m?[39m[33m?[39m [32m''[39m)[33m.[39msplit([32m';'[39m)[[35m0[39m] }[33m;[39m[22m
+[2m     [90m 25 |[39m   }[33m;[39m[0m[22m
+
+[2m      [2mat start ([22m[2m[0m[36msrc/social-auth/social-auth.facebook.http.spec.ts[39m[0m[2m:22:17)[22m[2m[22m
+[2m      [2mat signIn ([22m[2m[0m[36msrc/social-auth/social-auth.facebook.http.spec.ts[39m[0m[2m:27:15)[22m[2m[22m
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/social-auth/social-auth.facebook.http.spec.ts[39m[0m[2m:85:20)[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mLogin com Facebook (DMTE-551) › AC-19: código recusado, falha do Graph e perfil sem id voltam com "failed"[39m[22m
+
+    TypeError: Invalid URL
+
+[2m    [0m [90m 20 |[39m   [36mconst[39m start [33m=[39m [36masync[39m () [33m=>[39m {[22m
+[2m     [90m 21 |[39m     [36mconst[39m res [33m=[39m [36mawait[39m [36mget[39m([32m'/auth/social/facebook/start'[39m)[33m;[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 22 |[39m     [36mconst[39m url [33m=[39m [36mnew[39m [33mURL[39m(res[33m.[39mheaders[33m.[39mlocation)[33m;[39m[22m
+[2m     [90m    |[39m                 [31m[1m^[22m[2m[39m[22m
+[2m     [90m 23 |[39m     h[33m.[39moauth[33m.[39mauthorize [33m=[39m { codeChallenge[33m:[39m [32m''[39m[33m,[39m nonce[33m:[39m [32m''[39m[33m,[39m redirectUri[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'redirect_uri'[39m) [33m?[39m[33m?[39m [32m''[39m }[33m;[39m[22m
+[2m     [90m 24 |[39m     [36mreturn[39m { res[33m,[39m url[33m,[39m state[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'state'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m cookie[33m:[39m [33mString[39m(res[33m.[39mheaders[[32m'set-cookie'[39m][33m?[39m[33m.[39m[[35m0[39m] [33m?[39m[33m?[39m [32m''[39m)[33m.[39msplit([32m';'[39m)[[35m0[39m] }[33m;[39m[22m
+[2m     [90m 25 |[39m   }[33m;[39m[0m[22m
+
+[2m      [2mat start ([22m[2m[0m[36msrc/social-auth/social-auth.facebook.http.spec.ts[39m[0m[2m:22:17)[22m[2m[22m
+[2m      [2mat signIn ([22m[2m[0m[36msrc/social-auth/social-auth.facebook.http.spec.ts[39m[0m[2m:27:15)[22m[2m[22m
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/social-auth/social-auth.facebook.http.spec.ts[39m[0m[2m:97:20)[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mLogin com Facebook (DMTE-551) › AC-20: depois de ligada, a entrada é pelo id do Facebook, mesmo com outro e-mail[39m[22m
+
+    TypeError: Invalid URL
+
+[2m    [0m [90m 20 |[39m   [36mconst[39m start [33m=[39m [36masync[39m () [33m=>[39m {[22m
+[2m     [90m 21 |[39m     [36mconst[39m res [33m=[39m [36mawait[39m [36mget[39m([32m'/auth/social/facebook/start'[39m)[33m;[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 22 |[39m     [36mconst[39m url [33m=[39m [36mnew[39m [33mURL[39m(res[33m.[39mheaders[33m.[39mlocation)[33m;[39m[22m
+[2m     [90m    |[39m                 [31m[1m^[22m[2m[39m[22m
+[2m     [90m 23 |[39m     h[33m.[39moauth[33m.[39mauthorize [33m=[39m { codeChallenge[33m:[39m [32m''[39m[33m,[39m nonce[33m:[39m [32m''[39m[33m,[39m redirectUri[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'redirect_uri'[39m) [33m?[39m[33m?[39m [32m''[39m }[33m;[39m[22m
+[2m     [90m 24 |[39m     [36mreturn[39m { res[33m,[39m url[33m,[39m state[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'state'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m cookie[33m:[39m [33mString[39m(res[33m.[39mheaders[[32m'set-cookie'[39m][33m?[39m[33m.[39m[[35m0[39m] [33m?[39m[33m?[39m [32m''[39m)[33m.[39msplit([32m';'[39m)[[35m0[39m] }[33m;[39m[22m
+[2m     [90m 25 |[39m   }[33m;[39m[0m[22m
+
+[2m      [2mat start ([22m[2m[0m[36msrc/social-auth/social-auth.facebook.http.spec.ts[39m[0m[2m:22:17)[22m[2m[22m
+[2m      [2mat signIn ([22m[2m[0m[36msrc/social-auth/social-auth.facebook.http.spec.ts[39m[0m[2m:27:15)[22m[2m[22m
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/social-auth/social-auth.facebook.http.spec.ts[39m[0m[2m:110:5)[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mLogin com Facebook (DMTE-551) › AC-23: o segredo do Facebook não aparece em resposta nem em log[39m[22m
+
+    TypeError: Invalid URL
+
+[2m    [0m [90m 20 |[39m   [36mconst[39m start [33m=[39m [36masync[39m () [33m=>[39m {[22m
+[2m     [90m 21 |[39m     [36mconst[39m res [33m=[39m [36mawait[39m [36mget[39m([32m'/auth/social/facebook/start'[39m)[33m;[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 22 |[39m     [36mconst[39m url [33m=[39m [36mnew[39m [33mURL[39m(res[33m.[39mheaders[33m.[39mlocation)[33m;[39m[22m
+[2m     [90m    |[39m                 [31m[1m^[22m[2m[39m[22m
+[2m     [90m 23 |[39m     h[33m.[39moauth[33m.[39mauthorize [33m=[39m { codeChallenge[33m:[39m [32m''[39m[33m,[39m nonce[33m:[39m [32m''[39m[33m,[39m redirectUri[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'redirect_uri'[39m) [33m?[39m[33m?[39m [32m''[39m }[33m;[39m[22m
+[2m     [90m 24 |[39m     [36mreturn[39m { res[33m,[39m url[33m,[39m state[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'state'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m cookie[33m:[39m [33mString[39m(res[33m.[39mheaders[[32m'set-cookie'[39m][33m?[39m[33m.[39m[[35m0[39m] [33m?[39m[33m?[39m [32m''[39m)[33m.[39msplit([32m';'[39m)[[35m0[39m] }[33m;[39m[22m
+[2m     [90m 25 |[39m   }[33m;[39m[0m[22m
+
+[2m      [2mat start ([22m[2m[0m[36msrc/social-auth/social-auth.facebook.http.spec.ts[39m[0m[2m:22:17)[22m[2m[22m
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/social-auth/social-auth.facebook.http.spec.ts[39m[0m[2m:121:15)[22m[2m[22m
+
+[1mTest Suites: [22m[1m[31m1 failed[39m[22m, 1 total
+[1mTests:       [22m[1m[31m10 failed[39m[22m, 10 total
+[1mSnapshots:   [22m0 total
+[1mTime:[22m        8.426 s
+[2mRan all test suites[22m[2m within paths[22m "src/social-auth/social-auth.facebook.http.spec.ts"[2m.[22m
+Warning: command "jest --passWithNoTests=true --runTestsByPath src/social-auth/social-auth.facebook.http.spec.ts" exited with non-zero status code

@@ -66,6 +66,13 @@ export const FEATURE_FLAGS: readonly FeatureFlag[] = [
     removeBy: '2027-01-31',
   },
   {
+    key: 'login-social-facebook',
+    description: 'Entrar com a conta Facebook (só em conta que já existe no Aponta); o botão também depende das variáveis OAUTH_FACEBOOK_* do ambiente',
+    owner: 'alfredo',
+    defaultValue: false,
+    removeBy: '2027-01-31',
+  },
+  {
     key: 'consulta-cnpj-alternativa',
     description: 'Consulta de CNPJ em ReceitaWS e minhareceita.org quando a BrasilAPI não acha o CNPJ ou falha',
     owner: 'alfredo',

@@ -24,6 +24,8 @@ export interface SocialProvider {
   scope: string;
   /** Provedor OpenID Connect: o pedido leva `nonce` e o perfil vem no `id_token`. */
   oidc: boolean;
+  /** O provedor aceita PKCE (S256); o Facebook não o documenta, então não recebe code_challenge nem code_verifier. */
+  pkce: boolean;
   /** Lê o perfil na resposta do endpoint de token; `null` se ela não for confiável. */
   profile(tokens: Record<string, unknown>, context: ProfileContext): Promise<SocialProfile | null> | SocialProfile | null;
 }
@@ -71,6 +73,24 @@ async function githubProfile(tokens: Record<string, unknown>, { http }: ProfileC
   return { subject: String(id), email: asString(primary?.email), emailVerified: primary?.verified === true };
 }
 
+const FACEBOOK_GRAPH = 'https://graph.facebook.com/v24.0';
+
+/**
+ * O Graph só devolve `email` quando o usuário tem um e-mail válido e confirmado; sem ele (ou sem id) o login falha.
+ * shortcut: o Facebook não traz um campo "verificado" como Google e GitHub, então a presença do e-mail vale como confirmação; revisar se a Meta mudar isso.
+ */
+async function facebookProfile(tokens: Record<string, unknown>, { http }: ProfileContext): Promise<SocialProfile | null> {
+  const accessToken = asString(tokens['access_token']);
+  if (!accessToken) return null;
+  const response = await http(`${FACEBOOK_GRAPH}/me?fields=id,email`, { headers: { authorization: `Bearer ${accessToken}` } });
+  if (!response.ok) return null;
+  const me = await response.json();
+  const id = me?.id;
+  if (typeof id !== 'number' && typeof id !== 'string') return null;
+  const email = asString(me?.email);
+  return { subject: String(id), email, emailVerified: !!email };
+}
+
 export const SOCIAL_PROVIDERS: readonly SocialProvider[] = [
   {
     id: 'google',
@@ -78,6 +98,7 @@ export const SOCIAL_PROVIDERS: readonly SocialProvider[] = [
     tokenUrl: 'https://oauth2.googleapis.com/token',
     scope: 'openid email',
     oidc: true,
+    pkce: true,
     profile: googleProfile,
   },
   {
@@ -86,6 +107,16 @@ export const SOCIAL_PROVIDERS: readonly SocialProvider[] = [
     tokenUrl: 'https://github.com/login/oauth/access_token',
     scope: 'read:user user:email',
     oidc: false,
+    pkce: true,
     profile: githubProfile,
+  },
+  {
+    id: 'facebook',
+    authorizeUrl: 'https://www.facebook.com/v24.0/dialog/oauth',
+    tokenUrl: `${FACEBOOK_GRAPH}/oauth/access_token`,
+    scope: 'email',
+    oidc: false,
+    pkce: false,
+    profile: facebookProfile,
   },
 ];

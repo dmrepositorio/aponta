@@ -8,7 +8,7 @@ const BASE = 'https://aponta.test';
 
 describe('Login com GitHub (DMTE-551)', () => {
   let h: Harness;
-  beforeEach(async () => { h = await buildHarness(); });
+  beforeEach(async () => { h = await buildHarness({ facebookConfigured: false }); });
   afterEach(async () => { await h.close(); jest.restoreAllMocks(); });
 
   const get = (url: string, cookie?: string) => {
@@ -48,7 +48,7 @@ describe('Login com GitHub (DMTE-551)', () => {
     expect((await get('/auth/social/github/start')).status).toBe(302);
 
     await h.close();
-    h = await buildHarness({ githubConfigured: false });
+    h = await buildHarness({ githubConfigured: false, facebookConfigured: false });
     expect((await get('/auth/social/providers')).body).toEqual({ providers: ['google'] });
     expect((await get('/auth/social/github/start')).status).toBe(404);
   });

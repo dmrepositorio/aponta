@@ -68,9 +68,11 @@ export class SocialAuthService {
       scope: provider.scope,
       redirect_uri: this.redirectUri(provider),
       state: encryptText(JSON.stringify(sealed), this.stateKey()),
-      code_challenge: createHash('sha256').update(verifier).digest('base64url'),
-      code_challenge_method: 'S256',
     });
+    if (provider.pkce) {
+      query.set('code_challenge', createHash('sha256').update(verifier).digest('base64url'));
+      query.set('code_challenge_method', 'S256');
+    }
     if (provider.oidc) query.set('nonce', nonce);
     return {
       location: `${provider.authorizeUrl}?${query.toString()}`,
@@ -116,8 +118,8 @@ export class SocialAuthService {
       redirect_uri: this.redirectUri(provider),
       client_id: clientId,
       client_secret: clientSecret,
-      code_verifier: sealed.v,
     });
+    if (provider.pkce) body.set('code_verifier', sealed.v);
     const response = await this.http(provider.tokenUrl, { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded', accept: 'application/json' }, body: body.toString() });
     if (!response.ok) throw new SocialFailure('failed');
     const profile = await provider.profile(await response.json(), { clientId, nonce: sealed.n, nowMs: Date.now(), http: this.http });
