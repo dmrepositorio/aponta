@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "delivery": "DMTE-559",
+  "repository": "dmrepositorio/aponta",
+  "github_issue": 333,
+  "multica_id": "01a1eaa0-38a3-7b1f-84c9-895f4b4e420a",
+  "cycle": "2026-11-09/2026-11-22",
+  "tier": 2,
+  "criteria": [
+    {
+      "id": "AC-01",
+      "description": "`CreateOrganizationDto` sem `cnpj` (ou `cnpj` em branco), com `documentType` CNPJ ou ausente, é recusado com a mensagem \"CNPJ é obrigatório e deve ter 14 dígitos.\".",
+      "tests": []
+    },
+    {
+      "id": "AC-02",
+      "description": "`CreateOrganizationDto` e `UpdateOrganizationDto` com `cnpj` pontuado (`19.131.243/0001-97`) entregam só os 14 dígitos; com menos ou mais de 14 dígitos são recusados com a mesma mensagem.",
+      "tests": []
+    },
+    {
+      "id": "AC-03",
+      "description": "`UpdateOrganizationDto` com `cnpj` em branco é recusado (não limpa o CNPJ); sem a chave `cnpj` é aceito.",
+      "tests": []
+    },
+    {
+      "id": "AC-04",
+      "description": "criar cliente PF (`documentType` CPF) sem `cnpj` é aceito.",
+      "tests": []
+    },
+    {
+      "id": "AC-05",
+      "description": "`OrganizationsService.create` com CNPJ já usado por outro cliente, gravado em dígitos ou pontuado, lança `ConflictException` \"Já existe um cliente com este CNPJ.\" e não chama `organization.create`.",
+      "tests": []
+    },
+    {
+      "id": "AC-06",
+      "description": "`OrganizationsService.update` com CNPJ de outro cliente lança o mesmo `ConflictException`; o cliente que já tem esse CNPJ pode salvá-lo de novo sem conflito.",
+      "tests": []
+    },
+    {
+      "id": "AC-07",
+      "description": "no cadastro manual, com tipo CNPJ e o campo vazio, a página mostra \"CNPJ é obrigatório\" no campo e não envia `POST /organizations`.",
+      "tests": []
+    },
+    {
+      "id": "AC-08",
+      "description": "quando `POST /organizations` responde 409, a página abre um pop-up (`role=\"dialog\"`) com o título \"CNPJ já cadastrado\" e a mensagem da API; fechá-lo mantém o formulário preenchido.",
+      "tests": []
+    },
+    {
+      "id": "AC-09",
+      "description": "quando o `PATCH /organizations/:id` da edição direta do CNPJ na grade responde 409, a página abre o mesmo pop-up.",
+      "tests": []
+    }
+  ],
+  "spec": "docs/delivery/specs/DMTE-559.md",
+  "tdd": {
+    "mode": "required",
+    "red": ".delivery/evidence/DMTE-559/red.json",
+    "green": ".delivery/evidence/DMTE-559/green.json"
+  },
+  "design_system": {
+    "applicable": true,
+    "reused": []
+  }
+}
