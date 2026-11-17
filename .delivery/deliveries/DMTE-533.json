@@ -1,0 +1,76 @@
+{
+  "version": 1,
+  "delivery": "DMTE-533",
+  "repository": "dmrepositorio/aponta",
+  "github_issue": 305,
+  "multica_id": "01a1e002-aabf-71e5-9ec1-f782d886b0cb",
+  "cycle": "2026-11-09/2026-11-22",
+  "tier": 2,
+  "criteria": [
+    {
+      "id": "AC-01",
+      "description": "com a aba Parâmetros alterada e salva com sucesso, aparece um aviso com `role=\"status\"` e o texto \"Alterações salvas.\"; o mesmo vale para Dados básicos, Status, Prioridades, Seções, Cliente e SLA, Membros, Estágios (criar, editar, excluir) e Expediente. O PATCH enviado é idêntico ao de hoje em Dados básicos, Status, flags, SLA, Membros, Estágios e Expediente.",
+      "tests": []
+    },
+    {
+      "id": "AC-02",
+      "description": "quando a gravação falha em qualquer dessas abas, aparece um aviso com `role=\"alert\"`, \"Não foi possível salvar.\" e a descrição \"Tente novamente.\"; a edição e as marcações do usuário continuam como estavam; o aviso de falha não some sozinho e o de sucesso some em 5 s; não há mais alerta inline duplicado nos editores de flags, SLA e expediente.",
+      "tests": []
+    },
+    {
+      "id": "AC-03",
+      "description": "Prioridades e Seções gravam só ao acionar \"Salvar\" (marcar um item não chama a API), com `priorities: [{ ticketPriority, enabled }]` e `ticketSections: [{ key, enabled }]` com todos os itens da aba; falha mostra o aviso de AC-02 e mantém as marcações.",
+      "tests": []
+    },
+    {
+      "id": "AC-04",
+      "description": "com alteração não salva na aba ativa, a linha \"Alterações não salvas nesta aba.\" aparece abaixo das abas; ao desfazer a alteração, ao salvar com sucesso ou ao descartar, ela some; sem alteração, nunca aparece.",
+      "tests": []
+    },
+    {
+      "id": "AC-05",
+      "description": "com alteração não salva, trocar de aba, voltar à lista, abrir outra mesa, \"Nova Mesa\" ou \"Duplicar\" abre `EzDialog` \"Descartar alterações?\"; \"Cancelar\" (e Escape) mantém a aba, a mesa e a edição; \"Confirmar\" descarta e executa a ação. Sem alteração, nenhuma dessas ações abre o diálogo.",
+      "tests": []
+    },
+    {
+      "id": "AC-06",
+      "description": "`beforeunload` é registrado só enquanto há alteração não salva e removido ao salvar, descartar ou sair da tela; o evento tem `preventDefault` chamado quando há pendência.",
+      "tests": []
+    },
+    {
+      "id": "AC-07",
+      "description": "na aba Parâmetros as 9 flags aparecem em 3 `fieldset` com `legend` \"Geral\", \"SLA\" e \"Revisão e avaliação\", com as mesmas chaves e rótulos e na ordem do tema; o payload do Salvar tem as mesmas 9 chaves.",
+      "tests": []
+    },
+    {
+      "id": "AC-08",
+      "description": "Dados básicos e Status são controlados (o campo reflete o que o usuário digita ou escolhe), Salvar envia o mesmo payload de hoje e o valor da consulta recarregada deixa de ser pendência; o botão \"Salvar dados básicos\" e o \"Salvar status\" mantêm os rótulos.",
+      "tests": []
+    },
+    {
+      "id": "AC-09",
+      "description": "`MesaFlagEditor` sem `groups` mantém a grade única e o payload de hoje; `MesaFlagEditor`, `ServiceDeskSlaEditor`, `ServiceDeskEditor`, `MesaStagesEditor` e `BusinessHoursEditor` fora de um `MesaSaveProvider` funcionam sem erro (sem aviso).",
+      "tests": []
+    },
+    {
+      "id": "AC-10",
+      "description": "em Chromium a 1440 e 390 px, na Mesa com API simulada (dados sintéticos): desmarcar uma flag de Parâmetros mostra a linha de pendência; clicar noutra aba abre o diálogo de descarte; \"Cancelar\" mantém a aba e a marcação; \"Salvar\" mostra o aviso de sucesso sem cobrir o botão Salvar nem criar rolagem horizontal; com a API respondendo 500, o aviso de falha aparece e a marcação continua; Parâmetros mostra 3 `fieldset`.",
+      "tests": []
+    },
+    {
+      "id": "AC-11",
+      "description": "nenhum arquivo de `apps/web/src/components/ds/`, de `apps/api` nem de `apps/web-e2e` é alterado, `package.json` e `pnpm-lock.yaml` não mudam, e os testes da DMTE-530, DMTE-531, DMTE-532 e DMTE-541 em `ServiceDesksPage.test.tsx` passam sem edição.",
+      "tests": []
+    }
+  ],
+  "spec": "docs/delivery/specs/DMTE-533.md",
+  "tdd": {
+    "mode": "required",
+    "red": ".delivery/evidence/DMTE-533/red.json",
+    "green": ".delivery/evidence/DMTE-533/green.json"
+  },
+  "design_system": {
+    "applicable": true,
+    "reused": []
+  }
+}
