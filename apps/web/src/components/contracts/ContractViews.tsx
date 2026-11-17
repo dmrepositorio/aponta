@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ColumnDef } from '@tanstack/react-table';
 import type {
   Contract,
@@ -405,6 +405,19 @@ export function ContractForm({
       : String(c.excessHourlyRateCents / 100),
   );
   const [validation, setValidation] = useState('');
+  // Cada tentativa que falha conta, mesmo com a mesma mensagem: o alerta fica no topo e o Salvar no fim
+  // (a 390 px a 1.500 px dele), então a falha leva o foco e a vista ao alerta.
+  const [failed, setFailed] = useState(0);
+  const alertRef = useRef<HTMLDivElement>(null);
+  const fail = (message: string) => {
+    setValidation(message);
+    setFailed((count) => count + 1);
+  };
+  useEffect(() => {
+    if (!failed && !error) return;
+    alertRef.current?.scrollIntoView?.({ block: 'center' }); // jsdom não implementa, como no EzSelect
+    alertRef.current?.focus({ preventScroll: true });
+  }, [failed, error]);
   return (
     <form
       noValidate
@@ -412,11 +425,11 @@ export function ContractForm({
       onSubmit={(event) => {
         event.preventDefault();
         if (!organizationId) {
-          setValidation('Selecione a empresa.');
+          fail('Selecione a empresa.');
           return;
         }
         if (startsAt && endsAt && startsAt > endsAt) {
-          setValidation(
+          fail(
             'O fim da vigência deve ser igual ou posterior ao início.',
           );
           return;
@@ -426,7 +439,7 @@ export function ContractForm({
             .filter((v) => v !== '')
             .some((v) => !Number.isFinite(Number(v)) || Number(v) < 0)
         ) {
-          setValidation('Informe valores não negativos e válidos.');
+          fail('Informe valores não negativos e válidos.');
           return;
         }
         const minutes = hours === '' ? null : Math.round(Number(hours) * 60);
@@ -435,7 +448,7 @@ export function ContractForm({
           (approved || type === 'HOURS_LIMIT' || hours !== '') &&
           (minutes == null || minutes < 0 || (type === 'HOURS_LIMIT' && minutes === 0) || !Number.isSafeInteger(minutes))
         ) {
-          setValidation(type === 'HOURS_LIMIT' ? 'Informe uma franquia mensal maior que zero.' : 'Informe uma franquia mensal não negativa.');
+          fail(type === 'HOURS_LIMIT' ? 'Informe uma franquia mensal maior que zero.' : 'Informe uma franquia mensal não negativa.');
           return;
         }
         if (
@@ -447,7 +460,7 @@ export function ContractForm({
                 !/^\d+(\.\d{1,2})?$/.test(v),
             )
         ) {
-          setValidation(
+          fail(
             'Informe valores monetários com até duas casas decimais.',
           );
           return;
@@ -456,7 +469,7 @@ export function ContractForm({
           approved &&
           (!commercialModalities[type] || !startsAt || !serviceDeskIds.length)
         ) {
-          setValidation(
+          fail(
             'Para aprovar, escolha uma modalidade atual, início da vigência e ao menos uma mesa vinculada à empresa.',
           );
           return;
@@ -465,7 +478,7 @@ export function ContractForm({
           approved &&
           serviceDeskIds.some((id) => !desks.some((desk) => desk.id === id))
         ) {
-          setValidation(
+          fail(
             'Remova as mesas que não estão mais vinculadas à empresa antes de aprovar.',
           );
           return;
@@ -480,7 +493,7 @@ export function ContractForm({
             (type === 'MONTHLY_HOURS' && (monthly === '' || rate === '')) ||
             (type === 'HOURLY' && hourly === ''))
         ) {
-          setValidation(
+          fail(
             'Complete as condições comerciais da modalidade antes de aprovar.',
           );
           return;
@@ -539,7 +552,9 @@ export function ContractForm({
       }}
     >
       {(validation || error) && (
-        <EzAlert variant="error">{validation || error}</EzAlert>
+        <div ref={alertRef} tabIndex={-1} className="focus:outline-none">
+          <EzAlert variant="error">{validation || error}</EzAlert>
+        </div>
       )}
       <fieldset disabled={pending} className="min-w-0 space-y-6">
         <fieldset className="flex min-w-0 flex-wrap gap-x-6 gap-y-2">
