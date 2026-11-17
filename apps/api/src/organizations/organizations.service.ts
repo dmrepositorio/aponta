@@ -19,11 +19,24 @@ function rethrowDuplicateDocument(error: unknown): never {
   throw error;
 }
 
+const formatCnpj = (digits: string) => digits.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+
 @Injectable()
 export class OrganizationsService {
   constructor(private prisma: PrismaService) {}
 
+  // DMTE-559: o índice único só barra o texto idêntico; cadastros antigos podem ter o CNPJ pontuado.
+  private async assertCnpjFree(cnpj: string | undefined, ownId?: string) {
+    if (!cnpj) return;
+    const other = await this.prisma.organization.findFirst({
+      where: { cnpj: { in: [cnpj, formatCnpj(cnpj)] }, ...(ownId && { id: { not: ownId } }) },
+      select: { id: true },
+    });
+    if (other) throw new ConflictException('Já existe um cliente com este CNPJ.');
+  }
+
   async create(createOrganizationDto: CreateOrganizationDto) {
+    await this.assertCnpjFree(createOrganizationDto.cnpj);
     const organization = await this.prisma.organization
       .create({ data: createOrganizationDto })
       .catch(rethrowDuplicateDocument);
@@ -82,6 +95,7 @@ export class OrganizationsService {
 
   async update(id: string, updateOrganizationDto: UpdateOrganizationDto) {
     await this.findOne(id); // Check exists
+    await this.assertCnpjFree(updateOrganizationDto.cnpj, id);
     return this.prisma.organization
       .update({ where: { id }, data: updateOrganizationDto })
       .catch(rethrowDuplicateDocument);
