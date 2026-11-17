@@ -16,16 +16,19 @@
     },
     {
       "id": "AC-02",
-      "description": "com a API falhando sem mensagem (erro de rede), o formulário mostra \"Não foi possível cadastrar o cliente.\".",
+      "description": "com a API falhando sem mensagem (erro de rede) ou com 5xx (texto técnico \"Internal server error\"), o formulário mostra \"Não foi possível cadastrar o cliente.\"; com 400 do `ValidationPipe` (`message` em lista), mostra todas as mensagens juntas.",
       "tests": [
-        "apps/web/src/pages/OrganizationsPage.test.tsx: shows a generic alert when the server fails without a message"
+        "apps/web/src/pages/OrganizationsPage.test.tsx: shows a generic alert when the server fails without a message",
+        "apps/web/src/pages/OrganizationsPage.update-error.test.tsx: shows the pt-BR message, not the raw \"Internal server error\", when the API answers 500",
+        "apps/web/src/pages/OrganizationsPage.update-error.test.tsx: shows every validation message when the API answers 400 with a list"
       ]
     },
     {
       "id": "AC-03",
       "description": "o cadastro sem CNPJ/CPF não envia `cnpj` nem `cpf` em branco à API.",
       "tests": [
-        "apps/web/src/pages/OrganizationsPage.test.tsx: does not send blank CNPJ/CPF, which would collide on the unique columns"
+        "apps/web/src/pages/OrganizationsPage.test.tsx: does not send blank CNPJ/CPF, which would collide on the unique columns",
+        "apps/web/src/pages/OrganizationsPage.update-error.test.tsx: sends a filled CNPJ and leaves blank CPF out of the payload"
       ]
     },
     {

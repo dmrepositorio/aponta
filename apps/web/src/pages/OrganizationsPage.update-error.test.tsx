@@ -51,3 +51,67 @@ describe('OrganizationsPage: falha ao salvar a edição de um cliente (DMTE-554)
     await waitFor(() => expect(api.patch).toHaveBeenCalledTimes(1));
   });
 });
+
+describe('OrganizationsPage: mensagem do cadastro e documento no payload (DMTE-554, code-review)', () => {
+  async function submitManualForm(fill: (user: ReturnType<typeof userEvent.setup>) => Promise<void>) {
+    const user = userEvent.setup();
+    render(
+      <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+        <MemoryRouter initialEntries={['/organizations']}>
+          <Routes><Route path="/organizations" element={<OrganizationsPage />} /></Routes>
+        </MemoryRouter>
+      </QueryClientProvider>,
+    );
+    await screen.findByText('Empresa A');
+    await user.click(screen.getByTestId('ez-toolbar-actions-button'));
+    await user.click(screen.getByRole('menuitem', { name: /cadastrar manualmente/i }));
+    await screen.findByText('Nova Empresa');
+    await user.type(screen.getByLabelText(/nome fantasia/i), 'Empresa D');
+    await fill(user);
+    await user.click(screen.getByRole('button', { name: /cadastrar/i }));
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    localStorage.clear();
+    useAuthStore.setState({ token: 'fake-token', user: { sub: 'u-1', email: 'u@aponta.com', role: 'ADMIN' } });
+    vi.mocked(api.get).mockImplementation((url: string) => {
+      if (url === '/me/screen-preferences/organizations') return Promise.resolve({ data: {} });
+      if (url === '/organizations') return Promise.resolve({ data: [{ id: 'org-1', name: 'Empresa A', _count: { users: 0 } }] });
+      if (url === '/users' || url === '/service-desks') return Promise.resolve({ data: [] });
+      return Promise.reject(new Error(`Unexpected GET ${url}`));
+    });
+  });
+
+  it('shows the pt-BR message, not the raw "Internal server error", when the API answers 500', async () => {
+    vi.mocked(api.post).mockRejectedValue({ response: { status: 500, data: { statusCode: 500, message: 'Internal server error' } } });
+
+    await submitManualForm(async () => {});
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Não foi possível cadastrar o cliente. Tente novamente.');
+  });
+
+  it('shows every validation message when the API answers 400 with a list', async () => {
+    vi.mocked(api.post).mockRejectedValue({
+      response: { status: 400, data: { message: ['billingDueDay must not be greater than 31', 'name should not be empty'] } },
+    });
+
+    await submitManualForm(async () => {});
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent('billingDueDay must not be greater than 31 name should not be empty');
+  });
+
+  it('sends a filled CNPJ and leaves blank CPF out of the payload', async () => {
+    vi.mocked(api.post).mockResolvedValue({ data: { id: 'org-4', name: 'Empresa D' } });
+
+    await submitManualForm(async (user) => {
+      await user.type(screen.getByLabelText(/cnpj/i), '19131243000197');
+    });
+
+    await waitFor(() => expect(api.post).toHaveBeenCalledTimes(1));
+    const payload = vi.mocked(api.post).mock.calls[0]?.[1] as Record<string, unknown>;
+    expect(payload.cnpj).toBe('19131243000197');
+    expect(payload.cpf).toBeUndefined();
+  });
+});

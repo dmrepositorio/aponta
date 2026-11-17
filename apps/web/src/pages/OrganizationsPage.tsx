@@ -117,6 +117,13 @@ interface CnpjLookupResult {
   };
 }
 
+/** Mensagem da API para o usuário: lista do ValidationPipe junta; 5xx (texto técnico em inglês) cai no fallback. */
+function apiErrorMessage(err: unknown, fallback: string): string {
+  const response = (err as { response?: { status?: number; data?: { message?: string | string[] } } }).response;
+  const message = Array.isArray(response?.data?.message) ? response.data.message.join(' ') : response?.data?.message;
+  return message && (response?.status ?? 0) < 500 ? message : fallback;
+}
+
 const orgFormSchema = z.object({
   name: z.string().trim().min(1, 'Nome é obrigatório'),
   legalName: z.string().trim().optional(),
@@ -376,10 +383,7 @@ export function OrganizationsPage() {
       setMode('list');
       openDetail(data.id);
     },
-    onError: (err) => {
-      const message = (err as { response?: { data?: { message?: string } } }).response?.data?.message;
-      setCreateError(message ?? 'Não foi possível cadastrar o cliente. Tente novamente.');
-    },
+    onError: (err) => setCreateError(apiErrorMessage(err, 'Não foi possível cadastrar o cliente. Tente novamente.')),
   });
 
   const updateOrgMutation = useMutation({
@@ -392,10 +396,7 @@ export function OrganizationsPage() {
       void queryClient.invalidateQueries({ queryKey: ['organizations'] });
       void queryClient.invalidateQueries({ queryKey: ['organizations', detailOrgId] });
     },
-    onError: (err) => {
-      const message = (err as { response?: { data?: { message?: string } } }).response?.data?.message;
-      setInlineError(message ?? 'Não foi possível salvar a alteração.');
-    },
+    onError: (err) => setInlineError(apiErrorMessage(err, 'Não foi possível salvar a alteração.')),
   });
 
   const attachUserMutation = useMutation({
