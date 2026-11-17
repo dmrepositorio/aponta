@@ -190,6 +190,21 @@ async function run(baseUrl) {
       if (checkFocus.outlineWidth !== '2px') cp.push(`largura do contorno do checkbox: ${checkFocus.outlineWidth} (esperado 2px)`);
       if (checkFocus.outlineColor !== FOCUS) cp.push(`cor do contorno do checkbox: ${checkFocus.outlineColor} (esperado ${FOCUS})`);
       check(`Foco do checkbox ${width} px (${checkFocus.outlineWidth} ${checkFocus.outlineColor}, offset ${checkFocus.outlineOffset})`, cp);
+      // End vai à última aba (fora da tela a 390 px): o foco a traz para a área visível da lista
+      await tabLocator('Parâmetros').focus();
+      await page.keyboard.press('End');
+      const last = await page.evaluate(() => {
+        const list = document.querySelector('[role="tablist"]:not([aria-label])');
+        const selected = list.querySelector('[aria-selected="true"]');
+        const lr = list.getBoundingClientRect();
+        const sr = selected.getBoundingClientRect();
+        return { selected: selected.textContent.trim(), focused: document.activeElement === selected, inside: sr.left >= lr.left - 1 && sr.right <= lr.right + 1 };
+      });
+      data[`fim-${width}`] = last;
+      const endProblems = [];
+      if (last.selected !== 'Expediente' || !last.focused) endProblems.push(`End deixou "${last.selected}" ativa (foco ${last.focused}); esperado Expediente com foco`);
+      if (!last.inside) endProblems.push('última aba fora da área visível da lista depois do End');
+      check(`End leva à última aba, visível na lista ${width} px`, endProblems);
       await context.close();
     }
   } finally {

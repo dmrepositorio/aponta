@@ -1,8 +1,8 @@
 {
   "version": 1,
   "phase": "green",
-  "started_at": "2026-11-17T00:52:17.333663+00:00",
-  "finished_at": "2026-11-17T00:52:32.096585+00:00",
+  "started_at": "2026-11-17T01:00:08.304841+00:00",
+  "finished_at": "2026-11-17T01:00:33.798157+00:00",
   "command": [
     "pnpm",
     "--dir",
@@ -16,7 +16,7 @@
     "src/pages/ServiceDesksPage.test.tsx"
   ],
   "base_sha": "374023f6872baa42e6dd2e686fefaede4302f042",
-  "head_sha": "dae667c53f0fad13e6510e6b1e169f52ae8a71c3",
+  "head_sha": "a8492af79f08c3aaf7a35a353dfeee957daf1275",
   "exit_code": 0,
   "tests": {
     "apps/web/src/components/ds/EzTabs.test.tsx": "f60a5c121e9d186799285db613b03436116b22aec8d1393319ed00dcf87a844a",
@@ -43,8 +43,8 @@
     "apps/web/src/pages/ServiceDesksPage.tsx": "a785012c9bd4d79b0c4d96f09553e403c0eec8eafd86fb2e711a27fdd589ff02",
     "apps/web/src/styles.css": "ec69cc9f9db1dea0b8cae1c58171e823ee549315801c2d4011066e20af91c66a",
     "apps/web/src/styles.focus.test.ts": "5f6ef9a7cf8d11d73719013d6b62af38a3518de7d50c3cbe133d83067da28468",
-    "scripts/mesa_focus_check.mjs": "63eea0a851d3eae4860ac86e93a823e292d1cf3dda5e6f0be4ba23f5c65ac49d"
+    "scripts/mesa_focus_check.mjs": "26985030c859cf7fb6514e7b538bedadf1016c939d8ec873ce0ac3a660b17e90"
   },
   "log": ".delivery/evidence/DMTE-532/green-r2.log",
-  "log_sha256": "8ab5cf0011018bcb866f4422b89eb38eb7e3a0a30d30138e1fadb15343ea51fb"
+  "log_sha256": "9d75f631fe8d112a135cc02dadeafcb435f7c147d5ee91a87baf1ee1f96710ae"
 }

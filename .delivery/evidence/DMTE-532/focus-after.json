@@ -38,6 +38,11 @@
     "boxShadow": "none",
     "insideList": null
   },
+  "fim-1440": {
+    "selected": "Expediente",
+    "focused": true,
+    "inside": true
+  },
   "aba-390": {
     "tabFocus": {
       "role": "tab",
@@ -76,5 +81,10 @@
     "outlineOffset": "2px",
     "boxShadow": "none",
     "insideList": null
+  },
+  "fim-390": {
+    "selected": "Expediente",
+    "focused": true,
+    "inside": true
   }
 }
