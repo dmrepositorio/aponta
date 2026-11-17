@@ -596,6 +596,18 @@ export function KnowledgePage() {
           <EzSpinner label="Carregando artigos..." />
         </div>
       )}
+      {isError && !isLoading && articles && (
+        <EzAlert
+          variant="warning"
+          action={
+            <EzButton type="button" variant="secondary" size="small" onClick={() => void refetch()}>
+              Tentar novamente
+            </EzButton>
+          }
+        >
+          Não foi possível atualizar os artigos. A lista abaixo pode estar desatualizada.
+        </EzAlert>
+      )}
       <div
         data-testid="knowledge-articles"
         data-view-mode={viewMode}
@@ -619,7 +631,7 @@ export function KnowledgePage() {
         ))}
       </div>
 
-      {isError && !isLoading && (
+      {isError && !isLoading && !articles && (
         <div className="flex flex-col items-start gap-3">
           <EzAlert variant="error">Não foi possível carregar os artigos.</EzAlert>
           <EzButton type="button" variant="secondary" size="small" onClick={() => void refetch()}>

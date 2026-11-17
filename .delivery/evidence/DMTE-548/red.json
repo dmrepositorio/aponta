@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "phase": "red",
+  "started_at": "2026-11-17T04:37:41.566966+00:00",
+  "finished_at": "2026-11-17T04:37:55.158420+00:00",
+  "command": [
+    "pnpm",
+    "--dir",
+    "apps/web",
+    "exec",
+    "vitest",
+    "run",
+    "src/components/knowledge/KnowledgeArticleCard.test.tsx",
+    "src/pages/KnowledgePage.test.tsx"
+  ],
+  "base_sha": "9cba9563637b6d0e0eb76c34ff39ef0afcc079af",
+  "head_sha": "2e55fce1c90be26e91ec76a23493389dd6fb5572",
+  "exit_code": 1,
+  "tests": {
+    "apps/web/src/components/knowledge/KnowledgeArticleCard.test.tsx": "dc986087bc0d8d07528dcc2bdd1130827610f1df3a0097837d01025f7f013594",
+    "apps/web/src/pages/KnowledgePage.test.tsx": "828d741aacbe256554abe298a13318df1c6d8e994d88731f37952aad09201bb5"
+  },
+  "criteria": [
+    "AC-01",
+    "AC-02",
+    "AC-03",
+    "AC-04"
+  ],
+  "source_hashes": {
+    "apps/web/src/components/knowledge/KnowledgeArticleCard.test.tsx": "dc986087bc0d8d07528dcc2bdd1130827610f1df3a0097837d01025f7f013594",
+    "apps/web/src/pages/KnowledgePage.test.tsx": "828d741aacbe256554abe298a13318df1c6d8e994d88731f37952aad09201bb5"
+  },
+  "log": ".delivery/evidence/DMTE-548/red.log",
+  "log_sha256": "4659fd660a3694372f34a4632931008aec24e2317019019fa3500df85912fae2"
+}
