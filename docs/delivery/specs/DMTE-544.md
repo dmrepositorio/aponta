@@ -13,7 +13,7 @@ Identidade: DMTE-544, issue dmrepositorio/aponta#289, Tier 2, ciclo 2026-11-09/2
 - **Revelar**: o cadeado fica na coluna **Nome** (`:393-399`), revela usuário **e** senha de uma vez (`handleToggleReveal`, `:230-249`, duas chamadas `intent: 'reveal'` em paralelo) e o ícone (`Lock`/`LockOpen`) não diz se é estado ou ação. Falha de reveal é promise rejeitada sem aviso.
 - **Ocultação**: `setRevealed({})` só roda ao trocar de pasta (`:222`). Não há timer e a busca (`:331-334`) e a paginação (`:483`) não limpam os valores revelados.
 - Backend (`POST /vault/credentials/:id/reveal`, `{ field, intent }`, auditado em cada chamada) já existe e **não muda**.
-- DS: `EzButton` (`variant="tertiary"`, `size="small"`, só ícone) dá 32×32 px, `ez-focus` e aceita `aria-label`/`title`; `EzAlert` (`role="alert"`) dá retorno inline. `EzToast` é só apresentação, sem provedor no app; não há outra tela com toast.
+- DS: `EzButton` (`variant="tertiary"`, `size="small"`, só ícone) dá 32×32 px, `ez-focus` e aceita `aria-label`/`title`; `EzAlert` (`role="alert"`) dá retorno inline. `EzToast` é só apresentação; a única tela que o usa é a Mesa, por um provedor local (`components/mesaSave.tsx`, DMTE-533), que posiciona o aviso fixo no canto superior direito. Não há provedor compartilhado do app.
 
 ## Conflitos com as demais entregas (conferidos nas fontes)
 
@@ -24,12 +24,13 @@ Identidade: DMTE-544, issue dmrepositorio/aponta#289, Tier 2, ciclo 2026-11-09/2
 ## Decisões (propostas do planejamento dentro do pedido aprovado)
 
 1. **Botões de ícone com `EzButton`** (`variant="tertiary"`, `size="small"`, `leftIcon`, sem `label`), com `aria-label` = ação + nome da credencial (ex.: `Copiar senha de Servidor FTP`) e `title` curto (ex.: `Copiar senha`). 32×32 px (≥ mínimo de 32 do card) e `ez-focus` vêm do DS sem alterá-lo. Excluir/remover mantêm a cor de perigo por `className`. O link "Abrir URL" (`<a>`) ganha as mesmas medidas e `ez-focus` por classes locais, com `aria-label` "Abrir URL de …" e `rel="noreferrer"`.
-2. **Retorno inline, não toast.** Uma faixa acima da tabela, dentro do cartão: região `role="status"` `aria-live="polite"` sempre montada, com "Senha copiada" / "Usuário copiado" / "URL copiada" (some em ~4 s); erro em `EzAlert variant="error"` (`role="alert"`, com `onClose`), que fica até dispensado ou até a próxima ação. Motivo: o DS não tem provedor de toast e o card veda mudar o DS.
+2. **Retorno inline, não o toast da Mesa.** Uma faixa acima da tabela, dentro do cartão: região `role="status"` `aria-live="polite"` sempre montada, com "Senha copiada" / "Usuário copiado" / "URL copiada" (some em ~4 s); erro em `EzAlert variant="error"` (`role="alert"`, com `onClose`), que fica até dispensado ou até a próxima ação. Motivo: não há provedor de aviso compartilhado e criar um tiraria a entrega do escopo (o card veda mudar o DS); o aviso fixo da Mesa fica longe da linha em que a pessoa clicou, e a faixa fica junto da tabela. É decisão aberta ao aceite: trocar a apresentação pelo `EzToast` fixo, como na Mesa, não muda lógica, ACs de comportamento nem a acessibilidade (`role="status"`/`"alert"`).
 3. **Revelar por campo.** O cadeado da coluna Nome sai. Células Usuário e Senha ganham um botão de olho (`Eye`/`EyeOff`) só quando o campo existe (`hasUsername`/`hasPassword`), com `aria-pressed` e rótulo constante (`Revelar usuário de …`, `Revelar senha de …`), 32×32 px. Cada clique faz **uma** chamada `intent: 'reveal'` do campo (antes eram duas por linha), então o registro de auditoria passa a refletir o campo realmente exibido.
 4. **Ocultação automática.** Cada campo revelado volta a ficar mascarado após **30 s** (constante `REVEAL_TTL_MS`, contada por campo desde que foi revelado). Também oculta todos: buscar, paginar, trocar de pasta, salvar ou excluir credencial (evita mostrar valor antigo). Resposta de reveal em voo que chega depois dessa limpeza é descartada (contador de geração). Timers são cancelados ao ocultar à mão e ao desmontar a tela.
 5. **Estado do valor** vira `Record<"<id>:<campo>", string>` e uma `Set` de campos em voo (botão desabilitado e `aria-busy` durante a chamada, sem chamada duplicada). Falha de reveal/cópia mostra o erro (decisão 2), não revela e não deixa promise rejeitada.
 6. **Cópia**: sucesso só depois de `writeText` resolver; clipboard indisponível (`navigator.clipboard` ausente, contexto inseguro) ou rejeitado conta como falha.
-7. **Fora do escopo**: itens 3, 4 e 5 da auditoria (DMTE-545/546); limpar a área de transferência depois da cópia (risco registrado); mudanças no backend, no schema, na auditoria ou em RBAC; mudanças em `components/ds/`; modais, árvore, paginação e a coluna Ações além do necessário para o item 1.
+7. **Nenhum valor revelado ou copiado fica retido no cache do React Query.** Achado do ciclo de correção r2: `useMutation` mantém o resultado da última mutation no observador da tela e, depois, no cache por `gcTime` (5 min por padrão); o segredo ficaria em memória depois dos 30 s e fora do estado que a tela limpa. `useRevealCredential` passa a `gcTime: 0` e a tela chama `reset()` assim que consome o valor (`useVault.ts` entra no escopo, como o card previa "se preciso").
+8. **Fora do escopo**: itens 3, 4 e 5 da auditoria (DMTE-545/546); limpar a área de transferência depois da cópia (risco registrado); mudanças no backend, no schema, na auditoria ou em RBAC; mudanças em `components/ds/`; modais, árvore, paginação e a coluna Ações além do necessário para o item 1.
 
 Não aplicável: grill-with-docs → to-spec → to-tickets completos. Melhoria de acessibilidade e de segurança de exibição aprovada item a item pelo Alfredo, com proposta já escrita no card, na forma da DMTE-525/530/531/532 (uma SPEC, uma issue GitHub, um PR, sem sub-issues). Sem decisão humana pendente; as decisões acima ficam abertas ao aceite visual do Alfredo.
 
@@ -45,12 +46,14 @@ Não aplicável: grill-with-docs → to-spec → to-tickets completos. Melhoria 
 - AC-08: buscar, paginar, trocar de pasta, salvar ou excluir credencial oculta todos os campos revelados; um reveal em voo que responde depois dessa limpeza não mostra o valor.
 - AC-09: em Chromium a 1440 e 390 px, na tela de Cofre com dados sintéticos: cada botão de ícone da linha mede ≥ 32×32 px (rect medido), o foco por teclado tem contorno de 2 px em `rgb(0, 133, 97)`, a confirmação "Senha copiada" fica visível, o olho de Senha revela só a senha, e todos os botões de ação ficam alcançáveis (dentro da área visível do cartão ou com o cartão rolando na horizontal) sem a página ganhar rolagem horizontal; a altura da linha não passa da medida na base.
 - AC-10: contrato de entrega: manifest `.delivery/deliveries/DMTE-544.json` válido (`check` passa), avaliação de DS registrada como "sem alteração em `components/ds/`; reutiliza `EzButton` e `EzAlert`", RED/GREEN do coletor para AC-01 a AC-08.
+- AC-11: depois de revelar ou copiar um campo, nenhum valor em texto claro fica no cache de mutations do `QueryClient` (nem no resultado da última mutation da tela), com o valor ainda visível na célula quando revelado.
 
 ## Testes (seams: a página `VaultPage`, nível do projeto: vitest + Testing Library, `api` mockado como hoje; layout e foco medidos no navegador)
 
 - AC-01 a AC-08: `apps/web/src/pages/VaultPage.test.tsx`. Os três testes que usam o cadeado (`Revelar linha`/`Ocultar`, linhas ~240, ~281 e ~537 na base) são reescritos para o olho por campo, porque o comportamento que testavam foi substituído; os demais seguem como estão. Timer com `vi.useFakeTimers` (avanço de 30 000 ms); clipboard por `Object.defineProperty(navigator.clipboard, 'writeText', …)` como nos testes atuais; falha de reveal com `api.post` rejeitando; resposta em voo com promessa controlada.
 - AC-09: `scripts/vault_actions_check.mjs` (novo; Chromium com dados sintéticos e API interceptada, mesma montagem de `scripts/mesa_focus_check.mjs`; jsdom não mede layout nem resolve `outline`). A base "antes" é gravada com `--no-assert --json` para mostrar a diferença.
 - AC-10: `python3 scripts/aponta_delivery.py check --manifest .delivery/deliveries/DMTE-544.json` e a suíte `web` completa antes do QA.
+- AC-11: `VaultPage.test.tsx` (lê o `MutationCache` do `QueryClient` da renderização).
 - Comandos: `pnpm --filter web test -- VaultPage` para o RED/GREEN (ajustar ao script real do pacote ao implementar).
 
 ## Evidência visual e aceite
@@ -60,8 +63,10 @@ Capturas antes e depois a 1440 e 390 px (linha com os três botões em foco, con
 ## Riscos
 
 - **Segredo em memória do navegador:** o valor revelado vive no estado React até o timer (30 s), a limpeza ou o desmonte. É a razão do item. Mitigação: AC-07/AC-08 e descarte de resposta em voo.
+- **Cache de mutations:** ver decisão 7; só o texto claro do `reveal` passa por esse caminho.
 - **Área de transferência:** o valor copiado fica na área de transferência até o usuário copiar outra coisa; limpar automaticamente não faz parte do pedido e depende de permissão do navegador. Registrado para decisão futura do Alfredo, não implementado.
 - **Mudança de auditoria:** revelar passa a gerar uma chamada auditada por campo (antes, duas por linha). É mais fiel ao que foi exibido; quem consome a trilha vê uma entrada a menos por clique quando só um campo é pedido. Sem mudança de contrato.
 - **Largura da tabela a 390 px:** a célula da URL ganha dois botões de 32 px; se a base já corta o cartão (`overflow-hidden`), AC-09 exige tornar a tabela rolável dentro do cartão (`overflow-x-auto` no `VaultPage.tsx`), sem tocar no DS. A medição "antes" do script define se isso é necessário.
 - **Testes existentes por `title`:** os `getByTitle` seguem válidos (o `title` curto permanece); apenas os testes do cadeado mudam.
+- Teste do desmonte: `getTimerCount` não serve (o React Query agenda timers próprios por mutation); o teste observa `setTimeout`/`clearTimeout` do prazo de 30 s.
 - Sem impacto em tenant ou RBAC: o backend e a visibilidade de editar/excluir (`ADMIN`) não mudam; revelar/copiar segue disponível como antes aos mesmos papéis.

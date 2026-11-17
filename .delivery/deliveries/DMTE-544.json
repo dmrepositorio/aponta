@@ -83,6 +83,13 @@
       "tests": [
         "python3 scripts/aponta_delivery.py check --manifest .delivery/deliveries/DMTE-544.json: manifesto, RED/GREEN e avaliação de DS"
       ]
+    },
+    {
+      "id": "AC-11",
+      "description": "depois de revelar ou copiar um campo, nenhum valor em texto claro fica no cache de mutations do `QueryClient` (nem no resultado da última mutation da tela), com o valor ainda visível na célula quando revelado.",
+      "tests": [
+        "apps/web/src/pages/VaultPage.test.tsx: keeps no revealed or copied value in the query client after use"
+      ]
     }
   ],
   "spec": "docs/delivery/specs/DMTE-544.md",
