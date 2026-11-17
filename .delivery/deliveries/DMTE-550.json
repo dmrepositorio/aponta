@@ -158,7 +158,8 @@
         "apps/api/src/mail/mail.service.pending.spec.ts: testes com o prefixo AC-20:",
         "apps/web/src/pages/UsersPage.test.tsx: testes com o prefixo AC-20:",
         "apps/web/src/components/ActiveTag.test.tsx: testes com o prefixo AC-20:",
-        "apps/api/src/mail/mail.service.pending.spec.ts: teste r2 (consulta pela chave única)"
+        "apps/api/src/mail/mail.service.pending.spec.ts: teste r2 (consulta pela chave única)",
+        "apps/api/src/mail/mail.service.recipient.spec.ts: teste r2 (destinatário ausente)"
       ]
     },
     {

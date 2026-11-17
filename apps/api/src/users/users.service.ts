@@ -13,6 +13,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { AdminCreateUserDto } from './dto/admin-create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserQueryDto } from './dto/user-query.dto';
+import { normalizeEmail } from './dto/transforms';
 import type { User } from '@prisma/client';
 import {
   DEFAULT_PERMISSION_GROUPS,
@@ -71,7 +72,7 @@ export class UsersService {
   // E-mail é único sem diferença de caixa (DMTE-550): toda escrita o guarda em minúsculas, então a chave única
   // acha quase sempre. A varredura insensível só roda quando ela não acha (dado legado de caixa mista).
   async findByEmail(email: string): Promise<User | null> {
-    const normalized = email.trim().toLowerCase();
+    const normalized = normalizeEmail(email);
     return (
       (await this.prisma.user.findUnique({ where: { email: normalized } })) ??
       this.prisma.user.findFirst({ where: { email: { equals: normalized, mode: 'insensitive' } } })

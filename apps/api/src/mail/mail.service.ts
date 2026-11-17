@@ -2,6 +2,7 @@ import { Injectable, Logger, Optional } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
 import { PrismaService } from '../prisma/prisma.service';
+import { normalizeEmail } from '../users/dto/transforms';
 
 export interface SendEmailOptions {
   to: string;
@@ -48,6 +49,8 @@ export class MailService {
   /** `true` só quando o SMTP aceitou a mensagem (DMTE-550); falha ou SMTP ausente dá `false`, sem lançar. */
   async sendEmail(options: SendEmailOptions, { toPendingUser = false }: { toPendingUser?: boolean } = {}): Promise<boolean> {
     // DMTE-550 D17: quem tem convite pendente (sem senha) só recebe o próprio convite; o resto do sistema não escreve para ele.
+    // Sem destinatário não há o que enviar (dado vindo de fora pode faltar); não estoura fora do try do envio.
+    if (typeof options.to !== 'string') return false;
     if (!toPendingUser && (await this.isPendingUser(options.to))) return false;
     if (!this.transporter) {
       this.logger.error(`Email to ${options.to} aborted: SMTP transporter not initialized.`);
@@ -74,7 +77,7 @@ export class MailService {
   private async isPendingUser(email: string): Promise<boolean> {
     if (!this.prisma) return false;
     const user = await this.prisma.user.findUnique({
-      where: { email: email.trim().toLowerCase() },
+      where: { email: normalizeEmail(email) },
       select: { id: true, password: true },
     });
     return user !== null && user.password === null;
