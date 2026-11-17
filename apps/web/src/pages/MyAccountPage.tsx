@@ -161,6 +161,7 @@ function ProfileTab() {
 
 function SecurityTab() {
   const email = useAuthStore((state) => state.user?.email);
+  const login = useAuthStore((state) => state.login);
   const [submitError, setSubmitError] = useState<ReactNode>(null);
   const [success, setSuccess] = useState(false);
   const {
@@ -178,7 +179,9 @@ function SecurityTab() {
     setSuccess(false);
 
     try {
-      await api.post('/auth/change-password', values);
+      const { data } = await api.post<{ access_token?: string }>('/auth/change-password', values);
+      // A troca derruba os outros tokens; a sessão atual guarda o novo.
+      if (data?.access_token) login(data.access_token);
       setSuccess(true);
       reset();
     } catch (error) {

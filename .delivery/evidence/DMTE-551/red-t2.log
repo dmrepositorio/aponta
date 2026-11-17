@@ -1,0 +1,109 @@
+
+> nx run api:test --runTestsByPath src/auth/password-version.strategy.http.spec.ts src/auth/password-version.http.spec.ts
+
+> jest --passWithNoTests=true --runTestsByPath src/auth/password-version.strategy.http.spec.ts src/auth/password-version.http.spec.ts
+
+
+
+
+ NX   Running target test for project api failed
+
+Failed tasks:
+
+- api:test
+
+Hint: run the command with --verbose for more details.
+
+[0m[7m[1m[31m FAIL [39m[22m[27m[0m [0m[7m[37m api [39m[27m[0m [2msrc/auth/[22m[1mpassword-version.strategy.http.spec.ts[22m
+[1m[31m  [1m● [22m[1mVersão da senha no JWT (DMTE-551) › AC-04: depois que a senha muda, o token de versão antiga é recusado e o de versão nova entra[39m[22m
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32m401[39m
+    Received: [31m200[39m
+
+[2m    [0m [90m 60 |[39m     prisma[33m.[39mtables[33m.[39muser[33m.[39mfind((u) [33m=>[39m u[33m.[39mid [33m===[39m [33mID[39m[33m.[39mana)[33m![39m[33m.[39mpasswordVersion [33m=[39m [35m1[39m[33m;[39m[22m
+[2m     [90m 61 |[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 62 |[39m     expect(([36mawait[39m bearer(old))[33m.[39mstatus)[33m.[39mtoBe([35m401[39m)[33m;[39m[22m
+[2m     [90m    |[39m                                        [31m[1m^[22m[2m[39m[22m
+[2m     [90m 63 |[39m     expect(([36mawait[39m bearer(tokenFor([35m1[39m)))[33m.[39mstatus)[33m.[39mtoBe([35m200[39m)[33m;[39m[22m
+[2m     [90m 64 |[39m   })[33m;[39m[22m
+[2m     [90m 65 |[39m[0m[22m
+
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/auth/password-version.strategy.http.spec.ts[39m[0m[2m:62:40)[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mVersão da senha no JWT (DMTE-551) › AC-04: token emitido antes desta entrega (sem versão) vale como versão 0, para ninguém ser deslogado no deploy[39m[22m
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32m401[39m
+    Received: [31m200[39m
+
+[2m    [0m [90m 68 |[39m[22m
+[2m     [90m 69 |[39m     prisma[33m.[39mtables[33m.[39muser[33m.[39mfind((u) [33m=>[39m u[33m.[39mid [33m===[39m [33mID[39m[33m.[39mana)[33m![39m[33m.[39mpasswordVersion [33m=[39m [35m1[39m[33m;[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 70 |[39m     expect(([36mawait[39m bearer(tokenFor()))[33m.[39mstatus)[33m.[39mtoBe([35m401[39m)[33m;[39m[22m
+[2m     [90m    |[39m                                               [31m[1m^[22m[2m[39m[22m
+[2m     [90m 71 |[39m   })[33m;[39m[22m
+[2m     [90m 72 |[39m })[33m;[39m[22m
+[2m     [90m 73 |[39m[0m[22m
+
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/auth/password-version.strategy.http.spec.ts[39m[0m[2m:70:47)[22m[2m[22m
+
+[0m[7m[1m[31m FAIL [39m[22m[27m[0m [0m[7m[37m api [39m[27m[0m [2msrc/auth/[22m[1mpassword-version.http.spec.ts[22m
+[1m[31m  [1m● [22m[1mVersão da senha nas portas que mudam a senha (DMTE-551) › AC-04: o login emite um token com a versão atual da senha do usuário[39m[22m
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32m3[39m
+    Received: [31mundefined[39m
+
+[2m    [0m [90m 22 |[39m[22m
+[2m     [90m 23 |[39m     expect(res[33m.[39mstatus)[33m.[39mtoBe([35m201[39m)[33m;[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 24 |[39m     expect(claim(res[33m.[39mbody[33m.[39maccess_token[33m,[39m [32m'pv'[39m))[33m.[39mtoBe([35m3[39m)[33m;[39m[22m
+[2m     [90m    |[39m                                                [31m[1m^[22m[2m[39m[22m
+[2m     [90m 25 |[39m   })[33m;[39m[22m
+[2m     [90m 26 |[39m[22m
+[2m     [90m 27 |[39m   it([32m'AC-04: a troca de senha sobe a versão e devolve um token novo, válido, para a sessão que trocou'[39m[33m,[39m [36masync[39m () [33m=>[39m {[0m[22m
+
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/auth/password-version.http.spec.ts[39m[0m[2m:24:48)[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mVersão da senha nas portas que mudam a senha (DMTE-551) › AC-04: a troca de senha sobe a versão e devolve um token novo, válido, para a sessão que trocou[39m[22m
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32m1[39m
+    Received: [31m0[39m
+
+[2m    [0m [90m 29 |[39m[22m
+[2m     [90m 30 |[39m     expect(res[33m.[39mstatus)[33m.[39mtoBe([35m201[39m)[33m;[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 31 |[39m     expect(version([33mID[39m[33m.[39mana))[33m.[39mtoBe([35m1[39m)[33m;[39m[22m
+[2m     [90m    |[39m                             [31m[1m^[22m[2m[39m[22m
+[2m     [90m 32 |[39m     expect(claim(res[33m.[39mbody[33m.[39maccess_token[33m,[39m [32m'sub'[39m))[33m.[39mtoBe([33mID[39m[33m.[39mana)[33m;[39m[22m
+[2m     [90m 33 |[39m     expect(claim(res[33m.[39mbody[33m.[39maccess_token[33m,[39m [32m'pv'[39m))[33m.[39mtoBe([35m1[39m)[33m;[39m[22m
+[2m     [90m 34 |[39m   })[33m;[39m[0m[22m
+
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/auth/password-version.http.spec.ts[39m[0m[2m:31:29)[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mVersão da senha nas portas que mudam a senha (DMTE-551) › AC-04: definir a senha pelo link sobe a versão só do dono do link[39m[22m
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32m1[39m
+    Received: [31m0[39m
+
+[2m    [0m [90m 49 |[39m[22m
+[2m     [90m 50 |[39m     expect(res[33m.[39mstatus)[33m.[39mtoBe([35m201[39m)[33m;[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 51 |[39m     expect(version([33mID[39m[33m.[39melisa))[33m.[39mtoBe([35m1[39m)[33m;[39m[22m
+[2m     [90m    |[39m                               [31m[1m^[22m[2m[39m[22m
+[2m     [90m 52 |[39m     expect(version([33mID[39m[33m.[39mana))[33m.[39mtoBe([35m0[39m)[33m;[39m[22m
+[2m     [90m 53 |[39m   })[33m;[39m[22m
+[2m     [90m 54 |[39m })[33m;[39m[0m[22m
+
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/auth/password-version.http.spec.ts[39m[0m[2m:51:31)[22m[2m[22m
+
+[1mTest Suites: [22m[1m[31m2 failed[39m[22m, 2 total
+[1mTests:       [22m[1m[31m5 failed[39m[22m, [1m[32m2 passed[39m[22m, 7 total
+[1mSnapshots:   [22m0 total
+[1mTime:[22m        3.12 s, estimated 5 s
+[2mRan all test suites[22m[2m within paths[22m "src/auth/password-version.strategy.http.spec.ts", "src/auth/password-version.http.spec.ts"[2m.[22m
+Warning: command "jest --passWithNoTests=true --runTestsByPath src/auth/password-version.strategy.http.spec.ts src/auth/password-version.http.spec.ts" exited with non-zero status code

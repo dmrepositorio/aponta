@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "phase": "red",
+  "started_at": "2026-11-17T18:12:22.403232+00:00",
+  "finished_at": "2026-11-17T18:12:59.951630+00:00",
+  "command": [
+    "pnpm",
+    "--dir",
+    "apps/web",
+    "exec",
+    "vitest",
+    "run",
+    "src/pages/MyAccountPage.session.test.tsx"
+  ],
+  "base_sha": "35b982f7db2d478d2e8359ca5e601c2fbf3655e8",
+  "head_sha": "81f013db903ab5f0774cf924dffbf05ce2ff40b5",
+  "exit_code": 1,
+  "tests": {
+    "apps/web/src/pages/MyAccountPage.session.test.tsx": "da181b660ff8c7bd330e1c78e9443c8512833a3ec072e3c4aa4f6c0f5fc79a84"
+  },
+  "criteria": [
+    "AC-04"
+  ],
+  "source_hashes": {
+    "GLOSSARY.md": "cff532afa28f9c16cbdb1540b2721f6bee93a03c8c3b119134c01c8f2f366dc9",
+    "apps/api/prisma/migrations/20261117180000_user_password_version/migration.sql": "279b0d7018dea18fc74da41ffcd5f44336b33f7b73d263b015799ef6f5a4f2ec",
+    "apps/api/prisma/schema.prisma": "c7dc357ffd572279c00964b3dbe51b595ca24a6657b1ea1b0ffbb3209aca32fc",
+    "apps/api/src/auth/auth.controller.ts": "7bce859619b94f342b24b1170c3d17023da6aaa22f254d77c58c9204e9efc4a1",
+    "apps/api/src/auth/auth.service.ts": "2dbffc064378f78e82af7da82c2649277c13cbdd48ccc5829b8d61fbb5b2b53d",
+    "apps/api/src/auth/jwt.strategy.ts": "88150e81784bf765bcb4a9d756015787a222dbca8841e4ba93a03e909f62ca15",
+    "apps/api/src/auth/password-policy.http.spec.ts": "dd4082e876781dc50995b3ce54cd6c1c04300baaed24a95dae673ab15bef8a8b",
+    "apps/api/src/auth/password-policy.spec.ts": "68265bb08e1e0bd95bbf601124865ade65c7d470c152c68942402aa20346b48e",
+    "apps/api/src/auth/password-policy.ts": "708f1e6ab69d6d1cf9a2066401d233fc807beb44e17f13fa2f53ae0be1362621",
+    "apps/api/src/auth/password-version.http.spec.ts": "76887eaee7871983db7f03ff3789a5298ecbae82db68bca1f976a15c5f21c74a",
+    "apps/api/src/auth/password-version.strategy.http.spec.ts": "0a53f8edd91ab2c05c50b41b771528daee39d1b690002a5a31afd5888cec20bb",
+    "apps/api/src/testing/fake-prisma.ts": "df6990dccc00bbfc94fae5cb9a512fa7833c8a1df51e208f479a715ba7df0042",
+    "apps/api/src/testing/users-http-harness.ts": "fa18f2907e9e0442879113506c98f6a1f250056df4b4ff82f9b6cd6b716b5182",
+    "apps/api/src/users/email-case.http.spec.ts": "b318953199bfe0a5f96c852411a92ecb6ccecf1c3996c30e8310fb72a37b781d",
+    "apps/api/src/users/password-flow.http.spec.ts": "d0935a779a9ccbc9cd2c86b16916962b9fcc1137b4cdc18e2bd5955db8c7d8f3",
+    "apps/api/src/users/password-flow.service.ts": "82968b4fb3d4ae99d5493ae415e4a353504cb1f1436460517db7e6328ca0fd2f",
+    "apps/api/src/users/password-tokens.service.ts": "f015e570916d750cac9eddf837e0604cacc596903dcab8882b1cec1dd19247f9",
+    "apps/api/src/users/users.service.spec.ts": "ce1cede0d98c6ed115ca158f74314f8bfe3afe7277e30b2cbc0ed366a535cac6",
+    "apps/api/src/users/users.service.ts": "a949e9eb183493fff435275606142bb3008209e1e9b9c14885f1c133f83a4566",
+    "apps/web/src/components/PasswordRules.test.tsx": "1d5c2fbc52559a8c21d6bc31cf6def7c5d64d395b40beac2a48c9b8c6e5c09db",
+    "apps/web/src/components/PasswordRules.tsx": "a55206d0b4fb8b6119ec17d808b1bd9c8c666c6b67193c51381b556e6d15faeb",
+    "apps/web/src/lib/passwordRules.ts": "a4d36649d90b552fecfc24928e772862740c70de7e360bffcd2111b4a68f8fc4",
+    "apps/web/src/pages/MyAccountPage.session.test.tsx": "da181b660ff8c7bd330e1c78e9443c8512833a3ec072e3c4aa4f6c0f5fc79a84",
+    "apps/web/src/pages/MyAccountPage.tsx": "315eb6108700784ae38feb34da2b69c542ef3cd404b8fbac12d2eba212094336",
+    "apps/web/src/pages/RegisterPage.tsx": "3a523f6590adc4d6d289be353342efa44e846dfa28437fd500218b937a08400f",
+    "apps/web/src/pages/SetPasswordPage.test.tsx": "7e0b7e32347aec5d54254142c4dd4be5f3a84806e362ad209085b6dfae4faa83",
+    "apps/web/src/pages/SetPasswordPage.tsx": "187b9ff3c3c16bd6ab35d6be866bd1301367fda0ed591a18a869206deff69cd7",
+    "apps/web/src/pages/passwordRules.pages.test.tsx": "da2e25e24b0729853bca9aca9318bbe51d415e1106b230f5810d61cd2acd2ca4"
+  },
+  "log": ".delivery/evidence/DMTE-551/red-web-t2.log",
+  "log_sha256": "9060571e7901e97e20f9dd0bda5f068127f5e1b6066bd192ffcd63f193b89458"
+}

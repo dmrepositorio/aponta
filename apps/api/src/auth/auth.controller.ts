@@ -83,12 +83,13 @@ export class AuthController {
     @Request() req: AuthenticatedRequest,
     @Body() changePasswordDto: ChangePasswordDto,
   ) {
-    await this.usersService.changePassword(
+    const user = await this.usersService.changePassword(
       req.user.id,
       changePasswordDto.currentPassword,
       changePasswordDto.newPassword,
     );
-    return { message: 'Password updated successfully' };
+    // Token novo para a sessão que trocou a senha; os emitidos antes deixam de valer.
+    return { message: 'Password updated successfully', ...(await this.authService.login(user)) };
   }
 
   // Backs useHasPermission on the frontend (DMTE-84, Tarefa 4): the JWT only

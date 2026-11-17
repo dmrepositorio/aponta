@@ -7,6 +7,8 @@ import { UsersService } from '../users/users.service';
 export interface JwtPayload {
   sub: string;
   email: string;
+  /** Versão da senha na emissão; token anterior à DMTE-551 não tem e vale como 0. */
+  pv?: number;
 }
 
 @Injectable()
@@ -31,7 +33,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   async validate(payload: JwtPayload) {
     const user = await this.usersService.findById(payload.sub);
 
-    if (!user || user.active === false) {
+    if (!user || user.active === false || (payload.pv ?? 0) !== (user.passwordVersion ?? 0)) {
       throw new UnauthorizedException('User no longer exists');
     }
 

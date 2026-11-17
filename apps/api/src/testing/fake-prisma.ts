@@ -20,7 +20,7 @@ const FOREIGN: Partial<Record<Model, Record<string, Model>>> = {
   passwordToken: { userId: 'user' },
 };
 const DEFAULTS: Record<Model, () => Row> = {
-  user: () => ({ id: randomUUID(), phone: null, extension: null, role: 'AGENT', active: true, organizationId: null, technicalGroupId: null, createdAt: new Date(), updatedAt: new Date() }),
+  user: () => ({ id: randomUUID(), passwordVersion: 0, phone: null, extension: null, role: 'AGENT', active: true, organizationId: null, technicalGroupId: null, createdAt: new Date(), updatedAt: new Date() }),
   passwordToken: () => ({ id: randomUUID(), usedAt: null, createdById: null, createdAt: new Date() }),
   permissionGroup: () => ({ id: randomUUID(), description: null, permissions: [] }),
   permissionGroupUser: () => ({ createdAt: new Date() }),
@@ -30,6 +30,10 @@ const DEFAULTS: Record<Model, () => Row> = {
 };
 const RELATIONS = ['technicalGroup', 'organization', 'permissionGroupLinks', 'permissionGroup'];
 const OPERATORS = ['equals', 'not', 'in', 'notIn', 'contains', 'startsWith', 'endsWith', 'gt', 'gte', 'lt', 'lte', 'has', 'some', 'every', 'none', 'is', 'mode'];
+
+/** `{ increment: n }` soma ao valor atual, como o Prisma. */
+const applyIncrements = (row: Row, data: Row): Row =>
+  Object.fromEntries(Object.entries(data).map(([k, v]) => [k, v && typeof v === 'object' && 'increment' in v ? (row[k] ?? 0) + v.increment : v]));
 
 const same = (a: any, b: any) => (a instanceof Date || b instanceof Date ? new Date(a).getTime() === new Date(b).getTime() : a === b);
 const lower = (v: any, insensitive: boolean) => (insensitive && typeof v === 'string' ? v.toLowerCase() : v);
@@ -192,7 +196,7 @@ export function createFakePrisma(seed: Partial<Tables> = {}): FakePrisma {
           const row = select(model, args.where)[0];
           if (!row) throw notFound();
           const { permissionGroupLinks, ...scalars } = args.data;
-          const next = { ...row, ...scalars };
+          const next = { ...row, ...applyIncrements(row, scalars) };
           check(model, next, row);
           Object.assign(row, next);
           if (permissionGroupLinks) nested(row.id, permissionGroupLinks);

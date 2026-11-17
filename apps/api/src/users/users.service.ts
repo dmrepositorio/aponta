@@ -230,7 +230,7 @@ export class UsersService {
     userId: string,
     currentPassword: string,
     newPassword: string,
-  ): Promise<void> {
+  ): Promise<SafeUser> {
     const user = await this.findById(userId);
     if (!user || !user.password) {
       // Same error as a wrong password: never reveal whether the user
@@ -248,10 +248,12 @@ export class UsersService {
 
     assertPasswordPolicy(newPassword, user);
     const hashedNewPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
-    await this.prisma.user.update({
+    // A versão sobe: os outros tokens deixam de valer; quem trocou recebe um novo (AuthController).
+    const updated = await this.prisma.user.update({
       where: { id: userId },
-      data: { password: hashedNewPassword },
+      data: { password: hashedNewPassword, passwordVersion: { increment: 1 } },
     });
+    return this.toSafeUser(updated);
   }
 
   async updateProfile(

@@ -87,7 +87,7 @@ export class PasswordFlowService {
     const hash = await bcrypt.hash(password, SALT_ROUNDS);
     const claimed = await this.tokens.consume(token);
     if (!claimed) throw new BadRequestException(INVALID_LINK);
-    await this.prisma.user.update({ where: { id: claimed.userId }, data: { password: hash } });
+    await this.prisma.user.update({ where: { id: claimed.userId }, data: { password: hash, passwordVersion: { increment: 1 } } });
   }
 
   private countForgotAttempt(email: string): void {

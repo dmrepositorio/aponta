@@ -36,7 +36,7 @@ export const ID = {
 };
 
 const user = (id: string, name: string, email: string, extra: Record<string, any> = {}) => ({
-  id, name, email, password: OLD_HASH, role: 'AGENT', active: true, phone: null, extension: null,
+  id, name, email, password: OLD_HASH, passwordVersion: 0, role: 'AGENT', active: true, phone: null, extension: null,
   organizationId: null, technicalGroupId: null, createdAt: new Date('2026-01-01'), updatedAt: new Date('2026-01-01'), ...extra,
 });
 

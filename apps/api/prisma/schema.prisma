@@ -163,6 +163,8 @@ model User {
   extension String?
   /// Nulo = convite pendente (DMTE-550): o usuário ainda não definiu a própria senha.
   password String?
+  /// Sobe a cada troca ou definição de senha; o JWT leva a versão e token de versão antiga deixa de valer (DMTE-551).
+  passwordVersion Int @default(0)
   role     Role    @default(AGENT)
   /// Tiflux-parity (DMTE-84, Tarefa 3): toggle "Usuário ativo" no perfil —
   /// inativo não consegue autenticar, mas histórico/auditoria continua legível.

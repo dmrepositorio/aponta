@@ -31,7 +31,7 @@ describe('AuthController', () => {
     usersService = {
       create: jest.fn().mockResolvedValue(mockSafeUser),
       findByEmail: jest.fn(),
-      changePassword: jest.fn().mockResolvedValue(undefined),
+      changePassword: jest.fn().mockResolvedValue(mockSafeUser),
       updateProfile: jest.fn().mockResolvedValue(mockSafeUser),
       findById: jest.fn().mockResolvedValue(mockSafeUser),
       toSafeUser: jest.fn((user: typeof mockSafeUser) => user),
@@ -120,7 +120,9 @@ describe('AuthController', () => {
         dto.currentPassword,
         dto.newPassword,
       );
-      expect(result).toEqual({ message: 'Password updated successfully' });
+      // DMTE-551: a sessão que trocou a senha recebe um token novo.
+      expect(authService.login).toHaveBeenCalledWith(mockSafeUser);
+      expect(result).toEqual({ message: 'Password updated successfully', access_token: 'signed-jwt-token' });
     });
   });
 
