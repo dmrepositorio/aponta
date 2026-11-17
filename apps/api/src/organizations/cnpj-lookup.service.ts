@@ -1,4 +1,4 @@
-import { BadGatewayException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadGatewayException, BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { FeatureFlagsService } from '../feature-flags/feature-flags.service';
 
 export interface CnpjLookupResult {
@@ -15,11 +15,29 @@ export interface CnpjLookupResult {
   };
 }
 
+interface Provider {
+  url: (digits: string) => string;
+  /** Nomes dos campos de razão social e nome fantasia; os demais campos são iguais nos três provedores. */
+  legalName: 'razao_social' | 'nome';
+  tradeName: 'nome_fantasia' | 'fantasia';
+}
+
 /**
- * Looks up company registration data by CNPJ using BrasilAPI
- * (https://brasilapi.com.br — public, free, no API key required, sourced
- * from Receita Federal data). Mirrors Tiflux's "Preenchimento inteligente"
- * CNPJ autofill on client registration.
+ * BrasilAPI primeiro; os outros só são consultados quando ela não acha o CNPJ ou falha
+ * (a ReceitaWS limita a 3 consultas por janela).
+ */
+const PROVIDERS: readonly Provider[] = [
+  { url: (d) => `https://brasilapi.com.br/api/cnpj/v1/${d}`, legalName: 'razao_social', tradeName: 'nome_fantasia' },
+  { url: (d) => `https://receitaws.com.br/v1/cnpj/${d}`, legalName: 'nome', tradeName: 'fantasia' },
+  { url: (d) => `https://minhareceita.org/${d}`, legalName: 'razao_social', tradeName: 'nome_fantasia' },
+];
+
+type Outcome = CnpjLookupResult | 'not-found' | 'invalid' | 'failed';
+
+/**
+ * Looks up company registration data by CNPJ in public providers sourced from Receita
+ * Federal data (no API key). Mirrors Tiflux's "Preenchimento inteligente" CNPJ autofill
+ * on client registration.
  */
 @Injectable()
 export class CnpjLookupService {
@@ -27,34 +45,40 @@ export class CnpjLookupService {
 
   async lookup(cnpj: string): Promise<CnpjLookupResult> {
     const digits = cnpj.replace(/\D/g, '');
-    const response = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${digits}`, {
-      headers: { 'User-Agent': 'Aponta-Helpdesk/1.0 (+https://aponta.dmtecnologia.cloud)' },
-    });
-
-    if (response.status === 404) {
-      throw new NotFoundException(`CNPJ ${cnpj} não encontrado`);
+    const providers = this.flags.isEnabled('consulta-cnpj-alternativa') ? PROVIDERS : PROVIDERS.slice(0, 1);
+    let failed = false;
+    for (const provider of providers) {
+      const outcome = await this.query(provider, digits);
+      if (outcome === 'invalid') throw new BadRequestException(`CNPJ ${cnpj} inválido`);
+      if (outcome === 'failed') failed = true;
+      else if (outcome !== 'not-found') return outcome;
     }
-    if (!response.ok) {
-      throw new BadGatewayException('Falha ao consultar o CNPJ. Tente novamente mais tarde.');
-    }
+    // Com algum provedor fora do ar não dá para afirmar que o CNPJ não existe.
+    if (failed) throw new BadGatewayException('Falha ao consultar o CNPJ. Tente novamente mais tarde.');
+    throw new NotFoundException(`CNPJ ${cnpj} não encontrado`);
+  }
 
-    const data = (await response.json()) as {
-      razao_social: string;
-      nome_fantasia: string | null;
-      cep: string | null;
-      logradouro: string | null;
-      numero: string | null;
-      bairro: string | null;
-      municipio: string | null;
-      uf: string | null;
-      complemento: string | null;
-    };
+  private async query(provider: Provider, digits: string): Promise<Outcome> {
+    let data: Record<string, string | null>;
+    try {
+      const response = await fetch(provider.url(digits), {
+        headers: { 'User-Agent': 'Aponta-Helpdesk/1.0 (+https://aponta.dmtecnologia.cloud)' },
+        signal: AbortSignal.timeout(8000),
+      });
+      if (response.status === 404) return 'not-found';
+      if (response.status === 400) return 'invalid';
+      if (!response.ok) return 'failed';
+      data = (await response.json()) as Record<string, string | null>;
+    } catch {
+      return 'failed';
+    }
+    if (data.status === 'ERROR') return 'not-found';
     return {
       cnpj: digits,
-      legalName: data.razao_social,
-      tradeName: data.nome_fantasia || null,
+      legalName: data[provider.legalName] as string,
+      tradeName: data[provider.tradeName] || null,
       address: {
-        zipCode: data.cep || null,
+        zipCode: data.cep?.replace(/\D/g, '') || null,
         street: [data.logradouro, data.numero].filter(Boolean).join(', ') || null,
         neighborhood: data.bairro || null,
         city: data.municipio || null,
