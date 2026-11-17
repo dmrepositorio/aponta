@@ -70,12 +70,13 @@ export class MailService {
     }
   }
 
+  // Pela chave única, sem varredura: usuário com convite pendente só nasce pelo cadastro novo, que guarda o e-mail em minúsculas.
   private async isPendingUser(email: string): Promise<boolean> {
     if (!this.prisma) return false;
-    const pending = await this.prisma.user.findFirst({
-      where: { email: { equals: email, mode: 'insensitive' }, password: null },
-      select: { id: true },
+    const user = await this.prisma.user.findUnique({
+      where: { email: email.trim().toLowerCase() },
+      select: { id: true, password: true },
     });
-    return pending !== null;
+    return user !== null && user.password === null;
   }
 }

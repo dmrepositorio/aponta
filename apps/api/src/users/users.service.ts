@@ -68,9 +68,14 @@ const USER_GROUPS_INCLUDE = {
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
-  // E-mail é único sem diferença de caixa (DMTE-550); dado legado pode ter caixa mista.
+  // E-mail é único sem diferença de caixa (DMTE-550): toda escrita o guarda em minúsculas, então a chave única
+  // acha quase sempre. A varredura insensível só roda quando ela não acha (dado legado de caixa mista).
   async findByEmail(email: string): Promise<User | null> {
-    return this.prisma.user.findFirst({ where: { email: { equals: email, mode: 'insensitive' } } });
+    const normalized = email.trim().toLowerCase();
+    return (
+      (await this.prisma.user.findUnique({ where: { email: normalized } })) ??
+      this.prisma.user.findFirst({ where: { email: { equals: normalized, mode: 'insensitive' } } })
+    );
   }
 
   async findById(id: string): Promise<User | null> {
