@@ -2,7 +2,6 @@ import request from 'supertest';
 import { buildHarness, Harness, ID, OLD_PASSWORD } from '../testing/users-http-harness';
 
 /** Achado do code-review (DMTE-551): o máximo de 128 caracteres vale no cadastro e na troca, e a recusa diz "10 caracteres" em português. */
-const STRONG = 'Cavalo#Azul-7418';
 const TOO_LONG = `Aa#1${'x'.repeat(125)}`; // 129 caracteres
 
 describe('Tamanho da senha no cadastro e na troca (DMTE-551)', () => {
