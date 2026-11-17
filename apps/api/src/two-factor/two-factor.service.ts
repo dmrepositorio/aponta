@@ -104,6 +104,20 @@ export class TwoFactorService {
     return user.id;
   }
 
+  /** Um administrador desativa o segundo fator de outro usuário que perdeu o aplicativo e os códigos; fica registrado. */
+  async disableByAdmin(actorId: string, userId: string): Promise<void> {
+    // O próprio segundo fator só sai com senha e código (`disable`); esta rota não é atalho para isso.
+    if (actorId === userId) throw new BadRequestException('Para desativar o seu segundo fator, use Minha Conta.');
+    if (!(await this.prisma.user.findUnique({ where: { id: userId } }))) throw new NotFoundException('Usuário não encontrado.');
+    if (!(await this.isEnabled(userId))) throw new ConflictException('O segundo fator não está ativo.');
+    // Remoção e registro juntos: não fica desativação sem trilha.
+    await this.prisma.$transaction(async (tx) => {
+      await tx.twoFactorRecoveryCode.deleteMany({ where: { userId } });
+      await tx.userTwoFactor.delete({ where: { userId } });
+      await tx.securityEvent.create({ data: { type: 'TWO_FACTOR_DISABLED_BY_ADMIN', actorId, subjectId: userId } });
+    });
+  }
+
   /** Apaga o segundo fator e os códigos de recuperação do usuário. */
   async remove(userId: string): Promise<void> {
     await this.prisma.$transaction(async (tx) => {

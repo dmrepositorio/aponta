@@ -1,0 +1,1049 @@
+
+ RUN  v4.1.11 /home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-551-8067d53caffe/workdir/aponta/apps/web
+
+ ❯ |web| src/components/users/UserForm.twofactor.test.tsx (4 tests | 4 failed) 1835ms
+     × AC-16: mostra "Ativado" e o botão para quem tem a permissão; confirma e chama a rota do administrador 796ms
+     × AC-16: sem a permissão o botão não aparece, mas o estado continua visível 472ms
+     × AC-16: quem não tem segundo fator mostra "Desativado" e nenhum botão 316ms
+     × AC-16: recusa do servidor mostra o motivo e mantém o estado 245ms
+
+ Test Files  1 failed (1)
+      Tests  4 failed (4)
+   Start at  15:39:50
+   Duration  7.10s (transform 2.16s, setup 191ms, import 3.54s, tests 1.84s, environment 1.13s)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |web| src/components/users/UserForm.twofactor.test.tsx > UserForm: segundo fator na aba Segurança > AC-16: mostra "Ativado" e o botão para quem tem a permissão; confirma e chama a rota do administrador
+TestingLibraryElementError: Unable to find an accessible element with the role "heading" and name `/^segundo fator$/i`
+
+Here are the accessible roles:
+
+  heading:
+
+  Name "Ana Silva":
+  [36m<h2[39m
+    [33mclass[39m=[32m"min-w-0 truncate text-[18px] font-semibold text-gray-900"[39m
+  [36m/>[39m
+
+  Name "Situação":
+  [36m<h3[39m
+    [33mclass[39m=[32m"text-[14px] font-semibold text-gray-900"[39m
+  [36m/>[39m
+
+  Name "Redefinição de senha":
+  [36m<h3[39m
+    [33mclass[39m=[32m"text-[14px] font-semibold text-gray-900"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  tablist:
+
+  Name "":
+  [36m<div[39m
+    [33mclass[39m=[32m"flex items-center overflow-x-auto no-scrollbar border-b border-gray-200"[39m
+    [33mrole[39m=[32m"tablist"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  tab:
+
+  Name "Geral":
+  [36m<button[39m
+    [33maria-controls[39m=[32m"user-tabs-panel-general"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"relative px-4 py-3 text-[14px] font-medium transition-colors whitespace-nowrap ez-focus-inset text-gray-500 hover:text-gray-900"[39m
+    [33mid[39m=[32m"user-tabs-tab-general"[39m
+    [33mrole[39m=[32m"tab"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Segurança":
+  [36m<button[39m
+    [33maria-controls[39m=[32m"user-tabs-panel-security"[39m
+    [33maria-selected[39m=[32m"true"[39m
+    [33mclass[39m=[32m"relative px-4 py-3 text-[14px] font-medium transition-colors whitespace-nowrap ez-focus-inset text-brand-600"[39m
+    [33mid[39m=[32m"user-tabs-tab-security"[39m
+    [33mrole[39m=[32m"tab"[39m
+    [33mtabindex[39m=[32m"0"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  tabpanel:
+
+  Name "Segurança":
+  [36m<div[39m
+    [33maria-labelledby[39m=[32m"user-tabs-tab-security"[39m
+    [33mclass[39m=[32m"flex flex-col w-full bg-white rounded-[16px] border border-gray-100 transition-all p-5 md:p-6"[39m
+    [33mid[39m=[32m"user-tabs-panel-security"[39m
+    [33mrole[39m=[32m"tabpanel"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  button:
+
+  Name "Inativar":
+  [36m<button[39m
+    [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none ez-focus active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent text-brand-600 border border-gray-200 hover:bg-gray-80 hover:border-gray-90 disabled:bg-gray-80 disabled:border-gray-200 disabled:text-gray-400 h-[32px] text-xs px-4"[39m
+    [33mdisabled[39m=[32m""[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Redefinir senha":
+  [36m<button[39m
+    [33maria-describedby[39m=[32m"user-link-blocked"[39m
+    [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none ez-focus active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent text-brand-600 border border-gray-200 hover:bg-gray-80 hover:border-gray-90 disabled:bg-gray-80 disabled:border-gray-200 disabled:text-gray-400 h-[32px] text-xs px-4"[39m
+    [33mdisabled[39m=[32m""[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  paragraph:
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-sm text-gray-700"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-xs text-gray-700"[39m
+    [33mid[39m=[32m"user-link-blocked"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-5"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center justify-between gap-3"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"min-w-0 truncate text-[18px] font-semibold text-gray-900"[39m
+        [36m>[39m
+          [0mAna Silva[0m
+        [36m</h2>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"inline-flex items-center justify-center rounded-[24px] px-2.5 py-1 min-w-[32px] min-h-[24px] text-[12px] font-medium leading-none select-none transition-colors border bg-green-100 text-green-800 border-green-200 whitespace-nowrap"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"flex items-center justify-center mr-1.5 -ml-0.5"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-check h-3 w-3"[39m
+              [33mdata-glyph[39m=[32m"check"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"3"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M20 6 9 17l-5-5"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</span>[39m
+          [36m<span>[39m
+            [0mAtivo[0m
+          [36m</span>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center overflow-x-auto no-scrollbar border-b border-gray-200"[39m
+        [33mrole[39m=[32m"tablist"[39m
+      [36m>[39m
+        [36m<button[39m
+          [33maria-controls[39m=[32m"user-tabs-panel-general"[39m
+          [33maria-selected[39m=[32m"false"[39m
+          [33mclass[39m=[32m"relative px-4 py-3 text-[14px] font-medium transition-colors whitespace-nowrap ez-focus-inset text-gray-500 hover:text-gray-900"[39m
+          [33mid[39m=[32m"user-tabs-tab-general"[39m
+          [33mrole[39m=[32m"tab"[39m
+          [33mtabindex[39m=[32m"-1"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [0mGeral[0m
+        [36m</button>[39m
+        [36m<button[39m
+          [33maria-controls[39m=[32m"user-tabs-panel-security"[39m
+          [33maria-selected[39m=[32m"true"[39m
+          [33mclass[39m=[32m"relative px-4 py-3 text-[14px] font-medium transition-colors whitespace-nowrap ez-focus-inset text-brand-600"[39m
+          [33mid[39m=[32m"user-tabs-tab-security"[39m
+          [33mrole[39m=[32m"tab"[39m
+          [33mtabindex[39m=[32m"0"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [0mSegurança[0m
+          [36m<div[39m
+            [33mclass[39m=[32m"absolute bottom-0 left-0 right-0 h-0.5 bg-brand-600 rounded-t-sm"[39m
+          [36m/>[39m
+        [36m</button>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33maria-labelledby[39m=[32m"user-tabs-tab-security"[39m
+        [33mclass[39m=[32m"flex flex-col w-full bg-white rounded-[16px] border border-gray-100 transition-all p-5 md:p-6"[39m
+        [33mid[39m=[32m"user-tabs-panel-security"[39m
+        [33mrole[39m=[32m"tabpanel"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mhidden[39m=[32m""[39m
+        [36m>[39m
+          [36m<form[39m
+            [33mclass[39m=[32m"space-y-5"[39m
+            [33mnovalidate[39m=[32m""[39m
+          [36m>[39m
+            [36m<div[39m
+              [33maria-live[39m=[32m"polite"[39m
+            [36m/>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"grid grid-cols-1 gap-4 md:grid-cols-2"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex flex-col w-full gap-1.5"[39m
+              [36m>[39m
+                [36m<label[39m
+                  [33mclass[39m=[32m"text-[14px] font-medium leading-none mb-0.5 select-none text-gray-900"[39m
+                  [33mfor[39m=[32m"user-name"[39m
+                [36m>[39m
+                  [0mNome[0m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"ml-1 text-red-600"[39m
+                  [36m>[39m
+                    [0m*[0m
+                  [36m</span>[39m
+                [36m</label>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"[39m
+                [36m>[39m
+                  [36m<input[39m
+                    [33mautocomplete[39m=[32m"off"[39m
+                    [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+                    [33mid[39m=[32m"user-name"[39m
+                    [33mrequired[39m=[32m""[39m
+                    [33mtype[39m=[32m"text"[39m
+                    [33mvalue[39m=[32m"Ana Silva"[39m
+                  [36m/>[39m
+                [36m</div>[39m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex flex-col w-full gap-1.5"[39m
+              [36m>[39m
+                [36m<label[39m
+                  [33mclass[39m=[32m"text-[14px] font-medium leading-none mb-0.5 select-none text-gray-900"[39m
+                  [33mfor[39m=[32m"user-email"[39m
+                [36m>[39m
+                  [0mE-mail[0m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"ml-1 text-red-600"[39m
+                  [36m>[39m
+                    [0m*[0m
+                  [36m</span>[39m
+                [36m</label>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"[39m
+                [36m>[39m
+                  [36m<input[39m
+                    [33mautocomplete[39m=[32m"off"[39m
+                    [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+                    [33mid[39m=[32m"user-email"[39m
+                ...
+ ❯ Object.getElementError ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ section src/components/users/UserForm.twofactor.test.tsx:26:30
+     24|   await userEvent.setup().click(screen.getByRole('tab', { name: 'Segur…
+     25| };
+     26| const section = () => screen.getByRole('heading', { name: /^segundo fa…
+       |                              ^
+     27|
+     28| describe('UserForm: segundo fator na aba Segurança', () => {
+ ❯ src/components/users/UserForm.twofactor.test.tsx:39:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  |web| src/components/users/UserForm.twofactor.test.tsx > UserForm: segundo fator na aba Segurança > AC-16: sem a permissão o botão não aparece, mas o estado continua visível
+TestingLibraryElementError: Unable to find an accessible element with the role "heading" and name `/^segundo fator$/i`
+
+Here are the accessible roles:
+
+  heading:
+
+  Name "Ana Silva":
+  [36m<h2[39m
+    [33mclass[39m=[32m"min-w-0 truncate text-[18px] font-semibold text-gray-900"[39m
+  [36m/>[39m
+
+  Name "Situação":
+  [36m<h3[39m
+    [33mclass[39m=[32m"text-[14px] font-semibold text-gray-900"[39m
+  [36m/>[39m
+
+  Name "Redefinição de senha":
+  [36m<h3[39m
+    [33mclass[39m=[32m"text-[14px] font-semibold text-gray-900"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  tablist:
+
+  Name "":
+  [36m<div[39m
+    [33mclass[39m=[32m"flex items-center overflow-x-auto no-scrollbar border-b border-gray-200"[39m
+    [33mrole[39m=[32m"tablist"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  tab:
+
+  Name "Geral":
+  [36m<button[39m
+    [33maria-controls[39m=[32m"user-tabs-panel-general"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"relative px-4 py-3 text-[14px] font-medium transition-colors whitespace-nowrap ez-focus-inset text-gray-500 hover:text-gray-900"[39m
+    [33mid[39m=[32m"user-tabs-tab-general"[39m
+    [33mrole[39m=[32m"tab"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Segurança":
+  [36m<button[39m
+    [33maria-controls[39m=[32m"user-tabs-panel-security"[39m
+    [33maria-selected[39m=[32m"true"[39m
+    [33mclass[39m=[32m"relative px-4 py-3 text-[14px] font-medium transition-colors whitespace-nowrap ez-focus-inset text-brand-600"[39m
+    [33mid[39m=[32m"user-tabs-tab-security"[39m
+    [33mrole[39m=[32m"tab"[39m
+    [33mtabindex[39m=[32m"0"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  tabpanel:
+
+  Name "Segurança":
+  [36m<div[39m
+    [33maria-labelledby[39m=[32m"user-tabs-tab-security"[39m
+    [33mclass[39m=[32m"flex flex-col w-full bg-white rounded-[16px] border border-gray-100 transition-all p-5 md:p-6"[39m
+    [33mid[39m=[32m"user-tabs-panel-security"[39m
+    [33mrole[39m=[32m"tabpanel"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  button:
+
+  Name "Inativar":
+  [36m<button[39m
+    [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none ez-focus active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent text-brand-600 border border-gray-200 hover:bg-gray-80 hover:border-gray-90 disabled:bg-gray-80 disabled:border-gray-200 disabled:text-gray-400 h-[32px] text-xs px-4"[39m
+    [33mdisabled[39m=[32m""[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Redefinir senha":
+  [36m<button[39m
+    [33maria-describedby[39m=[32m"user-link-blocked"[39m
+    [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none ez-focus active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent text-brand-600 border border-gray-200 hover:bg-gray-80 hover:border-gray-90 disabled:bg-gray-80 disabled:border-gray-200 disabled:text-gray-400 h-[32px] text-xs px-4"[39m
+    [33mdisabled[39m=[32m""[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  paragraph:
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-sm text-gray-700"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-xs text-gray-700"[39m
+    [33mid[39m=[32m"user-link-blocked"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-5"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center justify-between gap-3"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"min-w-0 truncate text-[18px] font-semibold text-gray-900"[39m
+        [36m>[39m
+          [0mAna Silva[0m
+        [36m</h2>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"inline-flex items-center justify-center rounded-[24px] px-2.5 py-1 min-w-[32px] min-h-[24px] text-[12px] font-medium leading-none select-none transition-colors border bg-green-100 text-green-800 border-green-200 whitespace-nowrap"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"flex items-center justify-center mr-1.5 -ml-0.5"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-check h-3 w-3"[39m
+              [33mdata-glyph[39m=[32m"check"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"3"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M20 6 9 17l-5-5"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</span>[39m
+          [36m<span>[39m
+            [0mAtivo[0m
+          [36m</span>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center overflow-x-auto no-scrollbar border-b border-gray-200"[39m
+        [33mrole[39m=[32m"tablist"[39m
+      [36m>[39m
+        [36m<button[39m
+          [33maria-controls[39m=[32m"user-tabs-panel-general"[39m
+          [33maria-selected[39m=[32m"false"[39m
+          [33mclass[39m=[32m"relative px-4 py-3 text-[14px] font-medium transition-colors whitespace-nowrap ez-focus-inset text-gray-500 hover:text-gray-900"[39m
+          [33mid[39m=[32m"user-tabs-tab-general"[39m
+          [33mrole[39m=[32m"tab"[39m
+          [33mtabindex[39m=[32m"-1"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [0mGeral[0m
+        [36m</button>[39m
+        [36m<button[39m
+          [33maria-controls[39m=[32m"user-tabs-panel-security"[39m
+          [33maria-selected[39m=[32m"true"[39m
+          [33mclass[39m=[32m"relative px-4 py-3 text-[14px] font-medium transition-colors whitespace-nowrap ez-focus-inset text-brand-600"[39m
+          [33mid[39m=[32m"user-tabs-tab-security"[39m
+          [33mrole[39m=[32m"tab"[39m
+          [33mtabindex[39m=[32m"0"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [0mSegurança[0m
+          [36m<div[39m
+            [33mclass[39m=[32m"absolute bottom-0 left-0 right-0 h-0.5 bg-brand-600 rounded-t-sm"[39m
+          [36m/>[39m
+        [36m</button>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33maria-labelledby[39m=[32m"user-tabs-tab-security"[39m
+        [33mclass[39m=[32m"flex flex-col w-full bg-white rounded-[16px] border border-gray-100 transition-all p-5 md:p-6"[39m
+        [33mid[39m=[32m"user-tabs-panel-security"[39m
+        [33mrole[39m=[32m"tabpanel"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mhidden[39m=[32m""[39m
+        [36m>[39m
+          [36m<form[39m
+            [33mclass[39m=[32m"space-y-5"[39m
+            [33mnovalidate[39m=[32m""[39m
+          [36m>[39m
+            [36m<div[39m
+              [33maria-live[39m=[32m"polite"[39m
+            [36m/>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"grid grid-cols-1 gap-4 md:grid-cols-2"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex flex-col w-full gap-1.5"[39m
+              [36m>[39m
+                [36m<label[39m
+                  [33mclass[39m=[32m"text-[14px] font-medium leading-none mb-0.5 select-none text-gray-900"[39m
+                  [33mfor[39m=[32m"user-name"[39m
+                [36m>[39m
+                  [0mNome[0m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"ml-1 text-red-600"[39m
+                  [36m>[39m
+                    [0m*[0m
+                  [36m</span>[39m
+                [36m</label>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"[39m
+                [36m>[39m
+                  [36m<input[39m
+                    [33mautocomplete[39m=[32m"off"[39m
+                    [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+                    [33mid[39m=[32m"user-name"[39m
+                    [33mrequired[39m=[32m""[39m
+                    [33mtype[39m=[32m"text"[39m
+                    [33mvalue[39m=[32m"Ana Silva"[39m
+                  [36m/>[39m
+                [36m</div>[39m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex flex-col w-full gap-1.5"[39m
+              [36m>[39m
+                [36m<label[39m
+                  [33mclass[39m=[32m"text-[14px] font-medium leading-none mb-0.5 select-none text-gray-900"[39m
+                  [33mfor[39m=[32m"user-email"[39m
+                [36m>[39m
+                  [0mE-mail[0m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"ml-1 text-red-600"[39m
+                  [36m>[39m
+                    [0m*[0m
+                  [36m</span>[39m
+                [36m</label>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"[39m
+                [36m>[39m
+                  [36m<input[39m
+                    [33mautocomplete[39m=[32m"off"[39m
+                    [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+                    [33mid[39m=[32m"user-email"[39m
+                ...
+ ❯ Object.getElementError ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ section src/components/users/UserForm.twofactor.test.tsx:26:30
+     24|   await userEvent.setup().click(screen.getByRole('tab', { name: 'Segur…
+     25| };
+     26| const section = () => screen.getByRole('heading', { name: /^segundo fa…
+       |                              ^
+     27|
+     28| describe('UserForm: segundo fator na aba Segurança', () => {
+ ❯ src/components/users/UserForm.twofactor.test.tsx:52:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  |web| src/components/users/UserForm.twofactor.test.tsx > UserForm: segundo fator na aba Segurança > AC-16: quem não tem segundo fator mostra "Desativado" e nenhum botão
+TestingLibraryElementError: Unable to find an accessible element with the role "heading" and name `/^segundo fator$/i`
+
+Here are the accessible roles:
+
+  heading:
+
+  Name "Ana Silva":
+  [36m<h2[39m
+    [33mclass[39m=[32m"min-w-0 truncate text-[18px] font-semibold text-gray-900"[39m
+  [36m/>[39m
+
+  Name "Situação":
+  [36m<h3[39m
+    [33mclass[39m=[32m"text-[14px] font-semibold text-gray-900"[39m
+  [36m/>[39m
+
+  Name "Redefinição de senha":
+  [36m<h3[39m
+    [33mclass[39m=[32m"text-[14px] font-semibold text-gray-900"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  tablist:
+
+  Name "":
+  [36m<div[39m
+    [33mclass[39m=[32m"flex items-center overflow-x-auto no-scrollbar border-b border-gray-200"[39m
+    [33mrole[39m=[32m"tablist"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  tab:
+
+  Name "Geral":
+  [36m<button[39m
+    [33maria-controls[39m=[32m"user-tabs-panel-general"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"relative px-4 py-3 text-[14px] font-medium transition-colors whitespace-nowrap ez-focus-inset text-gray-500 hover:text-gray-900"[39m
+    [33mid[39m=[32m"user-tabs-tab-general"[39m
+    [33mrole[39m=[32m"tab"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Segurança":
+  [36m<button[39m
+    [33maria-controls[39m=[32m"user-tabs-panel-security"[39m
+    [33maria-selected[39m=[32m"true"[39m
+    [33mclass[39m=[32m"relative px-4 py-3 text-[14px] font-medium transition-colors whitespace-nowrap ez-focus-inset text-brand-600"[39m
+    [33mid[39m=[32m"user-tabs-tab-security"[39m
+    [33mrole[39m=[32m"tab"[39m
+    [33mtabindex[39m=[32m"0"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  tabpanel:
+
+  Name "Segurança":
+  [36m<div[39m
+    [33maria-labelledby[39m=[32m"user-tabs-tab-security"[39m
+    [33mclass[39m=[32m"flex flex-col w-full bg-white rounded-[16px] border border-gray-100 transition-all p-5 md:p-6"[39m
+    [33mid[39m=[32m"user-tabs-panel-security"[39m
+    [33mrole[39m=[32m"tabpanel"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  button:
+
+  Name "Inativar":
+  [36m<button[39m
+    [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none ez-focus active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent text-brand-600 border border-gray-200 hover:bg-gray-80 hover:border-gray-90 disabled:bg-gray-80 disabled:border-gray-200 disabled:text-gray-400 h-[32px] text-xs px-4"[39m
+    [33mdisabled[39m=[32m""[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Redefinir senha":
+  [36m<button[39m
+    [33maria-describedby[39m=[32m"user-link-blocked"[39m
+    [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none ez-focus active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent text-brand-600 border border-gray-200 hover:bg-gray-80 hover:border-gray-90 disabled:bg-gray-80 disabled:border-gray-200 disabled:text-gray-400 h-[32px] text-xs px-4"[39m
+    [33mdisabled[39m=[32m""[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  paragraph:
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-sm text-gray-700"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-xs text-gray-700"[39m
+    [33mid[39m=[32m"user-link-blocked"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-5"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center justify-between gap-3"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"min-w-0 truncate text-[18px] font-semibold text-gray-900"[39m
+        [36m>[39m
+          [0mAna Silva[0m
+        [36m</h2>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"inline-flex items-center justify-center rounded-[24px] px-2.5 py-1 min-w-[32px] min-h-[24px] text-[12px] font-medium leading-none select-none transition-colors border bg-green-100 text-green-800 border-green-200 whitespace-nowrap"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"flex items-center justify-center mr-1.5 -ml-0.5"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-check h-3 w-3"[39m
+              [33mdata-glyph[39m=[32m"check"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"3"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M20 6 9 17l-5-5"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</span>[39m
+          [36m<span>[39m
+            [0mAtivo[0m
+          [36m</span>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center overflow-x-auto no-scrollbar border-b border-gray-200"[39m
+        [33mrole[39m=[32m"tablist"[39m
+      [36m>[39m
+        [36m<button[39m
+          [33maria-controls[39m=[32m"user-tabs-panel-general"[39m
+          [33maria-selected[39m=[32m"false"[39m
+          [33mclass[39m=[32m"relative px-4 py-3 text-[14px] font-medium transition-colors whitespace-nowrap ez-focus-inset text-gray-500 hover:text-gray-900"[39m
+          [33mid[39m=[32m"user-tabs-tab-general"[39m
+          [33mrole[39m=[32m"tab"[39m
+          [33mtabindex[39m=[32m"-1"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [0mGeral[0m
+        [36m</button>[39m
+        [36m<button[39m
+          [33maria-controls[39m=[32m"user-tabs-panel-security"[39m
+          [33maria-selected[39m=[32m"true"[39m
+          [33mclass[39m=[32m"relative px-4 py-3 text-[14px] font-medium transition-colors whitespace-nowrap ez-focus-inset text-brand-600"[39m
+          [33mid[39m=[32m"user-tabs-tab-security"[39m
+          [33mrole[39m=[32m"tab"[39m
+          [33mtabindex[39m=[32m"0"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [0mSegurança[0m
+          [36m<div[39m
+            [33mclass[39m=[32m"absolute bottom-0 left-0 right-0 h-0.5 bg-brand-600 rounded-t-sm"[39m
+          [36m/>[39m
+        [36m</button>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33maria-labelledby[39m=[32m"user-tabs-tab-security"[39m
+        [33mclass[39m=[32m"flex flex-col w-full bg-white rounded-[16px] border border-gray-100 transition-all p-5 md:p-6"[39m
+        [33mid[39m=[32m"user-tabs-panel-security"[39m
+        [33mrole[39m=[32m"tabpanel"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mhidden[39m=[32m""[39m
+        [36m>[39m
+          [36m<form[39m
+            [33mclass[39m=[32m"space-y-5"[39m
+            [33mnovalidate[39m=[32m""[39m
+          [36m>[39m
+            [36m<div[39m
+              [33maria-live[39m=[32m"polite"[39m
+            [36m/>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"grid grid-cols-1 gap-4 md:grid-cols-2"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex flex-col w-full gap-1.5"[39m
+              [36m>[39m
+                [36m<label[39m
+                  [33mclass[39m=[32m"text-[14px] font-medium leading-none mb-0.5 select-none text-gray-900"[39m
+                  [33mfor[39m=[32m"user-name"[39m
+                [36m>[39m
+                  [0mNome[0m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"ml-1 text-red-600"[39m
+                  [36m>[39m
+                    [0m*[0m
+                  [36m</span>[39m
+                [36m</label>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"[39m
+                [36m>[39m
+                  [36m<input[39m
+                    [33mautocomplete[39m=[32m"off"[39m
+                    [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+                    [33mid[39m=[32m"user-name"[39m
+                    [33mrequired[39m=[32m""[39m
+                    [33mtype[39m=[32m"text"[39m
+                    [33mvalue[39m=[32m"Ana Silva"[39m
+                  [36m/>[39m
+                [36m</div>[39m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex flex-col w-full gap-1.5"[39m
+              [36m>[39m
+                [36m<label[39m
+                  [33mclass[39m=[32m"text-[14px] font-medium leading-none mb-0.5 select-none text-gray-900"[39m
+                  [33mfor[39m=[32m"user-email"[39m
+                [36m>[39m
+                  [0mE-mail[0m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"ml-1 text-red-600"[39m
+                  [36m>[39m
+                    [0m*[0m
+                  [36m</span>[39m
+                [36m</label>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"[39m
+                [36m>[39m
+                  [36m<input[39m
+                    [33mautocomplete[39m=[32m"off"[39m
+                    [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+                    [33mid[39m=[32m"user-email"[39m
+                ...
+ ❯ Object.getElementError ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ section src/components/users/UserForm.twofactor.test.tsx:26:30
+     24|   await userEvent.setup().click(screen.getByRole('tab', { name: 'Segur…
+     25| };
+     26| const section = () => screen.getByRole('heading', { name: /^segundo fa…
+       |                              ^
+     27|
+     28| describe('UserForm: segundo fator na aba Segurança', () => {
+ ❯ src/components/users/UserForm.twofactor.test.tsx:59:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  |web| src/components/users/UserForm.twofactor.test.tsx > UserForm: segundo fator na aba Segurança > AC-16: recusa do servidor mostra o motivo e mantém o estado
+TestingLibraryElementError: Unable to find an accessible element with the role "heading" and name `/^segundo fator$/i`
+
+Here are the accessible roles:
+
+  heading:
+
+  Name "Ana Silva":
+  [36m<h2[39m
+    [33mclass[39m=[32m"min-w-0 truncate text-[18px] font-semibold text-gray-900"[39m
+  [36m/>[39m
+
+  Name "Situação":
+  [36m<h3[39m
+    [33mclass[39m=[32m"text-[14px] font-semibold text-gray-900"[39m
+  [36m/>[39m
+
+  Name "Redefinição de senha":
+  [36m<h3[39m
+    [33mclass[39m=[32m"text-[14px] font-semibold text-gray-900"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  tablist:
+
+  Name "":
+  [36m<div[39m
+    [33mclass[39m=[32m"flex items-center overflow-x-auto no-scrollbar border-b border-gray-200"[39m
+    [33mrole[39m=[32m"tablist"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  tab:
+
+  Name "Geral":
+  [36m<button[39m
+    [33maria-controls[39m=[32m"user-tabs-panel-general"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"relative px-4 py-3 text-[14px] font-medium transition-colors whitespace-nowrap ez-focus-inset text-gray-500 hover:text-gray-900"[39m
+    [33mid[39m=[32m"user-tabs-tab-general"[39m
+    [33mrole[39m=[32m"tab"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Segurança":
+  [36m<button[39m
+    [33maria-controls[39m=[32m"user-tabs-panel-security"[39m
+    [33maria-selected[39m=[32m"true"[39m
+    [33mclass[39m=[32m"relative px-4 py-3 text-[14px] font-medium transition-colors whitespace-nowrap ez-focus-inset text-brand-600"[39m
+    [33mid[39m=[32m"user-tabs-tab-security"[39m
+    [33mrole[39m=[32m"tab"[39m
+    [33mtabindex[39m=[32m"0"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  tabpanel:
+
+  Name "Segurança":
+  [36m<div[39m
+    [33maria-labelledby[39m=[32m"user-tabs-tab-security"[39m
+    [33mclass[39m=[32m"flex flex-col w-full bg-white rounded-[16px] border border-gray-100 transition-all p-5 md:p-6"[39m
+    [33mid[39m=[32m"user-tabs-panel-security"[39m
+    [33mrole[39m=[32m"tabpanel"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  button:
+
+  Name "Inativar":
+  [36m<button[39m
+    [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none ez-focus active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent text-brand-600 border border-gray-200 hover:bg-gray-80 hover:border-gray-90 disabled:bg-gray-80 disabled:border-gray-200 disabled:text-gray-400 h-[32px] text-xs px-4"[39m
+    [33mdisabled[39m=[32m""[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Redefinir senha":
+  [36m<button[39m
+    [33maria-describedby[39m=[32m"user-link-blocked"[39m
+    [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none ez-focus active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent text-brand-600 border border-gray-200 hover:bg-gray-80 hover:border-gray-90 disabled:bg-gray-80 disabled:border-gray-200 disabled:text-gray-400 h-[32px] text-xs px-4"[39m
+    [33mdisabled[39m=[32m""[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  paragraph:
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-sm text-gray-700"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<p[39m
+    [33mclass[39m=[32m"text-xs text-gray-700"[39m
+    [33mid[39m=[32m"user-link-blocked"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-5"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center justify-between gap-3"[39m
+      [36m>[39m
+        [36m<h2[39m
+          [33mclass[39m=[32m"min-w-0 truncate text-[18px] font-semibold text-gray-900"[39m
+        [36m>[39m
+          [0mAna Silva[0m
+        [36m</h2>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"inline-flex items-center justify-center rounded-[24px] px-2.5 py-1 min-w-[32px] min-h-[24px] text-[12px] font-medium leading-none select-none transition-colors border bg-green-100 text-green-800 border-green-200 whitespace-nowrap"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"flex items-center justify-center mr-1.5 -ml-0.5"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-check h-3 w-3"[39m
+              [33mdata-glyph[39m=[32m"check"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"3"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M20 6 9 17l-5-5"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</span>[39m
+          [36m<span>[39m
+            [0mAtivo[0m
+          [36m</span>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center overflow-x-auto no-scrollbar border-b border-gray-200"[39m
+        [33mrole[39m=[32m"tablist"[39m
+      [36m>[39m
+        [36m<button[39m
+          [33maria-controls[39m=[32m"user-tabs-panel-general"[39m
+          [33maria-selected[39m=[32m"false"[39m
+          [33mclass[39m=[32m"relative px-4 py-3 text-[14px] font-medium transition-colors whitespace-nowrap ez-focus-inset text-gray-500 hover:text-gray-900"[39m
+          [33mid[39m=[32m"user-tabs-tab-general"[39m
+          [33mrole[39m=[32m"tab"[39m
+          [33mtabindex[39m=[32m"-1"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [0mGeral[0m
+        [36m</button>[39m
+        [36m<button[39m
+          [33maria-controls[39m=[32m"user-tabs-panel-security"[39m
+          [33maria-selected[39m=[32m"true"[39m
+          [33mclass[39m=[32m"relative px-4 py-3 text-[14px] font-medium transition-colors whitespace-nowrap ez-focus-inset text-brand-600"[39m
+          [33mid[39m=[32m"user-tabs-tab-security"[39m
+          [33mrole[39m=[32m"tab"[39m
+          [33mtabindex[39m=[32m"0"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [0mSegurança[0m
+          [36m<div[39m
+            [33mclass[39m=[32m"absolute bottom-0 left-0 right-0 h-0.5 bg-brand-600 rounded-t-sm"[39m
+          [36m/>[39m
+        [36m</button>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33maria-labelledby[39m=[32m"user-tabs-tab-security"[39m
+        [33mclass[39m=[32m"flex flex-col w-full bg-white rounded-[16px] border border-gray-100 transition-all p-5 md:p-6"[39m
+        [33mid[39m=[32m"user-tabs-panel-security"[39m
+        [33mrole[39m=[32m"tabpanel"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mhidden[39m=[32m""[39m
+        [36m>[39m
+          [36m<form[39m
+            [33mclass[39m=[32m"space-y-5"[39m
+            [33mnovalidate[39m=[32m""[39m
+          [36m>[39m
+            [36m<div[39m
+              [33maria-live[39m=[32m"polite"[39m
+            [36m/>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"grid grid-cols-1 gap-4 md:grid-cols-2"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex flex-col w-full gap-1.5"[39m
+              [36m>[39m
+                [36m<label[39m
+                  [33mclass[39m=[32m"text-[14px] font-medium leading-none mb-0.5 select-none text-gray-900"[39m
+                  [33mfor[39m=[32m"user-name"[39m
+                [36m>[39m
+                  [0mNome[0m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"ml-1 text-red-600"[39m
+                  [36m>[39m
+                    [0m*[0m
+                  [36m</span>[39m
+                [36m</label>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"[39m
+                [36m>[39m
+                  [36m<input[39m
+                    [33mautocomplete[39m=[32m"off"[39m
+                    [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+                    [33mid[39m=[32m"user-name"[39m
+                    [33mrequired[39m=[32m""[39m
+                    [33mtype[39m=[32m"text"[39m
+                    [33mvalue[39m=[32m"Ana Silva"[39m
+                  [36m/>[39m
+                [36m</div>[39m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex flex-col w-full gap-1.5"[39m
+              [36m>[39m
+                [36m<label[39m
+                  [33mclass[39m=[32m"text-[14px] font-medium leading-none mb-0.5 select-none text-gray-900"[39m
+                  [33mfor[39m=[32m"user-email"[39m
+                [36m>[39m
+                  [0mE-mail[0m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"ml-1 text-red-600"[39m
+                  [36m>[39m
+                    [0m*[0m
+                  [36m</span>[39m
+                [36m</label>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"[39m
+                [36m>[39m
+                  [36m<input[39m
+                    [33mautocomplete[39m=[32m"off"[39m
+                    [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+                    [33mid[39m=[32m"user-email"[39m
+                ...
+ ❯ Object.getElementError ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ section src/components/users/UserForm.twofactor.test.tsx:26:30
+     24|   await userEvent.setup().click(screen.getByRole('tab', { name: 'Segur…
+     25| };
+     26| const section = () => screen.getByRole('heading', { name: /^segundo fa…
+       |                              ^
+     27|
+     28| describe('UserForm: segundo fator na aba Segurança', () => {
+ ❯ src/components/users/UserForm.twofactor.test.tsx:68:29
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+

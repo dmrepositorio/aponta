@@ -43,11 +43,14 @@ interface GroupSummary {
 export type UserWithGroups = SafeUser & {
   technicalGroup: GroupSummary | null;
   permissionGroups: GroupSummary[];
+  /** Só se o segundo fator está ativo; o segredo e os códigos nunca saem da API (DMTE-551). */
+  twoFactorEnabled: boolean;
 };
 
 type UserWithGroupRelations = User & {
   technicalGroup?: GroupSummary | null;
   permissionGroupLinks?: { permissionGroup: GroupSummary }[];
+  twoFactor?: { enabled: boolean } | null;
 };
 
 export interface PaginatedUsers {
@@ -60,6 +63,7 @@ export interface PaginatedUsers {
 // ambas num único round-trip ao Postgres.
 const USER_GROUPS_INCLUDE = {
   organization: true,
+  twoFactor: { select: { enabled: true } },
   technicalGroup: { select: { id: true, name: true } },
   permissionGroupLinks: {
     include: { permissionGroup: { select: { id: true, name: true } } },
@@ -214,8 +218,10 @@ export class UsersService {
   private toUserWithGroups(user: UserWithGroupRelations): UserWithGroups {
     const safe = this.toSafeUser(user) as SafeUser & {
       permissionGroupLinks?: unknown;
+      twoFactor?: unknown;
     };
     delete safe.permissionGroupLinks;
+    delete safe.twoFactor;
 
     return {
       ...safe,
@@ -223,6 +229,7 @@ export class UsersService {
       permissionGroups: (user.permissionGroupLinks ?? []).map(
         (link) => link.permissionGroup,
       ),
+      twoFactorEnabled: user.twoFactor?.enabled === true,
     };
   }
 

@@ -75,6 +75,7 @@ export const PERMISSION_CATALOG: PermissionDefinition[] = [
   { key: 'CHANGE_USER_ROLE', category: PermissionCategory.MANAGEMENT, label: 'Alterar o tipo do usuário' },
   { key: 'ACTIVATE_DEACTIVATE_USERS', category: PermissionCategory.MANAGEMENT, label: 'Ativar e inativar usuários' },
   { key: 'SEND_USER_INVITES_AND_RESETS', category: PermissionCategory.MANAGEMENT, label: 'Enviar convite e solicitar redefinição de senha' },
+  { key: 'DISABLE_USER_TWO_FACTOR', category: PermissionCategory.MANAGEMENT, label: 'Desativar o segundo fator de outro usuário' },
   { key: 'MANAGE_SERVICE_CATALOGS', category: PermissionCategory.MANAGEMENT, label: 'Gerenciar catálogos de serviço' },
   { key: 'MANAGE_SERVICE_DESKS', category: PermissionCategory.MANAGEMENT, label: 'Gerenciar mesas de serviços' },
   { key: 'ACCESS_AGENT_SETTINGS', category: PermissionCategory.MANAGEMENT, label: 'Acessar configurações de agente' },

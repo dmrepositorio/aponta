@@ -251,6 +251,17 @@ model TwoFactorRecoveryCode {
   @@index([userId])
 }
 
+/// DMTE-551: trilha de eventos de segurança (hoje, o segundo fator desativado por um administrador). Sem chave estrangeira: o registro sobrevive à exclusão dos usuários.
+model SecurityEvent {
+  id        String   @id @default(uuid())
+  type      String
+  actorId   String
+  subjectId String
+  createdAt DateTime @default(now())
+
+  @@index([subjectId])
+}
+
 model ServiceDesk {
   id          String  @id @default(uuid())
   name        String

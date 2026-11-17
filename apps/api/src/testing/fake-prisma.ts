@@ -10,7 +10,7 @@ import { Prisma } from '@prisma/client';
  * Operador fora desta lista lança: estenda aqui em vez de afrouxar o teste.
  */
 type Row = Record<string, any>;
-type Model = 'user' | 'passwordToken' | 'permissionGroup' | 'permissionGroupUser' | 'technicalGroup' | 'organization' | 'serviceDesk' | 'userTwoFactor' | 'twoFactorRecoveryCode';
+type Model = 'user' | 'passwordToken' | 'permissionGroup' | 'permissionGroupUser' | 'technicalGroup' | 'organization' | 'serviceDesk' | 'userTwoFactor' | 'twoFactorRecoveryCode' | 'securityEvent';
 export type Tables = Record<Model, Row[]>;
 
 const UNIQUE: Partial<Record<Model, string[]>> = { user: ['email'], passwordToken: ['tokenHash'], userTwoFactor: ['userId'] };
@@ -31,8 +31,9 @@ const DEFAULTS: Record<Model, () => Row> = {
   serviceDesk: () => ({ id: randomUUID(), agents: [], agentGroups: [] }),
   userTwoFactor: () => ({ enabled: false, lastStep: 0, confirmedAt: null, createdAt: new Date() }),
   twoFactorRecoveryCode: () => ({ id: randomUUID(), usedAt: null, createdAt: new Date() }),
+  securityEvent: () => ({ id: randomUUID(), createdAt: new Date() }),
 };
-const RELATIONS = ['technicalGroup', 'organization', 'permissionGroupLinks', 'permissionGroup'];
+const RELATIONS = ['technicalGroup', 'organization', 'permissionGroupLinks', 'permissionGroup', 'twoFactor'];
 const OPERATORS = ['equals', 'not', 'in', 'notIn', 'contains', 'startsWith', 'endsWith', 'gt', 'gte', 'lt', 'lte', 'has', 'some', 'every', 'none', 'is', 'mode'];
 
 /** `{ increment: n }` soma ao valor atual, como o Prisma. */
@@ -112,7 +113,7 @@ export interface FakePrisma {
 
 export function createFakePrisma(seed: Partial<Tables> = {}): FakePrisma {
   const tables: Tables = {
-    user: [], passwordToken: [], permissionGroup: [], permissionGroupUser: [], technicalGroup: [], organization: [], serviceDesk: [], userTwoFactor: [], twoFactorRecoveryCode: [],
+    user: [], passwordToken: [], permissionGroup: [], permissionGroupUser: [], technicalGroup: [], organization: [], serviceDesk: [], userTwoFactor: [], twoFactorRecoveryCode: [], securityEvent: [],
     ...Object.fromEntries(Object.entries(seed).map(([k, rows]) => [k, rows!.map((r) => ({ ...r }))])),
   };
   const calls: FakePrisma['calls'] = [];
@@ -126,6 +127,7 @@ export function createFakePrisma(seed: Partial<Tables> = {}): FakePrisma {
       ...row,
       technicalGroup: technicalGroup ?? null,
       organization: tables.organization.find((o) => o.id === row.organizationId) ?? null,
+      twoFactor: tables.userTwoFactor.find((t) => t.userId === row.id) ?? null,
       permissionGroupLinks: tables.permissionGroupUser
         .filter((l) => l.userId === row.id)
         .map((l) => ({ ...l, permissionGroup: tables.permissionGroup.find((g) => g.id === l.permissionGroupId) })),
