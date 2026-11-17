@@ -58,15 +58,15 @@ export class OrganizationsController {
   @Delete(':id')
   @UseGuards(PermissionsGuard)
   @RequirePermission('MANAGE_CLIENTS_AND_RESOURCE_GROUPS')
-  remove(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
-    return this.organizationsService.remove(id, false, user.id);
+  async remove(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
+    return this.organizationsService.remove(id, await this.permissionsService.canDeleteTickets(user.id), user.id);
   }
 
   @Post('deletion-check')
   @UseGuards(PermissionsGuard)
   @RequirePermission('MANAGE_CLIENTS_AND_RESOURCE_GROUPS')
-  deletionCheck(@Body() dto: DeletionCheckDto, @CurrentUser() _user: CurrentUserPayload) {
-    return this.organizationsService.deletionCheck(dto.ids, false);
+  async deletionCheck(@Body() dto: DeletionCheckDto, @CurrentUser() user: CurrentUserPayload) {
+    return this.organizationsService.deletionCheck(dto.ids, await this.permissionsService.canDeleteTickets(user.id));
   }
 
   @Post(':id/addresses')

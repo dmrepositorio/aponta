@@ -1,10 +1,14 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
+  Logger,
   NotFoundException,
   ForbiddenException,
 } from '@nestjs/common';
 import { randomUUID } from 'crypto';
+import { join } from 'path';
+import { unlink } from 'fs/promises';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   Prisma,
@@ -14,6 +18,7 @@ import {
   TicketStatus,
 } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { TicketDeletionReason, ticketDeletionReasons } from './ticket-deletion';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { UpdateTicketDto } from './dto/update-ticket.dto';
 import { TICKET_SORT_FIELDS, TicketQueryDto } from './dto/ticket-query.dto';
@@ -226,6 +231,8 @@ function ticketListInclude(role: Role) {
 
 @Injectable()
 export class TicketsService {
+  private readonly logger = new Logger(TicketsService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly eventEmitter: EventEmitter2,
@@ -1188,8 +1195,71 @@ export class TicketsService {
     return ticket;
   }
 
-  async remove(_id: string, _currentUser: CurrentUserPayload): Promise<{ id: string }> {
-    return { id: '' };
+  /**
+   * DMTE-560: exclusão definitiva. A permissão DELETE_TICKETS é conferida no controller (sem bypass de ADMIN);
+   * aqui valem a visibilidade do GET e as regras do ticket.
+   */
+  async remove(id: string, currentUser: CurrentUserPayload): Promise<{ id: string }> {
+    await this.findOne(id, currentUser);
+    const ticket = await this.prisma.ticket.findUnique({
+      where: { id },
+      select: {
+        protocol: true,
+        requester: { select: { organizationId: true } },
+        attachments: { select: { filename: true } },
+        _count: { select: { worklogs: true, preAppointments: true, subTickets: true } },
+      },
+    });
+    if (!ticket) throw new NotFoundException(`Ticket with ID ${id} not found`);
+
+    const reasons = ticketDeletionReasons(ticket);
+    if (reasons.length > 0) throw await this.deletionConflict(id, ticket.protocol, ticket._count, reasons);
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.comment.deleteMany({ where: { ticketId: id } });
+      await tx.ticketAudit.deleteMany({ where: { ticketId: id } });
+      await tx.appointment.deleteMany({ where: { ticketId: id } });
+      await tx.ticket.delete({ where: { id } });
+    });
+    // Anexos, checklist e pré-apontamentos saem por cascata no banco; o arquivo do anexo sai daqui.
+    await Promise.all(
+      ticket.attachments.map((attachment) => unlink(join(process.cwd(), 'uploads', attachment.filename)).catch(() => undefined)),
+    );
+    this.logger.log(`Ticket ${ticket.protocol} excluído por ${currentUser.id}`);
+    return { id };
+  }
+
+  private async deletionConflict(
+    ticketId: string,
+    protocol: string,
+    counts: { worklogs: number; preAppointments: number; subTickets: number },
+    reasons: TicketDeletionReason[],
+  ) {
+    const texts: string[] = [];
+    const details: Record<string, unknown>[] = [];
+    for (const code of reasons) {
+      if (code === 'CLIENT_REQUESTER') {
+        texts.push('foi aberto pelo cliente');
+        details.push({ code });
+      } else if (code === 'HAS_WORKLOGS') {
+        const count = counts.worklogs + counts.preAppointments;
+        const [worklogs, preAppointments] = await Promise.all([
+          this.prisma.worklog.findMany({ where: { ticketId }, select: { id: true, startTime: true }, orderBy: { startTime: 'asc' }, take: 5 }),
+          this.prisma.preAppointment.findMany({ where: { ticketId }, select: { id: true, beginning: true }, orderBy: { beginning: 'asc' }, take: 5 }),
+        ]);
+        const day = (date: Date) => date.toISOString().slice(0, 10);
+        const items = [
+          ...worklogs.map((w) => ({ id: w.id, label: `Apontamento de ${day(w.startTime)}` })),
+          ...preAppointments.map((p) => ({ id: p.id, label: `Pré-apontamento de ${day(p.beginning)}` })),
+        ].slice(0, 5);
+        texts.push(`tem ${count} ${count === 1 ? 'apontamento' : 'apontamentos'}; remova-os antes`);
+        details.push({ code, count, items });
+      } else {
+        texts.push(`tem ${counts.subTickets} ${counts.subTickets === 1 ? 'sub-ticket' : 'sub-tickets'}; exclua ou desvincule-os antes`);
+        details.push({ code, count: counts.subTickets });
+      }
+    }
+    return new ConflictException({ message: `Não é possível excluir o ticket ${protocol}: ${texts.join('; ')}.`, reasons: details });
   }
 
   async cancel(id: string, currentUser: CurrentUserPayload): Promise<Ticket> {

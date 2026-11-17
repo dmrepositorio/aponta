@@ -6,6 +6,10 @@ export interface TicketDeletionFacts {
   _count: { worklogs: number; preAppointments: number; subTickets: number };
 }
 
-export function ticketDeletionReasons(_ticket: TicketDeletionFacts): TicketDeletionReason[] {
-  return [];
+export function ticketDeletionReasons(ticket: TicketDeletionFacts): TicketDeletionReason[] {
+  const reasons: TicketDeletionReason[] = [];
+  if (ticket.requester.organizationId) reasons.push('CLIENT_REQUESTER');
+  if (ticket._count.worklogs + ticket._count.preAppointments > 0) reasons.push('HAS_WORKLOGS');
+  if (ticket._count.subTickets > 0) reasons.push('HAS_SUB_TICKETS');
+  return reasons;
 }

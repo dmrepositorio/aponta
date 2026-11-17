@@ -13,6 +13,8 @@ interface EffectivePermissions {
   canReleaseWorklogWithoutSchedule: boolean;
   /** DMTE-462 T5: tem ao menos uma das permissões de liberar apontamento (sem desvio por role). */
   canReleaseWorklogs: boolean;
+  /** DMTE-560: sem bypass de ADMIN; só o grupo de permissões libera excluir ticket. */
+  canDeleteTickets: boolean;
 }
 
 interface MeResponse extends EffectivePermissions {
@@ -37,6 +39,7 @@ export function useEffectivePermissions() {
         canEditWorklogStartTime: data.canEditWorklogStartTime === true,
         canReleaseWorklogWithoutSchedule: data.canReleaseWorklogWithoutSchedule === true,
         canReleaseWorklogs: data.canReleaseWorklogs === true,
+        canDeleteTickets: data.canDeleteTickets === true,
       };
     },
     enabled: !!token,
