@@ -238,3 +238,12 @@ Um token novo de foco e duas utilidades; nenhum componente novo. O foco do `EzTa
 - **`EzTabs`, painel:** prop opcional `idPrefix`; com ela cada aba ganha `id` e `aria-controls`, e o DS exporta `ezTabId(prefix, tabId)` e `ezTabPanelId(prefix, tabId)` para o consumidor montar o painel (`role="tabpanel"`, `id`, `aria-labelledby`). Sem `idPrefix` não há `id` nem `aria-controls` (não aponta para painel que não existe). A Mesa usa o `EzCardItem` do corpo como painel; os outros usos de `EzTabs` ganham só o tabindex móvel e as teclas.
 - **Medido em Chromium** (1440 e 390 px, `scripts/mesa_focus_check.mjs`, dados sintéticos; evidência técnica, o aceite visual é do Alfredo): contorno de 2 px em `rgb(0, 133, 97)` na aba e no checkbox, aba focada dentro da lista que rola, 12 `tab`, 1 `tabpanel`, 12 `aria-controls`, seta troca a aba, Tab sai da lista para o conteúdo, End leva à última aba e o foco a traz para a área visível da lista (a 390 px ela fica fora da tela).
 
+## Conhecimento: proporção, tokens, foco e semântica de cor (DMTE-535)
+
+Nenhum token, prop ou componente novo no DS; o resto reaproveita o que existe. Medido em Chromium (390 e 1440 px, `scripts/knowledge_proportion_check.mjs`, dados sintéticos; evidência técnica, o aceite visual é do Alfredo).
+
+- **Uma altura por linha:** `--control-height-md` (42 px) no cabeçalho (busca, `+ Novo artigo`) e na ordenação (combo e alternador Lista/Grade com `rounded-control`); `+ Nova pasta` e `Compartilhar` também em 42 px.
+- **Terciárias** do card (`Ler artigo completo`, `Editar`, `Excluir`) com `px-0`, alinhadas à borda do conteúdo; `tailwind-merge` deixa o `px-0` vencer o `px-4` do `EzButton`.
+- **Exceção declarada, primário local:** `bg-brand-600` (4,64:1) nos primários da tela, por `KNOWLEDGE_PRIMARY` em `components/knowledge/knowledgeStyles.ts`. O `EzButton` primário segue em `brand-500` (3,94:1) nas outras telas; corrigir no DS inteiro é entrega própria, e então a constante sai. O "Confirmar" do `EzDialog` fica em `brand-500` até lá.
+- **Foco:** `FOCUS_RING` repete o anel do `EzButton` (`ring-4 ring-brand-200 ring-offset-2`) na tag clicável, no "×" do filtro e no alternador. A tag clicável tem `aria-pressed` e `Check` quando ativa.
+- **Cor:** "Interno" em `petroleum` com cadeado; amarelo fica para alerta. Exclusão de artigo e de pasta por `EzDialog` (`danger`), não `window.confirm`.

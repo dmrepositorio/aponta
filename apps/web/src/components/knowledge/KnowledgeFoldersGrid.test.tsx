@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, beforeEach, expect, it, vi } from 'vitest';
 import { api } from '../../lib/api';
@@ -118,10 +118,50 @@ describe('KnowledgeFoldersGrid', () => {
     const deleteButtons = screen.getAllByRole('button', { name: /excluir/i });
     await user.click(deleteButtons[0]);
 
-    expect(window.confirm).toHaveBeenCalled();
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByText('Excluir pasta')).toBeInTheDocument();
+    expect(within(dialog).getByText('Excluir a pasta "Financeiro"?')).toBeInTheDocument();
+    expect(api.delete).not.toHaveBeenCalled();
+    await user.click(within(dialog).getByRole('button', { name: 'Confirmar' }));
+
     await waitFor(() => {
       expect(api.delete).toHaveBeenCalledWith('/knowledge-folders/folder-1');
     });
+    expect(window.confirm).not.toHaveBeenCalled();
+  });
+
+  it('keeps the folder when the delete dialog is cancelled', async () => {
+    const user = userEvent.setup();
+    renderGrid({ canAuthor: true });
+    await waitFor(() => expect(screen.getByText('Financeiro')).toBeInTheDocument());
+
+    await user.click(screen.getAllByRole('button', { name: /excluir/i })[0]);
+    await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Cancelar' }));
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(api.delete).not.toHaveBeenCalled();
+  });
+
+  it('uses the control height, the legible primary and aligned text actions', async () => {
+    const user = userEvent.setup();
+    renderGrid({ canAuthor: true });
+    await waitFor(() => expect(screen.getByText('Financeiro')).toBeInTheDocument());
+
+    expect(screen.getByRole('button', { name: '+ Nova pasta' })).toHaveClass('h-[42px]', 'bg-brand-600', 'border-brand-600');
+    for (const name of ['Editar', 'Excluir']) {
+      for (const button of screen.getAllByRole('button', { name })) expect(button).toHaveClass('px-0');
+    }
+
+    await user.click(screen.getByRole('button', { name: '+ Nova pasta' }));
+    expect(screen.getByRole('button', { name: 'Salvar' })).toHaveClass('bg-brand-600', 'border-brand-600');
+  });
+
+  it('shows the article count in a text color with enough contrast', async () => {
+    renderGrid();
+    await waitFor(() => expect(screen.getByText('3 artigos')).toBeInTheDocument());
+
+    expect(screen.getByText('3 artigos')).toHaveClass('text-gray-500');
+    expect(screen.getByText('3 artigos').className).not.toMatch(/text-gray-400/);
   });
 
   it('shows an empty state when there are no folders', async () => {

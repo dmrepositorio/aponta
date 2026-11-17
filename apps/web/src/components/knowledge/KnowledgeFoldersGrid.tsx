@@ -1,7 +1,8 @@
 import { FormEvent, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../lib/api';
-import { EzAlert, EzButton, EzCardItem, EzEmptyCard, EzSpinner, EzTextInput } from '../ds';
+import { EzAlert, EzButton, EzCardItem, EzDialog, EzEmptyCard, EzSpinner, EzTextInput } from '../ds';
+import { KNOWLEDGE_PRIMARY } from './knowledgeStyles';
 
 export interface KnowledgeFolder {
   id: string;
@@ -36,6 +37,7 @@ const EMPTY_FORM: FolderFormState = { id: null, name: '', description: '', icon:
 export function KnowledgeFoldersGrid({ onOpenFolder, canAuthor }: KnowledgeFoldersGridProps) {
   const queryClient = useQueryClient();
   const [form, setForm] = useState<FolderFormState | null>(null);
+  const [folderToDelete, setFolderToDelete] = useState<KnowledgeFolder | null>(null);
 
   const { data: folders, isLoading } = useQuery<KnowledgeFolder[]>({
     queryKey: ['knowledge-folders'],
@@ -89,12 +91,6 @@ export function KnowledgeFoldersGrid({ onOpenFolder, canAuthor }: KnowledgeFolde
     saveMutation.mutate();
   };
 
-  const handleDelete = (folder: KnowledgeFolder) => {
-    if (window.confirm(`Excluir a pasta "${folder.name}"?`)) {
-      deleteMutation.mutate(folder.id);
-    }
-  };
-
   if (isLoading) {
     return (
       <div className="p-8">
@@ -108,7 +104,7 @@ export function KnowledgeFoldersGrid({ onOpenFolder, canAuthor }: KnowledgeFolde
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-[20px] font-semibold text-gray-900">Base de Conhecimento</h1>
         {canAuthor && !form && (
-          <EzButton type="button" onClick={openNewForm} size="small">
+          <EzButton type="button" onClick={openNewForm} className={KNOWLEDGE_PRIMARY}>
             + Nova pasta
           </EzButton>
         )}
@@ -144,7 +140,7 @@ export function KnowledgeFoldersGrid({ onOpenFolder, canAuthor }: KnowledgeFolde
               </EzAlert>
             )}
             <div className="flex gap-2 pt-2">
-              <EzButton type="submit" disabled={saveMutation.isPending}>
+              <EzButton type="submit" className={KNOWLEDGE_PRIMARY} disabled={saveMutation.isPending}>
                 {form.id ? 'Atualizar' : 'Salvar'}
               </EzButton>
               <EzButton type="button" variant="secondary" onClick={() => setForm(null)}>
@@ -170,22 +166,22 @@ export function KnowledgeFoldersGrid({ onOpenFolder, canAuthor }: KnowledgeFolde
                   {folder.description && (
                     <p className="text-sm text-gray-500">{folder.description}</p>
                   )}
-                  <p className="text-xs text-gray-400 mt-1">
+                  <p className="text-xs text-gray-500 mt-1">
                     {folder._count.articles} {folder._count.articles === 1 ? 'artigo' : 'artigos'}
                   </p>
                 </div>
               </button>
 
               {canAuthor && (
-                <div className="flex gap-2 mt-3 pt-3 border-t border-gray-100">
-                  <EzButton variant="tertiary" size="small" onClick={() => openEditForm(folder)}>
+                <div className="flex gap-4 mt-3 pt-3 border-t border-gray-100">
+                  <EzButton variant="tertiary" size="small" className="px-0" onClick={() => openEditForm(folder)}>
                     Editar
                   </EzButton>
                   <EzButton
                     variant="tertiary"
                     size="small"
-                    className="text-red-600 hover:text-red-700"
-                    onClick={() => handleDelete(folder)}
+                    className="px-0 text-red-600 hover:text-red-700"
+                    onClick={() => setFolderToDelete(folder)}
                   >
                     Excluir
                   </EzButton>
@@ -197,6 +193,18 @@ export function KnowledgeFoldersGrid({ onOpenFolder, canAuthor }: KnowledgeFolde
       ) : (
         <EzEmptyCard title="Nenhuma pasta encontrada." />
       )}
+
+      <EzDialog
+        open={folderToDelete !== null}
+        variant="danger"
+        title="Excluir pasta"
+        message={`Excluir a pasta "${folderToDelete?.name ?? ''}"?`}
+        onCancel={() => setFolderToDelete(null)}
+        onConfirm={() => {
+          if (folderToDelete) deleteMutation.mutate(folderToDelete.id);
+          setFolderToDelete(null);
+        }}
+      />
     </div>
   );
 }

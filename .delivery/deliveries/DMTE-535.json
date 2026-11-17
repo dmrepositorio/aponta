@@ -1,0 +1,119 @@
+{
+  "version": 1,
+  "delivery": "DMTE-535",
+  "repository": "dmrepositorio/aponta",
+  "github_issue": 301,
+  "multica_id": "01a1e004-6817-7a06-b38c-15d52e5859c9",
+  "cycle": "2026-11-09/2026-11-22",
+  "tier": 2,
+  "criteria": [
+    {
+      "id": "AC-01",
+      "description": "na linha do cabeçalho da página, busca e `+ Novo artigo` têm 42 px de altura (`+ Novo artigo` com `size=\"medium\"`); na linha de ordenação, o combo e o alternador Lista/Grade têm 42 px, o contêiner do alternador usa `--control-height-md` e `rounded-control`, sem `rounded-[12px]`/`rounded-[8px]` soltos; `+ Nova pasta` e `Compartilhar` também em 42 px. No navegador, em 1440 px e 390 px, as alturas medidas de cada linha são iguais.",
+      "tests": [
+        "apps/web/src/pages/KnowledgePage.test.tsx: keeps the header and sort rows on the control height token, with no loose radius",
+        "apps/web/src/pages/KnowledgePage.test.tsx: keeps the Compartilhar button at the height of the access combo",
+        "apps/web/src/components/knowledge/KnowledgeFoldersGrid.test.tsx: uses the control height, the legible primary and aligned text actions",
+        "Medição em Chromium (1440 px e 390 px): alturas de cada linha de controles iguais (resultado no PR)"
+      ]
+    },
+    {
+      "id": "AC-02",
+      "description": "\"Ler artigo completo\", \"Editar\" e \"Excluir\" do card de artigo, e \"Editar\" e \"Excluir\" do card de pasta, não têm padding lateral (`px-0`); no navegador, a borda esquerda do texto de \"Ler artigo completo\" (e de \"Editar\" da pasta) coincide com a do título do card, e a altura do alvo segue em 32 px.",
+      "tests": [
+        "apps/web/src/pages/KnowledgePage.test.tsx: aligns the card text actions with the card content, without the DS side padding",
+        "apps/web/src/components/knowledge/KnowledgeFoldersGrid.test.tsx: uses the control height, the legible primary and aligned text actions",
+        "Medição em Chromium: borda esquerda de \"Ler artigo completo\" e de \"Editar\" da pasta igual à do título (resultado no PR)"
+      ]
+    },
+    {
+      "id": "AC-03",
+      "description": "os primários da tela (`+ Novo artigo`, `+ Nova pasta`, `Salvar`/`Atualizar` de artigo e de pasta, `Adicionar`) usam `brand-600`; no navegador, a razão de contraste calculada entre o texto e o fundo de cada um é de pelo menos 4,5:1. \"N artigos\" usa `text-gray-500` (razão de pelo menos 4,5:1).",
+      "tests": [
+        "apps/web/src/pages/KnowledgePage.test.tsx: uses the legible primary on the primary actions of the screen",
+        "apps/web/src/components/knowledge/KnowledgeFoldersGrid.test.tsx: uses the control height, the legible primary and aligned text actions",
+        "apps/web/src/components/knowledge/KnowledgeFoldersGrid.test.tsx: shows the article count in a text color with enough contrast",
+        "Medição em Chromium: razão de contraste calculada dos primários e de \"N artigos\" (resultado no PR)"
+      ]
+    },
+    {
+      "id": "AC-04",
+      "description": "a tag clicável do card, o \"×\" do filtro ativo e os botões Lista/Grade mostram anel de foco `brand-200` com `focus-visible` (nenhum contorno padrão do navegador); no navegador, ao navegar por Tab, `box-shadow` do elemento focado não é vazio e `outline-style` é `none`.",
+      "tests": [
+        "apps/web/src/pages/KnowledgePage.test.tsx: gives the clickable tag, the filter remove button and the view toggles the DS focus ring",
+        "Medição em Chromium: box-shadow do elemento focado por Tab e outline-style none (resultado no PR)"
+      ]
+    },
+    {
+      "id": "AC-05",
+      "description": "a tag clicável tem `aria-pressed` igual a `true` quando o filtro está ativo e `false` quando não está, e mostra um ícone decorativo (`aria-hidden`) de seleção só quando ativa.",
+      "tests": [
+        "apps/web/src/pages/KnowledgePage.test.tsx: marks the active tag filter with aria-pressed and a decorative check, not only a color"
+      ]
+    },
+    {
+      "id": "AC-06",
+      "description": "\"Interno\" usa a variante `petroleum` com ícone de cadeado `aria-hidden`, nunca `yellow`; o texto \"Interno\" é o mesmo.",
+      "tests": [
+        "apps/web/src/pages/KnowledgePage.test.tsx: shows Interno as a classification (petroleum with a lock), not as a yellow alert"
+      ]
+    },
+    {
+      "id": "AC-07",
+      "description": "com o formulário de artigo aberto (novo ou edição), `+ Novo artigo` do cabeçalho continua na tela, `disabled`, com `title`; o foco vai ao campo \"Título\"; fechar o formulário reabilita o botão.",
+      "tests": [
+        "apps/web/src/pages/KnowledgePage.test.tsx: keeps \"+ Novo artigo\" on screen, disabled, while the form is open, and focuses the title",
+        "apps/web/src/pages/KnowledgePage.test.tsx: focuses the title when the edit form opens from a card",
+        "apps/web/src/pages/KnowledgePage.test.tsx: tells an empty folder apart from a search, offering to create the first article to authors"
+      ]
+    },
+    {
+      "id": "AC-08",
+      "description": "\"+ Novo item de catálogo\" é um `EzButton` terciário alinhado à esquerda (`self-start`, `px-0`); no navegador, sua borda esquerda coincide com a dos campos do formulário.",
+      "tests": [
+        "apps/web/src/pages/KnowledgePage.test.tsx: aligns \"+ Novo item de catálogo\" to the start of the form as a DS tertiary button",
+        "Medição em Chromium: borda esquerda do botão igual à dos campos do formulário (resultado no PR)"
+      ]
+    },
+    {
+      "id": "AC-09",
+      "description": "\"Excluir\" do artigo e da pasta abre um `EzDialog` de perigo com o nome do item; \"Confirmar\" chama o `DELETE` do item e fecha; \"Cancelar\" e Escape fecham sem chamar a API; `window.confirm` não é mais chamado.",
+      "tests": [
+        "apps/web/src/pages/KnowledgePage.test.tsx: asks for confirmation in a dialog before deleting, and cancel or Escape keep the article",
+        "apps/web/src/pages/KnowledgePage.test.tsx: allows deleting an article",
+        "apps/web/src/components/knowledge/KnowledgeFoldersGrid.test.tsx: allows a canAuthor user to delete a folder after confirming",
+        "apps/web/src/components/knowledge/KnowledgeFoldersGrid.test.tsx: keeps the folder when the delete dialog is cancelled"
+      ]
+    },
+    {
+      "id": "AC-10",
+      "description": "nenhum arquivo de `apps/web/src/components/ds/`, de `apps/api` nem de `apps/web-e2e` é alterado, `package.json` e `pnpm-lock.yaml` não mudam, os parâmetros enviados à API não mudam, e os testes da DMTE-537 (`with a slow articles API`) e os da DMTE-534 que não aparecem em \"Testes existentes que mudam\" passam sem edição.",
+      "tests": [
+        "git diff do PR: nenhum arquivo em apps/web/src/components/ds/, apps/api, apps/web-e2e, package.json nem pnpm-lock.yaml",
+        "apps/web/src/pages/KnowledgePage.test.tsx: testes da DMTE-537 (with a slow articles API), sem edição"
+      ],
+      "tdd_required": false,
+      "reason": "Verificação de escopo por git diff e testes da DMTE-537 que já existem e passam sem edição; sem comportamento novo."
+    }
+  ],
+  "spec": "docs/delivery/specs/DMTE-535.md",
+  "tdd": {
+    "mode": "required",
+    "red": ".delivery/evidence/DMTE-535/red.json",
+    "green": ".delivery/evidence/DMTE-535/green.json"
+  },
+  "design_system": {
+    "applicable": true,
+    "reused": [
+      "EzButton",
+      "EzTag",
+      "EzDialog",
+      "EzCardItem",
+      "EzEmptyCard",
+      "EzAlert",
+      "EzTextInput"
+    ],
+    "reason": "Reaproveita os componentes Ez* existentes, os tokens --control-height-md e --radius-control e o anel de foco do EzButton; o primário local brand-600 e o anel ficam em knowledgeStyles.ts, sem componente novo no DS.",
+    "exception": "Nenhum arquivo de apps/web/src/components/ds/ muda nesta entrega, então não há story nova."
+  }
+}
