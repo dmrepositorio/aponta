@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "phase": "green",
+  "started_at": "2026-11-17T02:18:23.398114+00:00",
+  "finished_at": "2026-11-17T02:18:35.530763+00:00",
+  "command": [
+    "pnpm",
+    "--dir",
+    "apps/web",
+    "exec",
+    "vitest",
+    "run",
+    "src/pages/ServiceDesksPage.test.tsx",
+    "src/components/MesaFlagEditor.test.tsx",
+    "src/components/BusinessHoursEditor.test.tsx"
+  ],
+  "base_sha": "faad4eea413df4ec9d0c31adc6f7a73c0c3cd2de",
+  "head_sha": "e90f094da9bf4964086931243c0e33b92948f762",
+  "exit_code": 0,
+  "tests": {
+    "apps/web/src/pages/ServiceDesksPage.test.tsx": "ee43f49abc7bf06bf84946838866af83ea7d8c11cf66f8463c1e1309d610ffea",
+    "apps/web/src/components/MesaFlagEditor.test.tsx": "8210101271801bdfb6678c7d13be7999045e32f848ee74d2aebf9385a6939ca7",
+    "apps/web/src/components/BusinessHoursEditor.test.tsx": "c04679b4a869ba6197fcf8a50827ef70c28c83920d75b02bf7da7368989b4b6c"
+  },
+  "criteria": [
+    "AC-01",
+    "AC-02",
+    "AC-03",
+    "AC-04",
+    "AC-05",
+    "AC-06",
+    "AC-07",
+    "AC-08",
+    "AC-09"
+  ],
+  "source_hashes": {
+    "apps/web/src/components/BusinessHoursEditor.test.tsx": "c04679b4a869ba6197fcf8a50827ef70c28c83920d75b02bf7da7368989b4b6c",
+    "apps/web/src/components/BusinessHoursEditor.tsx": "c8dbcaf0e4133886d6ebf9507fd178d9767d1307645876b065865011802581fd",
+    "apps/web/src/components/MesaDeskForms.tsx": "5837cd8778d51ab7ec1076b25c98f771c23af585a3fa6b8643d5026dea139f74",
+    "apps/web/src/components/MesaFlagEditor.test.tsx": "8210101271801bdfb6678c7d13be7999045e32f848ee74d2aebf9385a6939ca7",
+    "apps/web/src/components/MesaFlagEditor.tsx": "f90c640fe6aea38d653d6349cde3c99c85484940e70f9c81258547c559640271",
+    "apps/web/src/components/MesaStagesEditor.tsx": "03dd596031b6b90e7c2f77b7dc70eac1a05c9f73aac7ac8aa458f4b85853d53b",
+    "apps/web/src/components/ServiceDeskEditor.tsx": "caa8f1272bbc00f6b26f91f8fd7aa752336017c07fe53d8a0936f421b6f7d0ca",
+    "apps/web/src/components/ServiceDeskSlaEditor.tsx": "56151b64ad1442373c96de299bfc2b714dc9f94c08c7a9318013f42e7b31f22e",
+    "apps/web/src/components/mesaSave.tsx": "f336a2fce11e835217404c8ad38901016d4f936cda106ccb51ff21a1f28406e4",
+    "apps/web/src/pages/ServiceDesksPage.test.tsx": "ee43f49abc7bf06bf84946838866af83ea7d8c11cf66f8463c1e1309d610ffea",
+    "apps/web/src/pages/ServiceDesksPage.tsx": "8d51449719010dbfdb461a34709a9018ade15f087286a985ec1671f856060525",
+    "scripts/mesa_save_check.mjs": "70caf06deecf6485ceaa8f348dc83c95d6a7c41ed0f4bc6db294a5e11418c552"
+  },
+  "log": ".delivery/evidence/DMTE-533/green.log",
+  "log_sha256": "a8cb8f61bfd97e70ccc29b7fcbccc92301288483506aa2868bc3330bd6f70912"
+}
