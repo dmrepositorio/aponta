@@ -313,6 +313,48 @@ describe('OrganizationsPage', { timeout: 15000 }, () => {
     });
   });
 
+  describe('cadastro por CNPJ: falha na consulta (DMTE-556)', () => {
+    async function consult(lookupError: unknown) {
+      vi.mocked(api.get).mockImplementation((url: string) => {
+        if (url === '/organizations') return Promise.resolve({ data: orgs });
+        if (url === '/organizations/cnpj-lookup') return Promise.reject(lookupError);
+        return Promise.reject(new Error(`Unexpected GET ${url}`));
+      });
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      renderPage();
+      await waitFor(() => {
+        expect(screen.getByText('Empresa A')).toBeInTheDocument();
+      });
+      await user.click(screen.getByTestId('ez-toolbar-actions-button'));
+      await user.click(screen.getByRole('menuitem', { name: /cadastrar por cnpj/i }));
+      await user.type(screen.getByLabelText(/cnpj/i), '19131243000197');
+      await user.click(screen.getByRole('button', { name: /consultar e abrir cadastro/i }));
+    }
+
+    it.each([404, 400])('says the CNPJ was not found or is invalid when the API answers %i', async (code) => {
+      await consult({ response: { status: code } });
+
+      expect(await screen.findByText('CNPJ não encontrado ou inválido na Receita Federal.')).toBeInTheDocument();
+      expect(screen.getByText('Cadastrar Parceiro por CNPJ')).toBeInTheDocument();
+      expect(screen.getByLabelText(/cnpj/i)).toHaveValue('19131243000197');
+    });
+
+    it.each([
+      ['502', { response: { status: 502 } }],
+      ['no response', new Error('Network Error')],
+    ])('says the lookup is unavailable when it fails with %s', async (_label, error) => {
+      await consult(error);
+
+      expect(
+        await screen.findByText('Não foi possível consultar a Receita Federal agora. Tente novamente em instantes.'),
+      ).toBeInTheDocument();
+      expect(screen.queryByText('CNPJ não encontrado ou inválido na Receita Federal.')).not.toBeInTheDocument();
+      expect(screen.getByText('Cadastrar Parceiro por CNPJ')).toBeInTheDocument();
+      expect(screen.getByLabelText(/cnpj/i)).toHaveValue('19131243000197');
+    });
+  });
+
   it('looks up a CNPJ and autofills legal name / trade name', async () => {
     vi.mocked(api.get).mockImplementation((url: string, config?: any) => {
       if (url === '/organizations') return Promise.resolve({ data: orgs });
