@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "delivery": "DMTE-548",
+  "repository": "dmrepositorio/aponta",
+  "github_issue": 307,
+  "multica_id": "01a1e6fc-22eb-7330-8021-5ab49eb12907",
+  "cycle": "2026-11-09/2026-11-22",
+  "tier": 2,
+  "criteria": [
+    {
+      "id": "AC-01",
+      "description": "um card expandido cujo conteúdo escondido deixa de existir depois de uma atualização do artigo (corpo, anexos e tags extras removidos) volta recolhido: sem `.article-content`, sem anexos expandidos e sem botão de alternar (nada escondido), e nunca fica expandido sem o botão \"Recolher\".",
+      "tests": [
+        "apps/web/src/components/knowledge/KnowledgeArticleCard.test.tsx: collapses back when an update removes everything that was hidden, never staying expanded without the button"
+      ]
+    },
+    {
+      "id": "AC-02",
+      "description": "se o conteúdo escondido voltar depois disso, o card continua recolhido, com o botão \"Ler artigo completo\" e `aria-expanded=\"false\"`.",
+      "tests": [
+        "apps/web/src/components/knowledge/KnowledgeArticleCard.test.tsx: stays collapsed when the hidden content comes back after the update"
+      ]
+    },
+    {
+      "id": "AC-03",
+      "description": "quando a atualização da lista falha e há lista em cache, a lista continua na tela e um aviso (`role=\"alert\"`) acima dela diz que a atualização falhou e que a lista pode estar desatualizada, com o botão \"Tentar novamente\"; \"Não foi possível carregar os artigos.\" não aparece.",
+      "tests": [
+        "apps/web/src/pages/KnowledgePage.test.tsx: keeps the cached list under a stale-list warning when a refetch fails"
+      ]
+    },
+    {
+      "id": "AC-04",
+      "description": "\"Tentar novamente\" com sucesso mostra a lista nova e remove o aviso.",
+      "tests": [
+        "apps/web/src/pages/KnowledgePage.test.tsx: replaces the list and drops the warning when \"Tentar novamente\" succeeds"
+      ]
+    },
+    {
+      "id": "AC-05",
+      "description": "sem lista em cache (primeira carga que falha) o comportamento atual se mantém: alerta \"Não foi possível carregar os artigos.\" com \"Tentar novamente\", sem lista e sem mensagem de pasta vazia.",
+      "tests": [
+        "apps/web/src/pages/KnowledgePage.test.tsx: shows a retryable error, not the empty message, when the query fails"
+      ],
+      "tdd_required": false,
+      "reason": "Regressão do comportamento atual: o teste já existe e passa na base; nada novo a falhar"
+    },
+    {
+      "id": "AC-06",
+      "description": "nenhum arquivo de `apps/web/src/components/ds/` nem de `apps/api` é alterado.",
+      "tests": [
+        "git diff do PR: nenhum arquivo em apps/web/src/components/ds/ nem em apps/api"
+      ],
+      "tdd_required": false,
+      "reason": "Restrição de escopo, verificada no diff do PR; não é comportamento"
+    }
+  ],
+  "spec": "docs/delivery/specs/DMTE-548.md",
+  "tdd": {
+    "mode": "required",
+    "red": ".delivery/evidence/DMTE-548/red.json",
+    "green": ".delivery/evidence/DMTE-548/green.json"
+  },
+  "design_system": {
+    "applicable": true,
+    "reused": [
+      "EzAlert",
+      "EzButton"
+    ],
+    "reason": "Reaproveita EzAlert (variante warning, prop action, role=alert) para o aviso de lista desatualizada e o EzButton do botão de alternar; nenhum componente, prop ou token novo.",
+    "exception": "Nenhum arquivo de apps/web/src/components/ds/ muda nesta entrega, então não há story nova."
+  }
+}
