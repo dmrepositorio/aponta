@@ -91,3 +91,15 @@ _Avoid_: Usuário não ativado, usuário provisório
 **Redefinição de senha**:
 E-mail com link de uso único em que quem já tem senha define uma nova, pedida pelo administrador ou pelo próprio usuário na tela de login.
 _Avoid_: Recuperação de senha, reset
+
+**Segundo fator**:
+Código de um aplicativo autenticador que o usuário informa depois da senha (ou do login social) quando ativou essa proteção em Minha Conta; é opcional.
+_Avoid_: 2FA nas telas, verificação em duas etapas, MFA
+
+**Código de recuperação**:
+Um dos 10 códigos de uso único mostrados na ativação do segundo fator, que o substituem quando o aplicativo se perde.
+_Avoid_: Código de backup, código de emergência
+
+**Login social**:
+Entrada com a conta Google, GitHub ou Facebook de quem já tem conta ativa no Aponta, ligada pelo e-mail verificado do provedor; nunca cria usuário.
+_Avoid_: Cadastro social, SSO
