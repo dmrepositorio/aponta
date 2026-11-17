@@ -26,7 +26,7 @@ export function MesaStagesEditor({ deskId }: { deskId: string }) {
       (editName !== editing.name ||
         editTransitions.length !== editing.transitionToIds.length ||
         editTransitions.some((id) => !editing.transitionToIds.includes(id))));
-  const notice = useMesaSave(dirty);
+  const feedback = useMesaSave(dirty);
 
   const { data: stages = [], isLoading } = useQuery({
     queryKey: ['service-desk-stages', deskId],
@@ -46,9 +46,9 @@ export function MesaStagesEditor({ deskId }: { deskId: string }) {
     onSuccess: () => {
       setNewName('');
       void invalidate();
-      notice.saved();
+      feedback.saved();
     },
-    onError: notice.failed,
+    onError: feedback.failed,
   });
 
   const updateMutation = useMutation({
@@ -62,9 +62,9 @@ export function MesaStagesEditor({ deskId }: { deskId: string }) {
     onSuccess: () => {
       setEditing(null);
       void invalidate();
-      notice.saved();
+      feedback.saved();
     },
-    onError: notice.failed,
+    onError: feedback.failed,
   });
 
   const deleteMutation = useMutation({
@@ -73,9 +73,9 @@ export function MesaStagesEditor({ deskId }: { deskId: string }) {
     },
     onSuccess: () => {
       void invalidate();
-      notice.saved();
+      feedback.saved();
     },
-    onError: notice.failed,
+    onError: feedback.failed,
   });
 
   if (isLoading) {

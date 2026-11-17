@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // DMTE-533 AC-10: mede o modelo único de salvamento da Mesa em Chromium, a 1440×900 e 390×844.
 // A API é interceptada no navegador com dados SINTÉTICOS (sem backend). jsdom não mede sobreposição nem rolagem.
-// Uso: node scripts/mesa_focus_check.mjs [--out <pasta>] [--url <app já no ar>] [--no-assert] [--json <arquivo>]
+// Uso: node scripts/mesa_save_check.mjs [--out <pasta>] [--url <app já no ar>] [--no-assert] [--json <arquivo>]
 // Sai com 1 se alguma medição falhar (exceto com --no-assert, usado para capturar a base "antes").
 import { spawn } from 'node:child_process';
 import { mkdirSync, writeFileSync } from 'node:fs';

@@ -15,7 +15,7 @@ export function ServiceDeskEditor({ desk, agents }: { desk: any; agents: any[] }
   const dirty =
     isEditing &&
     (selectedAgents.length !== savedAgents.length || selectedAgents.some((id) => !savedAgents.includes(id)));
-  const notice = useMesaSave(dirty);
+  const feedback = useMesaSave(dirty);
 
   const mutation = useMutation({
     mutationFn: async (agentIds: string[]) => {
@@ -24,9 +24,9 @@ export function ServiceDeskEditor({ desk, agents }: { desk: any; agents: any[] }
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['service-desks'] });
       setIsEditing(false);
-      notice.saved();
+      feedback.saved();
     },
-    onError: notice.failed,
+    onError: feedback.failed,
   });
 
   const handleSave = () => {
@@ -66,10 +66,7 @@ export function ServiceDeskEditor({ desk, agents }: { desk: any; agents: any[] }
             type="button"
             variant="secondary"
             size="small"
-            onClick={() => {
-              setSelectedAgents(savedAgents);
-              setIsEditing(false);
-            }}
+            onClick={() => setIsEditing(false)}
           >
             Cancelar
           </EzButton>
@@ -94,7 +91,10 @@ export function ServiceDeskEditor({ desk, agents }: { desk: any; agents: any[] }
       <button
         type="button"
         className="text-blue-600 hover:underline px-2 py-1 rounded"
-        onClick={() => setIsEditing(true)}
+        onClick={() => {
+          setSelectedAgents(savedAgents);
+          setIsEditing(true);
+        }}
       >
         Editar Membros
       </button>

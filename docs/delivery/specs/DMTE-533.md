@@ -32,13 +32,13 @@ A auditoria deixa duas opções: salvar por aba (indicador de pendência e aviso
 6. **Dados básicos e Status** viram controlados num módulo novo `components/MesaDeskForms.tsx` (`MesaBasicsForm`, `MesaStatusForm`); mesmo payload, mesmos rótulos de botão.
 7. **Estágios:** cada criar, editar e excluir chama `saved`/`failed`; pendência = nome de novo estágio preenchido ou formulário de edição aberto com nome ou transições diferentes do estágio.
 8. **Parâmetros agrupados** por tema com `<fieldset>` e `<legend>`: "Geral" (Interação com outras mesas, Permitir cancelar ticket, Mostrar o catálogo ao abrir, Abertura só por atendentes), "SLA" (Controle de SLA, Permitir adicionar horas ao SLA, Permitir parar e retomar o SLA) e "Revisão e avaliação" (Fluxo de revisão, Avaliação). Mesmas chaves e rótulos; o payload não muda. O agrupamento é um campo opcional `group` em cada flag do `MesaFlagEditor`; sem ele a grade continua única.
-9. **Botão Salvar** continua habilitado (a regra das guidelines) e mostra "Salvando…" enquanto grava.
+9. **Botão Salvar do `MesaFlagEditor`** mostra "Salvando…" e fica desabilitado enquanto grava; os demais editores só ficam desabilitados (os rótulos de "Salvar dados básicos", "Salvar status", "Salvar Membros" e "Salvar cliente e SLA" são fixos nos ACs e nos testes). Clicar na aba que já está ativa não faz nada.
 10. **Mantido:** API e payloads, RBAC (a tela é só ADMIN), tabs e painel da DMTE-532, grade, filtros, criação e exclusão de mesa (a exclusão por `window.confirm` fica fora). Nenhum arquivo do DS muda.
 
 ## Acceptance criteria
 
 - AC-01: com a aba Parâmetros alterada e salva com sucesso, aparece um aviso com `role="status"` e o texto "Alterações salvas."; o mesmo vale para Dados básicos, Status, Prioridades, Seções, Cliente e SLA, Membros, Estágios (criar, editar, excluir) e Expediente. O PATCH enviado é idêntico ao de hoje em Dados básicos, Status, flags, SLA, Membros, Estágios e Expediente.
-- AC-02: quando a gravação falha em qualquer dessas abas, aparece um aviso com `role="alert"`, "Não foi possível salvar." e a descrição "Tente novamente."; a edição e as marcações do usuário continuam como estavam; o aviso de falha não some sozinho e o de sucesso some em 5 s; não há mais alerta inline duplicado nos editores de flags, SLA e expediente.
+- AC-02: quando a gravação falha em qualquer dessas abas, aparece um aviso com `role="alert"`, "Não foi possível salvar." e a descrição "Tente novamente."; a edição e as marcações do usuário continuam como estavam; o aviso de falha não some sozinho e o de sucesso some em 5 s; não há mais alerta inline duplicado nos editores de flags, SLA e expediente (o alerta da importação de feriados do expediente é de carga, não de gravação, e fica).
 - AC-03: Prioridades e Seções gravam só ao acionar "Salvar" (marcar um item não chama a API), com `priorities: [{ ticketPriority, enabled }]` e `ticketSections: [{ key, enabled }]` com todos os itens da aba; falha mostra o aviso de AC-02 e mantém as marcações.
 - AC-04: com alteração não salva na aba ativa, a linha "Alterações não salvas nesta aba." aparece abaixo das abas; ao desfazer a alteração, ao salvar com sucesso ou ao descartar, ela some; sem alteração, nunca aparece.
 - AC-05: com alteração não salva, trocar de aba, voltar à lista, abrir outra mesa, "Nova Mesa" ou "Duplicar" abre `EzDialog` "Descartar alterações?"; "Cancelar" (e Escape) mantém a aba, a mesa e a edição; "Confirmar" descarta e executa a ação. Sem alteração, nenhuma dessas ações abre o diálogo.
@@ -77,4 +77,4 @@ Seam: `ServiceDesksPage` renderizada com `api` simulado (vitest + Testing Librar
 
 ## Fora do escopo
 
-Guarda de saída por link do menu (`createBrowserRouter`); rótulo dos botões do `EzDialog`; correção do `EzToast` (idioma, foco); `window.confirm` da exclusão de mesa e feedback de criação e exclusão de mesa; salvar por controle; qualquer arquivo de `components/ds/`; mudança de API ou de regra de negócio; tema escuro.
+Guarda de saída por link do menu (`createBrowserRouter`); rótulo dos botões do `EzDialog`; correção do `EzToast` (idioma, foco); `window.confirm` da exclusão de mesa, feedback de criação e exclusão de mesa e o aviso de descarte ao excluir ou recarregar a lista com edição pendente; salvar por controle; qualquer arquivo de `components/ds/`; mudança de API ou de regra de negócio; tema escuro.

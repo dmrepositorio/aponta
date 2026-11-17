@@ -45,7 +45,14 @@ export function MesaSaveProvider({ children }: { children: ReactNode }) {
       return next;
     });
   }, []);
-  const value = useMemo(() => ({ setDirty, notify: (next: Notice) => setNotice({ ...next }) }), [setDirty]);
+  const value = useMemo(
+    () => ({
+      setDirty,
+      // objeto novo a cada aviso: reinicia o prazo de 5 s mesmo com o mesmo resultado
+      notify: (next: Notice) => setNotice({ ...next }),
+    }),
+    [setDirty],
+  );
 
   const pending = dirtyIds.size > 0;
   useEffect(() => {
@@ -66,14 +73,22 @@ export function MesaSaveProvider({ children }: { children: ReactNode }) {
 
   return (
     <SaveContext.Provider value={value}>
-      <PendingContext.Provider value={pending}>{children}</PendingContext.Provider>
+      <PendingContext.Provider value={pending}>
+        {children}
+      </PendingContext.Provider>
       {notice && (
         <div className="pointer-events-none fixed right-4 top-4 z-40 w-[calc(100%-2rem)] max-w-sm">
           <div role={notice.variant === 'error' ? 'alert' : 'status'}>
             <EzToast
               variant={notice.variant}
-              title={notice.variant === 'error' ? 'Não foi possível salvar.' : 'Alterações salvas.'}
-              description={notice.variant === 'error' ? 'Tente novamente.' : undefined}
+              title={
+                notice.variant === 'error'
+                  ? 'Não foi possível salvar.'
+                  : 'Alterações salvas.'
+              }
+              description={
+                notice.variant === 'error' ? 'Tente novamente.' : undefined
+              }
               onClose={() => setNotice(null)}
             />
           </div>
@@ -118,7 +133,7 @@ export function useDeskDraft<T extends Record<string, string | boolean>>(
   const [baseline, setBaseline] = useState(initial);
   const [draft, setDraft] = useState(baseline);
   const dirty = Object.keys(draft).some((key) => draft[key] !== baseline[key]);
-  const notice = useMesaSave(dirty);
+  const feedback = useMesaSave(dirty);
 
   const mutation = useMutation({
     mutationFn: async (next: T) => {
@@ -127,10 +142,15 @@ export function useDeskDraft<T extends Record<string, string | boolean>>(
     onSuccess: (_result, next) => {
       setBaseline(next);
       void queryClient.invalidateQueries({ queryKey: ['service-desks'] });
-      notice.saved();
+      feedback.saved();
     },
-    onError: notice.failed,
+    onError: feedback.failed,
   });
 
-  return { draft, setDraft, save: () => mutation.mutate(draft), isPending: mutation.isPending };
+  return {
+    draft,
+    setDraft,
+    save: () => mutation.mutate(draft),
+    isPending: mutation.isPending,
+  };
 }

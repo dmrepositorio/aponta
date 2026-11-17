@@ -40,13 +40,6 @@ function toApiValue(s: string): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
-/**
- * Lets ADMIN link a ServiceDesk to a specific client (Organization) and
- * configure per-priority SLA targets that override the global defaults
- * in `tickets.service.ts`'s SLA_HOURS — Tiflux-parity "Mesa do cliente"
- * + "Meta de SLA". A blank field falls back to the global default for
- * that priority (see `calculateSla`/`buildSlaOverrides` on the API).
- */
 function toSlaValues(initial: ServiceDeskSlaFields): Record<string, string> {
   return {
     CriticalResponse: toFormValue(initial.slaCriticalResponseHours),
@@ -60,6 +53,13 @@ function toSlaValues(initial: ServiceDeskSlaFields): Record<string, string> {
   };
 }
 
+/**
+ * Lets ADMIN link a ServiceDesk to a specific client (Organization) and
+ * configure per-priority SLA targets that override the global defaults
+ * in `tickets.service.ts`'s SLA_HOURS — Tiflux-parity "Mesa do cliente"
+ * + "Meta de SLA". A blank field falls back to the global default for
+ * that priority (see `calculateSla`/`buildSlaOverrides` on the API).
+ */
 export function ServiceDeskSlaEditor({
   deskId,
   initial,
@@ -76,7 +76,7 @@ export function ServiceDeskSlaEditor({
     isEditing &&
     (organizationId !== (initial.organizationId ?? '') ||
       Object.keys(initialSla).some((key) => slaValues[key] !== initialSla[key]));
-  const notice = useMesaSave(dirty);
+  const feedback = useMesaSave(dirty);
 
   const { data: organizations } = useQuery({
     queryKey: ['organizations', 'all-for-desk-link'],
@@ -104,15 +104,16 @@ export function ServiceDeskSlaEditor({
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['service-desks'] });
       setIsEditing(false);
-      notice.saved();
+      feedback.saved();
     },
-    onError: notice.failed,
+    onError: feedback.failed,
   });
 
-  const cancel = () => {
+  // Abrir a edição parte sempre do valor atual da mesa, não de um rascunho antigo.
+  const startEditing = () => {
     setOrganizationId(initial.organizationId ?? '');
     setSlaValues(initialSla);
-    setIsEditing(false);
+    setIsEditing(true);
   };
 
   if (!isEditing) {
@@ -124,7 +125,7 @@ export function ServiceDeskSlaEditor({
             {initial.organizationName ?? 'Mesa compartilhada (sem cliente)'}
           </strong>
         </div>
-        <EzButton type="button" variant="secondary" size="small" onClick={() => setIsEditing(true)}>
+        <EzButton type="button" variant="secondary" size="small" onClick={startEditing}>
           Editar cliente e SLA
         </EzButton>
       </div>
@@ -188,7 +189,7 @@ export function ServiceDeskSlaEditor({
       </div>
 
       <div className="flex gap-2 justify-end">
-        <EzButton type="button" variant="secondary" size="small" onClick={cancel}>
+        <EzButton type="button" variant="secondary" size="small" onClick={() => setIsEditing(false)}>
           Cancelar
         </EzButton>
         <EzButton

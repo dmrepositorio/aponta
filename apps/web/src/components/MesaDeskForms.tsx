@@ -5,7 +5,11 @@ import { useDeskDraft } from './mesaSave';
 export function MesaBasicsForm({
   desk,
 }: {
-  desk: { id: string; displayName?: string | null; description?: string | null };
+  desk: {
+    id: string;
+    displayName?: string | null;
+    description?: string | null;
+  };
 }) {
   const { draft, setDraft, save, isPending } = useDeskDraft(desk.id, () => ({
     displayName: desk.displayName ?? '',
@@ -25,14 +29,18 @@ export function MesaBasicsForm({
           name="displayName"
           label="Nome de exibição"
           value={draft.displayName}
-          onChange={(event) => setDraft((prev) => ({ ...prev, displayName: event.target.value }))}
+          onChange={(event) =>
+            setDraft((prev) => ({ ...prev, displayName: event.target.value }))
+          }
         />
         <EzTextInput
           id="mesa-description"
           name="description"
           label="Descrição"
           value={draft.description}
-          onChange={(event) => setDraft((prev) => ({ ...prev, description: event.target.value }))}
+          onChange={(event) =>
+            setDraft((prev) => ({ ...prev, description: event.target.value }))
+          }
         />
       </div>
       <div className="flex justify-end">
@@ -48,7 +56,11 @@ export function MesaBasicsForm({
 export function MesaStatusForm({
   desk,
 }: {
-  desk: { id: string; defaultOpenStatus?: string; defaultClosedStatus?: string };
+  desk: {
+    id: string;
+    defaultOpenStatus?: string;
+    defaultClosedStatus?: string;
+  };
 }) {
   const { draft, setDraft, save, isPending } = useDeskDraft(desk.id, () => ({
     defaultOpenStatus: desk.defaultOpenStatus ?? 'OPEN',
@@ -67,7 +79,12 @@ export function MesaStatusForm({
         name="defaultOpenStatus"
         label="Status ao abrir"
         value={draft.defaultOpenStatus}
-        onChange={(event) => setDraft((prev) => ({ ...prev, defaultOpenStatus: event.target.value }))}
+        onChange={(event) =>
+          setDraft((prev) => ({
+            ...prev,
+            defaultOpenStatus: event.target.value,
+          }))
+        }
       >
         <option value="OPEN">Aberto</option>
         <option value="IN_PROGRESS">Em andamento</option>
@@ -77,7 +94,12 @@ export function MesaStatusForm({
         name="defaultClosedStatus"
         label="Status ao fechar"
         value={draft.defaultClosedStatus}
-        onChange={(event) => setDraft((prev) => ({ ...prev, defaultClosedStatus: event.target.value }))}
+        onChange={(event) =>
+          setDraft((prev) => ({
+            ...prev,
+            defaultClosedStatus: event.target.value,
+          }))
+        }
       >
         <option value="CLOSED">Fechado</option>
         <option value="RESOLVED">Resolvido</option>

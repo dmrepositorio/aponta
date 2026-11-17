@@ -34,7 +34,7 @@ export function MesaFlagEditor({
     return acc;
   }, []);
 
-  const grid = (list: FlagDef[]) => (
+  const renderGrid = (list: FlagDef[]) => (
     <div className="grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2">
       {list.map((flag) => (
         <EzCheck
@@ -52,12 +52,12 @@ export function MesaFlagEditor({
     <div className="flex flex-col gap-4">
       {sections.map((section, index) =>
         section.title ? (
-          <fieldset key={section.title} className="flex flex-col gap-3">
+          <fieldset key={`${section.title}-${index}`} className="flex flex-col gap-3">
             <legend className="mb-3 text-sm font-semibold text-gray-900">{section.title}</legend>
-            {grid(section.flags)}
+            {renderGrid(section.flags)}
           </fieldset>
         ) : (
-          <div key={index}>{grid(section.flags)}</div>
+          <div key={index}>{renderGrid(section.flags)}</div>
         ),
       )}
       <div className="flex justify-end">

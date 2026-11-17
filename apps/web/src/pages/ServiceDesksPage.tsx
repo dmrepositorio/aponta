@@ -499,7 +499,9 @@ function ServiceDesksPageContent() {
                     variant="pills"
                     tabs={mesaTabs}
                     activeTab={activeTab}
-                    onChange={(tabId) => guard(() => setActiveTab(String(tabId)))}
+                    onChange={(tabId) => {
+                      if (String(tabId) !== activeTab) guard(() => setActiveTab(String(tabId)));
+                    }}
                     idPrefix={MESA_TABS_ID}
                   />
                   <div aria-live="polite">
