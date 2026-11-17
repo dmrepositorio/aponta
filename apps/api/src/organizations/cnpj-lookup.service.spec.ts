@@ -184,6 +184,48 @@ describe('CnpjLookupService', () => {
       await expect(service.lookup('19131243000197')).rejects.toThrow(BadGatewayException);
     });
 
+    it('moves on when a provider answers 200 with a body that has no company name', async () => {
+      const noName = { status: 200, ok: true, json: async () => ({ cep: '01310100' }) };
+      fetchMock.mockImplementation(answers({ [PRIMARY]: noName, [RECEITAWS]: receitaWsOk }));
+
+      await expect(service.lookup('19131243000197')).resolves.toEqual(expected);
+    });
+
+    it('moves on when a provider answers 200 with a null body', async () => {
+      const nullBody = { status: 200, ok: true, json: async () => null };
+      fetchMock.mockImplementation(answers({ [PRIMARY]: nullBody, [RECEITAWS]: receitaWsOk }));
+
+      await expect(service.lookup('19131243000197')).resolves.toEqual(expected);
+    });
+
+    it('throws BadGatewayException when ReceitaWS is rate limited and nobody else found the CNPJ', async () => {
+      fetchMock.mockImplementation(
+        answers({ [PRIMARY]: status(404), [RECEITAWS]: status(429), [MINHA_RECEITA]: status(404) }),
+      );
+
+      await expect(service.lookup('19131243000197')).rejects.toThrow(BadGatewayException);
+    });
+
+    it('throws BadRequestException when a reserve provider says the number is invalid', async () => {
+      fetchMock.mockImplementation(
+        answers({ [PRIMARY]: status(404), [RECEITAWS]: status(400), [MINHA_RECEITA]: ok }),
+      );
+
+      await expect(service.lookup('19131243000197')).rejects.toThrow(BadRequestException);
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+    });
+
+    it('sends an abort signal so a slow provider cannot hang the lookup', async () => {
+      fetchMock.mockImplementation(answers({ [PRIMARY]: ok }));
+
+      await service.lookup('19131243000197');
+
+      expect(fetchMock).toHaveBeenCalledWith(
+        PRIMARY,
+        expect.objectContaining({ signal: expect.any(AbortSignal) }),
+      );
+    });
+
     it('does not call another provider when the primary answers 200', async () => {
       fetchMock.mockImplementation(answers({ [PRIMARY]: ok }));
 
