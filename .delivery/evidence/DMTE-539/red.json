@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "phase": "red",
+  "started_at": "2026-11-17T00:47:59.669600+00:00",
+  "finished_at": "2026-11-17T00:48:20.424732+00:00",
+  "command": [
+    "pnpm",
+    "--dir",
+    "apps/web",
+    "exec",
+    "vitest",
+    "run",
+    "src/pages/ContractsPage.test.tsx"
+  ],
+  "base_sha": "374023f6872baa42e6dd2e686fefaede4302f042",
+  "head_sha": "6959574d5d41480781c1e92803c4483bf951615b",
+  "exit_code": 1,
+  "tests": {
+    "apps/web/src/pages/ContractsPage.test.tsx": "630dcd418f8b28147eff812fb0ab58af0ca5a716fa3987a1fcc0092b1e5dafd0"
+  },
+  "criteria": [
+    "AC-01",
+    "AC-02",
+    "AC-03"
+  ],
+  "source_hashes": {
+    "apps/web/src/pages/ContractsPage.test.tsx": "630dcd418f8b28147eff812fb0ab58af0ca5a716fa3987a1fcc0092b1e5dafd0"
+  },
+  "log": ".delivery/evidence/DMTE-539/red.log",
+  "log_sha256": "e52d4a408a9a199198fae446a4b5c3bd2c49ea73691a071d720758f937aa12a4"
+}
