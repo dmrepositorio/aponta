@@ -180,10 +180,10 @@ export function LoginPage() {
       .post<{ access_token?: string; challengeToken?: string }>('/auth/social/exchange', { code })
       .then(({ data }) => {
         if (data.challengeToken) setChallengeToken(data.challengeToken);
-        else {
-          login(data.access_token!);
+        else if (data.access_token) {
+          login(data.access_token);
           navigate('/');
-        }
+        } else setSubmitError(SOCIAL_FALLBACK);
       })
       .catch(() => setSubmitError(SOCIAL_FALLBACK));
   }, [login, navigate]);
@@ -207,7 +207,8 @@ export function LoginPage() {
         setChallengeToken(data.challengeToken);
         return;
       }
-      login(data.access_token!);
+      if (!data.access_token) throw new Error('Resposta de login sem token.');
+      login(data.access_token);
       navigate('/');
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.status === 401) {
