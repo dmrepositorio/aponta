@@ -123,6 +123,14 @@
   --control-height-md: 42px;
   --control-height-toolbar: 36px;
   --control-height-compact: 32px;
+
+  /* DMTE-532: foco único do DS. Contorno (segue o raio e aparece em alto contraste)
+     em brand-600: 4,64:1 sobre branco, 3,86:1 sobre gray-90 e 3,24:1 sobre brand-100.
+     `ez-focus` (com folga) é para controle solto; `ez-focus-inset` desenha por dentro
+     da caixa, para controle dentro de área que rola (abas) e cortaria o anel de fora. */
+  --color-focus: var(--color-brand-600);
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 2px;
   --radius-control: 10px;
   --radius-card: 16px;
   --shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.06), 0 1px 3px 0 rgb(0 0 0 / 0.08);
@@ -140,6 +148,20 @@
       transform: scale(4);
       opacity: 0;
     }
+  }
+}
+
+@utility ez-focus {
+  &:focus-visible {
+    outline: var(--focus-ring-width) solid var(--color-focus);
+    outline-offset: var(--focus-ring-offset);
+  }
+}
+
+@utility ez-focus-inset {
+  &:focus-visible {
+    outline: var(--focus-ring-width) solid var(--color-focus);
+    outline-offset: calc(var(--focus-ring-offset) * -1);
   }
 }
 

@@ -1,4 +1,4 @@
-import { HTMLAttributes, forwardRef } from 'react';
+import { HTMLAttributes, KeyboardEvent, forwardRef } from 'react';
 import { cn } from './utils';
 
 export interface EzTabItem {
@@ -24,18 +24,36 @@ export interface EzTabsProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onCha
 }
 
 /** Id of a tab button; the panel's `aria-labelledby` points at it. */
-export const ezTabId = (_prefix: string, _tabId: string | number): string => '';
+export const ezTabId = (prefix: string, tabId: string | number): string => `${prefix}-tab-${tabId}`;
 
 /** Id of a tab's panel; the tab's `aria-controls` points at it. */
-export const ezTabPanelId = (_prefix: string, _tabId: string | number): string => '';
+export const ezTabPanelId = (prefix: string, tabId: string | number): string => `${prefix}-panel-${tabId}`;
 
 /**
  * Aponta DS Tabs (Tabselector)
  */
 export const EzTabs = forwardRef<HTMLDivElement, EzTabsProps>(
-  ({ tabs, activeTab, onChange, variant = 'line', className, role, ...props }, ref) => {
+  ({ tabs, activeTab, onChange, variant = 'line', idPrefix, className, role, onKeyDown, ...props }, ref) => {
     const resolvedRole = role ?? 'tablist';
     const tabRole = resolvedRole === 'tablist' ? 'tab' : undefined;
+    // Tabindex móvel: só a aba ativa (ou a primeira habilitada) entra na ordem do Tab.
+    const enabledTabs = tabs.filter((tab) => !tab.disabled);
+    const entryId = (enabledTabs.find((tab) => tab.id === activeTab) ?? enabledTabs[0])?.id;
+
+    // Setas, Home e End movem o foco e ativam a aba (ativação automática, padrão ARIA de abas).
+    const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+      onKeyDown?.(event);
+      if (!tabRole || event.defaultPrevented) return;
+      const buttons = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="tab"]:not(:disabled)'));
+      const current = buttons.indexOf(event.target as HTMLButtonElement);
+      if (current < 0) return;
+      const last = buttons.length - 1;
+      const next = { ArrowRight: current === last ? 0 : current + 1, ArrowLeft: current === 0 ? last : current - 1, Home: 0, End: last }[event.key];
+      if (next === undefined) return;
+      event.preventDefault();
+      buttons[next].focus();
+      onChange(enabledTabs[next].id);
+    };
     return (
       <div
         ref={ref}
@@ -45,6 +63,7 @@ export const EzTabs = forwardRef<HTMLDivElement, EzTabsProps>(
           variant === 'line' ? 'border-b border-gray-200' : 'gap-2',
           className
         )}
+        onKeyDown={handleKeyDown}
         {...props}
       >
         {tabs.map((tab) => {
@@ -53,6 +72,8 @@ export const EzTabs = forwardRef<HTMLDivElement, EzTabsProps>(
             ? {
                 role: tabRole,
                 'aria-selected': isActive,
+                tabIndex: tab.id === entryId ? 0 : -1,
+                ...(idPrefix && { id: ezTabId(idPrefix, tab.id), 'aria-controls': ezTabPanelId(idPrefix, tab.id) }),
               }
             : {};
 
@@ -65,7 +86,7 @@ export const EzTabs = forwardRef<HTMLDivElement, EzTabsProps>(
                 onClick={() => !tab.disabled && onChange(tab.id)}
                 {...tabAriaProps}
                 className={cn(
-                  'px-4 py-2 rounded-full text-[14px] font-medium transition-colors whitespace-nowrap outline-none focus-visible:ring-2 focus-visible:ring-brand-200',
+                  'px-4 py-2 rounded-full text-[14px] font-medium transition-colors whitespace-nowrap ez-focus-inset',
                   isActive
                     ? 'bg-brand-100 text-brand-700'
                     : 'text-gray-600 hover:bg-gray-90',
@@ -86,7 +107,7 @@ export const EzTabs = forwardRef<HTMLDivElement, EzTabsProps>(
               onClick={() => !tab.disabled && onChange(tab.id)}
               {...tabAriaProps}
               className={cn(
-                'relative px-4 py-3 text-[14px] font-medium transition-colors whitespace-nowrap outline-none focus-visible:bg-gray-80',
+                'relative px-4 py-3 text-[14px] font-medium transition-colors whitespace-nowrap ez-focus-inset',
                 isActive
                   ? 'text-brand-600'
                   : 'text-gray-500 hover:text-gray-900',

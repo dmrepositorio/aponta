@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "phase": "red",
+  "started_at": "2026-11-17T00:43:04.219436+00:00",
+  "finished_at": "2026-11-17T00:43:13.286841+00:00",
+  "command": [
+    "pnpm",
+    "--dir",
+    "apps/web",
+    "exec",
+    "vitest",
+    "run",
+    "src/components/ds/EzTabs.test.tsx",
+    "src/components/ds/EzCheck.test.tsx",
+    "src/styles.focus.test.ts",
+    "src/pages/ServiceDesksPage.test.tsx"
+  ],
+  "base_sha": "374023f6872baa42e6dd2e686fefaede4302f042",
+  "head_sha": "a101cb06ce4d677b1b17e5ea5a474be24b8f0efd",
+  "exit_code": 1,
+  "tests": {
+    "apps/web/src/components/ds/EzTabs.test.tsx": "e041a8ac4f93b4b1fb3a937073366f846eb546e5a232aef25e549254af4e5620",
+    "apps/web/src/components/ds/EzCheck.test.tsx": "7957662dcafcc5d8b14673fa0384561d310c8f256dff732684ce7797c28e75b5",
+    "apps/web/src/styles.focus.test.ts": "5f6ef9a7cf8d11d73719013d6b62af38a3518de7d50c3cbe133d83067da28468",
+    "apps/web/src/pages/ServiceDesksPage.test.tsx": "4e41768219ebf3a4ffdf97cd6d97ce7b7bebd94e50657443dca7500aa09d6e4b"
+  },
+  "criteria": [
+    "AC-01",
+    "AC-02",
+    "AC-03",
+    "AC-04",
+    "AC-05",
+    "AC-06"
+  ],
+  "source_hashes": {
+    "apps/web/src/components/ds/EzCheck.test.tsx": "7957662dcafcc5d8b14673fa0384561d310c8f256dff732684ce7797c28e75b5",
+    "apps/web/src/components/ds/EzTabs.test.tsx": "e041a8ac4f93b4b1fb3a937073366f846eb546e5a232aef25e549254af4e5620",
+    "apps/web/src/components/ds/EzTabs.tsx": "0943db60cc51c24a6d2805623381e9ad23391af542c058a5fcbb1ec264dcf98b",
+    "apps/web/src/pages/ServiceDesksPage.test.tsx": "4e41768219ebf3a4ffdf97cd6d97ce7b7bebd94e50657443dca7500aa09d6e4b",
+    "apps/web/src/styles.focus.test.ts": "5f6ef9a7cf8d11d73719013d6b62af38a3518de7d50c3cbe133d83067da28468",
+    "scripts/mesa_focus_check.mjs": "63eea0a851d3eae4860ac86e93a823e292d1cf3dda5e6f0be4ba23f5c65ac49d"
+  },
+  "log": ".delivery/evidence/DMTE-532/red.log",
+  "log_sha256": "7a98369b98b9874eac8293a880a84ebc4111bc9d6caf3288634780448456e4e7"
+}

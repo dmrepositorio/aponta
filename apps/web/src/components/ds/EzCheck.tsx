@@ -40,7 +40,7 @@ export const EzCheck = forwardRef<HTMLInputElement, EzCheckProps>(
             disabled={disabled}
             className={cn(
               'peer appearance-none w-5 h-5 border-2 rounded transition-colors',
-              'checked:bg-brand-600 checked:border-brand-600 focus-visible:ring-2 focus-visible:ring-brand-200 focus:outline-none',
+              'checked:bg-brand-600 checked:border-brand-600 ez-focus',
               hasError ? 'border-red-600' : 'border-gray-300 hover:border-gray-400',
               disabled && 'border-gray-200 bg-gray-90'
             )}

@@ -559,4 +559,35 @@ describe('ServiceDesksPage', () => {
     expect(drawer.parentElement).toHaveClass('relative');
     expect(drawer).toHaveClass('absolute', 'xl:relative');
   });
+
+  it('DMTE-532 AC-06: the desk tabs control one labelled tabpanel that follows the active tab', async () => {
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    renderPage();
+    await screen.findByText('Suporte N1');
+    await user.click(screen.getByText('Suporte N1'));
+    await screen.findByRole('tab', { name: 'Informações básicas' });
+
+    const tabs = screen.getAllByRole('tab');
+    expect(tabs).toHaveLength(12);
+    for (const tab of tabs) expect(tab).toHaveAttribute('aria-controls');
+
+    const expectPanelOf = (name: string) => {
+      const tab = screen.getByRole('tab', { name });
+      expect(tab).toHaveAttribute('aria-selected', 'true');
+      const panel = screen.getByRole('tabpanel');
+      expect(screen.getAllByRole('tabpanel')).toHaveLength(1);
+      expect(panel).toHaveAttribute('id', tab.getAttribute('aria-controls'));
+      expect(panel).toHaveAttribute('aria-labelledby', tab.getAttribute('id'));
+    };
+
+    expectPanelOf('Informações básicas');
+    await user.click(screen.getByRole('tab', { name: 'Parâmetros' }));
+    expectPanelOf('Parâmetros');
+
+    screen.getByRole('tab', { name: 'Parâmetros' }).focus();
+    await user.keyboard('{ArrowRight}');
+    expectPanelOf('Campos obrigatórios');
+    expect(screen.getByRole('tab', { name: 'Campos obrigatórios' })).toHaveFocus();
+  });
 });

@@ -44,3 +44,13 @@ export const Interactive: Story = {
     return <Demo />;
   },
 };
+
+/**
+ * Foco por teclado (Tab): contorno de 2 px em `--color-focus` (brand-600) com folga de 2 px,
+ * o foco único do DS. Use Tab para ver o anel; clique do mouse não o mostra (`:focus-visible`).
+ */
+export const KeyboardFocus: Story = {
+  args: { id: 'check-focus', label: 'Use Tab para focar' },
+  parameters: { docs: { description: { story: 'Contorno `ez-focus`: 2 px em brand-600, 4,64:1 sobre branco.' } } },
+};
+
