@@ -57,7 +57,7 @@
       "tests": [
         "apps/web/src/pages/VaultPage.test.tsx: masks each revealed field again 30 seconds after it was revealed, counted per field",
         "apps/web/src/pages/VaultPage.test.tsx: cancels the old timer when a field is hidden by hand and revealed again",
-        "apps/web/src/pages/VaultPage.test.tsx: leaves no reveal timer running after the page unmounts"
+        "apps/web/src/pages/VaultPage.test.tsx: clears the 30s reveal timer when the page unmounts"
       ]
     },
     {
@@ -95,8 +95,8 @@
   "spec": "docs/delivery/specs/DMTE-544.md",
   "tdd": {
     "mode": "required",
-    "red": ".delivery/evidence/DMTE-544/red.json",
-    "green": ".delivery/evidence/DMTE-544/green.json"
+    "red": ".delivery/evidence/DMTE-544/red-r2.json",
+    "green": ".delivery/evidence/DMTE-544/green-r2.json"
   },
   "design_system": {
     "applicable": false,

@@ -71,7 +71,7 @@ function renderPage() {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
-  return render(
+  return { queryClient, ...render(
     <QueryClientProvider client={queryClient}>
       <MemoryRouter initialEntries={['/vault']}>
         <Routes>
@@ -80,7 +80,7 @@ function renderPage() {
         </Routes>
       </MemoryRouter>
     </QueryClientProvider>,
-  );
+  ) };
 }
 
 function loginAs(role: 'ADMIN' | 'AGENT') {
@@ -809,23 +809,37 @@ describe('VaultPage — row actions and per-field reveal (DMTE-544)', () => {
     expect(screen.queryByText('fake-password-123')).not.toBeInTheDocument();
   });
 
-  it('leaves no reveal timer running after the page unmounts', async () => {
-    async function timersLeftAfterUnmount(reveal: boolean) {
-      vi.clearAllTimers();
-      const { user, unmount } = await renderLoaded({ fakeTimers: true });
-      mockReveal();
-      if (reveal) {
-        await user.click(eye('senha'));
-        await screen.findByText('fake-password-123');
-      }
-      unmount();
-      const left = vi.getTimerCount();
-      vi.useRealTimers();
-      return left;
-    }
-    const without = await timersLeftAfterUnmount(false);
-    const withReveal = await timersLeftAfterUnmount(true);
-    expect(withReveal).toBe(without);
+  it('clears the 30s reveal timer when the page unmounts', async () => {
+    const { user, unmount } = await renderLoaded({ fakeTimers: true });
+    mockReveal();
+    const setTimeoutSpy = vi.spyOn(globalThis, 'setTimeout');
+    const clearTimeoutSpy = vi.spyOn(globalThis, 'clearTimeout');
+
+    await user.click(eye('senha'));
+    await screen.findByText('fake-password-123');
+    const revealTimerIds = setTimeoutSpy.mock.calls
+      .map((call, index) => (call[1] === 30_000 ? setTimeoutSpy.mock.results[index].value : undefined))
+      .filter((id) => id !== undefined);
+    expect(revealTimerIds).toHaveLength(1);
+
+    unmount();
+    expect(clearTimeoutSpy.mock.calls.some(([id]) => id === revealTimerIds[0])).toBe(true);
+  });
+
+  it('keeps no revealed or copied value in the query client after use', async () => {
+    const { user, queryClient } = await renderLoaded();
+    mockReveal();
+    setClipboard(vi.fn().mockResolvedValue(undefined));
+    const heldValues = () => queryClient.getMutationCache().getAll().map((mutation) => mutation.state.data);
+
+    await user.click(eye('senha'));
+    expect(await screen.findByText('fake-password-123')).toBeInTheDocument();
+    await waitFor(() => expect(heldValues()).not.toContain('fake-password-123'));
+
+    await user.click(screen.getByRole('button', { name: 'Copiar usuário de Servidor FTP' }));
+    expect(await screen.findByText('Usuário copiado')).toBeInTheDocument();
+    await waitFor(() => expect(heldValues()).not.toContain('ftpuser'));
+    expect(screen.getByText('fake-password-123')).toBeInTheDocument();
   });
 
   it('masks every revealed field when the user searches', async () => {
