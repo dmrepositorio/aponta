@@ -157,6 +157,8 @@ export type RevealIntent = 'reveal' | 'copy';
  */
 export function useRevealCredential() {
   return useMutation({
+    // The value is plaintext: do not let the mutation cache keep it after the caller used it.
+    gcTime: 0,
     mutationFn: async ({ id, field, intent }: { id: string; field: RevealField; intent: RevealIntent }) => {
       const { data } = await api.post<{ value: string | null }>(`/vault/credentials/${id}/reveal`, {
         field,

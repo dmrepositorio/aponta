@@ -260,7 +260,11 @@ export function VaultPage() {
   const hideField = (key: string) => {
     clearTimeout(revealTimers.current.get(key));
     revealTimers.current.delete(key);
-    setRevealed(({ [key]: _hidden, ...rest }) => rest);
+    setRevealed((prev) => {
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
   };
 
   const hideAllFields = () => {
@@ -292,6 +296,7 @@ export function VaultPage() {
     showFeedback(null);
     try {
       const value = await revealMutation.mutateAsync({ id: credentialId, field, intent: 'copy' });
+      revealMutation.reset();
       if (!value) throw new Error('empty value');
       await navigator.clipboard.writeText(value);
       showFeedback({ kind: 'success', text: SECRET_FIELDS[field].copied });
@@ -322,6 +327,7 @@ export function VaultPage() {
     setPending((prev) => [...prev, key]);
     try {
       const value = await revealMutation.mutateAsync({ id: credentialId, field, intent: 'reveal' });
+      revealMutation.reset();
       if (startedAt !== generation.current) return;
       setRevealed((prev) => ({ ...prev, [key]: value ?? '' }));
       revealTimers.current.set(key, setTimeout(() => hideField(key), REVEAL_TTL_MS));
