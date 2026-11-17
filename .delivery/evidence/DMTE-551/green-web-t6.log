@@ -1,0 +1,14 @@
+
+ RUN  v4.1.11 /home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-551-8067d53caffe/workdir/aponta/apps/web
+
+ ✓ |web| src/components/users/UserForm.twofactor.test.tsx (4 tests) 2632ms
+     ✓ AC-16: mostra "Ativado" e o botão para quem tem a permissão; confirma e chama a rota do administrador  1179ms
+     ✓ AC-16: sem a permissão o botão não aparece, mas o estado continua visível  560ms
+     ✓ AC-16: quem não tem segundo fator mostra "Desativado" e nenhum botão  488ms
+     ✓ AC-16: recusa do servidor mostra o motivo e mantém o estado  391ms
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  16:26:24
+   Duration  12.32s (transform 4.03s, setup 504ms, import 6.31s, tests 2.63s, environment 1.94s)
+

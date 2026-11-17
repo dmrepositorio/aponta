@@ -1,0 +1,18 @@
+
+> nx run api:test --runTestsByPath src/mail/mail.service.tls.spec.ts
+
+> jest --passWithNoTests=true --runTestsByPath src/mail/mail.service.tls.spec.ts
+
+[33m[Nest] 2373849  - [39m11/17/2026, 4:22:24 PM [33m   WARN[39m [38;5;3m[MailService] [39m[33mSMTP credentials not fully configured. Emails will not be sent.[39m
+
+
+
+ NX   Successfully ran target test for project api
+
+
+[31m[Nest] 2373849  - [39m11/17/2026, 4:22:24 PM [31m  ERROR[39m [38;5;3m[MailService] [39m[31mEmail to a@b.test aborted: SMTP transporter not initialized.[39m
+[1mTest Suites: [22m[1m[32m1 passed[39m[22m, 1 total
+[1mTests:       [22m[1m[32m8 passed[39m[22m, 8 total
+[1mSnapshots:   [22m0 total
+[1mTime:[22m        1.304 s
+[2mRan all test suites[22m[2m within paths[22m "src/mail/mail.service.tls.spec.ts"[2m.[22m
