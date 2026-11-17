@@ -32,6 +32,9 @@ const PROVIDERS: readonly Provider[] = [
   { url: (d) => `https://minhareceita.org/${d}`, legalName: 'razao_social', tradeName: 'nome_fantasia' },
 ];
 
+/** Três provedores em série: o pior caso da consulta é 3 x 8 s. */
+const PROVIDER_TIMEOUT_MS = 8000;
+
 type Outcome = CnpjLookupResult | 'not-found' | 'invalid' | 'failed';
 
 /**
@@ -45,7 +48,7 @@ export class CnpjLookupService {
 
   async lookup(cnpj: string): Promise<CnpjLookupResult> {
     const digits = cnpj.replace(/\D/g, '');
-    const providers = this.flags.isEnabled('consulta-cnpj-alternativa') ? PROVIDERS : PROVIDERS.slice(0, 1);
+    const providers = this.flags.isEnabled('consulta-cnpj-alternativa') ? PROVIDERS : [PROVIDERS[0]];
     let failed = false;
     for (const provider of providers) {
       const outcome = await this.query(provider, digits);
@@ -59,32 +62,34 @@ export class CnpjLookupService {
   }
 
   private async query(provider: Provider, digits: string): Promise<Outcome> {
-    let data: Record<string, string | null>;
     try {
       const response = await fetch(provider.url(digits), {
         headers: { 'User-Agent': 'Aponta-Helpdesk/1.0 (+https://aponta.dmtecnologia.cloud)' },
-        signal: AbortSignal.timeout(8000),
+        signal: AbortSignal.timeout(PROVIDER_TIMEOUT_MS),
       });
       if (response.status === 404) return 'not-found';
       if (response.status === 400) return 'invalid';
       if (!response.ok) return 'failed';
-      data = (await response.json()) as Record<string, string | null>;
+      const data = (await response.json()) as Record<string, string | null> | null;
+      if (data?.status === 'ERROR') return 'not-found';
+      const legalName = data?.[provider.legalName];
+      // Corpo inesperado (nulo, sem razão social) é falha do provedor: a cadeia segue.
+      if (!data || typeof legalName !== 'string') return 'failed';
+      return {
+        cnpj: digits,
+        legalName,
+        tradeName: data[provider.tradeName] || null,
+        address: {
+          zipCode: data.cep?.replace(/\D/g, '') || null,
+          street: [data.logradouro, data.numero].filter(Boolean).join(', ') || null,
+          neighborhood: data.bairro || null,
+          city: data.municipio || null,
+          state: data.uf || null,
+          complement: data.complemento || null,
+        },
+      };
     } catch {
       return 'failed';
     }
-    if (data.status === 'ERROR') return 'not-found';
-    return {
-      cnpj: digits,
-      legalName: data[provider.legalName] as string,
-      tradeName: data[provider.tradeName] || null,
-      address: {
-        zipCode: data.cep?.replace(/\D/g, '') || null,
-        street: [data.logradouro, data.numero].filter(Boolean).join(', ') || null,
-        neighborhood: data.bairro || null,
-        city: data.municipio || null,
-        state: data.uf || null,
-        complement: data.complemento || null,
-      },
-    };
   }
 }
