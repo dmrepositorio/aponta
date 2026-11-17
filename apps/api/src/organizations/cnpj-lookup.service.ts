@@ -1,4 +1,5 @@
 import { BadGatewayException, Injectable, NotFoundException } from '@nestjs/common';
+import { FeatureFlagsService } from '../feature-flags/feature-flags.service';
 
 export interface CnpjLookupResult {
   cnpj: string;
@@ -22,6 +23,8 @@ export interface CnpjLookupResult {
  */
 @Injectable()
 export class CnpjLookupService {
+  constructor(private readonly flags: FeatureFlagsService) {}
+
   async lookup(cnpj: string): Promise<CnpjLookupResult> {
     const digits = cnpj.replace(/\D/g, '');
     const response = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${digits}`, {
