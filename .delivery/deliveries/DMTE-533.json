@@ -1,0 +1,129 @@
+{
+  "version": 1,
+  "delivery": "DMTE-533",
+  "repository": "dmrepositorio/aponta",
+  "github_issue": 305,
+  "multica_id": "01a1e002-aabf-71e5-9ec1-f782d886b0cb",
+  "cycle": "2026-11-09/2026-11-22",
+  "tier": 2,
+  "criteria": [
+    {
+      "id": "AC-01",
+      "description": "com a aba Parâmetros alterada e salva com sucesso, aparece um aviso com `role=\"status\"` e o texto \"Alterações salvas.\"; o mesmo vale para Dados básicos, Status, Prioridades, Seções, Cliente e SLA, Membros, Estágios (criar, editar, excluir) e Expediente. O PATCH enviado é idêntico ao de hoje em Dados básicos, Status, flags, SLA, Membros, Estágios e Expediente.",
+      "tests": [
+        "apps/web/src/pages/ServiceDesksPage.test.tsx: AC-01, AC-04: a successful save shows \"Alterações salvas.\" as a status and clears the pending line",
+        "apps/web/src/pages/ServiceDesksPage.test.tsx: AC-01: Cliente e SLA, Membros and Estágios report the result",
+        "apps/web/src/components/BusinessHoursEditor.test.tsx: DMTE-533 AC-01, AC-02: reports the save result as a notice, with no inline alert of its own"
+      ]
+    },
+    {
+      "id": "AC-02",
+      "description": "quando a gravação falha em qualquer dessas abas, aparece um aviso com `role=\"alert\"`, \"Não foi possível salvar.\" e a descrição \"Tente novamente.\"; a edição e as marcações do usuário continuam como estavam; o aviso de falha não some sozinho e o de sucesso some em 5 s; não há mais alerta inline duplicado nos editores de flags, SLA e expediente.",
+      "tests": [
+        "apps/web/src/pages/ServiceDesksPage.test.tsx: AC-02: a failed save shows one alert with the next step and keeps the edit",
+        "apps/web/src/components/MesaFlagEditor.test.tsx: shows an error when saving flags fails",
+        "apps/web/src/components/MesaFlagEditor.test.tsx: AC-02: the success notice goes away by itself after 5 s and the failure one stays until closed",
+        "apps/web/src/pages/ServiceDesksPage.test.tsx: AC-02: a failed save in Cliente e SLA and in Estágios shows the alert and keeps the edit",
+        "apps/web/src/components/MesaFlagEditor.test.tsx: AC-02: the close button removes the failure notice"
+      ]
+    },
+    {
+      "id": "AC-03",
+      "description": "Prioridades e Seções gravam só ao acionar \"Salvar\" (marcar um item não chama a API), com `priorities: [{ ticketPriority, enabled }]` e `ticketSections: [{ key, enabled }]` com todos os itens da aba; falha mostra o aviso de AC-02 e mantém as marcações.",
+      "tests": [
+        "apps/web/src/pages/ServiceDesksPage.test.tsx: AC-03: Prioridades save only on Salvar, with every item, and a failure keeps the marks",
+        "apps/web/src/pages/ServiceDesksPage.test.tsx: AC-03: Seções do ticket save only on Salvar, with every item"
+      ]
+    },
+    {
+      "id": "AC-04",
+      "description": "com alteração não salva na aba ativa, a linha \"Alterações não salvas nesta aba.\" aparece abaixo das abas; ao desfazer a alteração, ao salvar com sucesso ou ao descartar, ela some; sem alteração, nunca aparece.",
+      "tests": [
+        "apps/web/src/pages/ServiceDesksPage.test.tsx: AC-04, AC-05: an unsaved flag shows the pending line and asks before leaving the tab; Cancelar keeps it, Confirmar discards it",
+        "apps/web/src/pages/ServiceDesksPage.test.tsx: AC-04: undoing the edit clears the pending line, and leaving a clean tab never asks",
+        "apps/web/src/components/BusinessHoursEditor.test.tsx: DMTE-533 AC-04: adding and then removing a window leaves nothing pending"
+      ]
+    },
+    {
+      "id": "AC-05",
+      "description": "com alteração não salva, trocar de aba, voltar à lista, abrir outra mesa, \"Nova Mesa\" ou \"Duplicar\" abre `EzDialog` \"Descartar alterações?\"; \"Cancelar\" (e Escape) mantém a aba, a mesa e a edição; \"Confirmar\" descarta e executa a ação. Sem alteração, nenhuma dessas ações abre o diálogo.",
+      "tests": [
+        "apps/web/src/pages/ServiceDesksPage.test.tsx: AC-04, AC-05: an unsaved flag shows the pending line and asks before leaving the tab; Cancelar keeps it, Confirmar discards it",
+        "apps/web/src/pages/ServiceDesksPage.test.tsx: AC-05: the back button and a new desk also ask before discarding",
+        "apps/web/src/pages/ServiceDesksPage.test.tsx: AC-05: clicking the tab that is already active never asks and leaves the edit alone",
+        "apps/web/src/pages/ServiceDesksPage.test.tsx: AC-05: Duplicar asks too, Escape keeps the edit and Confirmar opens the copy"
+      ]
+    },
+    {
+      "id": "AC-06",
+      "description": "`beforeunload` é registrado só enquanto há alteração não salva e removido ao salvar, descartar ou sair da tela; o evento tem `preventDefault` chamado quando há pendência.",
+      "tests": [
+        "apps/web/src/pages/ServiceDesksPage.test.tsx: AC-06: beforeunload is armed only while there is an unsaved change"
+      ]
+    },
+    {
+      "id": "AC-07",
+      "description": "na aba Parâmetros as 9 flags aparecem em 3 `fieldset` com `legend` \"Geral\", \"SLA\" e \"Revisão e avaliação\", com as mesmas chaves e rótulos e na ordem do tema; o payload do Salvar tem as mesmas 9 chaves.",
+      "tests": [
+        "apps/web/src/pages/ServiceDesksPage.test.tsx: AC-07: Parâmetros groups the 9 flags in 3 themed fieldsets and keeps the payload keys",
+        "apps/web/src/components/MesaFlagEditor.test.tsx: AC-07: with groups, each theme is a fieldset with a legend and the same payload keys"
+      ]
+    },
+    {
+      "id": "AC-08",
+      "description": "Dados básicos e Status são controlados (o campo reflete o que o usuário digita ou escolhe), Salvar envia o mesmo payload de hoje e o valor da consulta recarregada deixa de ser pendência; o botão \"Salvar dados básicos\" e o \"Salvar status\" mantêm os rótulos.",
+      "tests": [
+        "apps/web/src/pages/ServiceDesksPage.test.tsx: AC-08: Dados básicos is controlled, keeps the payload and the button label, and reports the result",
+        "apps/web/src/pages/ServiceDesksPage.test.tsx: AC-08: Status is controlled, keeps the payload and the button label, and reports a failure"
+      ]
+    },
+    {
+      "id": "AC-09",
+      "description": "`MesaFlagEditor` sem `groups` mantém a grade única e o payload de hoje; `MesaFlagEditor`, `ServiceDeskSlaEditor`, `ServiceDeskEditor`, `MesaStagesEditor` e `BusinessHoursEditor` fora de um `MesaSaveProvider` funcionam sem erro (sem aviso).",
+      "tests": [
+        "apps/web/src/components/MesaFlagEditor.test.tsx: AC-09: without a group on the flags the flags stay in a single grid with no fieldset",
+        "apps/web/src/components/MesaFlagEditor.test.tsx: AC-09: works outside a MesaSaveProvider (no notice, no error)"
+      ]
+    },
+    {
+      "id": "AC-10",
+      "description": "em Chromium a 1440 e 390 px, na Mesa com API simulada (dados sintéticos): desmarcar uma flag de Parâmetros mostra a linha de pendência; clicar noutra aba abre o diálogo de descarte; \"Cancelar\" mantém a aba e a marcação; \"Salvar\" mostra o aviso de sucesso sem cobrir o botão Salvar nem criar rolagem horizontal; com a API respondendo 500, o aviso de falha aparece e a marcação continua; Parâmetros mostra 3 `fieldset`.",
+      "tests": [
+        "scripts/mesa_save_check.mjs: Chromium a 1440 e 390 px, grupos, pendência, diálogo de descarte, aviso de sucesso sem cobrir o botão e alerta de falha"
+      ],
+      "tdd_required": false,
+      "reason": "Sobreposição do aviso, rolagem e diálogo em navegador (jsdom não mede layout); o comportamento causador é coberto por AC-01 a AC-08"
+    },
+    {
+      "id": "AC-11",
+      "description": "nenhum arquivo de `apps/web/src/components/ds/`, de `apps/api` nem de `apps/web-e2e` é alterado, `package.json` e `pnpm-lock.yaml` não mudam, e os testes da DMTE-530, DMTE-531, DMTE-532 e DMTE-541 em `ServiceDesksPage.test.tsx` passam sem edição.",
+      "tests": [
+        "git diff do PR: nenhum arquivo em apps/web/src/components/ds/, apps/api, apps/web-e2e, package.json nem pnpm-lock.yaml",
+        "apps/web/src/pages/ServiceDesksPage.test.tsx: testes da DMTE-530, DMTE-531, DMTE-532 e DMTE-541, sem edição"
+      ],
+      "tdd_required": false,
+      "reason": "Verificação de escopo por git diff e testes de outras entregas que já existem e passam sem edição; sem comportamento novo"
+    }
+  ],
+  "spec": "docs/delivery/specs/DMTE-533.md",
+  "tdd": {
+    "mode": "required",
+    "red": ".delivery/evidence/DMTE-533/red-r3.json",
+    "green": ".delivery/evidence/DMTE-533/green-r3.json"
+  },
+  "design_system": {
+    "applicable": true,
+    "reused": [
+      "EzToast",
+      "EzDialog",
+      "EzCheck",
+      "EzButton",
+      "EzTextInput",
+      "EzComboBox",
+      "EzCardItem",
+      "EzTabs"
+    ],
+    "reason": "Reaproveita os componentes Ez* existentes (EzToast para o aviso, EzDialog para o descarte) e os tokens brand/gray; o módulo mesaSave.tsx guarda só estado e não é componente do DS.",
+    "exception": "Nenhum arquivo de apps/web/src/components/ds/ muda nesta entrega, então não há story nova."
+  }
+}

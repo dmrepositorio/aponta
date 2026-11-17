@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/api';
 import { EzButton, EzCheck } from './ds';
+import { useMesaSave } from './mesaSave';
 
 export function ServiceDeskEditor({ desk, agents }: { desk: any; agents: any[] }) {
   const queryClient = useQueryClient();
@@ -10,6 +11,12 @@ export function ServiceDeskEditor({ desk, agents }: { desk: any; agents: any[] }
     desk.agents?.map((a: any) => a.id) || []
   );
 
+  const savedAgents: string[] = desk.agents?.map((a: any) => a.id) || [];
+  const dirty =
+    isEditing &&
+    (selectedAgents.length !== savedAgents.length || selectedAgents.some((id) => !savedAgents.includes(id)));
+  const feedback = useMesaSave(dirty);
+
   const mutation = useMutation({
     mutationFn: async (agentIds: string[]) => {
       await api.patch(`/service-desks/${desk.id}`, { agentIds });
@@ -17,7 +24,9 @@ export function ServiceDeskEditor({ desk, agents }: { desk: any; agents: any[] }
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['service-desks'] });
       setIsEditing(false);
+      feedback.saved();
     },
+    onError: feedback.failed,
   });
 
   const handleSave = () => {
@@ -82,7 +91,10 @@ export function ServiceDeskEditor({ desk, agents }: { desk: any; agents: any[] }
       <button
         type="button"
         className="text-blue-600 hover:underline px-2 py-1 rounded"
-        onClick={() => setIsEditing(true)}
+        onClick={() => {
+          setSelectedAgents(savedAgents);
+          setIsEditing(true);
+        }}
       >
         Editar Membros
       </button>

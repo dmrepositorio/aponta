@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "phase": "red",
+  "started_at": "2026-11-17T02:07:57.539568+00:00",
+  "finished_at": "2026-11-17T02:08:16.332621+00:00",
+  "command": [
+    "pnpm",
+    "--dir",
+    "apps/web",
+    "exec",
+    "vitest",
+    "run",
+    "src/pages/ServiceDesksPage.test.tsx",
+    "src/components/MesaFlagEditor.test.tsx",
+    "src/components/BusinessHoursEditor.test.tsx"
+  ],
+  "base_sha": "faad4eea413df4ec9d0c31adc6f7a73c0c3cd2de",
+  "head_sha": "8b59532b185f725d08baca74123c855534dbda05",
+  "exit_code": 1,
+  "tests": {
+    "apps/web/src/pages/ServiceDesksPage.test.tsx": "ee43f49abc7bf06bf84946838866af83ea7d8c11cf66f8463c1e1309d610ffea",
+    "apps/web/src/components/MesaFlagEditor.test.tsx": "8210101271801bdfb6678c7d13be7999045e32f848ee74d2aebf9385a6939ca7",
+    "apps/web/src/components/BusinessHoursEditor.test.tsx": "c04679b4a869ba6197fcf8a50827ef70c28c83920d75b02bf7da7368989b4b6c"
+  },
+  "criteria": [
+    "AC-01",
+    "AC-02",
+    "AC-03",
+    "AC-04",
+    "AC-05",
+    "AC-06",
+    "AC-07",
+    "AC-08",
+    "AC-09"
+  ],
+  "source_hashes": {
+    "apps/web/src/components/BusinessHoursEditor.test.tsx": "c04679b4a869ba6197fcf8a50827ef70c28c83920d75b02bf7da7368989b4b6c",
+    "apps/web/src/components/MesaFlagEditor.test.tsx": "8210101271801bdfb6678c7d13be7999045e32f848ee74d2aebf9385a6939ca7",
+    "apps/web/src/components/mesaSave.tsx": "83667948d051dff36adb3751ce4f5087a845345daaa058d2710ceb4238272ec3",
+    "apps/web/src/pages/ServiceDesksPage.test.tsx": "ee43f49abc7bf06bf84946838866af83ea7d8c11cf66f8463c1e1309d610ffea"
+  },
+  "log": ".delivery/evidence/DMTE-533/red.log",
+  "log_sha256": "f42b9e2a7325b2701046d51b9785fc6739681b1ca30aa880a84b394acb3a78ae"
+}

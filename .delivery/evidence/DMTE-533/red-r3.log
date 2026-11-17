@@ -1,0 +1,363 @@
+
+ RUN  v4.1.11 /home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-533-c5e415df3c1b/workdir/wt-red-r3/apps/web
+
+ ✓ |web| src/components/MesaFlagEditor.test.tsx (7 tests) 639ms
+ ❯ |web| src/components/BusinessHoursEditor.test.tsx (11 tests | 1 failed) 1483ms
+     ✓ shows a 24/7 message when no business hours are configured 85ms
+     ✓ lists existing business hour windows as editable rows 62ms
+     ✓ adds a new window and saves the full config via PUT  513ms
+     ✓ adds a holiday and includes it in the save payload 214ms
+     ✓ removes a window when its remove button is clicked 34ms
+     ✓ applies the same Mon-Fri window in one click via the shortcut 152ms
+     ✓ does not apply the Mon-Fri shortcut with empty start/end time 46ms
+     ✓ imports national holidays for a chosen year and adds them as draft rows 86ms
+     ✓ shows an error message when importing national holidays fails 42ms
+     ✓ DMTE-533 AC-01, AC-02: reports the save result as a notice, with no inline alert of its own 144ms
+     × DMTE-533 AC-04: adding and then removing a window leaves nothing pending 100ms
+ ❯ |web| src/pages/ServiceDesksPage.test.tsx (37 tests | 1 failed) 10834ms
+     ✓ should list existing service desks for an ADMIN user  368ms
+     ✓ keeps the grid scrollable by touch in both axes on phones (DMTE-455) 227ms
+     ✓ should show the Sankhya-standard entity toolbar with Incluir, Recarregar, and column config 90ms
+     ✓ should enable Excluir and Duplicar once a row is selected, and call the delete endpoint on confirmation 297ms
+     ✓ should open the create form only after clicking Incluir, and create a new service desk  374ms
+     ✓ should not submit when the name field is empty 166ms
+     ✓ should show an access-denied message for a non-ADMIN user 6ms
+     ✓ shows Portuguese labels for ticket sections instead of database keys 146ms
+     ✓ should link a service desk to a client and save its SLA overrides  335ms
+     ✓ DMTE-485 AC-13: a opção de catálogo da mesa aparece como "Mostrar o catálogo ao abrir (permite 'não catalogado')" 150ms
+     ✓ shows the Sankhya-standard filter drawer with search, status and dynamic filter fields 145ms
+     ✓ filters the grid by search text and status (Sankhya filter drawer)  422ms
+     ✓ filters dynamically by any column using the rule builder (Sankhya Filtros parity)  375ms
+     ✓ saves, applies, and deletes a saved filter from the drawer (Sankhya saved filters parity)  471ms
+       ✓ shows Ativa and Recebendo as tags with text and icon, defaulting to true 53ms
+       ✓ mutes the inactive desk row in gray-500 and keeps the name a button 63ms
+       ✓ mutes the +N chip on an inactive desk with 2 or more clients and keeps its tone on an active one 35ms
+       ✓ Clientes shows the first client and a +N chip with the full list in the title 35ms
+       ✓ keeps the grid columns and their order unchanged 42ms
+     ✓ DMTE-531 AC-05, AC-06: the desk tabs scroll in one row instead of wrapping, with the same 12 tabs in the same order 89ms
+     ✓ DMTE-541 AC-08: the filter panel sits in a positioned container so it can overlay the grid below xl 56ms
+     ✓ DMTE-532 AC-06: the desk tabs control one labelled tabpanel that follows the active tab 200ms
+     ✓ AC-07: Parâmetros groups the 9 flags in 3 themed fieldsets and keeps the payload keys 214ms
+     ✓ AC-04, AC-05: an unsaved flag shows the pending line and asks before leaving the tab; Cancelar keeps it, Confirmar discards it  426ms
+     ✓ AC-04: undoing the edit clears the pending line, and leaving a clean tab never asks 231ms
+     ✓ AC-05: the back button and a new desk also ask before discarding  492ms
+     ✓ AC-01, AC-04: a successful save shows "Alterações salvas." as a status and clears the pending line  302ms
+     ✓ AC-02: a failed save shows one alert with the next step and keeps the edit  609ms
+     ✓ AC-03: Prioridades save only on Salvar, with every item, and a failure keeps the marks  317ms
+     ✓ AC-03: Seções do ticket save only on Salvar, with every item  1650ms
+     ✓ AC-08: Dados básicos is controlled, keeps the payload and the button label, and reports the result 283ms
+     ✓ AC-08: Status is controlled, keeps the payload and the button label, and reports a failure  312ms
+     ✓ AC-01: Cliente e SLA, Membros and Estágios report the result  679ms
+     ✓ AC-06: beforeunload is armed only while there is an unsaved change 210ms
+     × AC-05: clicking the tab that is already active never asks and leaves the edit alone 217ms
+     ✓ AC-05: Duplicar asks too, Escape keeps the edit and Confirmar opens the copy  303ms
+     ✓ AC-02: a failed save in Cliente e SLA and in Estágios shows the alert and keeps the edit  436ms
+
+ Test Files  2 failed | 1 passed (3)
+      Tests  2 failed | 53 passed (55)
+   Start at  23:27:51
+   Duration  13.94s (transform 3.40s, setup 357ms, import 6.19s, tests 12.96s, environment 1.88s)
+
+stderr | src/pages/ServiceDesksPage.test.tsx > ServiceDesksPage > should show an access-denied message for a non-ADMIN user
+An update to ServiceDesksPageContent inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to ServiceDesksPageContent inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |web| src/components/BusinessHoursEditor.test.tsx > BusinessHoursEditor > DMTE-533 AC-04: adding and then removing a window leaves nothing pending
+TestingLibraryElementError: Unable to find an element with the text: limpo. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<p>[39m
+      [0mpendente[0m
+    [36m</p>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"mt-2 space-y-3 border-t pt-2 border-gray-100 text-sm"[39m
+    [36m>[39m
+      [36m<span[39m
+        [33mclass[39m=[32m"font-semibold text-gray-900"[39m
+      [36m>[39m
+        [0mExpediente (SLA em horas úteis)[0m
+      [36m</span>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"space-y-2"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex flex-wrap items-center gap-2"[39m
+          [33mdata-testid[39m=[32m"business-hour-row-0"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-col w-full gap-1.5 !w-auto text-xs"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border bg-white rounded-[12px] h-[42px] focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300"[39m
+              [36m>[39m
+                [36m<select[39m
+                  [33maria-hidden[39m=[32m"true"[39m
+                  [33maria-label[39m=[32m"Dia da semana"[39m
+                  [33mclass[39m=[32m"sr-only"[39m
+                  [33mid[39m=[32m"weekday-0"[39m
+                  [33mtabindex[39m=[32m"-1"[39m
+                [36m>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"0"[39m
+                  [36m>[39m
+                    [0mDomingo[0m
+                  [36m</option>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"1"[39m
+                  [36m>[39m
+                    [0mSegunda-feira[0m
+                  [36m</option>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"2"[39m
+                  [36m>[39m
+                    [0mTerça-feira[0m
+                  [36m</option>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"3"[39m
+                  [36m>[39m
+                    [0mQuarta-feira[0m
+                  [36m</option>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"4"[39m
+                  [36m>[39m
+                    [0mQuinta-feira[0m
+                  [36m</option>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"5"[39m
+                  [36m>[39m
+                    [0mSexta-feira[0m
+                  [36m</option>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"6"[39m
+                  [36m>[39m
+                    [0mSábado[0m
+                  [36m</option>[39m
+                [36m</select>[39m
+                [36m<button[39m
+                  [33maria-expanded[39m=[32m"false"[39m
+                  [33maria-haspopup[39m=[32m"listbox"[39m
+                  [33maria-label[39m=[32m"Dia da semana"[39m
+                  [33mclass[39m=[32m"flex h-full w-full items-center justify-between gap-2 bg-transparent text-left text-gray-900 outline-none pl-4 pr-3 text-[14px]"[39m
+                  [33mrole[39m=[32m"combobox"[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"truncate"[39m
+                  [36m>[39m
+                    [0mSegunda-feira[0m
+                  [36m</span>[39m
+                  [36m<svg[39m
+                    [33maria-hidden[39m=[32m"true"[39m
+                    [33mclass[39m=[32m"lucide lucide-chevron-down shrink-0 text-gray-500 w-4 h-4"[39m
+                    [33mfill[39m=[32m"none"[39m
+                    [33mheight[39m=[32m"24"[39m
+                    [33mstroke[39m=[32m"currentColor"[39m
+                    [33mstroke-linecap[39m=[32m"round"[39m
+                    [33mstroke-linejoin[39m=[32m"round"[39m
+                    [33mstroke-width[39m=[32m"2"[39m
+                    [33mviewBox[39m=[32m"0 0 24 24"[39m
+                    [33mwidth[39m=[32m"24"[39m
+                    [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                  [36m>[39m
+                    [36m<path[39m
+                      [33md[39m=[32m"m6 9 6 6 6-6"[39m
+                    [36m/>[39m
+                  [36m</svg>[39m
+                [36m</button>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-col w-full gap-1.5 !w-20 text-xs"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[32px]"[39m
+            [36m>[39m
+              [36m<input[39m
+                [33maria-label[39m=[32m"Início"[39m
+                [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+                [33mid[39m=[32m"start-0"[39m
+                [33mplaceholder[39m=[32m"08:00"[39m
+                [33mtype[39m=[32m"text"[39m
+                [33mvalue[39m=[32m"08:00"[39m
+              [36m/>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"text-gray-500"[39m
+          [36m>[39m
+            [0m-[0m
+          [36m</span>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-col w-full gap-1.5 !w-20 text-xs"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[32px]"[39m
+            [36m>[39m
+              [36m<input[39m
+                [33maria-label[39m=[32m"Fim"[39m
+                [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pl-4 pr-4"[39m
+                [33mid[39m=[32m"end-0"[39m
+                [33mplaceholder[39m=[32m"18:00"[39m
+                [33mtype[39m=[32m"text"[39m
+                [33mvalue[39m=[32m"18:00"[39m
+              [36m/>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap round...
+ ❯ Object.getElementError ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/components/BusinessHoursEditor.test.tsx:315:19
+    313|     expect(screen.getByText('pendente')).toBeInTheDocument();
+    314|     await user.click(within(screen.getByTestId('business-hour-row-1'))…
+    315|     expect(screen.getByText('limpo')).toBeInTheDocument();
+       |                   ^
+    316|   });
+    317| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |web| src/pages/ServiceDesksPage.test.tsx > DMTE-533: um só modelo de salvamento, com retorno > AC-05: clicking the tab that is already active never asks and leaves the edit alone
+Error: [2mexpect([22m[31melement[39m[2m).not.toBeInTheDocument()[22m
+
+[31mexpected document not to contain element, found <div
+  aria-modal="true"
+  class="relative w-full max-w-sm rounded-[24px] bg-white shadow-2xl"
+  role="dialog"
+>
+  <div
+    class="flex items-center justify-between border-b border-gray-100 px-6 py-4"
+  >
+    <div
+      class="flex items-center gap-2"
+    >
+      <svg
+        aria-hidden="true"
+        class="lucide lucide-triangle-alert lucide-alert-triangle h-5 w-5 shrink-0 text-yellow-600"
+        fill="none"
+        height="24"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        viewBox="0 0 24 24"
+        width="24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"
+        />
+        <path
+          d="M12 9v4"
+        />
+        <path
+          d="M12 17h.01"
+        />
+      </svg>
+      <span
+        class="text-[16px] font-semibold text-gray-900"
+      >
+        Descartar alterações?
+      </span>
+    </div>
+    <button
+      aria-label="Fechar"
+      class="rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-700"
+    >
+      <svg
+        aria-hidden="true"
+        class="lucide lucide-x h-4 w-4"
+        fill="none"
+        height="24"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        viewBox="0 0 24 24"
+        width="24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M18 6 6 18"
+        />
+        <path
+          d="m6 6 12 12"
+        />
+      </svg>
+    </button>
+  </div>
+  <div
+    class="px-6 py-4 text-[14px] text-gray-700"
+  >
+    As alterações não salvas desta aba serão perdidas.
+  </div>
+  <div
+    class="flex items-center justify-end gap-3 border-t border-gray-100 bg-gray-90/50 px-6 py-4 rounded-b-[24px]"
+  >
+    <button
+      class="relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent text-brand-600 border border-gray-200 hover:bg-gray-80 hover:border-gray-90 disabled:bg-gray-80 disabled:border-gray-200 disabled:text-gray-400 h-[42px] text-sm px-4"
+    >
+      <div
+        class="relative z-10 flex items-center gap-2"
+      >
+        <span
+          class="font-medium"
+        >
+          Cancelar
+        </span>
+      </div>
+    </button>
+    <button
+      class="relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-brand-500 text-gray-70 border border-brand-500 hover:bg-brand-700 hover:border-brand-700 disabled:bg-gray-400 disabled:border-gray-400 disabled:text-gray-70 h-[42px] text-sm px-4"
+    >
+      <div
+        class="relative z-10 flex items-center gap-2"
+      >
+        <span
+          class="font-normal"
+        >
+          Confirmar
+        </span>
+      </div>
+    </button>
+  </div>
+</div> instead[39m
+ ❯ src/pages/ServiceDesksPage.test.tsx:873:46
+    871|     await user.click(screen.getByLabelText('Permitir cancelar ticket')…
+    872|     await user.click(screen.getByRole('tab', { name: 'Parâmetros' }));
+    873|     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+       |                                              ^
+    874|     expect(screen.getByLabelText('Permitir cancelar ticket')).not.toBe…
+    875|     expect(screen.getByText(PENDING)).toBeInTheDocument();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+

@@ -1,0 +1,2377 @@
+
+ RUN  v4.1.11 /home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-533-c5e415df3c1b/workdir/aponta/apps/web
+
+ ❯ |web| src/components/MesaFlagEditor.test.tsx (6 tests | 3 failed) 904ms
+     ✓ patches the selected flags for a mesa  345ms
+     × shows an error when saving flags fails 66ms
+       ✓ AC-09: without a group on the flags the flags stay in a single grid with no fieldset 24ms
+       × AC-07: with groups, each theme is a fieldset with a legend and the same payload keys 160ms
+       ✓ AC-09: works outside a MesaSaveProvider (no notice, no error) 111ms
+       × AC-02: the success notice goes away by itself after 5 s and the failure one stays until closed 176ms
+ ❯ |web| src/components/BusinessHoursEditor.test.tsx (10 tests | 1 failed) 1940ms
+     ✓ shows a 24/7 message when no business hours are configured 192ms
+     ✓ lists existing business hour windows as editable rows 95ms
+     ✓ adds a new window and saves the full config via PUT  907ms
+     ✓ adds a holiday and includes it in the save payload 199ms
+     ✓ removes a window when its remove button is clicked 42ms
+     ✓ applies the same Mon-Fri window in one click via the shortcut 179ms
+     ✓ does not apply the Mon-Fri shortcut with empty start/end time 55ms
+     ✓ imports national holidays for a chosen year and adds them as draft rows 89ms
+     ✓ shows an error message when importing national holidays fails 41ms
+     × DMTE-533 AC-01, AC-02: reports the save result as a notice, with no inline alert of its own 134ms
+ ❯ |web| src/pages/ServiceDesksPage.test.tsx (34 tests | 12 failed) 10979ms
+     ✓ should list existing service desks for an ADMIN user  482ms
+     ✓ keeps the grid scrollable by touch in both axes on phones (DMTE-455)  371ms
+     ✓ should show the Sankhya-standard entity toolbar with Incluir, Recarregar, and column config 85ms
+     ✓ should enable Excluir and Duplicar once a row is selected, and call the delete endpoint on confirmation 290ms
+     ✓ should open the create form only after clicking Incluir, and create a new service desk  359ms
+     ✓ should not submit when the name field is empty 207ms
+     ✓ should show an access-denied message for a non-ADMIN user 7ms
+     ✓ shows Portuguese labels for ticket sections instead of database keys 157ms
+     ✓ should link a service desk to a client and save its SLA overrides  369ms
+     ✓ DMTE-485 AC-13: a opção de catálogo da mesa aparece como "Mostrar o catálogo ao abrir (permite 'não catalogado')" 156ms
+     ✓ shows the Sankhya-standard filter drawer with search, status and dynamic filter fields 142ms
+     ✓ filters the grid by search text and status (Sankhya filter drawer)  473ms
+     ✓ filters dynamically by any column using the rule builder (Sankhya Filtros parity)  745ms
+     ✓ saves, applies, and deletes a saved filter from the drawer (Sankhya saved filters parity)  454ms
+       ✓ shows Ativa and Recebendo as tags with text and icon, defaulting to true 91ms
+       ✓ mutes the inactive desk row in gray-500 and keeps the name a button 129ms
+       ✓ mutes the +N chip on an inactive desk with 2 or more clients and keeps its tone on an active one 90ms
+       ✓ Clientes shows the first client and a +N chip with the full list in the title 82ms
+       ✓ keeps the grid columns and their order unchanged 73ms
+     ✓ DMTE-531 AC-05, AC-06: the desk tabs scroll in one row instead of wrapping, with the same 12 tabs in the same order 155ms
+     ✓ DMTE-541 AC-08: the filter panel sits in a positioned container so it can overlay the grid below xl 98ms
+     ✓ DMTE-532 AC-06: the desk tabs control one labelled tabpanel that follows the active tab 284ms
+     × AC-07: Parâmetros groups the 9 flags in 3 themed fieldsets and keeps the payload keys 392ms
+     × AC-04, AC-05: an unsaved flag shows the pending line and asks before leaving the tab; Cancelar keeps it, Confirmar discards it 311ms
+     × AC-04: undoing the edit clears the pending line, and leaving a clean tab never asks 259ms
+     × AC-05: the back button and a new desk also ask before discarding 1283ms
+     × AC-01, AC-04: a successful save shows "Alterações salvas." as a status and clears the pending line 1224ms
+     × AC-02: a failed save shows one alert with the next step and keeps the edit 217ms
+     × AC-03: Prioridades save only on Salvar, with every item, and a failure keeps the marks 150ms
+     × AC-03: Seções do ticket save only on Salvar, with every item 188ms
+     × AC-08: Dados básicos is controlled, keeps the payload and the button label, and reports the result 144ms
+     × AC-08: Status is controlled, keeps the payload and the button label, and reports a failure 141ms
+     × AC-01: Cliente e SLA, Membros and Estágios report the result 1175ms
+     × AC-06: beforeunload is armed only while there is an unsaved change 185ms
+
+ Test Files  3 failed (3)
+      Tests  16 failed | 34 passed (50)
+   Start at  23:07:58
+   Duration  17.53s (transform 10.64s, setup 451ms, import 16.02s, tests 13.82s, environment 1.93s)
+
+stderr | src/pages/ServiceDesksPage.test.tsx > ServiceDesksPage > should show an access-denied message for a non-ADMIN user
+An update to ServiceDesksPage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to ServiceDesksPage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 16 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |web| src/components/BusinessHoursEditor.test.tsx > BusinessHoursEditor > DMTE-533 AC-01, AC-02: reports the save result as a notice, with no inline alert of its own
+Error: [2mexpect([22m[31melement[39m[2m).toHaveTextContent()[22m
+
+Expected element to have text content:
+[32m  Não foi possível salvar.[39m
+Received:
+[31m  Falha ao salvar o expediente. Tente novamente.[39m
+ ❯ src/components/BusinessHoursEditor.test.tsx:285:23
+    283|     const alerts = await screen.findAllByRole('alert');
+    284|     expect(alerts).toHaveLength(1);
+    285|     expect(alerts[0]).toHaveTextContent('Não foi possível salvar.');
+       |                       ^
+    286|     expect(screen.queryByText(/falha ao salvar o expediente/i)).not.to…
+    287|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/16]⎯
+
+ FAIL  |web| src/components/MesaFlagEditor.test.tsx > MesaFlagEditor > shows an error when saving flags fails
+Error: [2mexpect([22m[31melement[39m[2m).toHaveTextContent()[22m
+
+Expected element to have text content:
+[32m  Não foi possível salvar.[39m
+Received:
+[31m  Não foi possível salvar as opções da mesa.[39m
+ ❯ src/components/MesaFlagEditor.test.tsx:65:23
+     63|     const alerts = await screen.findAllByRole('alert');
+     64|     expect(alerts).toHaveLength(1);
+     65|     expect(alerts[0]).toHaveTextContent('Não foi possível salvar.');
+       |                       ^
+     66|     expect(alerts[0]).toHaveTextContent('Tente novamente.');
+     67|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/16]⎯
+
+ FAIL  |web| src/components/MesaFlagEditor.test.tsx > MesaFlagEditor > DMTE-533 > AC-07: with groups, each theme is a fieldset with a legend and the same payload keys
+TestingLibraryElementError: Unable to find an accessible element with the role "group"
+
+Here are the accessible roles:
+
+  checkbox:
+
+  Name "Flag A":
+  [36m<input[39m
+    [33mchecked[39m=[32m""[39m
+    [33mclass[39m=[32m"peer appearance-none w-5 h-5 border-2 rounded transition-colors checked:bg-brand-600 checked:border-brand-600 ez-focus border-gray-300 hover:border-gray-400"[39m
+    [33mid[39m=[32m"mesa-flag-a"[39m
+    [33mtype[39m=[32m"checkbox"[39m
+  [36m/>[39m
+
+  Name "Flag B":
+  [36m<input[39m
+    [33mchecked[39m=[32m""[39m
+    [33mclass[39m=[32m"peer appearance-none w-5 h-5 border-2 rounded transition-colors checked:bg-brand-600 checked:border-brand-600 ez-focus border-gray-300 hover:border-gray-400"[39m
+    [33mid[39m=[32m"mesa-flag-b"[39m
+    [33mtype[39m=[32m"checkbox"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  button:
+
+  Name "Salvar":
+  [36m<button[39m
+    [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-brand-500 text-gray-70 border border-brand-500 hover:bg-brand-700 hover:border-brand-700 disabled:bg-gray-400 disabled:border-gray-400 disabled:text-gray-70 h-[32px] text-xs px-4"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"flex flex-col gap-4"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2"[39m
+      [36m>[39m
+        [36m<label[39m
+          [33mclass[39m=[32m"inline-flex items-center gap-2 group cursor-pointer select-none"[39m
+          [33mfor[39m=[32m"mesa-flag-a"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"relative flex items-center justify-center"[39m
+          [36m>[39m
+            [36m<input[39m
+              [33mchecked[39m=[32m""[39m
+              [33mclass[39m=[32m"peer appearance-none w-5 h-5 border-2 rounded transition-colors checked:bg-brand-600 checked:border-brand-600 ez-focus border-gray-300 hover:border-gray-400"[39m
+              [33mid[39m=[32m"mesa-flag-a"[39m
+              [33mtype[39m=[32m"checkbox"[39m
+            [36m/>[39m
+            [36m<svg[39m
+              [33mclass[39m=[32m"absolute w-3.5 h-3.5 pointer-events-none opacity-0 peer-checked:opacity-100 text-white stroke-current stroke-[3] fill-none stroke-linecap-round stroke-linejoin-round"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [36m>[39m
+              [36m<polyline[39m
+                [33mpoints[39m=[32m"20 6 9 17 4 12"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</div>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"text-[14px] font-medium text-gray-900"[39m
+          [36m>[39m
+            [0mFlag A[0m
+          [36m</span>[39m
+        [36m</label>[39m
+        [36m<label[39m
+          [33mclass[39m=[32m"inline-flex items-center gap-2 group cursor-pointer select-none"[39m
+          [33mfor[39m=[32m"mesa-flag-b"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"relative flex items-center justify-center"[39m
+          [36m>[39m
+            [36m<input[39m
+              [33mchecked[39m=[32m""[39m
+              [33mclass[39m=[32m"peer appearance-none w-5 h-5 border-2 rounded transition-colors checked:bg-brand-600 checked:border-brand-600 ez-focus border-gray-300 hover:border-gray-400"[39m
+              [33mid[39m=[32m"mesa-flag-b"[39m
+              [33mtype[39m=[32m"checkbox"[39m
+            [36m/>[39m
+            [36m<svg[39m
+              [33mclass[39m=[32m"absolute w-3.5 h-3.5 pointer-events-none opacity-0 peer-checked:opacity-100 text-white stroke-current stroke-[3] fill-none stroke-linecap-round stroke-linejoin-round"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [36m>[39m
+              [36m<polyline[39m
+                [33mpoints[39m=[32m"20 6 9 17 4 12"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</div>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"text-[14px] font-medium text-gray-900"[39m
+          [36m>[39m
+            [0mFlag B[0m
+          [36m</span>[39m
+        [36m</label>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex justify-end"[39m
+      [36m>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-brand-500 text-gray-70 border border-brand-500 hover:bg-brand-700 hover:border-brand-700 disabled:bg-gray-400 disabled:border-gray-400 disabled:text-gray-70 h-[32px] text-xs px-4"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"relative z-10 flex items-center gap-2"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"font-normal"[39m
+            [36m>[39m
+              [0mSalvar[0m
+            [36m</span>[39m
+          [36m</div>[39m
+        [36m</button>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:109:15
+ ❯ src/components/MesaFlagEditor.test.tsx:109:29
+    107|         ],
+    108|       });
+    109|       const groups = screen.getAllByRole('group');
+       |                             ^
+    110|       expect(groups).toHaveLength(2);
+    111|       expect(within(groups[0]).getByText('Tema 1')).toBeInTheDocument(…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/16]⎯
+
+ FAIL  |web| src/components/MesaFlagEditor.test.tsx > MesaFlagEditor > DMTE-533 > AC-02: the success notice goes away by itself after 5 s and the failure one stays until closed
+TestingLibraryElementError: Unable to find an accessible element with the role "status"
+
+Here are the accessible roles:
+
+  checkbox:
+
+  Name "Flag A":
+  [36m<input[39m
+    [33mchecked[39m=[32m""[39m
+    [33mclass[39m=[32m"peer appearance-none w-5 h-5 border-2 rounded transition-colors checked:bg-brand-600 checked:border-brand-600 ez-focus border-gray-300 hover:border-gray-400"[39m
+    [33mid[39m=[32m"mesa-flag-a"[39m
+    [33mtype[39m=[32m"checkbox"[39m
+  [36m/>[39m
+
+  Name "Flag B":
+  [36m<input[39m
+    [33mchecked[39m=[32m""[39m
+    [33mclass[39m=[32m"peer appearance-none w-5 h-5 border-2 rounded transition-colors checked:bg-brand-600 checked:border-brand-600 ez-focus border-gray-300 hover:border-gray-400"[39m
+    [33mid[39m=[32m"mesa-flag-b"[39m
+    [33mtype[39m=[32m"checkbox"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  button:
+
+  Name "Salvar":
+  [36m<button[39m
+    [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-brand-500 text-gray-70 border border-brand-500 hover:bg-brand-700 hover:border-brand-700 disabled:bg-gray-400 disabled:border-gray-400 disabled:text-gray-70 h-[32px] text-xs px-4"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"flex flex-col gap-4"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2"[39m
+      [36m>[39m
+        [36m<label[39m
+          [33mclass[39m=[32m"inline-flex items-center gap-2 group cursor-pointer select-none"[39m
+          [33mfor[39m=[32m"mesa-flag-a"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"relative flex items-center justify-center"[39m
+          [36m>[39m
+            [36m<input[39m
+              [33mchecked[39m=[32m""[39m
+              [33mclass[39m=[32m"peer appearance-none w-5 h-5 border-2 rounded transition-colors checked:bg-brand-600 checked:border-brand-600 ez-focus border-gray-300 hover:border-gray-400"[39m
+              [33mid[39m=[32m"mesa-flag-a"[39m
+              [33mtype[39m=[32m"checkbox"[39m
+            [36m/>[39m
+            [36m<svg[39m
+              [33mclass[39m=[32m"absolute w-3.5 h-3.5 pointer-events-none opacity-0 peer-checked:opacity-100 text-white stroke-current stroke-[3] fill-none stroke-linecap-round stroke-linejoin-round"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [36m>[39m
+              [36m<polyline[39m
+                [33mpoints[39m=[32m"20 6 9 17 4 12"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</div>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"text-[14px] font-medium text-gray-900"[39m
+          [36m>[39m
+            [0mFlag A[0m
+          [36m</span>[39m
+        [36m</label>[39m
+        [36m<label[39m
+          [33mclass[39m=[32m"inline-flex items-center gap-2 group cursor-pointer select-none"[39m
+          [33mfor[39m=[32m"mesa-flag-b"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"relative flex items-center justify-center"[39m
+          [36m>[39m
+            [36m<input[39m
+              [33mchecked[39m=[32m""[39m
+              [33mclass[39m=[32m"peer appearance-none w-5 h-5 border-2 rounded transition-colors checked:bg-brand-600 checked:border-brand-600 ez-focus border-gray-300 hover:border-gray-400"[39m
+              [33mid[39m=[32m"mesa-flag-b"[39m
+              [33mtype[39m=[32m"checkbox"[39m
+            [36m/>[39m
+            [36m<svg[39m
+              [33mclass[39m=[32m"absolute w-3.5 h-3.5 pointer-events-none opacity-0 peer-checked:opacity-100 text-white stroke-current stroke-[3] fill-none stroke-linecap-round stroke-linejoin-round"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [36m>[39m
+              [36m<polyline[39m
+                [33mpoints[39m=[32m"20 6 9 17 4 12"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+          [36m</div>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"text-[14px] font-medium text-gray-900"[39m
+          [36m>[39m
+            [0mFlag B[0m
+          [36m</span>[39m
+        [36m</label>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex justify-end"[39m
+      [36m>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-brand-500 text-gray-70 border border-brand-500 hover:bg-brand-700 hover:border-brand-700 disabled:bg-gray-400 disabled:border-gray-400 disabled:text-gray-70 h-[32px] text-xs px-4"[39m
+          [33mtype[39m=[32m"button"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"relative z-10 flex items-center gap-2"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"font-normal"[39m
+            [36m>[39m
+              [0mSalvar[0m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"pointer-events-none absolute w-[20px] h-[20px] rounded-full scale-0 animate-ripple z-0 bg-white/30"[39m
+            [33mstyle[39m=[32m"left: -10px; top: -10px;"[39m
+          [36m/>[39m
+        [36m</button>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/components/MesaFlagEditor.test.tsx:137:21
+    135|         fireEvent.click(screen.getByRole('button', { name: 'Salvar' })…
+    136|       });
+    137|       expect(screen.getByRole('status')).toHaveTextContent('Alterações…
+       |                     ^
+    138|       await act(async () => {
+    139|         vi.advanceTimersByTime(4900);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/16]⎯
+
+ FAIL  |web| src/pages/ServiceDesksPage.test.tsx > DMTE-533: um só modelo de salvamento, com retorno > AC-07: Parâmetros groups the 9 flags in 3 themed fieldsets and keeps the payload keys
+TestingLibraryElementError: Unable to find an accessible element with the role "group"
+
+Here are the accessible roles:
+
+  button:
+
+  Name "Voltar":
+  [36m<button[39m
+    [33mclass[39m=[32m"p-1.5 -ml-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-80 rounded-md transition-colors"[39m
+    [33mtitle[39m=[32m"Voltar"[39m
+  [36m/>[39m
+
+  Name "Painel de filtros":
+  [36m<button[39m
+    [33maria-label[39m=[32m"Painel de filtros"[39m
+    [33mclass[39m=[32m"max-sm:min-h-11 max-sm:min-w-11 inline-flex items-center justify-center h-[32px] px-2.5 rounded-[6px] text-[12px] font-medium transition-colors border cursor-pointer bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:text-gray-900"[39m
+    [33mdata-testid[39m=[32m"ez-toolbar-filter-panel-button"[39m
+    [33mtitle[39m=[32m"Painel de filtros"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Alternar para Modo Grade":
+  [36m<button[39m
+    [33maria-label[39m=[32m"Alternar para Modo Grade"[39m
+    [33mclass[39m=[32m"max-sm:min-h-11 max-sm:min-w-11 inline-flex items-center gap-1.5 px-2.5 h-[30px] rounded-l-[5px] text-[12px] font-medium transition-colors cursor-pointer text-gray-700 hover:bg-gray-50"[39m
+    [33mdata-testid[39m=[32m"ez-toolbar-mode-toggle-button"[39m
+    [33mtitle[39m=[32m"Ver grade de registros"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Opções do modo de visualização":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33maria-label[39m=[32m"Opções do modo de visualização"[39m
+    [33mclass[39m=[32m"inline-flex items-center justify-center w-6 h-[30px] border-l border-gray-200 rounded-r-[5px] text-gray-500 hover:text-gray-900 hover:bg-gray-50 transition-colors cursor-pointer max-sm:min-h-11 max-sm:min-w-11"[39m
+    [33mdata-testid[39m=[32m"ez-toolbar-mode-menu-button"[39m
+    [33mtitle[39m=[32m"Opções do modo de visualização"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Nova Mesa":
+  [36m<button[39m
+    [33maria-label[39m=[32m"Nova Mesa"[39m
+    [33mclass[39m=[32m"inline-flex items-center justify-center h-[32px] w-[32px] rounded-[6px] text-gray-600 hover:text-brand-600 hover:bg-brand-50 border border-gray-200 transition-colors cursor-pointer max-sm:min-h-11 max-sm:min-w-11"[39m
+    [33mdata-testid[39m=[32m"ez-toolbar-insert-button"[39m
+    [33mtitle[39m=[32m"Nova Mesa"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Registro anterior":
+  [36m<button[39m
+    [33maria-label[39m=[32m"Registro anterior"[39m
+    [33mclass[39m=[32m"max-sm:min-h-11 max-sm:min-w-11 inline-flex items-center justify-center h-[30px] w-[30px] rounded-l-[5px] text-gray-600 transition-colors opacity-40 cursor-not-allowed hover:bg-white"[39m
+    [33mdata-testid[39m=[32m"ez-toolbar-previous-button"[39m
+    [33mdisabled[39m=[32m""[39m
+    [33mtitle[39m=[32m"Registro anterior"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Próximo registro":
+  [36m<button[39m
+    [33maria-label[39m=[32m"Próximo registro"[39m
+    [33mclass[39m=[32m"max-sm:min-h-11 max-sm:min-w-11 inline-flex items-center justify-center h-[30px] w-[30px] rounded-r-[5px] text-gray-600 transition-colors opacity-40 cursor-not-allowed hover:bg-white"[39m
+    [33mdata-testid[39m=[32m"ez-toolbar-next-button"[39m
+    [33mdisabled[39m=[32m""[39m
+    [33mtitle[39m=[32m"Próximo registro"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Excluir":
+  [36m<button[39m
+    [33maria-label[39m=[32m"Excluir"[39m
+    [33mclass[39m=[32m"max-sm:min-h-11 max-sm:min-w-11 inline-flex items-center justify-center h-[32px] w-[32px] rounded-[6px] border transition-colors border-gray-200 text-gray-300 opacity-50 cursor-not-allowed"[39m
+    [33mdata-testid[39m=[32m"ez-toolbar-delete-button"[39m
+    [33mdisabled[39m=[32m""[39m
+    [33mtitle[39m=[32m"Selecione registros para excluir"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Duplicar":
+  [36m<button[39m
+    [33maria-label[39m=[32m"Duplicar"[39m
+    [33mclass[39m=[32m"max-sm:min-h-11 max-sm:min-w-11 inline-flex items-center justify-center h-[32px] w-[32px] rounded-[6px] border transition-colors border-gray-200 text-gray-300 opacity-50 cursor-not-allowed"[39m
+    [33mdata-testid[39m=[32m"ez-toolbar-clone-button"[39m
+    [33mdisabled[39m=[32m""[39m
+    [33mtitle[39m=[32m"Selecione um registro para duplicar"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Recarregar":
+  [36m<button[39m
+    [33maria-label[39m=[32m"Recarregar"[39m
+    [33mclass[39m=[32m"inline-flex items-center justify-center h-[32px] w-[32px] rounded-[6px] text-gray-600 hover:text-gray-900 hover:bg-gray-50 border border-gray-200 transition-colors cursor-pointer max-sm:min-h-11 max-sm:min-w-11"[39m
+    [33mdata-testid[39m=[32m"ez-toolbar-refresh-button"[39m
+    [33mtitle[39m=[32m"Recarregar dados"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Ações":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33maria-label[39m=[32m"Ações"[39m
+    [33mclass[39m=[32m"inline-flex items-center gap-1.5 h-[32px] px-2.5 rounded-[6px] text-[12px] font-medium text-gray-700 hover:text-gray-900 bg-white hover:bg-gray-50 border border-gray-200 transition-colors cursor-pointer max-sm:min-h-11 max-sm:min-w-11"[39m
+    [33mdata-testid[39m=[32m"ez-toolbar-actions-button"[39m
+    [33mtitle[39m=[32m"Ações do registro"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Configuração da tela":
+  [36m<button[39m
+    [33maria-label[39m=[32m"Configuração da tela"[39m
+    [33mclass[39m=[32m"inline-flex items-center justify-center h-[32px] w-[32px] rounded-[6px] text-gray-600 hover:text-gray-900 hover:bg-gray-50 border border-gray-200 transition-colors cursor-pointer max-sm:min-h-11 max-sm:min-w-11"[39m
+    [33mdata-testid[39m=[32m"ez-toolbar-screen-config-button"[39m
+    [33mtitle[39m=[32m"Personalizar colunas e layout da tela (por usuário)"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Salvar":
+  [36m<button[39m
+    [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2 active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-brand-500 text-gray-70 border border-brand-500 hover:bg-brand-700 hover:border-brand-700 disabled:bg-gray-400 disabled:border-gray-400 disabled:text-gray-70 h-[32px] text-xs px-4"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  heading:
+
+  Name "Suporte N1":
+  [36m<h1[39m
+    [33mclass[39m=[32m"text-[20px] font-semibold text-gray-900 leading-none m-0"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  tablist:
+
+  Name "":
+  [36m<div[39m
+    [33mclass[39m=[32m"flex items-center overflow-x-auto no-scrollbar gap-2"[39m
+    [33mrole[39m=[32m"tablist"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  tab:
+
+  Name "Informações básicas":
+  [36m<button[39m
+    [33maria-controls[39m=[32m"mesa-tabs-panel-basics"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"px-4 py-2 rounded-full text-[14px] font-medium transition-colors whitespace-nowrap ez-focus-inset text-gray-600 hover:bg-gray-90"[39m
+    [33mid[39m=[32m"mesa-tabs-tab-basics"[39m
+    [33mrole[39m=[32m"tab"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Parâmetros":
+  [36m<button[39m
+    [33maria-controls[39m=[32m"mesa-tabs-panel-params"[39m
+    [33maria-selected[39m=[32m"true"[39m
+    [33mclass[39m=[32m"px-4 py-2 rounded-full text-[14px] font-medium transition-colors whitespace-nowrap ez-focus-inset bg-brand-100 text-brand-700"[39m
+    [33mid[39m=[32m"mesa-tabs-tab-params"[39m
+    [33mrole[39m=[32m"tab"[39m
+    [33mtabindex[39m=[32m"0"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Campos obrigatórios":
+  [36m<button[39m
+    [33maria-controls[39m=[32m"mesa-tabs-panel-required"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"px-4 py-2 rounded-full text-[14px] font-medium transition-colors whitespace-nowrap ez-focus-inset text-gray-600 hover:bg-gray-90"[39m
+    [33mid[39m=[32m"mesa-tabs-tab-required"[39m
+    [33mrole[39m=[32m"tab"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Prioridades":
+  [36m<button[39m
+    [33maria-controls[39m=[32m"mesa-tabs-panel-priorities"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"px-4 py-2 rounded-full text-[14px] font-medium transition-colors whitespace-nowrap ez-focus-inset text-gray-600 hover:bg-gray-90"[39m
+    [33mid[39m=[32m"mesa-tabs-tab-priorities"[39m
+    [33mrole[39m=[32m"tab"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Clientes":
+  [36m<button[39m
+    [33maria-controls[39m=[32m"mesa-tabs-panel-clients"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"px-4 py-2 rounded-full text-[14px] font-medium transition-colors whitespace-nowrap ez-focus-inset text-gray-600 hover:bg-gray-90"[39m
+    [33mid[39m=[32m"mesa-tabs-tab-clients"[39m
+    [33mrole[39m=[32m"tab"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Grupos de atendentes":
+  [36m<button[39m
+    [33maria-controls[39m=[32m"mesa-tabs-panel-groups"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"px-4 py-2 rounded-full text-[14px] font-medium transition-colors whitespace-nowrap ez-focus-inset text-gray-600 hover:bg-gray-90"[39m
+    [33mid[39m=[32m"mesa-tabs-tab-groups"[39m
+    [33mrole[39m=[32m"tab"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Estágio":
+  [36m<button[39m
+    [33maria-controls[39m=[32m"mesa-tabs-panel-stages"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"px-4 py-2 rounded-full text-[14px] font-medium transition-colors whitespace-nowrap ez-focus-inset text-gray-600 hover:bg-gray-90"[39m
+    [33mid[39m=[32m"mesa-tabs-tab-stages"[39m
+    [33mrole[39m=[32m"tab"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Status":
+  [36m<button[39m
+    [33maria-controls[39m=[32m"mesa-tabs-panel-status"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"px-4 py-2 rounded-full text-[14px] font-medium transition-colors whitespace-nowrap ez-focus-inset text-gray-600 hover:bg-gray-90"[39m
+    [33mid[39m=[32m"mesa-tabs-tab-status"[39m
+    [33mrole[39m=[32m"tab"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Reabertura":
+  [36m<button[39m
+    [33maria-controls[39m=[32m"mesa-tabs-panel-reopen"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"px-4 py-2 rounded-full text-[14px] font-medium transition-colors whitespace-nowrap ez-focus-inset text-gray-600 hover:bg-gray-90"[39m
+    [33mid[39m=[32m"mesa-tabs-tab-reopen"[39m
+    [33mrole[39m=[32m"tab"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Seções do ticket":
+  [36m<button[39m
+    [33maria-controls[39m=[32m"mesa-tabs-panel-sections"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"px-4 py-2 rounded-full text-[14px] font-medium transition-colors whitespace-nowrap ez-focus-inset text-gray-600 hover:bg-gray-90"[39m
+    [33mid[39m=[32m"mesa-tabs-tab-sections"[39m
+    [33mrole[39m=[32m"tab"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Revisão":
+  [36m<button[39m
+    [33maria-controls[39m=[32m"mesa-tabs-panel-review"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"px-4 py-2 rounded-full text-[14px] font-medium transition-colors whitespace-nowrap ez-focus-inset text-gray-600 hover:bg-gray-90"[39m
+    [33mid[39m=[32m"mesa-tabs-tab-review"[39m
+    [33mrole[39m=[32m"tab"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Expediente":
+  [36m<button[39m
+    [33maria-controls[39m=[32m"mesa-tabs-panel-hours"[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"px-4 py-2 rounded-full text-[14px] font-medium transition-colors whitespace-nowrap ez-focus-inset text-gray-600 hover:bg-gray-90"[39m
+    [33mid[39m=[32m"mesa-tabs-tab-hours"[39m
+    [33mrole[39m=[32m"tab"[39m
+    [33mtabindex[39m=[32m"-1"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  tabpanel:
+
+  Name "Parâmetros":
+  [36m<div[39m
+    [33maria-labelledby[39m=[32m"mesa-tabs-tab-params"[39m
+    [33mclass[39m=[32m"flex flex-col w-full bg-white rounded-[16px] border border-gray-100 transition-all p-5 md:p-6"[39m
+    [33mid[39m=[32m"mesa-tabs-panel-params"[39m
+    [33mrole[39m=[32m"tabpanel"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  checkbox:
+
+  Name "Interação com outras mesas":
+  [36m<input[39m
+    [33mchecked[39m=[32m""[39m
+    [33mclass[39m=[32m"peer appearance-none w-5 h-5 border-2 rounded transition-colors checked:bg-brand-600 checked:border-brand-600 ez-focus border-gray-300 hover:border-gray-400"[39m
+    [33mid[39m=[32m"mesa-flag-allowCrossDeskInteraction"[39m
+    [33mtype[39m=[32m"checkbox"[39m
+  [36m/>[39m
+
+  Name "Permitir cancelar ticket":
+  [36m<input[39m
+    [33mchecked[39m=[32m""[39m
+    [33mclass[39m=[32m"peer appearance-none w-5 h-5 border-2 rounded transition-colors checked:bg-brand-600 checked:border-brand-600 ez-focus border-gray-300 hover:border-gray-400"[39m
+    [33mid[39m=[32m"mesa-flag-allowCancelTicket"[39m
+    [33mtype[39m=[32m"checkbox"[39m
+  [36m/>[39m
+
+  Name "Mostrar o catálogo ao abrir (permite 'não catalogado')":
+  [36m<input[39m
+    [33mchecked[39m=[32m""[39m
+    [33mclass[39m=[32m"peer appearance-none w-5 h-5 border-2 rounded transition-colors checked:bg-brand-600 checked:border-brand-600 ez-focus border-gray-300 hover:border-gray-400"[39m
+    [33mid[39m=[32m"mesa-flag-catalogRequiredOnOpen"[39m
+    [33mtype[39m=[32m"checkbox"[39m
+  [36m/>[39m
+
+  Name "Controle de SLA":
+  [36m<input[39m
+    [33mchecked[39m=[32m""[39m
+    [33mclass[39m=[32m"peer appearance-none w-5 h-5 border-2 rounded transition-colors checked:bg-brand-600 checked:border-brand-600 ez-focus border-gray-300 hover:border-gray-400"[39m
+    [33mid[39m=[32m"mesa-flag-slaControlEnabled"[39m
+    [33mtype[39m=[32m"checkbox"[39m
+  [36m/>[39m
+
+  Name "Permitir adicionar horas ao SLA":
+  [36m<input[39m
+    [33mchecked[39m=[32m""[39m
+    [33mclass[39m=[32m"peer appearance-none w-5 h-5 border-2 rounded transition-colors checked:bg-brand-600 checked:border-brand-600 ez-focus border-gray-300 hover:border-gray-400"[39m
+    [33mid[39m=[32m"mesa-flag-allowAddSlaHours"[39m
+    [33mtype[39m=[32m"checkbox"[39m
+  [36m/>[39m
+
+  Name "Permitir parar e retomar o SLA":
+  [36m<input[39m
+    [33mchecked[39m=[32m""[39m
+    [33mclass[39m=[32m"peer appearance-none w-5 h-5 border-2 rounded transition-colors checked:bg-brand-600 checked:border-brand-600 ez-focus border-gray-300 hover:border-gray-400"[39m
+    [33mid[39m=[32m"mesa-flag-allowPauseResumeSla"[39m
+    [33mtype[39m=[32m"checkbox"[39m
+  [36m/>[39m
+
+  Name "Fluxo de revisão":
+  [36m<input[39m
+    [33mchecked[39m=[32m""[39m
+    [33mclass[39m=[32m"peer appearance-none w-5 h-5 border-2 rounded transition-colors checked:bg-brand-600 checked:border-brand-600 ez-focus border-gray-300 hover:border-gray-400"[39m
+    [33mid[39m=[32m"mesa-flag-reviewFlowEnabled"[39m
+    [33mtype[39m=[32m"checkbox"[39m
+  [36m/>[39m
+
+  Name "Avaliação":
+  [36m<input[39m
+    [33mchecked[39m=[32m""[39m
+    [33mclass[39m=[32m"peer appearance-none w-5 h-5 border-2 rounded transition-colors checked:bg-brand-600 checked:border-brand-600 ez-focus border-gray-300 hover:border-gray-400"[39m
+    [33mid[39m=[32m"mesa-flag-evaluationEnabled"[39m
+    [33mtype[39m=[32m"checkbox"[39m
+  [36m/>[39m
+
+  Name "Abertura só por atendentes":
+  [36m<input[39m
+    [33mchecked[39m=[32m""[39m
+    [33mclass[39m=[32m"peer appearance-none w-5 h-5 border-2 rounded transition-colors checked:bg-brand-600 checked:border-brand-600 ez-focus border-gray-300 hover:border-gray-400"[39m
+    [33mid[39m=[32m"mesa-flag-openByAgentsOnly"[39m
+    [33mtype[39m=[32m"checkbox"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"flex flex-col h-full bg-gray-80"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex flex-col w-full bg-white border-b border-gray-200 px-4 py-2 sm:px-6 gap-3"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center justify-between min-h-[32px]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-3"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"p-1.5 -ml-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-80 rounded-md transition-colors"[39m
+              [33mtitle[39m=[32m"Voltar"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"lucide lucide-arrow-left w-5 h-5"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"24"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [33mwidth[39m=[32m"24"[39m
+                [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"m12 19-7-7 7-7"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M19 12H5"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+            [36m</button>[39m
+            [36m<h1[39m
+              [33mclass[39m=[32m"text-[20px] font-semibold text-gray-900 leading-none m-0"[39m
+            [36m>[39m
+              [0mSuporte N1[0m
+            [36m</h1>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-4"[39m
+          [36m/>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex-1 overflow-auto p-6"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"space-y-4"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"bg-white rounded-[10px] border border-gray-200 overflow-hidden shadow-xs flex flex-col"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center gap-3 px-3 py-1.5 bg-white border-b border-gray-200 select-none min-h-[44px] max-sm:flex-col max-sm:items-stretch max-sm:gap-0 max-sm:px-0"[39m
+              [33mdata-testid[39m=[32m"ez-entity-toolbar"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center justify-between gap-3 max-sm:overflow-x-auto max-sm:px-3 sm:contents"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center gap-1 flex-wrap max-sm:flex-nowrap shrink-0 sm:shrink"[39m
+                [36m>[39m
+                  [36m<button[39m
+                    [33maria-label[39m=[32m"Painel de filtros"[39m
+                    [33mclass[39m=[32m"max-sm:min-h-11 max-sm:min-w-11 inline-flex items-center justify-center h-[32px] px-2.5 rounded-[6px] text-[12px] font-medium transition-colors border cursor-pointer bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:text-gray-900"[39m
+                    [33mdata-testid[39m=[32m"ez-toolbar-filter-panel-button"[39m
+                    [33mtitle[39m=[32m"Painel de filtros"[39m
+                    [33mtype[39m=[32m"button"[39m
+                  [36m>[39m
+                    [36m<svg[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"lucide lucide-funnel lucide-filter w-3.5 h-3.5 mr-1.5"[39m
+                      [33mfill[39m=[32m"none"[39m
+                      [33mheight[39m=[32m"24"[39m
+                      [33mstroke[39m=[32m"currentColor"[39m
+                      [33mstroke-linecap[39m=[32m"round"[39m
+                      [33mstroke-linejoin[39m=[32m"round"[39m
+                      [33mstroke-width[39m=[32m"2"[39m
+                      [33mviewBox[39m=[32m"0 0 24 24"[39m
+                      [33mwidth[39m=[32m"24"[39m
+                      [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                    [36m>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z"[39m
+                      [36m/>[39m
+                    [36m</svg>[39m
+                    [0mFiltros[0m
+                  [36m</button>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"w-px h-5 bg-gray-200 mx-0.5"[39m
+                  [36m/>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"relative inline-flex items-center rounded-[6px] border border-gray-200 bg-white"[39m
+                  [36m>[39m
+                    [36m<button[39m
+                      [33maria-label[39m=[32m"Alternar para Modo Grade"[39m
+                      [33mclass[39m=[32m"max-sm:min-h-11 max-sm:min-w-11 inline-flex items-center gap-1.5 px-2.5 h-[30px] rounded-l-[5px] text-[12px] font-medium transition-colors cursor-pointer text-gray-700 hover:bg-gray-50"[39m
+                      [33mdata-testid[39m=[32m"ez-toolbar-mode-toggle-button"[39m
+                      [33mtitle[39m=[32m"Ver grade de registros"[39m
+                      [33mtype[39m=[32m"button"[39m
+                    [36m>[39m
+                      [36m<svg[39m
+                        [33maria-hidden[39m=[32m"true"[39m
+                        [33mclass[39m=[32m"lucide lucide-file-text w-3.5 h-3.5 text-brand-600"[39m
+                        [33mfill[39m=[32m"none"[39m
+                        [33mheight[39m=[32m"24"[39m
+                        [33mstroke[39m=[32m"currentColor"[39m
+                        [33mstroke-linecap[39m=[32m"round"[39m
+                        [33mstroke-linejoin[39m=[32m"round"[39m
+                        [33mstroke-width[39m=[32m"2"[39m
+                        [33mviewBox[39m=[32m"0 0 24 24"[39m
+                        [33mwidth[39m=[32m"24"[39m
+                        [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                      [36m>[39m
+                        [36m<path[39m
+                          [33md[39m=[32m"M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"[39m
+                        [36m/>[39m
+                        [36m<path...
+ ❯ Object.getElementError ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:109:15
+ ❯ src/pages/ServiceDesksPage.test.tsx:642:27
+    640|   it('AC-07: Parâmetros groups the 9 flags in 3 themed fieldsets and k…
+    641|     const user = await openDesk('Parâmetros');
+    642|     const groups = screen.getAllByRole('group');
+       |                           ^
+    643|     expect(groups.map((group) => within(group).getByText(/^(Geral|SLA|…
+    644|       'Geral',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/16]⎯
+
+ FAIL  |web| src/pages/ServiceDesksPage.test.tsx > DMTE-533: um só modelo de salvamento, com retorno > AC-04, AC-05: an unsaved flag shows the pending line and asks before leaving the tab; Cancelar keeps it, Confirmar discards it
+TestingLibraryElementError: Unable to find an element with the text: Alterações não salvas nesta aba.. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"flex flex-col h-full bg-gray-80"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex flex-col w-full bg-white border-b border-gray-200 px-4 py-2 sm:px-6 gap-3"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center justify-between min-h-[32px]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-3"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"p-1.5 -ml-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-80 rounded-md transition-colors"[39m
+              [33mtitle[39m=[32m"Voltar"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"lucide lucide-arrow-left w-5 h-5"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"24"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [33mwidth[39m=[32m"24"[39m
+                [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"m12 19-7-7 7-7"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M19 12H5"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+            [36m</button>[39m
+            [36m<h1[39m
+              [33mclass[39m=[32m"text-[20px] font-semibold text-gray-900 leading-none m-0"[39m
+            [36m>[39m
+              [0mSuporte N1[0m
+            [36m</h1>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-4"[39m
+          [36m/>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex-1 overflow-auto p-6"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"space-y-4"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"bg-white rounded-[10px] border border-gray-200 overflow-hidden shadow-xs flex flex-col"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center gap-3 px-3 py-1.5 bg-white border-b border-gray-200 select-none min-h-[44px] max-sm:flex-col max-sm:items-stretch max-sm:gap-0 max-sm:px-0"[39m
+              [33mdata-testid[39m=[32m"ez-entity-toolbar"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center justify-between gap-3 max-sm:overflow-x-auto max-sm:px-3 sm:contents"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center gap-1 flex-wrap max-sm:flex-nowrap shrink-0 sm:shrink"[39m
+                [36m>[39m
+                  [36m<button[39m
+                    [33maria-label[39m=[32m"Painel de filtros"[39m
+                    [33mclass[39m=[32m"max-sm:min-h-11 max-sm:min-w-11 inline-flex items-center justify-center h-[32px] px-2.5 rounded-[6px] text-[12px] font-medium transition-colors border cursor-pointer bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:text-gray-900"[39m
+                    [33mdata-testid[39m=[32m"ez-toolbar-filter-panel-button"[39m
+                    [33mtitle[39m=[32m"Painel de filtros"[39m
+                    [33mtype[39m=[32m"button"[39m
+                  [36m>[39m
+                    [36m<svg[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"lucide lucide-funnel lucide-filter w-3.5 h-3.5 mr-1.5"[39m
+                      [33mfill[39m=[32m"none"[39m
+                      [33mheight[39m=[32m"24"[39m
+                      [33mstroke[39m=[32m"currentColor"[39m
+                      [33mstroke-linecap[39m=[32m"round"[39m
+                      [33mstroke-linejoin[39m=[32m"round"[39m
+                      [33mstroke-width[39m=[32m"2"[39m
+                      [33mviewBox[39m=[32m"0 0 24 24"[39m
+                      [33mwidth[39m=[32m"24"[39m
+                      [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                    [36m>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z"[39m
+                      [36m/>[39m
+                    [36m</svg>[39m
+                    [0mFiltros[0m
+                  [36m</button>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"w-px h-5 bg-gray-200 mx-0.5"[39m
+                  [36m/>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"relative inline-flex items-center rounded-[6px] border border-gray-200 bg-white"[39m
+                  [36m>[39m
+                    [36m<button[39m
+                      [33maria-label[39m=[32m"Alternar para Modo Grade"[39m
+                      [33mclass[39m=[32m"max-sm:min-h-11 max-sm:min-w-11 inline-flex items-center gap-1.5 px-2.5 h-[30px] rounded-l-[5px] text-[12px] font-medium transition-colors cursor-pointer text-gray-700 hover:bg-gray-50"[39m
+                      [33mdata-testid[39m=[32m"ez-toolbar-mode-toggle-button"[39m
+                      [33mtitle[39m=[32m"Ver grade de registros"[39m
+                      [33mtype[39m=[32m"button"[39m
+                    [36m>[39m
+                      [36m<svg[39m
+                        [33maria-hidden[39m=[32m"true"[39m
+                        [33mclass[39m=[32m"lucide lucide-file-text w-3.5 h-3.5 text-brand-600"[39m
+                        [33mfill[39m=[32m"none"[39m
+                        [33mheight[39m=[32m"24"[39m
+                        [33mstroke[39m=[32m"currentColor"[39m
+                        [33mstroke-linecap[39m=[32m"round"[39m
+                        [33mstroke-linejoin[39m=[32m"round"[39m
+                        [33mstroke-width[39m=[32m"2"[39m
+                        [33mviewBox[39m=[32m"0 0 24 24"[39m
+                        [33mwidth[39m=[32m"24"[39m
+                        [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                      [36m>[39m
+                        [36m<path[39m
+                          [33md[39m=[32m"M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"[39m
+                        [36m/>[39m
+                        [36m<path...
+ ❯ Object.getElementError ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/pages/ServiceDesksPage.test.tsx:685:19
+    683|
+    684|     await user.click(screen.getByLabelText('Permitir cancelar ticket')…
+    685|     expect(screen.getByText(PENDING)).toBeInTheDocument();
+       |                   ^
+    686|
+    687|     await user.click(screen.getByRole('tab', { name: 'Prioridades' }));
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/16]⎯
+
+ FAIL  |web| src/pages/ServiceDesksPage.test.tsx > DMTE-533: um só modelo de salvamento, com retorno > AC-04: undoing the edit clears the pending line, and leaving a clean tab never asks
+TestingLibraryElementError: Unable to find an element with the text: Alterações não salvas nesta aba.. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"flex flex-col h-full bg-gray-80"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex flex-col w-full bg-white border-b border-gray-200 px-4 py-2 sm:px-6 gap-3"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center justify-between min-h-[32px]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-3"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"p-1.5 -ml-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-80 rounded-md transition-colors"[39m
+              [33mtitle[39m=[32m"Voltar"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"lucide lucide-arrow-left w-5 h-5"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"24"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [33mwidth[39m=[32m"24"[39m
+                [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"m12 19-7-7 7-7"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M19 12H5"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+            [36m</button>[39m
+            [36m<h1[39m
+              [33mclass[39m=[32m"text-[20px] font-semibold text-gray-900 leading-none m-0"[39m
+            [36m>[39m
+              [0mSuporte N1[0m
+            [36m</h1>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-4"[39m
+          [36m/>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex-1 overflow-auto p-6"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"space-y-4"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"bg-white rounded-[10px] border border-gray-200 overflow-hidden shadow-xs flex flex-col"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center gap-3 px-3 py-1.5 bg-white border-b border-gray-200 select-none min-h-[44px] max-sm:flex-col max-sm:items-stretch max-sm:gap-0 max-sm:px-0"[39m
+              [33mdata-testid[39m=[32m"ez-entity-toolbar"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center justify-between gap-3 max-sm:overflow-x-auto max-sm:px-3 sm:contents"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center gap-1 flex-wrap max-sm:flex-nowrap shrink-0 sm:shrink"[39m
+                [36m>[39m
+                  [36m<button[39m
+                    [33maria-label[39m=[32m"Painel de filtros"[39m
+                    [33mclass[39m=[32m"max-sm:min-h-11 max-sm:min-w-11 inline-flex items-center justify-center h-[32px] px-2.5 rounded-[6px] text-[12px] font-medium transition-colors border cursor-pointer bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:text-gray-900"[39m
+                    [33mdata-testid[39m=[32m"ez-toolbar-filter-panel-button"[39m
+                    [33mtitle[39m=[32m"Painel de filtros"[39m
+                    [33mtype[39m=[32m"button"[39m
+                  [36m>[39m
+                    [36m<svg[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"lucide lucide-funnel lucide-filter w-3.5 h-3.5 mr-1.5"[39m
+                      [33mfill[39m=[32m"none"[39m
+                      [33mheight[39m=[32m"24"[39m
+                      [33mstroke[39m=[32m"currentColor"[39m
+                      [33mstroke-linecap[39m=[32m"round"[39m
+                      [33mstroke-linejoin[39m=[32m"round"[39m
+                      [33mstroke-width[39m=[32m"2"[39m
+                      [33mviewBox[39m=[32m"0 0 24 24"[39m
+                      [33mwidth[39m=[32m"24"[39m
+                      [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                    [36m>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z"[39m
+                      [36m/>[39m
+                    [36m</svg>[39m
+                    [0mFiltros[0m
+                  [36m</button>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"w-px h-5 bg-gray-200 mx-0.5"[39m
+                  [36m/>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"relative inline-flex items-center rounded-[6px] border border-gray-200 bg-white"[39m
+                  [36m>[39m
+                    [36m<button[39m
+                      [33maria-label[39m=[32m"Alternar para Modo Grade"[39m
+                      [33mclass[39m=[32m"max-sm:min-h-11 max-sm:min-w-11 inline-flex items-center gap-1.5 px-2.5 h-[30px] rounded-l-[5px] text-[12px] font-medium transition-colors cursor-pointer text-gray-700 hover:bg-gray-50"[39m
+                      [33mdata-testid[39m=[32m"ez-toolbar-mode-toggle-button"[39m
+                      [33mtitle[39m=[32m"Ver grade de registros"[39m
+                      [33mtype[39m=[32m"button"[39m
+                    [36m>[39m
+                      [36m<svg[39m
+                        [33maria-hidden[39m=[32m"true"[39m
+                        [33mclass[39m=[32m"lucide lucide-file-text w-3.5 h-3.5 text-brand-600"[39m
+                        [33mfill[39m=[32m"none"[39m
+                        [33mheight[39m=[32m"24"[39m
+                        [33mstroke[39m=[32m"currentColor"[39m
+                        [33mstroke-linecap[39m=[32m"round"[39m
+                        [33mstroke-linejoin[39m=[32m"round"[39m
+                        [33mstroke-width[39m=[32m"2"[39m
+                        [33mviewBox[39m=[32m"0 0 24 24"[39m
+                        [33mwidth[39m=[32m"24"[39m
+                        [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                      [36m>[39m
+                        [36m<path[39m
+                          [33md[39m=[32m"M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"[39m
+                        [36m/>[39m
+                        [36m<path...
+ ❯ Object.getElementError ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/pages/ServiceDesksPage.test.tsx:709:19
+    707|     const user = await openDesk('Parâmetros');
+    708|     await user.click(screen.getByLabelText('Permitir cancelar ticket')…
+    709|     expect(screen.getByText(PENDING)).toBeInTheDocument();
+       |                   ^
+    710|     await user.click(screen.getByLabelText('Permitir cancelar ticket')…
+    711|     expect(screen.queryByText(PENDING)).not.toBeInTheDocument();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/16]⎯
+
+ FAIL  |web| src/pages/ServiceDesksPage.test.tsx > DMTE-533: um só modelo de salvamento, com retorno > AC-05: the back button and a new desk also ask before discarding
+TestingLibraryElementError: Unable to find role="dialog"
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"flex flex-col h-full bg-gray-80"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex flex-col w-full bg-white border-b border-gray-200 px-4 py-2 sm:px-6 gap-3"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center justify-between min-h-[32px]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-3"[39m
+          [36m>[39m
+            [36m<h1[39m
+              [33mclass[39m=[32m"text-[20px] font-semibold text-gray-900 leading-none m-0"[39m
+            [36m>[39m
+              [0mMesa[0m
+            [36m</h1>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-4"[39m
+          [36m/>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex-1 overflow-auto p-6"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"space-y-4"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"bg-white rounded-[10px] border border-gray-200 overflow-hidden shadow-xs flex flex-col"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center gap-3 px-3 py-1.5 bg-white border-b border-gray-200 select-none min-h-[44px] max-sm:flex-col max-sm:items-stretch max-sm:gap-0 max-sm:px-0"[39m
+              [33mdata-testid[39m=[32m"ez-entity-toolbar"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center justify-between gap-3 max-sm:overflow-x-auto max-sm:px-3 sm:contents"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center gap-1 flex-wrap max-sm:flex-nowrap shrink-0 sm:shrink"[39m
+                [36m>[39m
+                  [36m<button[39m
+                    [33maria-label[39m=[32m"Painel de filtros"[39m
+                    [33mclass[39m=[32m"max-sm:min-h-11 max-sm:min-w-11 inline-flex items-center justify-center h-[32px] px-2.5 rounded-[6px] text-[12px] font-medium transition-colors border cursor-pointer bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:text-gray-900"[39m
+                    [33mdata-testid[39m=[32m"ez-toolbar-filter-panel-button"[39m
+                    [33mtitle[39m=[32m"Painel de filtros"[39m
+                    [33mtype[39m=[32m"button"[39m
+                  [36m>[39m
+                    [36m<svg[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"lucide lucide-funnel lucide-filter w-3.5 h-3.5 mr-1.5"[39m
+                      [33mfill[39m=[32m"none"[39m
+                      [33mheight[39m=[32m"24"[39m
+                      [33mstroke[39m=[32m"currentColor"[39m
+                      [33mstroke-linecap[39m=[32m"round"[39m
+                      [33mstroke-linejoin[39m=[32m"round"[39m
+                      [33mstroke-width[39m=[32m"2"[39m
+                      [33mviewBox[39m=[32m"0 0 24 24"[39m
+                      [33mwidth[39m=[32m"24"[39m
+                      [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                    [36m>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z"[39m
+                      [36m/>[39m
+                    [36m</svg>[39m
+                    [0mFiltros[0m
+                  [36m</button>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"w-px h-5 bg-gray-200 mx-0.5"[39m
+                  [36m/>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"relative inline-flex items-center rounded-[6px] border border-gray-200 bg-white"[39m
+                  [36m>[39m
+                    [36m<button[39m
+                      [33maria-label[39m=[32m"Alternar para Modo Formulário"[39m
+                      [33mclass[39m=[32m"max-sm:min-h-11 max-sm:min-w-11 inline-flex items-center gap-1.5 px-2.5 h-[30px] rounded-l-[5px] text-[12px] font-medium transition-colors cursor-pointer text-brand-700 bg-brand-50/50 hover:bg-brand-50"[39m
+                      [33mdata-testid[39m=[32m"ez-toolbar-mode-toggle-button"[39m
+                      [33mtitle[39m=[32m"Ver formulário do registro"[39m
+                      [33mtype[39m=[32m"button"[39m
+                    [36m>[39m
+                      [36m<svg[39m
+                        [33maria-hidden[39m=[32m"true"[39m
+                        [33mclass[39m=[32m"lucide lucide-layout-grid w-3.5 h-3.5 text-brand-600"[39m
+                        [33mfill[39m=[32m"none"[39m
+                        [33mheight[39m=[32m"24"[39m
+                        [33mstroke[39m=[32m"currentColor"[39m
+                        [33mstroke-linecap[39m=[32m"round"[39m
+                        [33mstroke-linejoin[39m=[32m"round"[39m
+                        [33mstroke-width[39m=[32m"2"[39m
+                        [33mviewBox[39m=[32m"0 0 24 24"[39m
+                        [33mwidth[39m=[32m"24"[39m
+                        [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                      [36m>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"7"[39m
+                          [33mx[39m=[32m"3"[39m
+                          [33my[39m=[32m"3"[39m
+                        [36m/>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"7"[39m
+                          [33mx[39m=[32m"14"[39m
+                          [33my[39m=[32m"3"[39m
+                        [36m/>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"7"[39m
+                          [33mx[39m=[32m"14"[39m
+                          [33my[39m=[32m"14"[39m
+                        [36m/>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"7"[39m
+                          [33mx[39m=[32m"3"[39m
+                          [33my[39m=[32m"14"[39m
+                        [36m/>[39m
+                      [36m</svg>[39m
+                      [36m<span>[39m
+...
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"flex flex-col h-full bg-gray-80"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex flex-col w-full bg-white border-b border-gray-200 px-4 py-2 sm:px-6 gap-3"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center justify-between min-h-[32px]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-3"[39m
+          [36m>[39m
+            [36m<h1[39m
+              [33mclass[39m=[32m"text-[20px] font-semibold text-gray-900 leading-none m-0"[39m
+            [36m>[39m
+              [0mMesa[0m
+            [36m</h1>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-4"[39m
+          [36m/>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex-1 overflow-auto p-6"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"space-y-4"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"bg-white rounded-[10px] border border-gray-200 overflow-hidden shadow-xs flex flex-col"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center gap-3 px-3 py-1.5 bg-white border-b border-gray-200 select-none min-h-[44px] max-sm:flex-col max-sm:items-stretch max-sm:gap-0 max-sm:px-0"[39m
+              [33mdata-testid[39m=[32m"ez-entity-toolbar"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center justify-between gap-3 max-sm:overflow-x-auto max-sm:px-3 sm:contents"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center gap-1 flex-wrap max-sm:flex-nowrap shrink-0 sm:shrink"[39m
+                [36m>[39m
+                  [36m<button[39m
+                    [33maria-label[39m=[32m"Painel de filtros"[39m
+                    [33mclass[39m=[32m"max-sm:min-h-11 max-sm:min-w-11 inline-flex items-center justify-center h-[32px] px-2.5 rounded-[6px] text-[12px] font-medium transition-colors border cursor-pointer bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:text-gray-900"[39m
+                    [33mdata-testid[39m=[32m"ez-toolbar-filter-panel-button"[39m
+                    [33mtitle[39m=[32m"Painel de filtros"[39m
+                    [33mtype[39m=[32m"button"[39m
+                  [36m>[39m
+                    [36m<svg[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"lucide lucide-funnel lucide-filter w-3.5 h-3.5 mr-1.5"[39m
+                      [33mfill[39m=[32m"none"[39m
+                      [33mheight[39m=[32m"24"[39m
+                      [33mstroke[39m=[32m"currentColor"[39m
+                      [33mstroke-linecap[39m=[32m"round"[39m
+                      [33mstroke-linejoin[39m=[32m"round"[39m
+                      [33mstroke-width[39m=[32m"2"[39m
+                      [33mviewBox[39m=[32m"0 0 24 24"[39m
+                      [33mwidth[39m=[32m"24"[39m
+                      [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                    [36m>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z"[39m
+                      [36m/>[39m
+                    [36m</svg>[39m
+                    [0mFiltros[0m
+                  [36m</button>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"w-px h-5 bg-gray-200 mx-0.5"[39m
+                  [36m/>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"relative inline-flex items-center rounded-[6px] border border-gray-200 bg-white"[39m
+                  [36m>[39m
+                    [36m<button[39m
+                      [33maria-label[39m=[32m"Alternar para Modo Formulário"[39m
+                      [33mclass[39m=[32m"max-sm:min-h-11 max-sm:min-w-11 inline-flex items-center gap-1.5 px-2.5 h-[30px] rounded-l-[5px] text-[12px] font-medium transition-colors cursor-pointer text-brand-700 bg-brand-50/50 hover:bg-brand-50"[39m
+                      [33mdata-testid[39m=[32m"ez-toolbar-mode-toggle-button"[39m
+                      [33mtitle[39m=[32m"Ver formulário do registro"[39m
+                      [33mtype[39m=[32m"button"[39m
+                    [36m>[39m
+                      [36m<svg[39m
+                        [33maria-hidden[39m=[32m"true"[39m
+                        [33mclass[39m=[32m"lucide lucide-layout-grid w-3.5 h-3.5 text-brand-600"[39m
+                        [33mfill[39m=[32m"none"[39m
+                        [33mheight[39m=[32m"24"[39m
+                        [33mstroke[39m=[32m"currentColor"[39m
+                        [33mstroke-linecap[39m=[32m"round"[39m
+                        [33mstroke-linejoin[39m=[32m"round"[39m
+                        [33mstroke-width[39m=[32m"2"[39m
+                        [33mviewBox[39m=[32m"0 0 24 24"[39m
+                        [33mwidth[39m=[32m"24"[39m
+                        [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                      [36m>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"7"[39m
+                          [33mx[39m=[32m"3"[39m
+                          [33my[39m=[32m"3"[39m
+                        [36m/>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"7"[39m
+                          [33mx[39m=[32m"14"[39m
+                          [33my[39m=[32m"3"[39m
+                        [36m/>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"7"[39m
+                          [33mx[39m=[32m"14"[39m
+                          [33my[39m=[32m"14"[39m
+                        [36m/>[39m
+                        [36m<rect[39m
+                          [33mheight[39m=[32m"7"[39m
+                          [33mrx[39m=[32m"1"[39m
+                          [33mwidth[39m=[32m"7"[39m
+                          [33mx[39m=[32m"3"[39m
+                          [33my[39m=[32m"14"[39m
+                        [36m/>[39m
+                      [36m</svg>[39m
+                      [36m<span>[39m
+...
+ ❯ waitForWrapper ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/pages/ServiceDesksPage.test.tsx:723:42
+    721|
+    722|     await user.click(screen.getByRole('button', { name: 'Voltar' }));
+    723|     await user.click(within(await screen.findByRole('dialog')).getByRo…
+       |                                          ^
+    724|     expect(screen.getByRole('tab', { name: 'Parâmetros' })).toBeInTheD…
+    725|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/16]⎯
+
+ FAIL  |web| src/pages/ServiceDesksPage.test.tsx > DMTE-533: um só modelo de salvamento, com retorno > AC-01, AC-04: a successful save shows "Alterações salvas." as a status and clears the pending line
+TestingLibraryElementError: Unable to find role="status"
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"flex flex-col h-full bg-gray-80"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex flex-col w-full bg-white border-b border-gray-200 px-4 py-2 sm:px-6 gap-3"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center justify-between min-h-[32px]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-3"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"p-1.5 -ml-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-80 rounded-md transition-colors"[39m
+              [33mtitle[39m=[32m"Voltar"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"lucide lucide-arrow-left w-5 h-5"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"24"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [33mwidth[39m=[32m"24"[39m
+                [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"m12 19-7-7 7-7"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M19 12H5"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+            [36m</button>[39m
+            [36m<h1[39m
+              [33mclass[39m=[32m"text-[20px] font-semibold text-gray-900 leading-none m-0"[39m
+            [36m>[39m
+              [0mSuporte N1[0m
+            [36m</h1>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-4"[39m
+          [36m/>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex-1 overflow-auto p-6"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"space-y-4"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"bg-white rounded-[10px] border border-gray-200 overflow-hidden shadow-xs flex flex-col"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center gap-3 px-3 py-1.5 bg-white border-b border-gray-200 select-none min-h-[44px] max-sm:flex-col max-sm:items-stretch max-sm:gap-0 max-sm:px-0"[39m
+              [33mdata-testid[39m=[32m"ez-entity-toolbar"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center justify-between gap-3 max-sm:overflow-x-auto max-sm:px-3 sm:contents"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center gap-1 flex-wrap max-sm:flex-nowrap shrink-0 sm:shrink"[39m
+                [36m>[39m
+                  [36m<button[39m
+                    [33maria-label[39m=[32m"Painel de filtros"[39m
+                    [33mclass[39m=[32m"max-sm:min-h-11 max-sm:min-w-11 inline-flex items-center justify-center h-[32px] px-2.5 rounded-[6px] text-[12px] font-medium transition-colors border cursor-pointer bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:text-gray-900"[39m
+                    [33mdata-testid[39m=[32m"ez-toolbar-filter-panel-button"[39m
+                    [33mtitle[39m=[32m"Painel de filtros"[39m
+                    [33mtype[39m=[32m"button"[39m
+                  [36m>[39m
+                    [36m<svg[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"lucide lucide-funnel lucide-filter w-3.5 h-3.5 mr-1.5"[39m
+                      [33mfill[39m=[32m"none"[39m
+                      [33mheight[39m=[32m"24"[39m
+                      [33mstroke[39m=[32m"currentColor"[39m
+                      [33mstroke-linecap[39m=[32m"round"[39m
+                      [33mstroke-linejoin[39m=[32m"round"[39m
+                      [33mstroke-width[39m=[32m"2"[39m
+                      [33mviewBox[39m=[32m"0 0 24 24"[39m
+                      [33mwidth[39m=[32m"24"[39m
+                      [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                    [36m>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z"[39m
+                      [36m/>[39m
+                    [36m</svg>[39m
+                    [0mFiltros[0m
+                  [36m</button>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"w-px h-5 bg-gray-200 mx-0.5"[39m
+                  [36m/>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"relative inline-flex items-center rounded-[6px] border border-gray-200 bg-white"[39m
+                  [36m>[39m
+                    [36m<button[39m
+                      [33maria-label[39m=[32m"Alternar para Modo Grade"[39m
+                      [33mclass[39m=[32m"max-sm:min-h-11 max-sm:min-w-11 inline-flex items-center gap-1.5 px-2.5 h-[30px] rounded-l-[5px] text-[12px] font-medium transition-colors cursor-pointer text-gray-700 hover:bg-gray-50"[39m
+                      [33mdata-testid[39m=[32m"ez-toolbar-mode-toggle-button"[39m
+                      [33mtitle[39m=[32m"Ver grade de registros"[39m
+                      [33mtype[39m=[32m"button"[39m
+                    [36m>[39m
+                      [36m<svg[39m
+                        [33maria-hidden[39m=[32m"true"[39m
+                        [33mclass[39m=[32m"lucide lucide-file-text w-3.5 h-3.5 text-brand-600"[39m
+                        [33mfill[39m=[32m"none"[39m
+                        [33mheight[39m=[32m"24"[39m
+                        [33mstroke[39m=[32m"currentColor"[39m
+                        [33mstroke-linecap[39m=[32m"round"[39m
+                        [33mstroke-linejoin[39m=[32m"round"[39m
+                        [33mstroke-width[39m=[32m"2"[39m
+                        [33mviewBox[39m=[32m"0 0 24 24"[39m
+                        [33mwidth[39m=[32m"24"[39m
+                        [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                      [36m>[39m
+                        [36m<path[39m
+                          [33md[39m=[32m"M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"[39m
+                        [36m/>[39m
+                        [36m<path...
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"flex flex-col h-full bg-gray-80"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex flex-col w-full bg-white border-b border-gray-200 px-4 py-2 sm:px-6 gap-3"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center justify-between min-h-[32px]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-3"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"p-1.5 -ml-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-80 rounded-md transition-colors"[39m
+              [33mtitle[39m=[32m"Voltar"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"lucide lucide-arrow-left w-5 h-5"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"24"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [33mwidth[39m=[32m"24"[39m
+                [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"m12 19-7-7 7-7"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M19 12H5"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+            [36m</button>[39m
+            [36m<h1[39m
+              [33mclass[39m=[32m"text-[20px] font-semibold text-gray-900 leading-none m-0"[39m
+            [36m>[39m
+              [0mSuporte N1[0m
+            [36m</h1>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-4"[39m
+          [36m/>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex-1 overflow-auto p-6"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"space-y-4"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"bg-white rounded-[10px] border border-gray-200 overflow-hidden shadow-xs flex flex-col"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center gap-3 px-3 py-1.5 bg-white border-b border-gray-200 select-none min-h-[44px] max-sm:flex-col max-sm:items-stretch max-sm:gap-0 max-sm:px-0"[39m
+              [33mdata-testid[39m=[32m"ez-entity-toolbar"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center justify-between gap-3 max-sm:overflow-x-auto max-sm:px-3 sm:contents"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center gap-1 flex-wrap max-sm:flex-nowrap shrink-0 sm:shrink"[39m
+                [36m>[39m
+                  [36m<button[39m
+                    [33maria-label[39m=[32m"Painel de filtros"[39m
+                    [33mclass[39m=[32m"max-sm:min-h-11 max-sm:min-w-11 inline-flex items-center justify-center h-[32px] px-2.5 rounded-[6px] text-[12px] font-medium transition-colors border cursor-pointer bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:text-gray-900"[39m
+                    [33mdata-testid[39m=[32m"ez-toolbar-filter-panel-button"[39m
+                    [33mtitle[39m=[32m"Painel de filtros"[39m
+                    [33mtype[39m=[32m"button"[39m
+                  [36m>[39m
+                    [36m<svg[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"lucide lucide-funnel lucide-filter w-3.5 h-3.5 mr-1.5"[39m
+                      [33mfill[39m=[32m"none"[39m
+                      [33mheight[39m=[32m"24"[39m
+                      [33mstroke[39m=[32m"currentColor"[39m
+                      [33mstroke-linecap[39m=[32m"round"[39m
+                      [33mstroke-linejoin[39m=[32m"round"[39m
+                      [33mstroke-width[39m=[32m"2"[39m
+                      [33mviewBox[39m=[32m"0 0 24 24"[39m
+                      [33mwidth[39m=[32m"24"[39m
+                      [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                    [36m>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z"[39m
+                      [36m/>[39m
+                    [36m</svg>[39m
+                    [0mFiltros[0m
+                  [36m</button>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"w-px h-5 bg-gray-200 mx-0.5"[39m
+                  [36m/>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"relative inline-flex items-center rounded-[6px] border border-gray-200 bg-white"[39m
+                  [36m>[39m
+                    [36m<button[39m
+                      [33maria-label[39m=[32m"Alternar para Modo Grade"[39m
+                      [33mclass[39m=[32m"max-sm:min-h-11 max-sm:min-w-11 inline-flex items-center gap-1.5 px-2.5 h-[30px] rounded-l-[5px] text-[12px] font-medium transition-colors cursor-pointer text-gray-700 hover:bg-gray-50"[39m
+                      [33mdata-testid[39m=[32m"ez-toolbar-mode-toggle-button"[39m
+                      [33mtitle[39m=[32m"Ver grade de registros"[39m
+                      [33mtype[39m=[32m"button"[39m
+                    [36m>[39m
+                      [36m<svg[39m
+                        [33maria-hidden[39m=[32m"true"[39m
+                        [33mclass[39m=[32m"lucide lucide-file-text w-3.5 h-3.5 text-brand-600"[39m
+                        [33mfill[39m=[32m"none"[39m
+                        [33mheight[39m=[32m"24"[39m
+                        [33mstroke[39m=[32m"currentColor"[39m
+                        [33mstroke-linecap[39m=[32m"round"[39m
+                        [33mstroke-linejoin[39m=[32m"round"[39m
+                        [33mstroke-width[39m=[32m"2"[39m
+                        [33mviewBox[39m=[32m"0 0 24 24"[39m
+                        [33mwidth[39m=[32m"24"[39m
+                        [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                      [36m>[39m
+                        [36m<path[39m
+                          [33md[39m=[32m"M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"[39m
+                        [36m/>[39m
+                        [36m<path...
+ ❯ waitForWrapper ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/pages/ServiceDesksPage.test.tsx:741:25
+    739|     await user.click(screen.getByRole('button', { name: 'Salvar' }));
+    740|
+    741|     expect(await screen.findByRole('status')).toHaveTextContent('Alter…
+       |                         ^
+    742|     expect(api.patch).toHaveBeenCalledWith(
+    743|       '/service-desks/sd-1',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/16]⎯
+
+ FAIL  |web| src/pages/ServiceDesksPage.test.tsx > DMTE-533: um só modelo de salvamento, com retorno > AC-02: a failed save shows one alert with the next step and keeps the edit
+Error: [2mexpect([22m[31melement[39m[2m).toHaveTextContent()[22m
+
+Expected element to have text content:
+[32m  Não foi possível salvar.[39m
+Received:
+[31m  Não foi possível salvar as opções da mesa.[39m
+ ❯ src/pages/ServiceDesksPage.test.tsx:759:23
+    757|     const alerts = await screen.findAllByRole('alert');
+    758|     expect(alerts).toHaveLength(1);
+    759|     expect(alerts[0]).toHaveTextContent('Não foi possível salvar.');
+       |                       ^
+    760|     expect(alerts[0]).toHaveTextContent('Tente novamente.');
+    761|     expect(screen.getByLabelText('Permitir cancelar ticket')).not.toBe…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/16]⎯
+
+ FAIL  |web| src/pages/ServiceDesksPage.test.tsx > DMTE-533: um só modelo de salvamento, com retorno > AC-03: Prioridades save only on Salvar, with every item, and a failure keeps the marks
+AssertionError: expected "vi.fn()" to not be called at all, but actually been called 1 times
+
+Received:
+
+  1st vi.fn() call:
+
+    Array [
+      "/service-desks/sd-1",
+      Object {
+        "priorities": Array [
+          Object {
+            "enabled": false,
+            "ticketPriority": "HIGH",
+          },
+        ],
+      },
+    ]
+
+
+Number of calls: 1
+
+ ❯ src/pages/ServiceDesksPage.test.tsx:768:27
+    766|     const user = await openDesk('Prioridades');
+    767|     await user.click(screen.getByLabelText('Alta'));
+    768|     expect(api.patch).not.toHaveBeenCalled();
+       |                           ^
+    769|     expect(screen.getByText(PENDING)).toBeInTheDocument();
+    770|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/16]⎯
+
+ FAIL  |web| src/pages/ServiceDesksPage.test.tsx > DMTE-533: um só modelo de salvamento, com retorno > AC-03: Seções do ticket save only on Salvar, with every item
+AssertionError: expected "vi.fn()" to not be called at all, but actually been called 1 times
+
+Received:
+
+  1st vi.fn() call:
+
+    Array [
+      "/service-desks/sd-1",
+      Object {
+        "ticketSections": Array [
+          Object {
+            "enabled": false,
+            "key": "WORKLOGS",
+          },
+        ],
+      },
+    ]
+
+
+Number of calls: 1
+
+ ❯ src/pages/ServiceDesksPage.test.tsx:789:27
+    787|     const user = await openDesk('Seções do ticket');
+    788|     await user.click(screen.getByLabelText('Apontamentos'));
+    789|     expect(api.patch).not.toHaveBeenCalled();
+       |                           ^
+    790|     await user.click(screen.getByRole('button', { name: 'Salvar' }));
+    791|     expect(await screen.findByRole('status')).toHaveTextContent('Alter…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/16]⎯
+
+ FAIL  |web| src/pages/ServiceDesksPage.test.tsx > DMTE-533: um só modelo de salvamento, com retorno > AC-08: Dados básicos is controlled, keeps the payload and the button label, and reports the result
+TestingLibraryElementError: Unable to find an element with the text: Alterações não salvas nesta aba.. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"flex flex-col h-full bg-gray-80"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex flex-col w-full bg-white border-b border-gray-200 px-4 py-2 sm:px-6 gap-3"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center justify-between min-h-[32px]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-3"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"p-1.5 -ml-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-80 rounded-md transition-colors"[39m
+              [33mtitle[39m=[32m"Voltar"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"lucide lucide-arrow-left w-5 h-5"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"24"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [33mwidth[39m=[32m"24"[39m
+                [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"m12 19-7-7 7-7"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M19 12H5"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+            [36m</button>[39m
+            [36m<h1[39m
+              [33mclass[39m=[32m"text-[20px] font-semibold text-gray-900 leading-none m-0"[39m
+            [36m>[39m
+              [0mSuporte N1[0m
+            [36m</h1>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-4"[39m
+          [36m/>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex-1 overflow-auto p-6"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"space-y-4"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"bg-white rounded-[10px] border border-gray-200 overflow-hidden shadow-xs flex flex-col"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center gap-3 px-3 py-1.5 bg-white border-b border-gray-200 select-none min-h-[44px] max-sm:flex-col max-sm:items-stretch max-sm:gap-0 max-sm:px-0"[39m
+              [33mdata-testid[39m=[32m"ez-entity-toolbar"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center justify-between gap-3 max-sm:overflow-x-auto max-sm:px-3 sm:contents"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center gap-1 flex-wrap max-sm:flex-nowrap shrink-0 sm:shrink"[39m
+                [36m>[39m
+                  [36m<button[39m
+                    [33maria-label[39m=[32m"Painel de filtros"[39m
+                    [33mclass[39m=[32m"max-sm:min-h-11 max-sm:min-w-11 inline-flex items-center justify-center h-[32px] px-2.5 rounded-[6px] text-[12px] font-medium transition-colors border cursor-pointer bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:text-gray-900"[39m
+                    [33mdata-testid[39m=[32m"ez-toolbar-filter-panel-button"[39m
+                    [33mtitle[39m=[32m"Painel de filtros"[39m
+                    [33mtype[39m=[32m"button"[39m
+                  [36m>[39m
+                    [36m<svg[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"lucide lucide-funnel lucide-filter w-3.5 h-3.5 mr-1.5"[39m
+                      [33mfill[39m=[32m"none"[39m
+                      [33mheight[39m=[32m"24"[39m
+                      [33mstroke[39m=[32m"currentColor"[39m
+                      [33mstroke-linecap[39m=[32m"round"[39m
+                      [33mstroke-linejoin[39m=[32m"round"[39m
+                      [33mstroke-width[39m=[32m"2"[39m
+                      [33mviewBox[39m=[32m"0 0 24 24"[39m
+                      [33mwidth[39m=[32m"24"[39m
+                      [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                    [36m>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z"[39m
+                      [36m/>[39m
+                    [36m</svg>[39m
+                    [0mFiltros[0m
+                  [36m</button>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"w-px h-5 bg-gray-200 mx-0.5"[39m
+                  [36m/>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"relative inline-flex items-center rounded-[6px] border border-gray-200 bg-white"[39m
+                  [36m>[39m
+                    [36m<button[39m
+                      [33maria-label[39m=[32m"Alternar para Modo Grade"[39m
+                      [33mclass[39m=[32m"max-sm:min-h-11 max-sm:min-w-11 inline-flex items-center gap-1.5 px-2.5 h-[30px] rounded-l-[5px] text-[12px] font-medium transition-colors cursor-pointer text-gray-700 hover:bg-gray-50"[39m
+                      [33mdata-testid[39m=[32m"ez-toolbar-mode-toggle-button"[39m
+                      [33mtitle[39m=[32m"Ver grade de registros"[39m
+                      [33mtype[39m=[32m"button"[39m
+                    [36m>[39m
+                      [36m<svg[39m
+                        [33maria-hidden[39m=[32m"true"[39m
+                        [33mclass[39m=[32m"lucide lucide-file-text w-3.5 h-3.5 text-brand-600"[39m
+                        [33mfill[39m=[32m"none"[39m
+                        [33mheight[39m=[32m"24"[39m
+                        [33mstroke[39m=[32m"currentColor"[39m
+                        [33mstroke-linecap[39m=[32m"round"[39m
+                        [33mstroke-linejoin[39m=[32m"round"[39m
+                        [33mstroke-width[39m=[32m"2"[39m
+                        [33mviewBox[39m=[32m"0 0 24 24"[39m
+                        [33mwidth[39m=[32m"24"[39m
+                        [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                      [36m>[39m
+                        [36m<path[39m
+                          [33md[39m=[32m"M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"[39m
+                        [36m/>[39m
+                        [36m<path...
+ ❯ Object.getElementError ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/pages/ServiceDesksPage.test.tsx:805:19
+    803|     await user.type(name, 'Suporte');
+    804|     expect(name).toHaveValue('Suporte');
+    805|     expect(screen.getByText(PENDING)).toBeInTheDocument();
+       |                   ^
+    806|
+    807|     await user.click(screen.getByRole('button', { name: 'Salvar dados …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/16]⎯
+
+ FAIL  |web| src/pages/ServiceDesksPage.test.tsx > DMTE-533: um só modelo de salvamento, com retorno > AC-08: Status is controlled, keeps the payload and the button label, and reports a failure
+TestingLibraryElementError: Unable to find an element with the text: Alterações não salvas nesta aba.. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"flex flex-col h-full bg-gray-80"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex flex-col w-full bg-white border-b border-gray-200 px-4 py-2 sm:px-6 gap-3"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center justify-between min-h-[32px]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-3"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"p-1.5 -ml-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-80 rounded-md transition-colors"[39m
+              [33mtitle[39m=[32m"Voltar"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"lucide lucide-arrow-left w-5 h-5"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"24"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [33mwidth[39m=[32m"24"[39m
+                [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"m12 19-7-7 7-7"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M19 12H5"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+            [36m</button>[39m
+            [36m<h1[39m
+              [33mclass[39m=[32m"text-[20px] font-semibold text-gray-900 leading-none m-0"[39m
+            [36m>[39m
+              [0mSuporte N1[0m
+            [36m</h1>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-4"[39m
+          [36m/>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex-1 overflow-auto p-6"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"space-y-4"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"bg-white rounded-[10px] border border-gray-200 overflow-hidden shadow-xs flex flex-col"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center gap-3 px-3 py-1.5 bg-white border-b border-gray-200 select-none min-h-[44px] max-sm:flex-col max-sm:items-stretch max-sm:gap-0 max-sm:px-0"[39m
+              [33mdata-testid[39m=[32m"ez-entity-toolbar"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center justify-between gap-3 max-sm:overflow-x-auto max-sm:px-3 sm:contents"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center gap-1 flex-wrap max-sm:flex-nowrap shrink-0 sm:shrink"[39m
+                [36m>[39m
+                  [36m<button[39m
+                    [33maria-label[39m=[32m"Painel de filtros"[39m
+                    [33mclass[39m=[32m"max-sm:min-h-11 max-sm:min-w-11 inline-flex items-center justify-center h-[32px] px-2.5 rounded-[6px] text-[12px] font-medium transition-colors border cursor-pointer bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:text-gray-900"[39m
+                    [33mdata-testid[39m=[32m"ez-toolbar-filter-panel-button"[39m
+                    [33mtitle[39m=[32m"Painel de filtros"[39m
+                    [33mtype[39m=[32m"button"[39m
+                  [36m>[39m
+                    [36m<svg[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"lucide lucide-funnel lucide-filter w-3.5 h-3.5 mr-1.5"[39m
+                      [33mfill[39m=[32m"none"[39m
+                      [33mheight[39m=[32m"24"[39m
+                      [33mstroke[39m=[32m"currentColor"[39m
+                      [33mstroke-linecap[39m=[32m"round"[39m
+                      [33mstroke-linejoin[39m=[32m"round"[39m
+                      [33mstroke-width[39m=[32m"2"[39m
+                      [33mviewBox[39m=[32m"0 0 24 24"[39m
+                      [33mwidth[39m=[32m"24"[39m
+                      [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                    [36m>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z"[39m
+                      [36m/>[39m
+                    [36m</svg>[39m
+                    [0mFiltros[0m
+                  [36m</button>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"w-px h-5 bg-gray-200 mx-0.5"[39m
+                  [36m/>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"relative inline-flex items-center rounded-[6px] border border-gray-200 bg-white"[39m
+                  [36m>[39m
+                    [36m<button[39m
+                      [33maria-label[39m=[32m"Alternar para Modo Grade"[39m
+                      [33mclass[39m=[32m"max-sm:min-h-11 max-sm:min-w-11 inline-flex items-center gap-1.5 px-2.5 h-[30px] rounded-l-[5px] text-[12px] font-medium transition-colors cursor-pointer text-gray-700 hover:bg-gray-50"[39m
+                      [33mdata-testid[39m=[32m"ez-toolbar-mode-toggle-button"[39m
+                      [33mtitle[39m=[32m"Ver grade de registros"[39m
+                      [33mtype[39m=[32m"button"[39m
+                    [36m>[39m
+                      [36m<svg[39m
+                        [33maria-hidden[39m=[32m"true"[39m
+                        [33mclass[39m=[32m"lucide lucide-file-text w-3.5 h-3.5 text-brand-600"[39m
+                        [33mfill[39m=[32m"none"[39m
+                        [33mheight[39m=[32m"24"[39m
+                        [33mstroke[39m=[32m"currentColor"[39m
+                        [33mstroke-linecap[39m=[32m"round"[39m
+                        [33mstroke-linejoin[39m=[32m"round"[39m
+                        [33mstroke-width[39m=[32m"2"[39m
+                        [33mviewBox[39m=[32m"0 0 24 24"[39m
+                        [33mwidth[39m=[32m"24"[39m
+                        [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                      [36m>[39m
+                        [36m<path[39m
+                          [33md[39m=[32m"M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"[39m
+                        [36m/>[39m
+                        [36m<path...
+ ❯ Object.getElementError ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/pages/ServiceDesksPage.test.tsx:819:19
+    817|     const user = await openDesk('Status');
+    818|     await user.selectOptions(screen.getByLabelText('Status ao fechar',…
+    819|     expect(screen.getByText(PENDING)).toBeInTheDocument();
+       |                   ^
+    820|
+    821|     vi.mocked(api.patch).mockRejectedValue(new Error('rede'));
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/16]⎯
+
+ FAIL  |web| src/pages/ServiceDesksPage.test.tsx > DMTE-533: um só modelo de salvamento, com retorno > AC-01: Cliente e SLA, Membros and Estágios report the result
+TestingLibraryElementError: Unable to find role="status"
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"flex flex-col h-full bg-gray-80"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex flex-col w-full bg-white border-b border-gray-200 px-4 py-2 sm:px-6 gap-3"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center justify-between min-h-[32px]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-3"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"p-1.5 -ml-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-80 rounded-md transition-colors"[39m
+              [33mtitle[39m=[32m"Voltar"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"lucide lucide-arrow-left w-5 h-5"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"24"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [33mwidth[39m=[32m"24"[39m
+                [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"m12 19-7-7 7-7"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M19 12H5"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+            [36m</button>[39m
+            [36m<h1[39m
+              [33mclass[39m=[32m"text-[20px] font-semibold text-gray-900 leading-none m-0"[39m
+            [36m>[39m
+              [0mSuporte N1[0m
+            [36m</h1>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-4"[39m
+          [36m/>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex-1 overflow-auto p-6"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"space-y-4"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"bg-white rounded-[10px] border border-gray-200 overflow-hidden shadow-xs flex flex-col"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center gap-3 px-3 py-1.5 bg-white border-b border-gray-200 select-none min-h-[44px] max-sm:flex-col max-sm:items-stretch max-sm:gap-0 max-sm:px-0"[39m
+              [33mdata-testid[39m=[32m"ez-entity-toolbar"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center justify-between gap-3 max-sm:overflow-x-auto max-sm:px-3 sm:contents"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center gap-1 flex-wrap max-sm:flex-nowrap shrink-0 sm:shrink"[39m
+                [36m>[39m
+                  [36m<button[39m
+                    [33maria-label[39m=[32m"Painel de filtros"[39m
+                    [33mclass[39m=[32m"max-sm:min-h-11 max-sm:min-w-11 inline-flex items-center justify-center h-[32px] px-2.5 rounded-[6px] text-[12px] font-medium transition-colors border cursor-pointer bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:text-gray-900"[39m
+                    [33mdata-testid[39m=[32m"ez-toolbar-filter-panel-button"[39m
+                    [33mtitle[39m=[32m"Painel de filtros"[39m
+                    [33mtype[39m=[32m"button"[39m
+                  [36m>[39m
+                    [36m<svg[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"lucide lucide-funnel lucide-filter w-3.5 h-3.5 mr-1.5"[39m
+                      [33mfill[39m=[32m"none"[39m
+                      [33mheight[39m=[32m"24"[39m
+                      [33mstroke[39m=[32m"currentColor"[39m
+                      [33mstroke-linecap[39m=[32m"round"[39m
+                      [33mstroke-linejoin[39m=[32m"round"[39m
+                      [33mstroke-width[39m=[32m"2"[39m
+                      [33mviewBox[39m=[32m"0 0 24 24"[39m
+                      [33mwidth[39m=[32m"24"[39m
+                      [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                    [36m>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z"[39m
+                      [36m/>[39m
+                    [36m</svg>[39m
+                    [0mFiltros[0m
+                  [36m</button>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"w-px h-5 bg-gray-200 mx-0.5"[39m
+                  [36m/>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"relative inline-flex items-center rounded-[6px] border border-gray-200 bg-white"[39m
+                  [36m>[39m
+                    [36m<button[39m
+                      [33maria-label[39m=[32m"Alternar para Modo Grade"[39m
+                      [33mclass[39m=[32m"max-sm:min-h-11 max-sm:min-w-11 inline-flex items-center gap-1.5 px-2.5 h-[30px] rounded-l-[5px] text-[12px] font-medium transition-colors cursor-pointer text-gray-700 hover:bg-gray-50"[39m
+                      [33mdata-testid[39m=[32m"ez-toolbar-mode-toggle-button"[39m
+                      [33mtitle[39m=[32m"Ver grade de registros"[39m
+                      [33mtype[39m=[32m"button"[39m
+                    [36m>[39m
+                      [36m<svg[39m
+                        [33maria-hidden[39m=[32m"true"[39m
+                        [33mclass[39m=[32m"lucide lucide-file-text w-3.5 h-3.5 text-brand-600"[39m
+                        [33mfill[39m=[32m"none"[39m
+                        [33mheight[39m=[32m"24"[39m
+                        [33mstroke[39m=[32m"currentColor"[39m
+                        [33mstroke-linecap[39m=[32m"round"[39m
+                        [33mstroke-linejoin[39m=[32m"round"[39m
+                        [33mstroke-width[39m=[32m"2"[39m
+                        [33mviewBox[39m=[32m"0 0 24 24"[39m
+                        [33mwidth[39m=[32m"24"[39m
+                        [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                      [36m>[39m
+                        [36m<path[39m
+                          [33md[39m=[32m"M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"[39m
+                        [36m/>[39m
+                        [36m<path...
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"flex flex-col h-full bg-gray-80"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex flex-col w-full bg-white border-b border-gray-200 px-4 py-2 sm:px-6 gap-3"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center justify-between min-h-[32px]"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-3"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"p-1.5 -ml-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-80 rounded-md transition-colors"[39m
+              [33mtitle[39m=[32m"Voltar"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mclass[39m=[32m"lucide lucide-arrow-left w-5 h-5"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mheight[39m=[32m"24"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"2"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+                [33mwidth[39m=[32m"24"[39m
+                [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+              [36m>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"m12 19-7-7 7-7"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M19 12H5"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+            [36m</button>[39m
+            [36m<h1[39m
+              [33mclass[39m=[32m"text-[20px] font-semibold text-gray-900 leading-none m-0"[39m
+            [36m>[39m
+              [0mSuporte N1[0m
+            [36m</h1>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex items-center gap-4"[39m
+          [36m/>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex-1 overflow-auto p-6"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"space-y-4"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"bg-white rounded-[10px] border border-gray-200 overflow-hidden shadow-xs flex flex-col"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex items-center gap-3 px-3 py-1.5 bg-white border-b border-gray-200 select-none min-h-[44px] max-sm:flex-col max-sm:items-stretch max-sm:gap-0 max-sm:px-0"[39m
+              [33mdata-testid[39m=[32m"ez-entity-toolbar"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center justify-between gap-3 max-sm:overflow-x-auto max-sm:px-3 sm:contents"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-center gap-1 flex-wrap max-sm:flex-nowrap shrink-0 sm:shrink"[39m
+                [36m>[39m
+                  [36m<button[39m
+                    [33maria-label[39m=[32m"Painel de filtros"[39m
+                    [33mclass[39m=[32m"max-sm:min-h-11 max-sm:min-w-11 inline-flex items-center justify-center h-[32px] px-2.5 rounded-[6px] text-[12px] font-medium transition-colors border cursor-pointer bg-white text-gray-700 border-gray-200 hover:bg-gray-50 hover:text-gray-900"[39m
+                    [33mdata-testid[39m=[32m"ez-toolbar-filter-panel-button"[39m
+                    [33mtitle[39m=[32m"Painel de filtros"[39m
+                    [33mtype[39m=[32m"button"[39m
+                  [36m>[39m
+                    [36m<svg[39m
+                      [33maria-hidden[39m=[32m"true"[39m
+                      [33mclass[39m=[32m"lucide lucide-funnel lucide-filter w-3.5 h-3.5 mr-1.5"[39m
+                      [33mfill[39m=[32m"none"[39m
+                      [33mheight[39m=[32m"24"[39m
+                      [33mstroke[39m=[32m"currentColor"[39m
+                      [33mstroke-linecap[39m=[32m"round"[39m
+                      [33mstroke-linejoin[39m=[32m"round"[39m
+                      [33mstroke-width[39m=[32m"2"[39m
+                      [33mviewBox[39m=[32m"0 0 24 24"[39m
+                      [33mwidth[39m=[32m"24"[39m
+                      [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                    [36m>[39m
+                      [36m<path[39m
+                        [33md[39m=[32m"M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z"[39m
+                      [36m/>[39m
+                    [36m</svg>[39m
+                    [0mFiltros[0m
+                  [36m</button>[39m
+                  [36m<span[39m
+                    [33mclass[39m=[32m"w-px h-5 bg-gray-200 mx-0.5"[39m
+                  [36m/>[39m
+                  [36m<div[39m
+                    [33mclass[39m=[32m"relative inline-flex items-center rounded-[6px] border border-gray-200 bg-white"[39m
+                  [36m>[39m
+                    [36m<button[39m
+                      [33maria-label[39m=[32m"Alternar para Modo Grade"[39m
+                      [33mclass[39m=[32m"max-sm:min-h-11 max-sm:min-w-11 inline-flex items-center gap-1.5 px-2.5 h-[30px] rounded-l-[5px] text-[12px] font-medium transition-colors cursor-pointer text-gray-700 hover:bg-gray-50"[39m
+                      [33mdata-testid[39m=[32m"ez-toolbar-mode-toggle-button"[39m
+                      [33mtitle[39m=[32m"Ver grade de registros"[39m
+                      [33mtype[39m=[32m"button"[39m
+                    [36m>[39m
+                      [36m<svg[39m
+                        [33maria-hidden[39m=[32m"true"[39m
+                        [33mclass[39m=[32m"lucide lucide-file-text w-3.5 h-3.5 text-brand-600"[39m
+                        [33mfill[39m=[32m"none"[39m
+                        [33mheight[39m=[32m"24"[39m
+                        [33mstroke[39m=[32m"currentColor"[39m
+                        [33mstroke-linecap[39m=[32m"round"[39m
+                        [33mstroke-linejoin[39m=[32m"round"[39m
+                        [33mstroke-width[39m=[32m"2"[39m
+                        [33mviewBox[39m=[32m"0 0 24 24"[39m
+                        [33mwidth[39m=[32m"24"[39m
+                        [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+                      [36m>[39m
+                        [36m<path[39m
+                          [33md[39m=[32m"M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"[39m
+                        [36m/>[39m
+                        [36m<path...
+ ❯ waitForWrapper ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:86:33
+ ❯ src/pages/ServiceDesksPage.test.tsx:835:25
+    833|     await user.click(await screen.findByRole('button', { name: /editar…
+    834|     await user.click(screen.getByRole('button', { name: /salvar client…
+    835|     expect(await screen.findByRole('status')).toHaveTextContent('Alter…
+       |                         ^
+    836|
+    837|     await user.click(screen.getByRole('tab', { name: 'Grupos de atende…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/16]⎯
+
+ FAIL  |web| src/pages/ServiceDesksPage.test.tsx > DMTE-533: um só modelo de salvamento, com retorno > AC-06: beforeunload is armed only while there is an unsaved change
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/pages/ServiceDesksPage.test.tsx:863:20
+    861|     expect(fire()).toBe(false);
+    862|     await user.click(screen.getByLabelText('Permitir cancelar ticket')…
+    863|     expect(fire()).toBe(true);
+       |                    ^
+    864|     await user.click(screen.getByRole('button', { name: 'Salvar' }));
+    865|     await screen.findByRole('status');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/16]⎯
+

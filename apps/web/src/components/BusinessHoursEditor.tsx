@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/api';
 import { EzAlert, EzButton, EzComboBox, EzTextInput } from './ds';
+import { useMesaSave } from './mesaSave';
 
 interface BusinessHourWindow {
   id?: string;
@@ -30,6 +31,14 @@ const WEEKDAY_LABELS = [
   'Sexta-feira',
   'Sábado',
 ];
+
+/** Conteúdo editável do expediente, para saber se o rascunho voltou ao que está salvo. */
+function signature({ businessHours, holidays }: BusinessHoursConfig): string {
+  return JSON.stringify([
+    businessHours.map(({ weekday, startTime, endTime }) => [weekday, startTime, endTime]),
+    holidays.map(({ date, name }) => [toDateInputValue(date), name]),
+  ]);
+}
 
 function toDateInputValue(date: string): string {
   // Accepts both plain "2026-12-25" and full ISO timestamps.
@@ -64,6 +73,9 @@ export function BusinessHoursEditor({
   // the component renders straight from server data (read-only summary).
   const [draft, setDraft] = useState<BusinessHoursConfig | null>(null);
   const isDirty = draft !== null;
+  const unchanged = (config: BusinessHoursConfig) =>
+    signature(config) === signature({ businessHours: data?.businessHours ?? [], holidays: data?.holidays ?? [] });
+  const feedback = useMesaSave(isDirty && !(draft && unchanged(draft)));
   const windows = draft?.businessHours ?? data?.businessHours ?? [];
   const holidays = draft?.holidays ?? data?.holidays ?? [];
 
@@ -104,7 +116,9 @@ export function BusinessHoursEditor({
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey });
       setDraft(null);
+      feedback.saved();
     },
+    onError: feedback.failed,
   });
 
   const importHolidaysMutation = useMutation({
@@ -395,12 +409,6 @@ export function BusinessHoursEditor({
           </EzAlert>
         )}
       </div>
-
-      {mutation.isError && (
-        <EzAlert variant="error" role="alert">
-          Falha ao salvar o expediente. Tente novamente.
-        </EzAlert>
-      )}
 
       {isDirty && (
         <div className="flex justify-end gap-2">

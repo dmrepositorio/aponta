@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { api } from '../lib/api';
 import { BusinessHoursEditor } from './BusinessHoursEditor';
+import { MesaSaveProvider, useMesaPending } from './mesaSave';
 
 vi.mock('../lib/api', () => ({
   api: {
@@ -259,5 +260,58 @@ describe('BusinessHoursEditor', () => {
     expect(
       await screen.findByText(/falha ao importar feriados/i),
     ).toBeInTheDocument();
+  });
+
+  it('DMTE-533 AC-01, AC-02: reports the save result as a notice, with no inline alert of its own', async () => {
+    vi.mocked(api.get).mockResolvedValue({ data: { businessHours: [], holidays: [] } });
+    vi.mocked(api.put).mockRejectedValueOnce(new Error('rede')).mockResolvedValueOnce({
+      data: { businessHours: [{ id: 'bh-1', weekday: 1, startTime: '08:00', endTime: '18:00' }], holidays: [] },
+    });
+    const user = userEvent.setup();
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MesaSaveProvider>
+          <BusinessHoursEditor serviceDeskId="sd-1" />
+        </MesaSaveProvider>
+      </QueryClientProvider>,
+    );
+    await screen.findByText(/sem expediente configurado/i);
+    await user.click(screen.getByRole('button', { name: /adicionar horário/i }));
+    await user.click(screen.getByRole('button', { name: /salvar expediente/i }));
+
+    const alerts = await screen.findAllByRole('alert');
+    expect(alerts).toHaveLength(1);
+    expect(alerts[0]).toHaveTextContent('Não foi possível salvar.');
+    expect(screen.queryByText(/falha ao salvar o expediente/i)).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /salvar expediente/i }));
+    expect(await screen.findByRole('status')).toHaveTextContent('Alterações salvas.');
+  });
+
+  it('DMTE-533 AC-04: adding and then removing a window leaves nothing pending', async () => {
+    vi.mocked(api.get).mockResolvedValue({
+      data: { businessHours: [{ id: 'bh-1', weekday: 1, startTime: '08:00', endTime: '18:00' }], holidays: [] },
+    });
+    function Probe() {
+      return <p>{useMesaPending() ? 'pendente' : 'limpo'}</p>;
+    }
+    const user = userEvent.setup();
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MesaSaveProvider>
+          <Probe />
+          <BusinessHoursEditor serviceDeskId="sd-1" />
+        </MesaSaveProvider>
+      </QueryClientProvider>,
+    );
+    await screen.findByTestId('business-hour-row-0');
+    expect(screen.getByText('limpo')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /adicionar horário/i }));
+    expect(screen.getByText('pendente')).toBeInTheDocument();
+    await user.click(within(screen.getByTestId('business-hour-row-1')).getByRole('button', { name: /remover/i }));
+    expect(screen.getByText('limpo')).toBeInTheDocument();
   });
 });

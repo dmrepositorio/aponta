@@ -11,6 +11,8 @@ import { BusinessHoursEditor } from '../components/BusinessHoursEditor';
 import { ServiceDeskSlaEditor } from '../components/ServiceDeskSlaEditor';
 import { MesaFlagEditor } from '../components/MesaFlagEditor';
 import { MesaStagesEditor } from '../components/MesaStagesEditor';
+import { MesaBasicsForm, MesaStatusForm } from '../components/MesaDeskForms';
+import { MesaSaveProvider, useMesaPending } from '../components/mesaSave';
 import {
   ServiceDeskActiveTag,
   ServiceDeskReceivingTag,
@@ -21,8 +23,8 @@ import {
   EzBadge,
   EzButton,
   EzCardItem,
-  EzCheck,
   EzComboBox,
+  EzDialog,
   EzDynamicFilter,
   EzEmptyCard,
   EzEntityScreenConfigModal,
@@ -210,7 +212,7 @@ const SERVICE_DESK_FILTER_FIELDS: EzDynamicFilterField[] = [
  * ServiceDeskEditor / ServiceDeskSlaEditor / BusinessHoursEditor detail
  * editors are untouched.
  */
-export function ServiceDesksPage() {
+function ServiceDesksPageContent() {
   const user = useAuthStore((state) => state.user);
   const queryClient = useQueryClient();
   const isAdmin = user?.role === 'ADMIN';
@@ -223,6 +225,11 @@ export function ServiceDesksPage() {
   const [selectedDesks, setSelectedDesks] = useState<ServiceDesk[]>([]);
   const [isScreenConfigModalOpen, setIsScreenConfigModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('basics');
+
+  // DMTE-533: alteração não salva pede confirmação antes de trocar de aba, voltar ou abrir outra mesa.
+  const hasPending = useMesaPending();
+  const [discardAction, setDiscardAction] = useState<(() => void) | null>(null);
+  const guard = (action: () => void) => (hasPending ? setDiscardAction(() => action) : action());
 
   // Sankhya parity: painel de filtros lateral (EzFilterDrawer) com filtros
   // dinâmicos e filtros salvos, mesmo padrão de OrganizationsPage.tsx.
@@ -406,7 +413,7 @@ export function ServiceDesksPage() {
         <EzPageHeader
           title={mode === 'form' && activeDesk ? activeDesk.displayName || activeDesk.name : 'Mesa'}
           showBackButton={mode === 'form'}
-          onBack={backToList}
+          onBack={() => guard(backToList)}
         />
       }
     >
@@ -417,26 +424,28 @@ export function ServiceDesksPage() {
         <div className="bg-white rounded-[10px] border border-gray-200 overflow-hidden shadow-xs flex flex-col">
           <EzEntityToolbar
             viewMode={mode === 'list' ? 'GRID' : 'FORM'}
-            onToggleViewMode={(nextMode) => {
-              if (nextMode === 'FORM') {
-                const active = selectedDesks[0] ?? serviceDesks?.[0];
-                if (active) {
-                  openDetail(active.id);
+            onToggleViewMode={(nextMode) =>
+              guard(() => {
+                if (nextMode === 'FORM') {
+                  const active = selectedDesks[0] ?? serviceDesks?.[0];
+                  if (active) {
+                    openDetail(active.id);
+                  } else {
+                    handleInsert();
+                  }
                 } else {
-                  handleInsert();
+                  backToList();
                 }
-              } else {
-                backToList();
-              }
-            }}
-            onInsert={handleInsert}
+              })
+            }
+            onInsert={() => guard(handleInsert)}
             insertAriaLabel="Nova Mesa"
             insertTooltip="Nova Mesa"
             isFilterOpen={isFilterPanelOpen}
             onToggleFilter={() => setIsFilterPanelOpen((prev) => !prev)}
             selectedCount={selectedDesks.length}
             onDelete={handleDelete}
-            onClone={handleClone}
+            onClone={() => guard(handleClone)}
             onRefresh={() => void queryClient.invalidateQueries({ queryKey: ['service-desks'] })}
             onOpenGridConfig={() => setIsScreenConfigModalOpen(true)}
             onOpenScreenConfig={() => setIsScreenConfigModalOpen(true)}
@@ -490,9 +499,19 @@ export function ServiceDesksPage() {
                     variant="pills"
                     tabs={mesaTabs}
                     activeTab={activeTab}
-                    onChange={(tabId) => setActiveTab(String(tabId))}
+                    onChange={(tabId) => {
+                      if (String(tabId) !== activeTab) guard(() => setActiveTab(String(tabId)));
+                    }}
                     idPrefix={MESA_TABS_ID}
                   />
+                  <div aria-live="polite">
+                    {hasPending && (
+                      <p className="flex items-center gap-2 text-sm text-gray-700">
+                        <span aria-hidden="true" className="h-2 w-2 rounded-full bg-brand-600" />
+                        Alterações não salvas nesta aba.
+                      </p>
+                    )}
+                  </div>
                   <EzCardItem
                     flat
                     className="p-5 md:p-6"
@@ -502,38 +521,7 @@ export function ServiceDesksPage() {
                   >
                     {activeTab === 'basics' && (
                       <div className="space-y-6">
-                        <form
-                          className="space-y-4"
-                          onSubmit={(event) => {
-                            event.preventDefault();
-                            const form = event.currentTarget;
-                            const displayName = (form.elements.namedItem('displayName') as HTMLInputElement).value;
-                            const description = (form.elements.namedItem('description') as HTMLInputElement).value;
-                            void api
-                              .patch(`/service-desks/${activeDesk.id}`, { displayName, description })
-                              .then(() =>
-                                queryClient.invalidateQueries({ queryKey: ['service-desks'] }),
-                              );
-                          }}
-                        >
-                          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                            <EzTextInput
-                              id="mesa-display-name"
-                              name="displayName"
-                              label="Nome de exibição"
-                              defaultValue={activeDesk.displayName ?? ''}
-                            />
-                            <EzTextInput
-                              id="mesa-description"
-                              name="description"
-                              label="Descrição"
-                              defaultValue={activeDesk.description ?? ''}
-                            />
-                          </div>
-                          <div className="flex justify-end">
-                            <EzButton type="submit" size="small">Salvar dados básicos</EzButton>
-                          </div>
-                        </form>
+                        <MesaBasicsForm desk={activeDesk} />
                         <MesaFlagEditor
                           deskId={activeDesk.id}
                           flags={[
@@ -583,15 +571,15 @@ export function ServiceDesksPage() {
                       <MesaFlagEditor
                         deskId={activeDesk.id}
                         flags={[
-                          { key: 'allowCrossDeskInteraction', label: 'Interação com outras mesas' },
-                          { key: 'allowCancelTicket', label: 'Permitir cancelar ticket' },
-                          { key: 'catalogRequiredOnOpen', label: "Mostrar o catálogo ao abrir (permite 'não catalogado')" },
-                          { key: 'slaControlEnabled', label: 'Controle de SLA' },
-                          { key: 'allowAddSlaHours', label: 'Permitir adicionar horas ao SLA' },
-                          { key: 'allowPauseResumeSla', label: 'Permitir parar e retomar o SLA' },
-                          { key: 'reviewFlowEnabled', label: 'Fluxo de revisão' },
-                          { key: 'evaluationEnabled', label: 'Avaliação' },
-                          { key: 'openByAgentsOnly', label: 'Abertura só por atendentes' },
+                          { key: 'allowCrossDeskInteraction', label: 'Interação com outras mesas', group: 'Geral' },
+                          { key: 'allowCancelTicket', label: 'Permitir cancelar ticket', group: 'Geral' },
+                          { key: 'catalogRequiredOnOpen', label: "Mostrar o catálogo ao abrir (permite 'não catalogado')", group: 'Geral' },
+                          { key: 'openByAgentsOnly', label: 'Abertura só por atendentes', group: 'Geral' },
+                          { key: 'slaControlEnabled', label: 'Controle de SLA', group: 'SLA' },
+                          { key: 'allowAddSlaHours', label: 'Permitir adicionar horas ao SLA', group: 'SLA' },
+                          { key: 'allowPauseResumeSla', label: 'Permitir parar e retomar o SLA', group: 'SLA' },
+                          { key: 'reviewFlowEnabled', label: 'Fluxo de revisão', group: 'Revisão e avaliação' },
+                          { key: 'evaluationEnabled', label: 'Avaliação', group: 'Revisão e avaliação' },
                         ]}
                         values={activeDesk}
                       />
@@ -620,109 +608,56 @@ export function ServiceDesksPage() {
                         values={activeDesk}
                       />
                     )}
-                    {activeTab === 'priorities' && (
-                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                        {(activeDesk.priorities ?? []).map((priority) => (
-                          <EzCheck
-                            key={priority.ticketPriority}
-                            id={`mesa-priority-${priority.ticketPriority}`}
-                            label={priority.label}
-                            checked={priority.enabled}
-                            onChange={() => {
-                              void api
-                                .patch(`/service-desks/${activeDesk.id}`, {
-                                  priorities: [
-                                    {
-                                      ticketPriority: priority.ticketPriority,
-                                      enabled: !priority.enabled,
-                                    },
-                                  ],
-                                })
-                                .then(() =>
-                                  queryClient.invalidateQueries({ queryKey: ['service-desks'] }),
-                                );
-                            }}
-                          />
-                        ))}
-                        {(activeDesk.priorities ?? []).length === 0 && (
-                          <p className="text-sm text-gray-500">
-                            Prioridades padrão são criadas ao cadastrar a mesa.
-                          </p>
-                        )}
-                      </div>
-                    )}
-                    {activeTab === 'sections' && (
-                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                        {(activeDesk.ticketSections ?? []).map((section) => (
-                          <EzCheck
-                            key={section.key}
-                            id={`mesa-section-${section.key}`}
-                            label={ticketSectionLabel(section.key)}
-                            checked={section.enabled}
-                            onChange={() => {
-                              void api
-                                .patch(`/service-desks/${activeDesk.id}`, {
-                                  ticketSections: [
-                                    { key: section.key, enabled: !section.enabled },
-                                  ],
-                                })
-                                .then(() =>
-                                  queryClient.invalidateQueries({ queryKey: ['service-desks'] }),
-                                );
-                            }}
-                          />
-                        ))}
-                        {(activeDesk.ticketSections ?? []).length === 0 && (
-                          <p className="text-sm text-gray-500">
-                            Seções padrão são criadas ao cadastrar a mesa.
-                          </p>
-                        )}
-                      </div>
-                    )}
+                    {activeTab === 'priorities' &&
+                      ((activeDesk.priorities ?? []).length === 0 ? (
+                        <p className="text-sm text-gray-500">
+                          Prioridades padrão são criadas ao cadastrar a mesa.
+                        </p>
+                      ) : (
+                        <MesaFlagEditor
+                          deskId={activeDesk.id}
+                          flags={(activeDesk.priorities ?? []).map((priority) => ({
+                            key: priority.ticketPriority,
+                            label: priority.label,
+                          }))}
+                          values={Object.fromEntries(
+                            (activeDesk.priorities ?? []).map((priority) => [priority.ticketPriority, priority.enabled]),
+                          )}
+                          buildPayload={(draft) => ({
+                            priorities: (activeDesk.priorities ?? []).map((priority) => ({
+                              ticketPriority: priority.ticketPriority,
+                              enabled: draft[priority.ticketPriority],
+                            })),
+                          })}
+                        />
+                      ))}
+                    {activeTab === 'sections' &&
+                      ((activeDesk.ticketSections ?? []).length === 0 ? (
+                        <p className="text-sm text-gray-500">
+                          Seções padrão são criadas ao cadastrar a mesa.
+                        </p>
+                      ) : (
+                        <MesaFlagEditor
+                          deskId={activeDesk.id}
+                          flags={(activeDesk.ticketSections ?? []).map((section) => ({
+                            key: section.key,
+                            label: ticketSectionLabel(section.key),
+                          }))}
+                          values={Object.fromEntries(
+                            (activeDesk.ticketSections ?? []).map((section) => [section.key, section.enabled]),
+                          )}
+                          buildPayload={(draft) => ({
+                            ticketSections: (activeDesk.ticketSections ?? []).map((section) => ({
+                              key: section.key,
+                              enabled: draft[section.key],
+                            })),
+                          })}
+                        />
+                      ))}
                     {activeTab === 'stages' && (
                       <MesaStagesEditor deskId={activeDesk.id} />
                     )}
-                    {activeTab === 'status' && (
-                      <form
-                        className="grid max-w-xl grid-cols-1 gap-4 sm:grid-cols-2"
-                        onSubmit={(event) => {
-                          event.preventDefault();
-                          const form = event.currentTarget;
-                          const defaultOpenStatus = (form.elements.namedItem('defaultOpenStatus') as HTMLSelectElement).value;
-                          const defaultClosedStatus = (form.elements.namedItem('defaultClosedStatus') as HTMLSelectElement).value;
-                          void api
-                            .patch(`/service-desks/${activeDesk.id}`, {
-                              defaultOpenStatus,
-                              defaultClosedStatus,
-                            })
-                            .then(() =>
-                              queryClient.invalidateQueries({ queryKey: ['service-desks'] }),
-                            );
-                        }}
-                      >
-                        <EzComboBox
-                          id="mesa-default-open-status"
-                          name="defaultOpenStatus"
-                          label="Status ao abrir"
-                          defaultValue={activeDesk.defaultOpenStatus ?? 'OPEN'}
-                        >
-                          <option value="OPEN">Aberto</option>
-                          <option value="IN_PROGRESS">Em andamento</option>
-                        </EzComboBox>
-                        <EzComboBox
-                          id="mesa-default-closed-status"
-                          name="defaultClosedStatus"
-                          label="Status ao fechar"
-                          defaultValue={activeDesk.defaultClosedStatus ?? 'CLOSED'}
-                        >
-                          <option value="CLOSED">Fechado</option>
-                          <option value="RESOLVED">Resolvido</option>
-                        </EzComboBox>
-                        <div className="flex justify-end sm:col-span-2">
-                          <EzButton type="submit" size="small">Salvar status</EzButton>
-                        </div>
-                      </form>
-                    )}
+                    {activeTab === 'status' && <MesaStatusForm desk={activeDesk} />}
                     {activeTab === 'review' && (
                       <MesaFlagEditor
                         deskId={activeDesk.id}
@@ -837,6 +772,19 @@ className="isolate flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll
         </div>
       )}
 
+      <EzDialog
+        open={discardAction !== null}
+        variant="warning"
+        title="Descartar alterações?"
+        message="As alterações não salvas desta aba serão perdidas."
+        onCancel={() => setDiscardAction(null)}
+        onConfirm={() => {
+          const action = discardAction;
+          setDiscardAction(null);
+          action?.();
+        }}
+      />
+
       {isScreenConfigModalOpen && (
         <EzEntityScreenConfigModal
           columns={screenConfigColumns}
@@ -857,6 +805,14 @@ className="isolate flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll
       )}
     </div>
     </EzPageLayout>
+  );
+}
+
+export function ServiceDesksPage() {
+  return (
+    <MesaSaveProvider>
+      <ServiceDesksPageContent />
+    </MesaSaveProvider>
   );
 }
 
