@@ -1,6 +1,6 @@
 import { NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { TicketDeletionReason, ticketDeletionReasons } from '../tickets/ticket-deletion';
+import { canRemoveWorklogs, ticketDeletionReasons } from '../tickets/ticket-deletion';
 
 /** DMTE-560: regras de bloqueio da exclusão de cliente; a consulta e a exclusão usam este módulo, para nunca divergirem. */
 
@@ -25,11 +25,13 @@ export interface OrganizationDeletionCheck {
   cascade: { addresses: number; contacts: number; agentGroups: number; technicalGroups: number; sharedArticles: number; deskEvents: number };
 }
 
-const ticketReasonText: Record<TicketDeletionReason, string> = {
+const ticketReasonText = {
   CLIENT_REQUESTER: 'aberto pelo cliente',
   HAS_WORKLOGS: 'tem apontamento',
+  HAS_VOIDED_WORKLOGS: 'tem apontamento anulado (fica registrado para auditoria)',
   HAS_SUB_TICKETS: 'tem sub-tickets',
 };
+const notAuthorText = 'tem apontamento de outro usuário (só o autor ou um administrador remove)';
 
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 const named = (list: { id: string; name: string | null }[], fallback: string) =>
@@ -39,6 +41,7 @@ export async function checkOrganizationDeletion(
   db: Prisma.TransactionClient,
   id: string,
   canDeleteTickets: boolean,
+  user: { id: string; role: string },
 ): Promise<OrganizationDeletionCheck> {
   const sample = { take: SAMPLE };
   const organization = await db.organization.findUnique({
@@ -55,8 +58,8 @@ export async function checkOrganizationDeletion(
       serviceDesks: { select: { id: true, name: true }, ...sample },
       contracts: { select: { id: true, name: true }, ...sample },
       users: { select: { id: true, name: true }, ...sample },
-      credentials: { select: { id: true, name: true }, ...sample },
-      credentialFolders: { select: { id: true, name: true }, ...sample },
+      credentials: { select: { id: true }, ...sample },
+      credentialFolders: { select: { id: true }, ...sample },
       appointments: { select: { id: true, title: true }, ...sample },
     },
   });
@@ -67,9 +70,11 @@ export async function checkOrganizationDeletion(
   const tickets = await db.ticket.findMany({
     where: { OR: [{ commercialOrganizationId: id }, { requester: { organizationId: id } }] },
     select: {
-      id: true, protocol: true, title: true,
+      id: true, protocol: true,
       requester: { select: { organizationId: true } },
-      _count: { select: { worklogs: true, preAppointments: true, subTickets: true } },
+      worklogs: { select: { authorId: true, voidedAt: true } },
+      preAppointments: { select: { authorId: true } },
+      _count: { select: { subTickets: true } },
     },
   });
 
@@ -77,16 +82,18 @@ export async function checkOrganizationDeletion(
   if (tickets.length > 0) {
     const rows = tickets.map((ticket) => {
       const rules = ticketDeletionReasons(ticket);
-      const reasons = rules.map((code) => ticketReasonText[code]);
+      const mayRemoveWorklogs = canRemoveWorklogs(ticket, user);
+      const reasons = rules.map((code) => (code === 'HAS_WORKLOGS' && !mayRemoveWorklogs ? notAuthorText : ticketReasonText[code]));
       if (!canDeleteTickets) reasons.push('sem permissão para excluir tickets');
-      return { ticket, rules, reasons };
+      const hopeless = rules.includes('CLIENT_REQUESTER') || rules.includes('HAS_VOIDED_WORKLOGS') || (rules.includes('HAS_WORKLOGS') && !mayRemoveWorklogs);
+      return { ticket, reasons, resolvable: canDeleteTickets && !hopeless };
     });
-    const resolvable = rows.every((row) => canDeleteTickets && !row.rules.includes('CLIENT_REQUESTER'));
+    const resolvable = rows.every((row) => row.resolvable);
     blockers.push({
       code: 'TICKETS',
       message: `Há ${plural(tickets.length, 'ticket', 'tickets')} do cliente.`,
       count: tickets.length,
-      items: rows.slice(0, SAMPLE).map(({ ticket, reasons }) => ({ id: ticket.id, label: `${ticket.protocol}: ${ticket.title}`, reasons })),
+      items: rows.slice(0, SAMPLE).map(({ ticket, reasons }) => ({ id: ticket.id, label: ticket.protocol, reasons })),
       resolvable,
       howToResolve: resolvable ? 'Exclua os tickets em Tickets (antes, remova os apontamentos e os sub-tickets, se houver) e tente de novo.' : null,
     });
@@ -127,7 +134,10 @@ export async function checkOrganizationDeletion(
       code: 'VAULT',
       message: `Há ${plural(vault, 'item', 'itens')} no cofre do cliente.`,
       count: vault,
-      items: [...named(organization.credentials, 'Credencial'), ...named(organization.credentialFolders, 'Pasta')].slice(0, SAMPLE),
+      items: [
+        ...organization.credentials.map((row) => ({ id: row.id, label: 'Credencial' })),
+        ...organization.credentialFolders.map((row) => ({ id: row.id, label: 'Pasta' })),
+      ].slice(0, SAMPLE),
       resolvable: true,
       howToResolve: 'Exclua as credenciais e pastas no Cofre.',
     });

@@ -106,8 +106,8 @@ export class OrganizationsService {
   }
 
   /** DMTE-560: para cada cliente, o que impede a exclusão e o que sairia junto. */
-  async deletionCheck(ids: string[], canDeleteTickets: boolean, _user: Pick<CurrentUserPayload, 'id' | 'role'>): Promise<OrganizationDeletionCheck[]> {
-    return Promise.all([...new Set(ids)].map((id) => checkOrganizationDeletion(this.prisma, id, canDeleteTickets)));
+  async deletionCheck(ids: string[], canDeleteTickets: boolean, user: Pick<CurrentUserPayload, 'id' | 'role'>): Promise<OrganizationDeletionCheck[]> {
+    return Promise.all([...new Set(ids)].map((id) => checkOrganizationDeletion(this.prisma, id, canDeleteTickets, user)));
   }
 
   /** DMTE-560: exclusão definitiva (substitui o "só inativa" da DMTE-481); a checagem é refeita sob trava de linha. */
@@ -116,7 +116,7 @@ export class OrganizationsService {
       await this.prisma.$transaction(
         async (db) => {
           await db.$queryRaw(Prisma.sql`SELECT id FROM "Organization" WHERE id = ${id} FOR UPDATE`);
-          const check = await checkOrganizationDeletion(db, id, canDeleteTickets);
+          const check = await checkOrganizationDeletion(db, id, canDeleteTickets, actor);
           if (!check.canDelete) {
             throw new ConflictException({
               message: `Não é possível excluir o cliente ${check.name}: há vínculos que impedem a exclusão.`,

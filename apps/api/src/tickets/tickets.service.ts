@@ -18,7 +18,7 @@ import {
   TicketStatus,
 } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { TicketDeletionReason, ticketDeletionReasons } from './ticket-deletion';
+import { activeWorklogCount, TicketDeletionFacts, TicketDeletionReason, ticketDeletionReasons } from './ticket-deletion';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { UpdateTicketDto } from './dto/update-ticket.dto';
 import { TICKET_SORT_FIELDS, TicketQueryDto } from './dto/ticket-query.dto';
@@ -1207,20 +1207,30 @@ export class TicketsService {
         protocol: true,
         requester: { select: { organizationId: true } },
         attachments: { select: { filename: true } },
-        _count: { select: { worklogs: true, preAppointments: true, subTickets: true } },
+        worklogs: { select: { authorId: true, voidedAt: true } },
+        preAppointments: { select: { authorId: true } },
+        _count: { select: { subTickets: true } },
       },
     });
     if (!ticket) throw new NotFoundException(`Ticket with ID ${id} not found`);
 
     const reasons = ticketDeletionReasons(ticket);
-    if (reasons.length > 0) throw await this.deletionConflict(id, ticket.protocol, ticket._count, reasons);
+    if (reasons.length > 0) throw await this.deletionConflict(id, ticket, reasons);
 
-    await this.prisma.$transaction(async (tx) => {
-      await tx.comment.deleteMany({ where: { ticketId: id } });
-      await tx.ticketAudit.deleteMany({ where: { ticketId: id } });
-      await tx.appointment.deleteMany({ where: { ticketId: id } });
-      await tx.ticket.delete({ where: { id } });
-    });
+    try {
+      await this.prisma.$transaction(async (tx) => {
+        await tx.comment.deleteMany({ where: { ticketId: id } });
+        await tx.ticketAudit.deleteMany({ where: { ticketId: id } });
+        await tx.appointment.deleteMany({ where: { ticketId: id } });
+        await tx.ticket.delete({ where: { id } });
+      });
+    } catch (error) {
+      // Apontamento ou sub-ticket criado depois da checagem: a chave estrangeira recusa e a transação volta.
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2003') {
+        throw new ConflictException('Não é possível excluir o ticket: surgiu um apontamento ou sub-ticket durante a exclusão. Tente de novo.');
+      }
+      throw error;
+    }
     // Anexos, checklist e pré-apontamentos saem por cascata no banco; o arquivo do anexo sai daqui.
     await Promise.all(
       ticket.attachments.map((attachment) => unlink(join(process.cwd(), 'uploads', attachment.filename)).catch(() => undefined)),
@@ -1231,8 +1241,7 @@ export class TicketsService {
 
   private async deletionConflict(
     ticketId: string,
-    protocol: string,
-    counts: { worklogs: number; preAppointments: number; subTickets: number },
+    ticket: TicketDeletionFacts & { protocol: string },
     reasons: TicketDeletionReason[],
   ) {
     const texts: string[] = [];
@@ -1242,9 +1251,9 @@ export class TicketsService {
         texts.push('foi aberto pelo cliente');
         details.push({ code });
       } else if (code === 'HAS_WORKLOGS') {
-        const count = counts.worklogs + counts.preAppointments;
+        const count = activeWorklogCount(ticket);
         const [worklogs, preAppointments] = await Promise.all([
-          this.prisma.worklog.findMany({ where: { ticketId }, select: { id: true, startTime: true }, orderBy: { startTime: 'asc' }, take: 5 }),
+          this.prisma.worklog.findMany({ where: { ticketId, voidedAt: null }, select: { id: true, startTime: true }, orderBy: { startTime: 'asc' }, take: 5 }),
           this.prisma.preAppointment.findMany({ where: { ticketId }, select: { id: true, beginning: true }, orderBy: { beginning: 'asc' }, take: 5 }),
         ]);
         const day = (date: Date) => date.toISOString().slice(0, 10);
@@ -1254,12 +1263,16 @@ export class TicketsService {
         ].slice(0, 5);
         texts.push(`tem ${count} ${count === 1 ? 'apontamento' : 'apontamentos'}; remova-os antes`);
         details.push({ code, count, items });
+      } else if (code === 'HAS_VOIDED_WORKLOGS') {
+        const count = ticket.worklogs.filter((worklog) => worklog.voidedAt).length;
+        texts.push(count === 1 ? 'tem 1 apontamento anulado, que fica registrado para auditoria e não sai' : `tem ${count} apontamentos anulados, que ficam registrados para auditoria e não saem`);
+        details.push({ code, count });
       } else {
-        texts.push(`tem ${counts.subTickets} ${counts.subTickets === 1 ? 'sub-ticket' : 'sub-tickets'}; exclua ou desvincule-os antes`);
-        details.push({ code, count: counts.subTickets });
+        texts.push(`tem ${ticket._count.subTickets} ${ticket._count.subTickets === 1 ? 'sub-ticket' : 'sub-tickets'}; exclua ou desvincule-os antes`);
+        details.push({ code, count: ticket._count.subTickets });
       }
     }
-    return new ConflictException({ message: `Não é possível excluir o ticket ${protocol}: ${texts.join('; ')}.`, reasons: details });
+    return new ConflictException({ message: `Não é possível excluir o ticket ${ticket.protocol}: ${texts.join('; ')}.`, reasons: details });
   }
 
   async cancel(id: string, currentUser: CurrentUserPayload): Promise<Ticket> {
