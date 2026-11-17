@@ -1,0 +1,102 @@
+{
+  "version": 1,
+  "delivery": "DMTE-544",
+  "repository": "dmrepositorio/aponta",
+  "github_issue": 289,
+  "multica_id": "01a1e5d1-18c0-7495-b10e-93e3647f292d",
+  "cycle": "2026-11-09/2026-11-22",
+  "tier": 2,
+  "criteria": [
+    {
+      "id": "AC-01",
+      "description": "todo botão de ícone da tabela (revelar usuário/senha, copiar usuário/senha/URL, editar, excluir) e da faixa da pasta (editar/remover pasta) é `<button type=\"button\">` com `aria-label` que inclui o nome da credencial (ou da pasta) e mantém o `title` atual; o link \"Abrir URL\" também tem `aria-label` com o nome.",
+      "tests": [
+        "apps/web/src/pages/VaultPageAccess.test.tsx: gives every icon control a type and an accessible name with the credential name"
+      ]
+    },
+    {
+      "id": "AC-02",
+      "description": "esses controles têm 32px (`h-8 w-8`) e anel de foco `focus-visible:ring-2` na cor da marca.",
+      "tests": [
+        "apps/web/src/pages/VaultPageAccess.test.tsx: sizes the icon controls to 32px with a visible focus ring"
+      ]
+    },
+    {
+      "id": "AC-03",
+      "description": "não há mais botão de revelar na coluna Nome; as células Usuário e Senha têm cada uma um botão de olho com `aria-pressed`; clicar no olho do usuário revela só o usuário (um POST com `field: 'username'`, nenhum para `password`) e o inverso; clicar de novo oculta sem nova requisição.",
+      "tests": [
+        "apps/web/src/pages/VaultPageAccess.test.tsx: reveals only the field whose eye was clicked",
+        "apps/web/src/pages/VaultPageAccess.test.tsx: has no reveal button in the name column"
+      ]
+    },
+    {
+      "id": "AC-04",
+      "description": "um valor revelado volta aos bullets 30 s depois; trocar de pasta, mudar a busca e mudar de página também voltam todos aos bullets.",
+      "tests": [
+        "apps/web/src/pages/VaultPageAccess.test.tsx: hides a revealed value after 30 seconds",
+        "apps/web/src/pages/VaultPageAccess.test.tsx: hides revealed values when the folder, the search or the page changes"
+      ]
+    },
+    {
+      "id": "AC-05",
+      "description": "copiar usuário, senha ou URL com sucesso mostra a mensagem correspondente em `role=\"status\"`, que some em 3 s; o valor copiado continua indo para `navigator.clipboard.writeText`.",
+      "tests": [
+        "apps/web/src/pages/VaultPageAccess.test.tsx: confirms a successful copy with a status message that goes away"
+      ]
+    },
+    {
+      "id": "AC-06",
+      "description": "se o reveal falhar ao revelar, aparece \"Não foi possível revelar.\" em `role=\"alert\"`; se o reveal ou o clipboard falhar ao copiar, aparece \"Não foi possível copiar.\" em `role=\"alert\"`; nenhuma promise fica sem tratamento e a mensagem não contém o valor.",
+      "tests": [
+        "apps/web/src/pages/VaultPageAccess.test.tsx: shows an alert when the reveal fails",
+        "apps/web/src/pages/VaultPageAccess.test.tsx: shows an alert when the clipboard fails without the secret"
+      ]
+    },
+    {
+      "id": "AC-07",
+      "description": "no navegador (Chromium, 1440 px e 768 px, dados fictícios e API simulada), os botões de ícone medem 32x32 px, o foco por teclado mostra o anel, o olho de cada célula revela só o seu campo e o aviso de cópia aparece e some.",
+      "tests": [
+        "Medição em Chromium a 1440 px e 768 px: botões de 32x32 px, anel de foco, olho por campo, aviso de cópia (resultado no PR)"
+      ],
+      "tdd_required": false,
+      "reason": "Medida de layout, foco e aviso renderizados em navegador (jsdom não calcula layout nem desenha foco); o comportamento causador é coberto por AC-02, AC-03 e AC-05"
+    },
+    {
+      "id": "AC-08",
+      "description": "nenhum arquivo de `apps/web/src/components/ds/`, `apps/api`, `apps/web-e2e` nem `hooks/useVault.ts` é alterado.",
+      "tests": [
+        "git diff do PR: nenhum arquivo em apps/web/src/components/ds/, apps/api, apps/web-e2e nem hooks/useVault.ts"
+      ],
+      "tdd_required": false,
+      "reason": "Verificação de escopo por git diff, sem comportamento novo"
+    },
+    {
+      "id": "AC-09",
+      "description": "os testes atuais de `VaultPage.test.tsx` passam sem edição, exceto os três que usam o cadeado da linha (`Revelar linha`/`Ocultar`), que passam a usar os olhos por campo.",
+      "tests": [
+        "apps/web/src/pages/VaultPage.test.tsx existente, com os três testes do cadeado da linha trocados pelos olhos por campo"
+      ],
+      "tdd_required": false,
+      "reason": "Regressão: o arquivo existente roda inteiro; os três testes trocados falham antes da implementação e entram no RED pelo AC-03"
+    }
+  ],
+  "spec": "docs/delivery/specs/DMTE-544.md",
+  "tdd": {
+    "mode": "required",
+    "red": ".delivery/evidence/DMTE-544/red.json",
+    "green": ".delivery/evidence/DMTE-544/green.json"
+  },
+  "design_system": {
+    "applicable": true,
+    "reused": [
+      "EzToast",
+      "EzButton",
+      "EzTextInput",
+      "EzTree",
+      "EzCardItem",
+      "EzEmptyCard"
+    ],
+    "reason": "Mantém os componentes do DS já usados pela página e só ajusta botões de ícone locais com tokens existentes (h-8 w-8, ring-brand-200, brand-600); o aviso reutiliza o EzToast no desenho do mesaSave.tsx; nenhum componente, prop ou token novo.",
+    "exception": "Nenhum arquivo de apps/web/src/components/ds/ muda, então não há story nova."
+  }
+}
