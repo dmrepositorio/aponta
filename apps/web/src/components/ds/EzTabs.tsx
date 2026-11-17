@@ -16,7 +16,18 @@ export interface EzTabsProps extends Omit<HTMLAttributes<HTMLDivElement>, 'onCha
    * @default 'line'
    */
   variant?: 'line' | 'pills';
+  /**
+   * Prefix for the tab and tabpanel ids. With it every tab gets an `id` and
+   * `aria-controls`; the consumer builds the panel with `ezTabPanelId`.
+   */
+  idPrefix?: string;
 }
+
+/** Id of a tab button; the panel's `aria-labelledby` points at it. */
+export const ezTabId = (_prefix: string, _tabId: string | number): string => '';
+
+/** Id of a tab's panel; the tab's `aria-controls` points at it. */
+export const ezTabPanelId = (_prefix: string, _tabId: string | number): string => '';
 
 /**
  * Aponta DS Tabs (Tabselector)
