@@ -149,7 +149,7 @@ export const EzTaskbar = forwardRef<HTMLDivElement, EzTaskbarProps>(
                   className={cn(
                     'inline-flex items-center justify-center h-[36px] w-[36px] [@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:w-11 rounded-[8px] transition-colors',
                     'text-gray-500 hover:bg-gray-80 hover:text-gray-900',
-                    'focus:outline-none focus-visible:ring-4 focus-visible:ring-brand-200'
+                    'ez-focus'
                   )}
                 >
                   <Icon className="w-4 h-4" />
@@ -196,7 +196,7 @@ export const EzTaskbar = forwardRef<HTMLDivElement, EzTaskbarProps>(
               onClick={() => onAction(button)}
               className={cn(
                 'inline-flex items-center justify-center h-[36px] w-[36px] [@media(pointer:coarse)]:h-11 [@media(pointer:coarse)]:w-11 rounded-[8px] transition-colors',
-                'focus:outline-none focus-visible:ring-4 focus-visible:ring-brand-200',
+                'ez-focus',
                 isPrimary
                   ? 'bg-brand-500 text-gray-70 hover:bg-brand-700'
                   : 'text-gray-500 hover:bg-gray-80 hover:text-gray-900',

@@ -183,7 +183,7 @@ export const EzFilterBar = forwardRef<HTMLDivElement, EzFilterBarProps>(
                           onChange={() => toggleDraftActive(filter.id)}
                           className={cn(
                             'w-4 h-4 rounded border-gray-300 text-brand-600',
-                            'focus-visible:ring-2 focus-visible:ring-brand-200 focus:outline-none'
+                            'ez-focus'
                           )}
                         />
                         <span className="text-[13px] text-gray-700">{filter.label}</span>

@@ -84,7 +84,7 @@ export const EzButton = forwardRef<HTMLButtonElement, EzButtonProps>(
         className={cn(
           // Base styles
           'relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none',
-          'focus-visible:ring-4 focus-visible:ring-brand-200 focus-visible:ring-offset-2',
+          'ez-focus',
           'active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed',
           // Variants
           variant === 'primary' &&

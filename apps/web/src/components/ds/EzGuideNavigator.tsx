@@ -56,7 +56,7 @@ export const EzGuideNavigator = forwardRef<HTMLDivElement, EzGuideNavigatorProps
                   aria-current={isCurrent ? 'step' : undefined}
                   className={cn(
                     'flex items-center justify-center w-8 h-8 rounded-full text-[13px] font-semibold border-2 transition-colors shrink-0 outline-none',
-                    isClickable && 'cursor-pointer focus-visible:ring-2 focus-visible:ring-brand-200',
+                    isClickable && 'cursor-pointer ez-focus',
                     !isClickable && 'cursor-default',
                     isCurrent && 'bg-brand-600 border-brand-600 text-gray-70',
                     isCompleted && !isCurrent && 'bg-brand-600 border-brand-600 text-gray-70',

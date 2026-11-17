@@ -71,3 +71,43 @@ export const Interactive: Story = {
     return <Demo />;
   },
 };
+
+export const DangerWithList: Story = {
+  args: {
+    open: true,
+    variant: 'danger',
+    title: 'Excluir 2 contratos',
+    message: 'Esta ação não pode ser desfeita.',
+    onConfirm: () => undefined,
+    onCancel: () => undefined,
+    children: (
+      <ul className="mt-3 space-y-1">
+        <li className="font-medium text-gray-900">Suporte mensal · Social Tecnologia</li>
+        <li className="font-medium text-gray-900">Banco de horas · Refrigeração Mota</li>
+      </ul>
+    ),
+  },
+};
+
+export const DangerWithFailures: Story = {
+  args: {
+    open: true,
+    variant: 'danger',
+    title: 'Excluir 2 contratos',
+    message: 'Não foi possível excluir:',
+    confirmLabel: 'Tentar novamente',
+    cancelLabel: 'Fechar',
+    onConfirm: () => undefined,
+    onCancel: () => undefined,
+    children: (
+      <ul className="mt-3 space-y-1">
+        <li className="font-medium text-gray-900">
+          Suporte mensal · Social Tecnologia
+          <span className="block font-normal text-red-700">
+            Contrato com apontamentos não pode ser excluído; desative-o para preservar o histórico
+          </span>
+        </li>
+      </ul>
+    ),
+  },
+};

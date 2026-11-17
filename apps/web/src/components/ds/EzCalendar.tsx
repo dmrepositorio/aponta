@@ -98,7 +98,7 @@ export const EzCalendar = forwardRef<HTMLDivElement, EzCalendarProps>(
             type="button"
             aria-label="Mês anterior"
             onClick={goToPreviousMonth}
-            className="p-1.5 rounded-md text-gray-500 hover:bg-gray-80 hover:text-gray-900 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-200"
+            className="p-1.5 rounded-md text-gray-500 hover:bg-gray-80 hover:text-gray-900 transition-colors ez-focus"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
@@ -111,7 +111,7 @@ export const EzCalendar = forwardRef<HTMLDivElement, EzCalendarProps>(
             type="button"
             aria-label="Próximo mês"
             onClick={goToNextMonth}
-            className="p-1.5 rounded-md text-gray-500 hover:bg-gray-80 hover:text-gray-900 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-200"
+            className="p-1.5 rounded-md text-gray-500 hover:bg-gray-80 hover:text-gray-900 transition-colors ez-focus"
           >
             <ChevronRight className="w-4 h-4" />
           </button>
@@ -142,7 +142,7 @@ export const EzCalendar = forwardRef<HTMLDivElement, EzCalendarProps>(
                 onClick={() => handleSelectDate(date)}
                 className={cn(
                   'h-8 w-8 flex items-center justify-center rounded-full text-[13px] font-medium transition-colors select-none',
-                  'focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-200',
+                  'ez-focus',
                   isSelected
                     ? 'bg-brand-600 text-gray-70'
                     : isToday

@@ -142,7 +142,7 @@ export function TicketFormMode({
                 data-testid="ticket-form-title-input"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full px-3 py-1.5 text-[13px] border border-gray-300 rounded-[6px] focus:outline-none focus:ring-2 focus:ring-brand-200 focus:border-brand-500 font-medium text-gray-900"
+                className="w-full px-3 py-1.5 text-[13px] border border-gray-300 rounded-[6px] focus:border-brand-500 font-medium text-gray-900 ez-focus"
               />
             </div>
 
@@ -179,7 +179,7 @@ export function TicketFormMode({
                 rows={4}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full px-3 py-2 text-[13px] border border-gray-300 rounded-[6px] focus:outline-none focus:ring-2 focus:ring-brand-200 focus:border-brand-500 text-gray-900"
+                className="w-full px-3 py-2 text-[13px] border border-gray-300 rounded-[6px] focus:border-brand-500 text-gray-900 ez-focus"
               />
             </div>
           </div>

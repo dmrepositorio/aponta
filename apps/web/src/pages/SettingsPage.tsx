@@ -23,7 +23,7 @@ function SettingsLink({ to, label, icon: Icon }: SettingsLinkProps) {
   return (
     <Link
       to={to}
-      className="flex min-h-[var(--control-height-md)] items-center justify-between gap-3 px-4 py-2 text-[14px] text-gray-900 transition-colors hover:bg-gray-90 active:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-200"
+      className="flex min-h-[var(--control-height-md)] items-center justify-between gap-3 px-4 py-2 text-[14px] text-gray-900 transition-colors hover:bg-gray-90 active:bg-gray-100 ez-focus-inset"
     >
       <span className="flex items-center gap-3">
         <Icon className="h-4 w-4 text-gray-500" />

@@ -1111,7 +1111,7 @@ describe('KnowledgePage', () => {
 
       it('gives the clickable tag, the filter remove button and the view toggles the DS focus ring', async () => {
         const user = await openAs('ADMIN');
-        const ring = ['focus-visible:ring-4', 'focus-visible:ring-brand-200', 'focus-visible:ring-offset-2'];
+        const ring = ['ez-focus'];
         const card = cardOf('Artigo com tags');
 
         const tag = within(card).getByRole('button', { name: /#senha/ });
