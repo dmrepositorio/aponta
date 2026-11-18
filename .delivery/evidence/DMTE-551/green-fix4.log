@@ -1,0 +1,20 @@
+
+> nx run api:test --runTestsByPath src/auth/password-flow.wiring.http.spec.ts
+
+> jest --passWithNoTests=true --runTestsByPath src/auth/password-flow.wiring.http.spec.ts
+
+[08:31:05.440] [32mINFO[39m (2931860): [36mrequest completed[39m [90m{"req":{"id":1,"method":"POST","url":"/auth/forgot-password","query":{},"params":{"splat":["auth","forgot-password"]},"headers":{"x-forwarded-for":"203.0.113.9","content-type":"application/json","host":"127.0.0.1:42875","accept-encoding":"gzip, deflate","content-length":"31","connection":"close"},"remoteAddress":"::ffff:127.0.0.1","remotePort":54512},"res":{"statusCode":200,"headers":{"x-powered-by":"Express","x-ratelimit-limit":"5","x-ratelimit-remaining":"4","x-ratelimit-reset":"60","cache-control":"no-store","content-type":"application/json; charset=utf-8","content-length":"11","etag":"W/\"b-Ai2R8hgEarLmHKwesT1qcY913ys\""}},"responseTime":12}[39m
+[08:31:06.086] [32mINFO[39m (2931860): [36mrequest completed[39m [90m{"req":{"id":2,"method":"POST","url":"/auth/password/set","query":{},"params":{"splat":["auth","password","set"]},"headers":{"x-forwarded-for":"203.0.113.9","content-type":"application/json","host":"127.0.0.1:41183","accept-encoding":"gzip, deflate","content-length":"61","connection":"close"},"remoteAddress":"::ffff:127.0.0.1","remotePort":55728},"res":{"statusCode":400,"headers":{"x-powered-by":"Express","x-ratelimit-limit":"10","x-ratelimit-remaining":"9","x-ratelimit-reset":"60","cache-control":"no-store","content-type":"application/json; charset=utf-8","content-length":"80","etag":"W/\"50-FYj7Vnj8Bpdvqdn2oC2CDZjexco\""}},"responseTime":11}[39m
+[08:31:06.216] [32mINFO[39m (2931860): [36mrequest completed[39m [90m{"req":{"id":3,"method":"POST","url":"/auth/forgot-password","query":{},"params":{"splat":["auth","forgot-password"]},"headers":{"x-forwarded-for":"203.0.113.9","content-type":"application/json","host":"127.0.0.1:35327","accept-encoding":"gzip, deflate","content-length":"31","connection":"close"},"remoteAddress":"::ffff:127.0.0.1","remotePort":47174},"res":{"statusCode":404,"headers":{"x-powered-by":"Express","x-ratelimit-limit":"5","x-ratelimit-remaining":"4","x-ratelimit-reset":"60","content-type":"application/json; charset=utf-8","content-length":"40","etag":"W/\"28-5C7N4rcpDEmIiuT+YkUQ7dshErk\""}},"responseTime":2}[39m
+[08:31:06.220] [32mINFO[39m (2931860): [36mrequest completed[39m [90m{"req":{"id":4,"method":"POST","url":"/auth/password/set","query":{},"params":{"splat":["auth","password","set"]},"headers":{"x-forwarded-for":"203.0.113.9","content-type":"application/json","host":"127.0.0.1:32955","accept-encoding":"gzip, deflate","content-length":"43","connection":"close"},"remoteAddress":"::ffff:127.0.0.1","remotePort":52158},"res":{"statusCode":404,"headers":{"x-powered-by":"Express","x-ratelimit-limit":"10","x-ratelimit-remaining":"9","x-ratelimit-reset":"60","content-type":"application/json; charset=utf-8","content-length":"40","etag":"W/\"28-5C7N4rcpDEmIiuT+YkUQ7dshErk\""}},"responseTime":1}[39m
+
+
+
+ NX   Successfully ran target test for project api
+
+
+[1mTest Suites: [22m[1m[32m1 passed[39m[22m, 1 total
+[1mTests:       [22m[1m[32m3 passed[39m[22m, 3 total
+[1mSnapshots:   [22m0 total
+[1mTime:[22m        [1m[33m5.578 s[39m[22m
+[2mRan all test suites[22m[2m within paths[22m "src/auth/password-flow.wiring.http.spec.ts"[2m.[22m

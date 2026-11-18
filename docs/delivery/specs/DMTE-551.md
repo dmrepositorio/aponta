@@ -53,7 +53,7 @@ Três blocos, entregues nesta ordem: A (senha forte e sessões), B (segundo fato
 - Versão de senha no usuário, levada no JWT e conferida na estratégia JWT, que já consulta o usuário a cada requisição. Trocar a senha em Minha Conta e definir a senha pelo link incrementam a versão; token de versão diferente é recusado. A sessão que fez a troca recebe um token novo.
 - O envio de e-mail exige TLS quando a porta não é a 465. Sem SMTP configurado, o comportamento da DMTE-550 se mantém.
 - Segurança contra injeção: nenhum SQL cru nos fluxos novos, acesso a dados só pelo ORM parametrizado, toda entrada validada por DTO com tamanho máximo. Símbolos e aspas na senha não são proibidos.
-- A redefinição por e-mail (endpoints, página, token, flag `convite-e-redefinicao-usuario`, `PUBLIC_APP_URL`, 1 h, 5 por minuto) é da DMTE-550 e não muda.
+- A redefinição por e-mail (endpoints, página, token, flag `convite-e-redefinicao-usuario`, `PUBLIC_APP_URL`, 1 h, 5 por minuto) é da DMTE-550 e não muda, com uma exceção da rodada 3: `POST /auth/forgot-password` passa a responder 200 (antes 201), porque não cria recurso; o web aceita qualquer 2xx e o spec da DMTE-550 aceita 200 ou 201.
 
 **Segundo fator (B)**
 - TOTP (RFC 6238), compatível com aplicativos autenticadores comuns. Ativação em Minha Conta: o servidor gera um segredo pendente, o usuário confirma com um código válido, só então o segundo fator fica ativo e os 10 códigos de recuperação são mostrados uma única vez.
@@ -110,6 +110,7 @@ Bloco C: login social
 - AC-21: quem tem segundo fator é desafiado depois do login social do mesmo modo que depois da senha.
 - AC-22: cada provedor tem sua flag e variáveis; sem elas o botão não aparece e a rota recusa; as flags são independentes; o Facebook não é oferecido nem aceito, mesmo com variáveis configuradas (emenda da rodada 2).
 - AC-23: nenhum segredo de provedor, de SMTP ou chave de cifra aparece no repositório, em fixtures, em log ou na resposta de qualquer endpoint.
+- AC-24 (rodada 3, defeito achado na validação humana em produção): na aplicação real, com a flag `convite-e-redefinicao-usuario` ligada, `POST /auth/forgot-password` responde 200 com `{ ok: true }` e `POST /auth/password/set` com link inválido responde 400; com a flag desligada as duas respondem 404. Causa: o `AuthModule` não importava o `FeatureFlagsModule`, o guard das rotas recebia a flag vazia (`@Optional`) e a rota dava 404 em produção, embora `/api/feature-flags` dissesse que a flag estava ligada.
 
 ## Testing Decisions
 
@@ -158,4 +159,5 @@ Bloco C: login social
 - AC-01 a AC-07: testes de API, da regra pura e das páginas.
 - AC-08 a AC-16: testes de API (incluindo vetores RFC 6238), das páginas e E2E isolado.
 - AC-17 a AC-23: testes de API com provedor simulado e das páginas; AC-23 também por busca de segredo no diff.
+- AC-24: teste de API sobre o `AppModule` real (sem montar providers à mão), que é o seam que pega módulo sem a flag injetada.
 - Validação real em staging com SMTP e provedores configurados: passo de Alfredo, fora dos testes automatizados.

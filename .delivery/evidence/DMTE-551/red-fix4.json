@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "phase": "red",
+  "started_at": "2026-11-18T11:26:37.154826+00:00",
+  "finished_at": "2026-11-18T11:26:53.092539+00:00",
+  "command": [
+    "pnpm",
+    "nx",
+    "run",
+    "api:test",
+    "--skip-nx-cache",
+    "--runTestsByPath",
+    "src/auth/password-flow.wiring.http.spec.ts"
+  ],
+  "base_sha": "e64c060182ff8d840716985010aeb1f26bc4d5c6",
+  "head_sha": "d252ab75f88e5a4fc7d27d5c2574179d26181ff7",
+  "exit_code": 1,
+  "tests": {
+    "apps/api/src/auth/password-flow.wiring.http.spec.ts": "d319d037287c9e55c5acac05a22dce740e8884f670ce5dbc04ad480e11a5655c"
+  },
+  "criteria": [
+    "AC-24"
+  ],
+  "source_hashes": {
+    "apps/api/src/auth/password-flow.wiring.http.spec.ts": "d319d037287c9e55c5acac05a22dce740e8884f670ce5dbc04ad480e11a5655c"
+  },
+  "log": ".delivery/evidence/DMTE-551/red-fix4.log",
+  "log_sha256": "6dd965914cff19d1b31dfa7bec29d32a43f0f120ab653d1820f2d0b6200e62a5"
+}
