@@ -375,7 +375,7 @@ describe('OrganizationsService', () => {
         howToResolve: expect.stringMatching(/contrato/i),
         message: expect.stringMatching(/9.*contrato/i),
       });
-      expect(blockerOf([entry], 'SERVICE_DESKS')).toMatchObject({ resolvable: true, howToResolve: expect.stringMatching(/desvincule.*Relacionamentos/i) });
+      expect(blockerOf([entry], 'SERVICE_DESKS')).toMatchObject({ resolvable: true, howToResolve: expect.stringMatching(/aba Relacionamentos.*aba Clientes/i) });
       expect(blockerOf([entry], 'VAULT')).toMatchObject({
         count: 2,
         items: [{ id: 'k1', label: 'Credencial' }, { id: 'f1', label: 'Pasta' }],
@@ -385,12 +385,15 @@ describe('OrganizationsService', () => {
       expect(blockerOf([entry], 'APPOINTMENTS')).toMatchObject({ resolvable: true, howToResolve: expect.stringMatching(/agenda/i) });
     });
 
-    it('AC-10: USERS nunca é resolvível (não existe exclusão de usuário) e não traz saída', async () => {
+    it('AC-26: USERS é resolvível: desvincular o usuário do cliente em Usuários (não existe exclusão de usuário)', async () => {
       mockPrisma.organization.findUnique.mockResolvedValue(orgRow({ users: [{ id: 'u1', name: 'Ana' }] }, { users: 1 }));
 
       const entry = await checkOne(true);
 
-      expect(blockerOf([entry], 'USERS')).toMatchObject({ resolvable: false, howToResolve: null });
+      expect(blockerOf([entry], 'USERS')).toMatchObject({
+        resolvable: true,
+        howToResolve: expect.stringMatching(/Usuários.*campo Cliente em branco/i),
+      });
     });
 
     it('AC-10: pede ao banco no máximo 5 itens de cada vínculo', async () => {

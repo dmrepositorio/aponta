@@ -36,9 +36,9 @@ A lixeira passa a **excluir** o cliente de verdade, e só quando ele não tem v�
 | Código | O que bloqueia | Dá para resolver? | Como |
 |---|---|---|---|
 | TICKETS | qualquer ticket do cliente, em qualquer status (cliente comercial ou solicitante pertencente ao cliente) | depende do ticket: resolve se todos puderem ser excluídos pelo usuário; não resolve se algum for aberto pelo cliente ou se o usuário não tem `DELETE_TICKETS` | excluir os tickets em Tickets e tentar de novo |
-| SERVICE_DESKS | vínculo atual com mesa | sim | desvincular em Clientes > Relacionamentos (ou na mesa) |
+| SERVICE_DESKS | vínculo atual com mesa | sim | desvincular: abrir o cliente e usar a aba Relacionamentos, ou abrir a mesa em Mesas e usar a aba Clientes (AC-28) |
 | CONTRACTS | contrato ativo ou inativo | sim | excluir o contrato em Contratos |
-| USERS | usuário vinculado ao cliente | não | inativar o cliente (não há exclusão de usuário) |
+| USERS | usuário vinculado ao cliente | sim (AC-26, rodada 3: o responsável confirmou em produção que desvincular resolve) | em Usuários, abrir o usuário e deixar o campo Cliente em branco (não há exclusão de usuário) |
 | VAULT | credencial ou pasta do cofre | sim | excluir no cofre |
 | APPOINTMENTS | compromisso de agenda ligado ao cliente | sim | excluir o compromisso na agenda |
 
@@ -105,7 +105,7 @@ Ticket T1, exclusão de ticket:
 Ticket T2, exclusão de cliente na API:
 - AC-08: `POST /organizations/deletion-check` com `ids` (1 a 50) devolve, por cliente, `canDelete`, `blockers` e `cascade`; exige `MANAGE_CLIENTS_AND_RESOURCE_GROUPS` (403 sem ela) e responde 404 para id inexistente.
 - AC-09: cada um destes vínculos gera o bloqueio com o código correspondente, de forma independente: ticket de qualquer status (cliente comercial ou solicitante do cliente) = TICKETS; vínculo atual com mesa = SERVICE_DESKS; contrato ativo ou inativo = CONTRACTS; usuário do cliente = USERS; credencial ou pasta do cofre = VAULT; compromisso de agenda do cliente = APPOINTMENTS.
-- AC-10: todos os bloqueios do cliente voltam numa só resposta, cada um com `code`, `message`, `count`, até 5 `items`, `resolvable` e `howToResolve`; USERS tem `resolvable=false`, os demais dependem do item.
+- AC-10: todos os bloqueios do cliente voltam numa só resposta, cada um com `code`, `message`, `count`, até 5 `items`, `resolvable` e `howToResolve`; USERS é resolvível (AC-26), os demais dependem do item.
 - AC-11: em TICKETS, cada ticket traz seus motivos (aberto pelo cliente, sem permissão `DELETE_TICKETS`, com apontamento, com sub-tickets); `resolvable` é falso se algum ticket tem motivo sem solução (aberto pelo cliente, sem permissão, apontamento anulado ou apontamento que o usuário não pode remover: AC-22 e AC-23) e verdadeiro caso contrário.
 - AC-12: `DELETE /organizations/:id` de cliente sem bloqueios apaga o cliente e o que sai junto (histórico de vínculo com mesa, endereços, contatos, grupos de atendentes, vínculos com grupos técnicos, compartilhamentos de artigo) numa única transação, responde 200 com `{ id }` e não apenas inativa.
 - AC-13: com bloqueios, responde 409 com `message` e a mesma lista `blockers` da consulta, e nada é apagado; a checagem é refeita dentro da transação, com trava na linha do cliente, e uma violação de chave estrangeira concorrente vira 409, não 500.
@@ -124,6 +124,9 @@ Correções da revisão independente (rodada 2):
 - AC-22: apontamento anulado (estornado, que fica no banco para auditoria) não conta como removível: o ticket continua sem poder ser excluído, com o motivo `HAS_VOIDED_WORKLOGS` (409 na exclusão do ticket) e "tem apontamento anulado (fica registrado para auditoria)" no `deletion-check`, que o marca sem saída; apontamento ativo continua sendo o motivo `HAS_WORKLOGS`, e o apontamento anulado não entra na contagem dele.
 - AC-23: no `deletion-check`, o bloqueio TICKETS só é resolvível por quem remove os apontamentos e pré-apontamentos ativos do ticket: um ADMIN ou o autor de todos eles; para os demais o motivo é "tem apontamento de outro usuário (só o autor ou um administrador remove)" e não há saída.
 - AC-24: na exclusão do ticket, uma gravação concorrente que quebre uma chave estrangeira (P2003) responde 409 ("apontamento ou sub-ticket"), não 500, sem apagar nada nem os arquivos dos anexos.
+- AC-26 (rodada 3, teste do responsável em produção): USERS é resolvível: `resolvable=true` e `howToResolve` manda abrir o usuário em Usuários e deixar o campo Cliente em branco. Substitui a parte de AC-10 que dizia `resolvable=false`.
+- AC-27 (rodada 3): a aba Clientes da mesa mostra todos os clientes vinculados (N:N, `organizations`), ou "Mesa compartilhada (sem cliente)" quando não há nenhum; ao editar, é possível desvincular cada cliente e adicionar outro, e Salvar envia `organizationIds` sem o campo legado `organizationId` (a API o recusa por `forbidNonWhitelisted`).
+- AC-28 (rodada 3): em SERVICE_DESKS, `howToResolve` dá o caminho completo: abrir o cliente e usar a aba Relacionamentos, ou abrir a mesa em Mesas e usar a aba Clientes.
 - AC-25: o `deletion-check` não devolve título de ticket nem nome de credencial ou pasta do cofre: o ticket aparece pelo protocolo, o cofre pelo tipo ("Credencial", "Pasta") e o compromisso de agenda como "Compromisso na agenda".
 
 ## Matriz AC → verificação
@@ -134,6 +137,8 @@ Correções da revisão independente (rodada 2):
 | AC-06 | API | `permission-catalog.users.spec.ts`, `auth.controller.spec.ts` |
 | AC-07 | Web | `apps/web/src/pages/TicketDetailPage.test.tsx` |
 | AC-08 a AC-14 | API, Prisma simulado | `apps/api/src/organizations/organizations.service.spec.ts`, `organizations.controller.spec.ts` |
+| AC-26, AC-28 | API, Prisma simulado | `organizations.service.spec.ts` |
+| AC-27 | Web | `apps/web/src/pages/ServiceDesksPage.test.tsx` |
 | AC-22 a AC-25 | API, Prisma simulado | `tickets.service.spec.ts` (AC-22, AC-24) e `organizations.service.spec.ts` (AC-22, AC-23, AC-25) |
 | AC-15 | E2E, banco real | `apps/web-e2e/src/organization-delete.spec.ts` via `scripts/e2e_isolated.sh` |
 | AC-16 a AC-21 | Web | `apps/web/src/pages/OrganizationsPage.test.tsx` (substitui os casos da DMTE-481) |
