@@ -252,14 +252,7 @@
     "green": ".delivery/evidence/DMTE-551/green-fix4.json"
   },
   "design_system": {
-    "applicable": true,
-    "reused": [
-      "EzAlert",
-      "EzButton",
-      "EzCardItem",
-      "EzDialog",
-      "EzTextInput"
-    ],
-    "reason": "Sem componente novo no DS: PasswordRules e TwoFactorSection são componentes da aplicação sobre EzAlert, EzButton, EzCardItem, EzDialog e EzTextInput; os botões de provedor do login usam as classes de token já usadas pelo DS (gray, brand, rounded-[12px], altura de 42 px)."
+    "applicable": false,
+    "reason": "Rodada 3 só mexe na API (importação de módulo, código HTTP de uma rota e teste); nenhuma tela, componente ou token muda."
   }
 }
