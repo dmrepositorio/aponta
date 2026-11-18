@@ -1,7 +1,6 @@
-import { useEffect, useMemo, useRef, useState, FormEvent, ReactNode } from 'react';
-import { createPortal } from 'react-dom';
+import { useEffect, useMemo, useRef, useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useEscapeLayer } from '../hooks/useEscapeLayer';
+import { apiErrorMessage } from '../hooks/useUsers';
 import {
   Lock,
   Copy,
@@ -14,7 +13,6 @@ import {
   KeyRound,
   Search,
   ShieldCheck,
-  X,
 } from 'lucide-react';
 import {
   useVaultFolders,
@@ -32,6 +30,7 @@ import {
   EzActionsButton,
   EzCardItem,
   EzEmptyCard,
+  EzModal,
   EzPagination,
   EzSelect,
   EzSpinner,
@@ -64,46 +63,42 @@ const SECRET_FIELDS: Record<SecretField, { noun: string; copied: string; copyErr
   },
 };
 
-function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: ReactNode }) {
-  useEscapeLayer(onClose);
-  if (typeof document === 'undefined') return null;
-  return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
-      <div className="fixed inset-0 bg-gray-900/60" onClick={onClose} />
-      <div role="dialog" aria-modal="true" className="relative w-full max-w-md rounded-[24px] bg-white shadow-2xl">
-        <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
-          <span className="text-[16px] font-semibold text-gray-900">{title}</span>
-          <button onClick={onClose} aria-label="Fechar" className="rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-700">
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-        <div className="px-6 py-4">{children}</div>
-      </div>
-    </div>,
-    document.body,
-  );
-}
-
 function FolderModal({
   initialName,
+  saving,
+  error,
   onSave,
   onClose,
 }: {
   initialName: string;
+  saving: boolean;
+  error: string | null;
   onSave: (name: string) => void;
   onClose: () => void;
 }) {
   const [name, setName] = useState(initialName);
+  const title = initialName ? 'Editar pasta' : 'Nova pasta';
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return;
+    if (saving || !name.trim()) return;
     onSave(name.trim());
   };
 
   return (
-    <Modal title={initialName ? 'Editar pasta' : 'Nova pasta'} onClose={onClose}>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+    <EzModal
+      isOpen
+      onClose={onClose}
+      title={title}
+      aria-label={title}
+      maxWidth="md"
+      trapFocus
+      preventOutsideClose
+      dirty={name !== initialName}
+      footer={<ModalFooter formId="vault-folder-form" saving={saving} onClose={onClose} />}
+    >
+      <form id="vault-folder-form" onSubmit={handleSubmit} className="flex flex-col gap-4">
+        {error && <EzAlert variant="error">{error}</EzAlert>}
         <EzTextInput
           label="Nome da pasta"
           value={name}
@@ -111,12 +106,24 @@ function FolderModal({
           autoFocus
           required
         />
-        <div className="flex justify-end gap-3">
-          <EzButton type="button" variant="secondary" label="Cancelar" onClick={onClose} />
-          <EzButton type="submit" variant="primary" label="Salvar" />
-        </div>
       </form>
-    </Modal>
+    </EzModal>
+  );
+}
+
+function ModalFooter({ formId, saving, onClose }: { formId: string; saving: boolean; onClose: () => void }) {
+  return (
+    <>
+      <EzButton type="button" variant="secondary" label="Cancelar" disabled={saving} onClick={onClose} />
+      <EzButton
+        type="submit"
+        form={formId}
+        variant="primary"
+        label={saving ? 'Salvando…' : 'Salvar'}
+        disabled={saving}
+        aria-busy={saving}
+      />
+    </>
   );
 }
 
@@ -124,12 +131,16 @@ function CredentialModal({
   credential,
   folders,
   defaultFolderId,
+  saving,
+  error,
   onSave,
   onClose,
 }: {
   credential?: VaultCredential;
   folders: VaultFolder[];
   defaultFolderId: string;
+  saving: boolean;
+  error: string | null;
   onSave: (dto: Partial<CredentialInput>) => void;
   onClose: () => void;
 }) {
@@ -139,13 +150,20 @@ function CredentialModal({
   const [password, setPassword] = useState('');
   const [url, setUrl] = useState(credential?.url ?? '');
   const [description, setDescription] = useState(credential?.description ?? '');
-  const [folderId, setFolderId] = useState(
-    credential ? credential.folderId ?? ROOT_FOLDER_ID : defaultFolderId,
-  );
+  const initialFolderId = credential ? credential.folderId ?? ROOT_FOLDER_ID : defaultFolderId;
+  const [folderId, setFolderId] = useState(initialFolderId);
+  const title = isEdit ? 'Editar senha' : 'Nova senha';
+  const dirty =
+    name !== (credential?.name ?? '') ||
+    username !== '' ||
+    password !== '' ||
+    url !== (credential?.url ?? '') ||
+    description !== (credential?.description ?? '') ||
+    folderId !== initialFolderId;
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return;
+    if (saving || !name.trim()) return;
     if (!isEdit && !password.trim()) return;
 
     const dto: Partial<CredentialInput> = {
@@ -160,8 +178,19 @@ function CredentialModal({
   };
 
   return (
-    <Modal title={isEdit ? 'Editar senha' : 'Nova senha'} onClose={onClose}>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+    <EzModal
+      isOpen
+      onClose={onClose}
+      title={title}
+      aria-label={title}
+      maxWidth="md"
+      trapFocus
+      preventOutsideClose
+      dirty={dirty}
+      footer={<ModalFooter formId="vault-credential-form" saving={saving} onClose={onClose} />}
+    >
+      <form id="vault-credential-form" onSubmit={handleSubmit} className="flex flex-col gap-4">
+        {error && <EzAlert variant="error">{error}</EzAlert>}
         <EzTextInput label="Nome" value={name} onChange={(e) => setName(e.target.value)} autoFocus required />
         <EzTextInput
           label={isEdit ? 'Usuário (deixe em branco para não alterar)' : 'Usuário'}
@@ -185,12 +214,8 @@ function CredentialModal({
               </option>
             ))}
           </EzSelect>
-        <div className="flex justify-end gap-3">
-          <EzButton type="button" variant="secondary" label="Cancelar" onClick={onClose} />
-          <EzButton type="submit" variant="primary" label="Salvar" />
-        </div>
       </form>
-    </Modal>
+    </EzModal>
   );
 }
 
@@ -212,6 +237,11 @@ export function VaultPage() {
   const generation = useRef(0);
   const [folderModal, setFolderModal] = useState<{ folder?: VaultFolder } | null>(null);
   const [credentialModal, setCredentialModal] = useState<{ credential?: VaultCredential } | null>(null);
+  // Identifies the open modal: a save that answers after the modal was closed must not touch the next one.
+  const modalIdRef = useRef(0);
+  const [modalId, setModalId] = useState(0);
+  const [savingId, setSavingId] = useState<number | null>(null);
+  const [modalError, setModalError] = useState<string | null>(null);
 
   const foldersQuery = useVaultFolders();
   const credentialsQuery = useVaultCredentials({
@@ -339,13 +369,51 @@ export function VaultPage() {
     }
   };
 
-  const handleSaveFolder = (name: string) => {
-    if (folderModal?.folder) {
-      updateFolderMutation.mutate({ id: folderModal.folder.id, name });
-    } else {
-      createFolderMutation.mutate(name);
-    }
+  const startModalSession = () => {
+    modalIdRef.current += 1;
+    setModalId(modalIdRef.current);
+    setModalError(null);
+  };
+  const openFolderModal = (next: { folder?: VaultFolder }) => {
+    startModalSession();
+    setFolderModal(next);
+  };
+  const openCredentialModal = (next: { credential?: VaultCredential }) => {
+    startModalSession();
+    setCredentialModal(next);
+  };
+  const closeModals = () => {
+    startModalSession();
     setFolderModal(null);
+    setCredentialModal(null);
+  };
+
+  // The modal closes only when the API answers; a refusal keeps it open with what was typed.
+  const runSave = async (action: () => Promise<unknown>, fallbackMessage: string) => {
+    if (savingId === modalId) return;
+    const id = modalIdRef.current;
+    showFeedback(null);
+    setModalError(null);
+    setSavingId(id);
+    try {
+      await action();
+      hideAllFields();
+      if (id === modalIdRef.current) closeModals();
+    } catch (error) {
+      const message = apiErrorMessage(error, fallbackMessage);
+      if (id === modalIdRef.current) setModalError(message);
+      else showFeedback({ kind: 'error', text: message });
+    } finally {
+      setSavingId((current) => (current === id ? null : current));
+    }
+  };
+
+  const handleSaveFolder = (name: string) => {
+    const folder = folderModal?.folder;
+    void runSave(
+      () => (folder ? updateFolderMutation.mutateAsync({ id: folder.id, name }) : createFolderMutation.mutateAsync(name)),
+      'Não foi possível salvar a pasta. Tente novamente.',
+    );
   };
 
   const handleRemoveFolder = (folder: VaultFolder) => {
@@ -359,13 +427,14 @@ export function VaultPage() {
   };
 
   const handleSaveCredential = (dto: Partial<CredentialInput>) => {
-    if (credentialModal?.credential) {
-      updateCredentialMutation.mutate({ id: credentialModal.credential.id, ...dto });
-    } else {
-      createCredentialMutation.mutate(dto as CredentialInput);
-    }
-    hideAllFields();
-    setCredentialModal(null);
+    const credential = credentialModal?.credential;
+    void runSave(
+      () =>
+        credential
+          ? updateCredentialMutation.mutateAsync({ id: credential.id, ...dto })
+          : createCredentialMutation.mutateAsync(dto as CredentialInput),
+      'Não foi possível salvar a senha. Tente novamente.',
+    );
   };
 
   const handleRemoveCredential = (cred: VaultCredential) => {
@@ -405,6 +474,12 @@ export function VaultPage() {
     );
   };
 
+  // Only the queries that failed are fetched again.
+  const retryLoad = () => {
+    if (foldersQuery.isError) void foldersQuery.refetch();
+    if (credentialsQuery.isError) void credentialsQuery.refetch();
+  };
+
   if (foldersQuery.isLoading || credentialsQuery.isLoading)
     return (
       <div className="flex justify-center p-8">
@@ -413,8 +488,9 @@ export function VaultPage() {
     );
   if (foldersQuery.isError || credentialsQuery.isError)
     return (
-      <div className="p-8">
+      <div className="space-y-3 p-8">
         <EzAlert variant="error">Erro ao carregar o cofre de senhas.</EzAlert>
+        <EzButton variant="secondary" label="Tentar de novo" onClick={retryLoad} />
       </div>
     );
 
@@ -461,8 +537,8 @@ export function VaultPage() {
               <EzActionsButton
                 label="Ações"
                 actions={[
-                  { label: 'Nova pasta', icon: <FolderPlus className="h-4 w-4" />, onClick: () => setFolderModal({}) },
-                  { label: 'Nova senha', icon: <KeyRound className="h-4 w-4" />, onClick: () => setCredentialModal({}) },
+                  { label: 'Nova pasta', icon: <FolderPlus className="h-4 w-4" />, onClick: () => openFolderModal({}) },
+                  { label: 'Nova senha', icon: <KeyRound className="h-4 w-4" />, onClick: () => openCredentialModal({}) },
                 ]}
               />
             )}
@@ -480,7 +556,7 @@ export function VaultPage() {
                   leftIcon={Pencil}
                   title="Editar pasta"
                   aria-label={`Editar pasta ${selectedFolder.name}`}
-                  onClick={() => setFolderModal({ folder: selectedFolder })}
+                  onClick={() => openFolderModal({ folder: selectedFolder })}
                 />
                 <EzButton
                   variant="tertiary"
@@ -563,7 +639,7 @@ export function VaultPage() {
                           leftIcon={Pencil}
                           title="Editar"
                           aria-label={`Editar ${cred.name}`}
-                          onClick={() => setCredentialModal({ credential: cred })}
+                          onClick={() => openCredentialModal({ credential: cred })}
                         />
                         <EzButton
                           variant="tertiary"
@@ -594,8 +670,10 @@ export function VaultPage() {
       {folderModal && (
         <FolderModal
           initialName={folderModal.folder?.name ?? ''}
+          saving={savingId === modalId}
+          error={modalError}
           onSave={handleSaveFolder}
-          onClose={() => setFolderModal(null)}
+          onClose={closeModals}
         />
       )}
 
@@ -604,8 +682,10 @@ export function VaultPage() {
           credential={credentialModal.credential}
           folders={folders}
           defaultFolderId={selectedFolderId}
+          saving={savingId === modalId}
+          error={modalError}
           onSave={handleSaveCredential}
-          onClose={() => setCredentialModal(null)}
+          onClose={closeModals}
         />
       )}
     </div>

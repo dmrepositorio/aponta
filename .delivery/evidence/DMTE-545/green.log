@@ -1,0 +1,64 @@
+
+ RUN  v4.1.11 /home/hermes/multica/dmte-545/apps/web
+
+ ✓ |web| src/pages/VaultPage.test.tsx (47 tests) 10113ms
+     ✓ creates a folder via "Nova pasta" and edits a selected folder's name  608ms
+     ✓ creates a credential via "Nova senha" and edits one without touching blank username/password  966ms
+     ✓ does not save a new credential with a blank/whitespace-only name, nor without a password  594ms
+     ✓ keeps the modal open with the typed values and an error when the API refuses (folder and credential, create and edit)  1025ms
+     ✓ does not close a modal by a click on the backdrop, which would drop what was typed  373ms
+     ✓ does not touch a newer modal when an older save answers after the modal was closed  305ms
+
+ Test Files  1 passed (1)
+      Tests  47 passed (47)
+   Start at  23:08:59
+   Duration  17.72s (transform 4.50s, setup 282ms, import 6.17s, tests 10.11s, environment 881ms)
+
+stderr | src/pages/VaultPage.test.tsx > VaultPage > copies the username via the reveal endpoint (intent=copy) without ever rendering it
+An update to VaultPage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/pages/VaultPage.test.tsx > VaultPage > copies the password via the reveal endpoint (intent=copy) without ever rendering it
+An update to VaultPage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/pages/VaultPage.test.tsx > VaultPage > lets ADMIN copy and open the URL of a credential that has one
+An update to VaultPage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/pages/VaultPage.test.tsx > VaultPage > lets ADMIN copy and open the URL of a credential that has one
+An update to VaultPage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+

@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { act, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -310,7 +310,7 @@ describe('VaultPage', () => {
     await waitFor(() => {
       expect(api.post).toHaveBeenCalledWith('/vault/folders', { name: 'Rede' });
     });
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
 
     await user.click(screen.getByTestId('tree-node-f1'));
     await waitFor(() => {
@@ -383,7 +383,7 @@ describe('VaultPage', () => {
         expect.objectContaining({ name: 'Novo Serviço', password: 'fake-password-123' }),
       );
     });
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
 
     const editBtns = screen.getAllByTitle('Editar');
     await user.click(editBtns[0]);
@@ -953,5 +953,316 @@ describe('VaultPage — row actions and per-field reveal (DMTE-544)', () => {
     await act(async () => resolveReveal({ data: { value: 'fake-password-123' } }));
 
     expect(setTimeoutSpy.mock.calls.filter((call) => call[1] === 30_000)).toHaveLength(0);
+  });
+});
+
+
+describe('VaultPage modals and load error (DMTE-545)', () => {
+  const REVEAL_URL = /\/reveal$/;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    useAuthStore.setState({ token: null, user: null });
+    window.confirm = vi.fn(() => true);
+    mockDefaultGets();
+    loginAs('ADMIN');
+  });
+
+  const refusal = (message?: string) =>
+    Object.assign(new Error('Request failed'), { isAxiosError: true, response: { status: 400, data: message ? { message } : {} } });
+
+  const deferred = () => {
+    let resolve: (value: unknown) => void = () => undefined;
+    let reject: (reason: unknown) => void = () => undefined;
+    const promise = new Promise((res, rej) => {
+      resolve = res;
+      reject = rej;
+    });
+    return { promise, resolve, reject };
+  };
+
+  async function loaded() {
+    const user = userEvent.setup();
+    renderPage();
+    await screen.findByText('Servidor FTP');
+    return user;
+  }
+
+  async function openNewFolder(user: ReturnType<typeof userEvent.setup>) {
+    await openActionsMenu(user);
+    await user.click(screen.getByRole('menuitem', { name: 'Nova pasta' }));
+    const dialog = screen.getByRole('dialog');
+    await user.type(fieldFor(dialog, 'Nome da pasta'), 'Rede');
+    return dialog;
+  }
+
+  async function openNewCredential(user: ReturnType<typeof userEvent.setup>) {
+    await openActionsMenu(user);
+    await user.click(screen.getByRole('menuitem', { name: 'Nova senha' }));
+    const dialog = screen.getByRole('dialog');
+    await user.type(fieldFor(dialog, 'Nome'), 'Novo Serviço');
+    await user.type(fieldFor(dialog, 'Senha'), 'fake-password-123');
+    return dialog;
+  }
+
+  const save = (dialog: HTMLElement) => within(dialog).getByRole('button', { name: /^Salv/ });
+
+  it('uses the DS modal for folder and credential, with an accessible name and a discard prompt on Esc', async () => {
+    const user = await loaded();
+
+    await openActionsMenu(user);
+    await user.click(screen.getByRole('menuitem', { name: 'Nova pasta' }));
+    const folderDialog = screen.getByRole('dialog', { name: 'Nova pasta' });
+    // The DS gives the first Esc to the focused text field; leave it first so Esc reaches the modal.
+    await user.click(within(folderDialog).getByText('Nova pasta'));
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+
+    await openActionsMenu(user);
+    await user.click(screen.getByRole('menuitem', { name: 'Nova senha' }));
+    const credentialDialog = screen.getByRole('dialog', { name: 'Nova senha' });
+    expect(within(credentialDialog).getByRole('button', { name: 'Cancelar' })).toBeInTheDocument();
+    expect(within(credentialDialog).getByRole('button', { name: 'Salvar' })).toBeInTheDocument();
+    await user.type(fieldFor(credentialDialog, 'Nome'), 'Algo digitado');
+    await user.click(within(credentialDialog).getByText('Nova senha'));
+    await user.keyboard('{Escape}');
+    expect(await screen.findByText('Descartar alterações?')).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: 'Nova senha' })).toBeInTheDocument();
+  });
+
+  it('keeps the modal open until the API answers, then closes it and masks the revealed values', async () => {
+    const user = await loaded();
+    const saving = deferred();
+    vi.mocked(api.post).mockImplementation((url: string) =>
+      REVEAL_URL.test(url) ? Promise.resolve({ data: { value: 'fake-password-123' } }) : (saving.promise as Promise<never>),
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Revelar senha de Servidor FTP' }));
+    expect(await screen.findByText('fake-password-123')).toBeInTheDocument();
+    const dialog = await openNewFolder(user);
+    await user.click(save(dialog));
+
+    await waitFor(() => expect(api.post).toHaveBeenCalledWith('/vault/folders', { name: 'Rede' }));
+    expect(screen.getByRole('dialog', { name: 'Nova pasta' })).toBeInTheDocument();
+    expect(screen.getByText('fake-password-123')).toBeInTheDocument();
+
+    await act(async () => saving.resolve({ data: {} }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(screen.queryByText('fake-password-123')).not.toBeInTheDocument();
+  });
+
+  it('disables saving while the request is in flight and ignores a second submit', async () => {
+    const user = await loaded();
+    const saving = deferred();
+    vi.mocked(api.post).mockReturnValue(saving.promise as Promise<never>);
+
+    const dialog = await openNewFolder(user);
+    await user.click(save(dialog));
+
+    const busy = await within(dialog).findByRole('button', { name: 'Salvando…' });
+    expect(busy).toBeDisabled();
+    expect(busy).toHaveAttribute('aria-busy', 'true');
+    expect(within(dialog).getByRole('button', { name: 'Cancelar' })).toBeDisabled();
+
+    await user.type(fieldFor(dialog, 'Nome da pasta'), '{Enter}');
+    expect(api.post).toHaveBeenCalledTimes(1);
+
+    await act(async () => saving.resolve({ data: {} }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(api.post).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps the modal open with the typed values and an error when the API refuses (folder and credential, create and edit)', async () => {
+    const cases = [
+      {
+        name: 'folder create',
+        open: async (user: ReturnType<typeof userEvent.setup>) => openNewFolder(user),
+        method: 'post' as const,
+        url: '/vault/folders',
+        payload: { name: 'Rede' },
+        message: 'Já existe uma pasta com esse nome.',
+        expected: 'Já existe uma pasta com esse nome.',
+        fields: [['Nome da pasta', 'Rede']],
+      },
+      {
+        name: 'folder edit',
+        open: async (user: ReturnType<typeof userEvent.setup>) => {
+          await user.click(screen.getByTestId('tree-node-f1'));
+          await user.click(await screen.findByRole('button', { name: 'Editar pasta Servidores' }));
+          const dialog = screen.getByRole('dialog');
+          await user.type(fieldFor(dialog, 'Nome da pasta'), ' Prod');
+          return dialog;
+        },
+        method: 'patch' as const,
+        url: '/vault/folders/f1',
+        payload: { name: 'Servidores Prod' },
+        message: undefined,
+        expected: 'Não foi possível salvar a pasta. Tente novamente.',
+        fields: [['Nome da pasta', 'Servidores Prod']],
+      },
+      {
+        name: 'credential create',
+        open: async (user: ReturnType<typeof userEvent.setup>) => openNewCredential(user),
+        method: 'post' as const,
+        url: '/vault/credentials',
+        payload: expect.objectContaining({ name: 'Novo Serviço', password: 'fake-password-123' }),
+        message: undefined,
+        expected: 'Não foi possível salvar a senha. Tente novamente.',
+        fields: [['Nome', 'Novo Serviço'], ['Senha', 'fake-password-123']],
+      },
+      {
+        name: 'credential edit',
+        open: async (user: ReturnType<typeof userEvent.setup>) => {
+          await user.click(screen.getByRole('button', { name: 'Editar Servidor FTP' }));
+          const dialog = screen.getByRole('dialog');
+          await user.type(fieldFor(dialog, 'Senha (deixe em branco para não alterar)'), 'fake-new-password');
+          return dialog;
+        },
+        method: 'patch' as const,
+        url: '/vault/credentials/cred-1',
+        payload: expect.objectContaining({ password: 'fake-new-password' }),
+        message: 'Sem permissão para alterar esta senha.',
+        expected: 'Sem permissão para alterar esta senha.',
+        fields: [['Senha (deixe em branco para não alterar)', 'fake-new-password']],
+      },
+    ];
+
+    for (const c of cases) {
+      cleanup();
+      vi.clearAllMocks();
+      mockDefaultGets();
+      const user = await loaded();
+      vi.mocked(api[c.method]).mockRejectedValueOnce(refusal(c.message));
+
+      const dialog = await c.open(user);
+      await user.click(save(dialog));
+
+      const alert = await within(dialog).findByRole('alert');
+      expect(alert, c.name).toHaveTextContent(c.expected);
+      expect(screen.getByRole('dialog'), c.name).toBeInTheDocument();
+      for (const [label, value] of c.fields) expect(fieldFor(dialog, label), c.name).toHaveValue(value);
+      expect(save(dialog), c.name).toBeEnabled();
+
+      vi.mocked(api[c.method]).mockResolvedValueOnce({ data: {} });
+      await user.click(save(dialog));
+      await waitFor(() => expect(screen.queryByRole('dialog'), c.name).not.toBeInTheDocument());
+      expect(vi.mocked(api[c.method]).mock.calls.at(-1), c.name).toEqual([c.url, c.payload]);
+    }
+  });
+
+  it('clears the modal error when trying again and when the modal is reopened', async () => {
+    const user = await loaded();
+    const retry = deferred();
+    vi.mocked(api.post).mockRejectedValueOnce(refusal('Nome inválido.')).mockReturnValueOnce(retry.promise as Promise<never>);
+
+    const dialog = await openNewFolder(user);
+    await user.click(save(dialog));
+    expect(await within(dialog).findByRole('alert')).toHaveTextContent('Nome inválido.');
+
+    await user.click(save(dialog));
+    await waitFor(() => expect(within(dialog).queryByRole('alert')).not.toBeInTheDocument());
+    await act(async () => retry.reject(refusal('Nome inválido de novo.')));
+    expect(await within(dialog).findByRole('alert')).toHaveTextContent('Nome inválido de novo.');
+
+    await user.click(within(dialog).getByRole('button', { name: 'Cancelar' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    await openActionsMenu(user);
+    await user.click(screen.getByRole('menuitem', { name: 'Nova pasta' }));
+    const reopened = screen.getByRole('dialog', { name: 'Nova pasta' });
+    expect(within(reopened).queryByRole('alert')).not.toBeInTheDocument();
+    expect(fieldFor(reopened, 'Nome da pasta')).toHaveValue('');
+  });
+
+  it('shows the error on the page when the modal was closed before the API refused', async () => {
+    const user = await loaded();
+    const saving = deferred();
+    vi.mocked(api.post).mockReturnValue(saving.promise as Promise<never>);
+
+    const dialog = await openNewFolder(user);
+    await user.click(save(dialog));
+    await within(dialog).findByRole('button', { name: 'Salvando…' });
+    await user.click(within(dialog).getByRole('button', { name: 'Fechar' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+
+    await act(async () => saving.reject(refusal()));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Não foi possível salvar a pasta. Tente novamente.');
+  });
+
+  it('does not close a modal by a click on the backdrop, which would drop what was typed', async () => {
+    const user = await loaded();
+    const backdrop = () => document.body.querySelector('.bg-gray-900\\/60') as HTMLElement;
+
+    const folderDialog = await openNewFolder(user);
+    await user.click(backdrop());
+    expect(screen.getByRole('dialog', { name: 'Nova pasta' })).toBeInTheDocument();
+    expect(fieldFor(folderDialog, 'Nome da pasta')).toHaveValue('Rede');
+    await user.click(within(folderDialog).getByRole('button', { name: 'Cancelar' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+
+    const credentialDialog = await openNewCredential(user);
+    await user.click(backdrop());
+    expect(screen.getByRole('dialog', { name: 'Nova senha' })).toBeInTheDocument();
+    expect(fieldFor(credentialDialog, 'Senha')).toHaveValue('fake-password-123');
+  });
+
+  it('does not touch a newer modal when an older save answers after the modal was closed', async () => {
+    const user = await loaded();
+    const saving = deferred();
+    vi.mocked(api.post).mockImplementation((url: string) =>
+      REVEAL_URL.test(url) ? Promise.resolve({ data: { value: 'fake-password-123' } }) : (saving.promise as Promise<never>),
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Revelar senha de Servidor FTP' }));
+    expect(await screen.findByText('fake-password-123')).toBeInTheDocument();
+    const folderDialog = await openNewFolder(user);
+    await user.click(save(folderDialog));
+    await within(folderDialog).findByRole('button', { name: 'Salvando…' });
+    await user.click(within(folderDialog).getByRole('button', { name: 'Fechar' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+
+    await openActionsMenu(user);
+    await user.click(screen.getByRole('menuitem', { name: 'Nova senha' }));
+    const newer = screen.getByRole('dialog', { name: 'Nova senha' });
+    expect(save(newer)).toBeEnabled();
+
+    await act(async () => saving.resolve({ data: {} }));
+
+    expect(screen.getByRole('dialog', { name: 'Nova senha' })).toBeInTheDocument();
+    expect(save(newer)).toBeEnabled();
+    expect(within(newer).queryByRole('alert')).not.toBeInTheDocument();
+    expect(screen.queryByText('fake-password-123')).not.toBeInTheDocument();
+  });
+
+  it('offers a retry on the load error and refetches only the failed queries', async () => {
+    let foldersFail = true;
+    vi.mocked(api.get).mockImplementation(async (url: string) => {
+      if (url === '/vault/folders') {
+        if (foldersFail) throw new Error('boom');
+        return { data: folders };
+      }
+      if (url === '/vault/credentials') {
+        return { data: { data: credentials, meta: { total: 2, page: 1, limit: 10, totalPages: 1 } } };
+      }
+      throw new Error(`Unexpected GET ${url}`);
+    });
+    const user = userEvent.setup();
+    renderPage();
+
+    expect(await screen.findByText('Erro ao carregar o cofre de senhas.')).toBeInTheDocument();
+    const credentialCalls = () => vi.mocked(api.get).mock.calls.filter(([url]) => url === '/vault/credentials').length;
+    const folderCalls = () => vi.mocked(api.get).mock.calls.filter(([url]) => url === '/vault/folders').length;
+    const [credentialsBefore, foldersBefore] = [credentialCalls(), folderCalls()];
+
+    await user.click(screen.getByRole('button', { name: 'Tentar de novo' }));
+    expect(await screen.findByText('Erro ao carregar o cofre de senhas.')).toBeInTheDocument();
+    expect(folderCalls()).toBe(foldersBefore + 1);
+    expect(credentialCalls()).toBe(credentialsBefore);
+
+    foldersFail = false;
+    await user.click(screen.getByRole('button', { name: 'Tentar de novo' }));
+    expect(await screen.findByText('Servidor FTP')).toBeInTheDocument();
+    expect(screen.queryByText('Erro ao carregar o cofre de senhas.')).not.toBeInTheDocument();
+    expect(credentialCalls()).toBe(credentialsBefore);
   });
 });

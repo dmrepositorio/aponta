@@ -1,0 +1,631 @@
+
+ RUN  v4.1.11 /home/hermes/multica/dmte-545-red/apps/web
+
+ ❯ |web| src/pages/VaultPage.test.tsx (47 tests | 1 failed) 9953ms
+     ✓ shows a loading state while credentials are being fetched 56ms
+     ✓ shows an error state when the request fails 31ms
+     ✓ shows the empty state when there are no credentials in the selected folder 33ms
+     ✓ renders the folder tree and masks every password/username by default (acceptance criterion #1) 62ms
+     ✓ allows ADMIN to delete a credential after confirming 139ms
+     ✓ hides destructive/management actions for a non-ADMIN role (AGENT) 71ms
+     ✓ copies the username via the reveal endpoint (intent=copy) without ever rendering it 54ms
+     ✓ navigates to /vault/audit when ADMIN clicks "Auditoria" 83ms
+     ✓ selecting a non-root folder shows its header actions and resets page/revealed state 161ms
+     ✓ creates a folder via "Nova pasta" and edits a selected folder's name  495ms
+     ✓ does not delete the folder when confirm is cancelled, but does when confirmed 128ms
+     ✓ creates a credential via "Nova senha" and edits one without touching blank username/password  682ms
+     ✓ does not save a new credential with a blank/whitespace-only name, nor without a password  414ms
+     ✓ copies the password via the reveal endpoint (intent=copy) without ever rendering it 64ms
+     ✓ shows "—" placeholders for missing username, password, and url columns 36ms
+     ✓ lets ADMIN copy and open the URL of a credential that has one 32ms
+     ✓ renders pagination when there is more than one page and refetches for the clicked page 94ms
+     ✓ searches credentials by text and resets to page 1 95ms
+     ✓ closes folder and credential modals via "Cancelar" without calling the API 288ms
+     ✓ gives every row and folder icon button an accessible name with the action and the item 157ms
+     ✓ renders the icon buttons at 32px with the DS focus ring 138ms
+     ✓ confirms a successful copy in a polite status region that clears by itself 284ms
+     ✓ shows a visible error when the copy fails (reveal rejected, clipboard rejected or missing) 267ms
+     ✓ reveals one field at a time with a pressed toggle, one audited call per field, and no lock in the name column 294ms
+     ✓ only offers an eye for the fields a credential has 71ms
+     ✓ keeps the field masked and shows an error when the reveal fails 146ms
+     ✓ disables the eye while its reveal is in flight, so a second click makes no second call 154ms
+     ✓ masks each revealed field again 30 seconds after it was revealed, counted per field 278ms
+     ✓ cancels the old timer when a field is hidden by hand and revealed again 235ms
+     ✓ clears the 30s reveal timer when the page unmounts 124ms
+     ✓ keeps no revealed or copied value in the query client after use 121ms
+     ✓ masks every revealed field when the user searches 205ms
+     ✓ masks every revealed field when the user changes page 172ms
+     ✓ masks every revealed field after a credential is saved or deleted 290ms
+     ✓ drops a reveal response that arrives after the values were cleared 155ms
+     ✓ hides revealed values when the selected folder is removed 182ms
+     ✓ keeps the eye disabled and busy until a discarded reveal settles, so no second call starts 243ms
+     ✓ starts no reveal timer when the page unmounts with a reveal still in flight 110ms
+     ✓ uses the DS modal for folder and credential, with an accessible name and a discard prompt on Esc 297ms
+     ✓ keeps the modal open until the API answers, then closes it and masks the revealed values 246ms
+     ✓ disables saving while the request is in flight and ignores a second submit 180ms
+     ✓ keeps the modal open with the typed values and an error when the API refuses (folder and credential, create and edit)  1174ms
+     ✓ clears the modal error when trying again and when the modal is reopened 298ms
+     ✓ shows the error on the page when the modal was closed before the API refused 195ms
+     × does not close a modal by a click on the backdrop, which would drop what was typed 434ms
+     ✓ does not touch a newer modal when an older save answers after the modal was closed  419ms
+     ✓ offers a retry on the load error and refetches only the failed queries 61ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 46 passed (47)
+   Start at  23:08:08
+   Duration  14.44s (transform 2.38s, setup 108ms, import 3.18s, tests 9.95s, environment 694ms)
+
+stderr | src/pages/VaultPage.test.tsx > VaultPage > copies the username via the reveal endpoint (intent=copy) without ever rendering it
+An update to VaultPage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/pages/VaultPage.test.tsx > VaultPage > copies the password via the reveal endpoint (intent=copy) without ever rendering it
+An update to VaultPage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/pages/VaultPage.test.tsx > VaultPage > lets ADMIN copy and open the URL of a credential that has one
+An update to VaultPage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/pages/VaultPage.test.tsx > VaultPage > lets ADMIN copy and open the URL of a credential that has one
+An update to VaultPage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |web| src/pages/VaultPage.test.tsx > VaultPage modals and load error (DMTE-545) > does not close a modal by a click on the backdrop, which would drop what was typed
+TestingLibraryElementError: Unable to find an accessible element with the role "dialog" and name "Nova pasta"
+
+Here are the accessible roles:
+
+  heading:
+
+  Name "Cofre de Senhas":
+  [36m<h1[39m
+    [33mclass[39m=[32m"text-3xl font-bold tracking-tight flex items-center gap-2"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  button:
+
+  Name "Auditoria":
+  [36m<button[39m
+    [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none ez-focus active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent text-brand-600 border border-gray-200 hover:bg-gray-80 hover:border-gray-90 disabled:bg-gray-80 disabled:border-gray-200 disabled:text-gray-400 h-[42px] text-sm px-4"[39m
+  [36m/>[39m
+
+  Name "Expandir":
+  [36m<button[39m
+    [33maria-label[39m=[32m"Expandir"[39m
+    [33mclass[39m=[32m"flex items-center justify-center w-4 h-4 shrink-0 opacity-0 pointer-events-none"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Expandir":
+  [36m<button[39m
+    [33maria-label[39m=[32m"Expandir"[39m
+    [33mclass[39m=[32m"flex items-center justify-center w-4 h-4 shrink-0 opacity-0 pointer-events-none"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Ações":
+  [36m<button[39m
+    [33maria-expanded[39m=[32m"false"[39m
+    [33maria-haspopup[39m=[32m"menu"[39m
+    [33mclass[39m=[32m"inline-flex items-center gap-2 h-[42px] px-4 rounded-[12px] border text-[14px] font-medium transition-colors bg-transparent text-brand-600 border-gray-200 hover:bg-gray-80 hover:border-gray-90 ez-focus"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Revelar usuário de Servidor FTP":
+  [36m<button[39m
+    [33maria-busy[39m=[32m"false"[39m
+    [33maria-label[39m=[32m"Revelar usuário de Servidor FTP"[39m
+    [33maria-pressed[39m=[32m"false"[39m
+    [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none ez-focus active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent text-brand-600 hover:text-brand-800 disabled:text-gray-400 disabled:bg-transparent h-[32px] text-xs w-[32px]"[39m
+    [33mtitle[39m=[32m"Revelar usuário"[39m
+  [36m/>[39m
+
+  Name "Copiar usuário de Servidor FTP":
+  [36m<button[39m
+    [33maria-label[39m=[32m"Copiar usuário de Servidor FTP"[39m
+    [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none ez-focus active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent text-brand-600 hover:text-brand-800 disabled:text-gray-400 disabled:bg-transparent h-[32px] text-xs w-[32px]"[39m
+    [33mtitle[39m=[32m"Copiar usuário"[39m
+  [36m/>[39m
+
+  Name "Revelar senha de Servidor FTP":
+  [36m<button[39m
+    [33maria-busy[39m=[32m"false"[39m
+    [33maria-label[39m=[32m"Revelar senha de Servidor FTP"[39m
+    [33maria-pressed[39m=[32m"false"[39m
+    [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none ez-focus active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent text-brand-600 hover:text-brand-800 disabled:text-gray-400 disabled:bg-transparent h-[32px] text-xs w-[32px]"[39m
+    [33mtitle[39m=[32m"Revelar senha"[39m
+  [36m/>[39m
+
+  Name "Copiar senha de Servidor FTP":
+  [36m<button[39m
+    [33maria-label[39m=[32m"Copiar senha de Servidor FTP"[39m
+    [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none ez-focus active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent text-brand-600 hover:text-brand-800 disabled:text-gray-400 disabled:bg-transparent h-[32px] text-xs w-[32px]"[39m
+    [33mtitle[39m=[32m"Copiar senha"[39m
+  [36m/>[39m
+
+  Name "Copiar URL de Servidor FTP":
+  [36m<button[39m
+    [33maria-label[39m=[32m"Copiar URL de Servidor FTP"[39m
+    [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none ez-focus active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent text-brand-600 hover:text-brand-800 disabled:text-gray-400 disabled:bg-transparent h-[32px] text-xs w-[32px]"[39m
+    [33mtitle[39m=[32m"Copiar URL"[39m
+  [36m/>[39m
+
+  Name "Editar Servidor FTP":
+  [36m<button[39m
+    [33maria-label[39m=[32m"Editar Servidor FTP"[39m
+    [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none ez-focus active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent text-brand-600 hover:text-brand-800 disabled:text-gray-400 disabled:bg-transparent h-[32px] text-xs w-[32px]"[39m
+    [33mtitle[39m=[32m"Editar"[39m
+  [36m/>[39m
+
+  Name "Excluir Servidor FTP":
+  [36m<button[39m
+    [33maria-label[39m=[32m"Excluir Servidor FTP"[39m
+    [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none ez-focus active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent disabled:text-gray-400 disabled:bg-transparent h-[32px] text-xs w-[32px] text-red-600 hover:text-red-800"[39m
+    [33mtitle[39m=[32m"Excluir"[39m
+  [36m/>[39m
+
+  Name "Revelar senha de VPN Interna":
+  [36m<button[39m
+    [33maria-busy[39m=[32m"false"[39m
+    [33maria-label[39m=[32m"Revelar senha de VPN Interna"[39m
+    [33maria-pressed[39m=[32m"false"[39m
+    [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none ez-focus active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent text-brand-600 hover:text-brand-800 disabled:text-gray-400 disabled:bg-transparent h-[32px] text-xs w-[32px]"[39m
+    [33mtitle[39m=[32m"Revelar senha"[39m
+  [36m/>[39m
+
+  Name "Copiar senha de VPN Interna":
+  [36m<button[39m
+    [33maria-label[39m=[32m"Copiar senha de VPN Interna"[39m
+    [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none ez-focus active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent text-brand-600 hover:text-brand-800 disabled:text-gray-400 disabled:bg-transparent h-[32px] text-xs w-[32px]"[39m
+    [33mtitle[39m=[32m"Copiar senha"[39m
+  [36m/>[39m
+
+  Name "Editar VPN Interna":
+  [36m<button[39m
+    [33maria-label[39m=[32m"Editar VPN Interna"[39m
+    [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none ez-focus active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent text-brand-600 hover:text-brand-800 disabled:text-gray-400 disabled:bg-transparent h-[32px] text-xs w-[32px]"[39m
+    [33mtitle[39m=[32m"Editar"[39m
+  [36m/>[39m
+
+  Name "Excluir VPN Interna":
+  [36m<button[39m
+    [33maria-label[39m=[32m"Excluir VPN Interna"[39m
+    [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none ez-focus active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent disabled:text-gray-400 disabled:bg-transparent h-[32px] text-xs w-[32px] text-red-600 hover:text-red-800"[39m
+    [33mtitle[39m=[32m"Excluir"[39m
+  [36m/>[39m
+
+  Name "Revelar usuário de Backup Interno":
+  [36m<button[39m
+    [33maria-busy[39m=[32m"false"[39m
+    [33maria-label[39m=[32m"Revelar usuário de Backup Interno"[39m
+    [33maria-pressed[39m=[32m"false"[39m
+    [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none ez-focus active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent text-brand-600 hover:text-brand-800 disabled:text-gray-400 disabled:bg-transparent h-[32px] text-xs w-[32px]"[39m
+    [33mtitle[39m=[32m"Revelar usuário"[39m
+  [36m/>[39m
+
+  Name "Copiar usuário de Backup Interno":
+  [36m<button[39m
+    [33maria-label[39m=[32m"Copiar usuário de Backup Interno"[39m
+    [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none ez-focus active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent text-brand-600 hover:text-brand-800 disabled:text-gray-400 disabled:bg-transparent h-[32px] text-xs w-[32px]"[39m
+    [33mtitle[39m=[32m"Copiar usuário"[39m
+  [36m/>[39m
+
+  Name "Editar Backup Interno":
+  [36m<button[39m
+    [33maria-label[39m=[32m"Editar Backup Interno"[39m
+    [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none ez-focus active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent text-brand-600 hover:text-brand-800 disabled:text-gray-400 disabled:bg-transparent h-[32px] text-xs w-[32px]"[39m
+    [33mtitle[39m=[32m"Editar"[39m
+  [36m/>[39m
+
+  Name "Excluir Backup Interno":
+  [36m<button[39m
+    [33maria-label[39m=[32m"Excluir Backup Interno"[39m
+    [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none ez-focus active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent disabled:text-gray-400 disabled:bg-transparent h-[32px] text-xs w-[32px] text-red-600 hover:text-red-800"[39m
+    [33mtitle[39m=[32m"Excluir"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  tree:
+
+  Name "":
+  [36m<div[39m
+    [33mclass[39m=[32m"flex flex-col w-full gap-0.5"[39m
+    [33mrole[39m=[32m"tree"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  treeitem:
+
+  Name "Raiz do cofre":
+  [36m<div[39m
+    [33maria-selected[39m=[32m"true"[39m
+    [33mclass[39m=[32m"flex items-center gap-1 py-1.5 pr-2 rounded-[8px] cursor-pointer text-[14px] transition-colors select-none bg-brand-50 text-brand-700 font-medium"[39m
+    [33mdata-testid[39m=[32m"tree-node-root"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"padding-left: 8px;"[39m
+  [36m/>[39m
+
+  Name "Servidores (1)":
+  [36m<div[39m
+    [33maria-selected[39m=[32m"false"[39m
+    [33mclass[39m=[32m"flex items-center gap-1 py-1.5 pr-2 rounded-[8px] cursor-pointer text-[14px] transition-colors select-none text-gray-900 hover:bg-gray-90"[39m
+    [33mdata-testid[39m=[32m"tree-node-f1"[39m
+    [33mrole[39m=[32m"treeitem"[39m
+    [33mstyle[39m=[32m"padding-left: 8px;"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  searchbox:
+
+  Name "":
+  [36m<input[39m
+    [33mclass[39m=[32m"flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full pr-4"[39m
+    [33mplaceholder[39m=[32m"Buscar senha..."[39m
+    [33mtype[39m=[32m"search"[39m
+    [33mvalue[39m=[32m""[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  status:
+
+  Name "":
+  [36m<div[39m
+    [33maria-live[39m=[32m"polite"[39m
+    [33mrole[39m=[32m"status"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  table:
+
+  Name "":
+  [36m<table[39m
+    [33mclass[39m=[32m"w-full text-left text-[14px]"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  rowgroup:
+
+  Name "":
+  [36m<thead[39m
+    [33mclass[39m=[32m"bg-gray-90/60 text-gray-600"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<tbody[39m
+    [33mclass[39m=[32m"divide-y divide-gray-100"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  row:
+
+  Name "Nome Usuário Senha URL Ações":
+  [36m<tr />[39m
+
+  Name "Servidor FTP •••••••• •••••••• https://ftp.example.com Abrir URL de Servidor FTP":
+  [36m<tr[39m
+    [33mclass[39m=[32m"hover:bg-gray-90/40"[39m
+  [36m/>[39m
+
+  Name "VPN Interna — •••••••• —":
+  [36m<tr[39m
+    [33mclass[39m=[32m"hover:bg-gray-90/40"[39m
+  [36m/>[39m
+
+  Name "Backup Interno •••••••• — —":
+  [36m<tr[39m
+    [33mclass[39m=[32m"hover:bg-gray-90/40"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  columnheader:
+
+  Name "Nome":
+  [36m<th[39m
+    [33mclass[39m=[32m"px-4 py-2 font-medium"[39m
+  [36m/>[39m
+
+  Name "Usuário":
+  [36m<th[39m
+    [33mclass[39m=[32m"px-4 py-2 font-medium"[39m
+  [36m/>[39m
+
+  Name "Senha":
+  [36m<th[39m
+    [33mclass[39m=[32m"px-4 py-2 font-medium"[39m
+  [36m/>[39m
+
+  Name "URL":
+  [36m<th[39m
+    [33mclass[39m=[32m"px-4 py-2 font-medium"[39m
+  [36m/>[39m
+
+  Name "Ações":
+  [36m<th[39m
+    [33mclass[39m=[32m"px-4 py-2 font-medium text-right"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  cell:
+
+  Name "Servidor FTP":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-4 py-1.5"[39m
+  [36m/>[39m
+
+  Name "••••••••":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-4 py-1.5"[39m
+  [36m/>[39m
+
+  Name "••••••••":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-4 py-1.5"[39m
+  [36m/>[39m
+
+  Name "https://ftp.example.com Abrir URL de Servidor FTP":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-4 py-1.5"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-4 py-1.5 text-right"[39m
+  [36m/>[39m
+
+  Name "VPN Interna":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-4 py-1.5"[39m
+  [36m/>[39m
+
+  Name "—":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-4 py-1.5"[39m
+  [36m/>[39m
+
+  Name "••••••••":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-4 py-1.5"[39m
+  [36m/>[39m
+
+  Name "—":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-4 py-1.5"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-4 py-1.5 text-right"[39m
+  [36m/>[39m
+
+  Name "Backup Interno":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-4 py-1.5"[39m
+  [36m/>[39m
+
+  Name "••••••••":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-4 py-1.5"[39m
+  [36m/>[39m
+
+  Name "—":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-4 py-1.5"[39m
+  [36m/>[39m
+
+  Name "—":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-4 py-1.5"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<td[39m
+    [33mclass[39m=[32m"px-4 py-1.5 text-right"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  link:
+
+  Name "Abrir URL de Servidor FTP":
+  [36m<a[39m
+    [33maria-label[39m=[32m"Abrir URL de Servidor FTP"[39m
+    [33mclass[39m=[32m"inline-flex h-[32px] w-[32px] items-center justify-center rounded-full text-brand-600 hover:text-brand-800 ez-focus"[39m
+    [33mhref[39m=[32m"https://ftp.example.com"[39m
+    [33mrel[39m=[32m"noreferrer"[39m
+    [33mtarget[39m=[32m"_blank"[39m
+    [33mtitle[39m=[32m"Abrir URL"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body[39m
+  [33mstyle[39m=[32m""[39m
+[36m>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"space-y-6"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"flex items-center justify-between"[39m
+      [36m>[39m
+        [36m<h1[39m
+          [33mclass[39m=[32m"text-3xl font-bold tracking-tight flex items-center gap-2"[39m
+        [36m>[39m
+          [36m<svg[39m
+            [33maria-hidden[39m=[32m"true"[39m
+            [33mclass[39m=[32m"lucide lucide-lock h-8 w-8"[39m
+            [33mfill[39m=[32m"none"[39m
+            [33mheight[39m=[32m"24"[39m
+            [33mstroke[39m=[32m"currentColor"[39m
+            [33mstroke-linecap[39m=[32m"round"[39m
+            [33mstroke-linejoin[39m=[32m"round"[39m
+            [33mstroke-width[39m=[32m"2"[39m
+            [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [33mwidth[39m=[32m"24"[39m
+            [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+          [36m>[39m
+            [36m<rect[39m
+              [33mheight[39m=[32m"11"[39m
+              [33mrx[39m=[32m"2"[39m
+              [33mry[39m=[32m"2"[39m
+              [33mwidth[39m=[32m"18"[39m
+              [33mx[39m=[32m"3"[39m
+              [33my[39m=[32m"11"[39m
+            [36m/>[39m
+            [36m<path[39m
+              [33md[39m=[32m"M7 11V7a5 5 0 0 1 10 0v4"[39m
+            [36m/>[39m
+          [36m</svg>[39m
+          [0m Cofre de Senhas[0m
+        [36m</h1>[39m
+        [36m<button[39m
+          [33mclass[39m=[32m"relative flex items-center justify-center overflow-hidden whitespace-nowrap rounded-[24px] box-border transition-all duration-200 outline-none select-none ez-focus active:scale-[0.98] disabled:active:scale-100 disabled:cursor-not-allowed bg-transparent text-brand-600 border border-gray-200 hover:bg-gray-80 hover:border-gray-90 disabled:bg-gray-80 disabled:border-gray-200 disabled:text-gray-400 h-[42px] text-sm px-4"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"relative z-10 flex items-center gap-2"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mclass[39m=[32m"lucide lucide-shield-check shrink-0 h-4 w-4"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mheight[39m=[32m"24"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"2"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [33mwidth[39m=[32m"24"[39m
+              [33mxmlns[39m=[32m"http://www.w3.org/2000/svg"[39m
+            [36m>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"m9 12 2 2 4-4"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"font-medium"[39m
+            [36m>[39m
+              [0mAuditoria[0m
+            [36m</span>[39m
+          [36m</div>[39m
+        [36m</button>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"grid grid-cols-1 gap-4 md:grid-cols-[260px_1fr]"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex flex-col w-full bg-white rounded-[16px] border border-gray-100 transition-all p-3"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-col w-full gap-0.5"[39m
+            [33mrole[39m=[32m"tree"[39m
+          [36m>[39m
+            [36m<div>[39m
+              [36m<div[39m
+                [33maria-selected[39m=[32m"true"[39m
+                [33mclass[39m=[32m"flex items-center gap-1 py-1.5 pr-2 rounded-[8px] cursor-pointer text-[14px] transition-colors select-none bg-brand-50 text-brand-700 font-medium"[39m
+                [33mdata-testid[39m=[32m"tree-node-root"[39m
+                [33mrole[39m=[32m"treeitem"[39m
+                [33mstyle[39m=[32m"padding-left: 8px;"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33maria-label[39m=[32m"Expandir"[39m
+                  [33mclass[39m=[32m"flex items-center justify-center w-4 h-4 shrink-0 opacity-0 pointer-events-none"[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m/>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"truncate"[39m
+                [36m>[39m
+                  [0mRaiz do cofre[0m
+                [36m</span>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+            [36m<div>[39m
+              [36m<div[39m
+                [33maria-selected[39m=[32m"false"[39m
+                [33mclass[39m=[32m"flex items-center gap-1 py-1.5 pr-2 rounded-[8px] cursor-pointer text-[14px] transition-colors select-none text-gray-900 hover:bg-gray-90"[39m
+                [33mdata-testid[39m=[32m"tree-node-f1"[39m
+                [33mrole[39m=[32m"treeitem"[39m
+                [33mstyle[39m=[32m"padding-left: 8px;"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33maria-label[39m=[32m"Expandir"[39m
+                  [33mclass[39m=[32m"flex items-center justify-center w-4 h-4 shrink-0 opacity-0 pointer-events-none"[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m/>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"truncate"[39m
+                [36m>[39m
+                  [0mServidores (1)[0m
+                [36m</span>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex flex-col w-full bg-white rounded-[16px] border border-gray-100 transition-all overflow-hidden"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 px-4 py-3"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"flex flex-col w-full gap-1.5 max-w-xs"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"relative flex items-center w-full overflow-hidden transition-colors border rounded-[12px] bg-white group focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600 border-gray-200 hover:border-gray-300 h-[42px]"[39m
+              [36m>[39m
+                [36m<div[39m
+                  [33mclass[39m=[32m"flex items-cent...
+ ❯ Object.getElementError ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ ../../node_modules/.pnpm/@testing-library+dom@10.4.0/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/pages/VaultPage.test.tsx:1198:19
+    1196|     const folderDialog = await openNewFolder(user);
+    1197|     await user.click(backdrop());
+    1198|     expect(screen.getByRole('dialog', { name: 'Nova pasta' })).toBeInT…
+       |                   ^
+    1199|     expect(fieldFor(folderDialog, 'Nome da pasta')).toHaveValue('Rede'…
+    1200|     await user.click(within(folderDialog).getByRole('button', { name: …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

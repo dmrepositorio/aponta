@@ -70,7 +70,6 @@ describe('AC-8: sem listener de Esc próprio', () => {
     'components/ds/EzEntityGrid.tsx',
     'components/ds/EzModal.tsx',
     'components/layout/AppLayout.tsx',
-    'pages/VaultPage.tsx',
   ])('%s usa só o mecanismo único', (file) => {
     const src = readFileSync(resolve(__dirname, '../..', file), 'utf8');
     expect(src).not.toMatch(/key === 'Escape'/);
