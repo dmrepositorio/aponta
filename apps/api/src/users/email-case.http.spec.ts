@@ -12,7 +12,7 @@ describe('DMTE-550 r2: e-mail em minúsculas em toda escrita (SPEC D5)', () => {
   afterEach(async () => { await h.close(); jest.restoreAllMocks(); });
 
   const register = (email: string, ip: string) =>
-    request(h.app.getHttpServer()).post('/auth/register').set('X-Forwarded-For', ip).send({ name: 'Nova Pessoa', email, password: 'senha-forte-123' });
+    request(h.app.getHttpServer()).post('/auth/register').set('X-Forwarded-For', ip).send({ name: 'Nova Pessoa', email, password: 'Cavalo#Azul-7418' });
   const emails = () => h.prisma.tables.user.map((u) => u.email);
 
   it('r2: POST /auth/register guarda o e-mail aparado e em minúsculas', async () => {

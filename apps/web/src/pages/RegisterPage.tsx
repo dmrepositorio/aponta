@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import { z } from 'zod';
@@ -7,6 +7,8 @@ import axios from 'axios';
 import { api } from '../lib/api';
 import { useAuthStore } from '../stores/authStore';
 import { EzAlert, EzButton, EzCardItem, EzTextInput } from '../components/ds';
+import { PasswordRules, PolicyErrors } from '../components/PasswordRules';
+import { policyMessages } from '../lib/passwordRules';
 
 /**
  * No `role` field here by design: the API's RegisterDto deliberately omits
@@ -16,7 +18,7 @@ import { EzAlert, EzButton, EzCardItem, EzTextInput } from '../components/ds';
 const registerSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
   email: z.string().email('E-mail inválido'),
-  password: z.string().min(8, 'A senha deve ter pelo menos 8 caracteres'),
+  password: z.string().min(10, 'A senha deve ter pelo menos 10 caracteres'),
 });
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
@@ -24,12 +26,13 @@ type RegisterFormValues = z.infer<typeof registerSchema>;
 export function RegisterPage() {
   const navigate = useNavigate();
   const login = useAuthStore((state) => state.login);
-  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<ReactNode>(null);
   const [registeredButLoginFailed, setRegisteredButLoginFailed] =
     useState(false);
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
@@ -42,7 +45,10 @@ export function RegisterPage() {
     try {
       await api.post('/auth/register', values);
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.status === 409) {
+      const rules = policyMessages(error);
+      if (rules) {
+        setSubmitError(<PolicyErrors messages={rules} />);
+      } else if (axios.isAxiosError(error) && error.response?.status === 409) {
         setSubmitError('Já existe uma conta com este e-mail.');
       } else {
         setSubmitError('Algo deu errado. Tente novamente.');
@@ -100,6 +106,7 @@ export function RegisterPage() {
             message={errors.password?.message}
             {...register('password')}
           />
+          <PasswordRules password={watch('password') ?? ''} name={watch('name')} email={watch('email')} />
 
           {submitError && <EzAlert variant="error">{submitError}</EzAlert>}
 

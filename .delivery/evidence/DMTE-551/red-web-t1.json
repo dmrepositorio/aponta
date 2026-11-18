@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "phase": "red",
+  "started_at": "2026-11-17T17:57:53.490326+00:00",
+  "finished_at": "2026-11-17T17:58:10.488699+00:00",
+  "command": [
+    "pnpm",
+    "--dir",
+    "apps/web",
+    "exec",
+    "vitest",
+    "run",
+    "src/components/PasswordRules.test.tsx",
+    "src/pages/passwordRules.pages.test.tsx"
+  ],
+  "base_sha": "35b982f7db2d478d2e8359ca5e601c2fbf3655e8",
+  "head_sha": "872c4ed2c456a0ef9dbfb57a958c19922a0f428a",
+  "exit_code": 1,
+  "tests": {
+    "apps/web/src/components/PasswordRules.test.tsx": "ca96822e602b129261a000faeaab899154764328b03358c388f8b8efc9e2277c",
+    "apps/web/src/pages/passwordRules.pages.test.tsx": "3a0cae69d2eaa1803ea77adbc2b1e50295820e0e52e53cffd2e29ed5323da130"
+  },
+  "criteria": [
+    "AC-07"
+  ],
+  "source_hashes": {
+    "GLOSSARY.md": "cff532afa28f9c16cbdb1540b2721f6bee93a03c8c3b119134c01c8f2f366dc9",
+    "apps/api/src/auth/password-policy.http.spec.ts": "dd4082e876781dc50995b3ce54cd6c1c04300baaed24a95dae673ab15bef8a8b",
+    "apps/api/src/auth/password-policy.spec.ts": "68265bb08e1e0bd95bbf601124865ade65c7d470c152c68942402aa20346b48e",
+    "apps/api/src/auth/password-policy.ts": "708f1e6ab69d6d1cf9a2066401d233fc807beb44e17f13fa2f53ae0be1362621",
+    "apps/api/src/users/email-case.http.spec.ts": "b318953199bfe0a5f96c852411a92ecb6ccecf1c3996c30e8310fb72a37b781d",
+    "apps/api/src/users/password-flow.http.spec.ts": "d0935a779a9ccbc9cd2c86b16916962b9fcc1137b4cdc18e2bd5955db8c7d8f3",
+    "apps/api/src/users/password-flow.service.ts": "3047707796dbba367c219a6466ad842c61ff1b90e06433fac8f2eae2aea58556",
+    "apps/api/src/users/password-tokens.service.ts": "f015e570916d750cac9eddf837e0604cacc596903dcab8882b1cec1dd19247f9",
+    "apps/api/src/users/users.service.spec.ts": "ce1cede0d98c6ed115ca158f74314f8bfe3afe7277e30b2cbc0ed366a535cac6",
+    "apps/api/src/users/users.service.ts": "77d0195db3f159743cc509a7eb070b5515ec1ad293fd7e750c79cd2d1dcd3ef2",
+    "apps/web/src/components/PasswordRules.test.tsx": "ca96822e602b129261a000faeaab899154764328b03358c388f8b8efc9e2277c",
+    "apps/web/src/components/PasswordRules.tsx": "0458b5dbbe2d172e53ff6edaf487cc6287e1130afca8800796de893c3158a6a7",
+    "apps/web/src/lib/passwordRules.ts": "74c5af3cb94cee4cf82bf93c64ed2272f864d9dc64879e522e1d78c8aca0efc7",
+    "apps/web/src/pages/passwordRules.pages.test.tsx": "3a0cae69d2eaa1803ea77adbc2b1e50295820e0e52e53cffd2e29ed5323da130"
+  },
+  "log": ".delivery/evidence/DMTE-551/red-web-t1.log",
+  "log_sha256": "6c90fbdce7405488dfbea5718e346eaf7e1f692b31a895a50eb5ac8ab37f98b2"
+}

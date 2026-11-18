@@ -1,0 +1,204 @@
+
+> nx run api:test --runTestsByPath src/two-factor/two-factor-login.http.spec.ts src/two-factor/two-factor-login.strategy.http.spec.ts
+
+> jest --passWithNoTests=true --runTestsByPath src/two-factor/two-factor-login.http.spec.ts src/two-factor/two-factor-login.strategy.http.spec.ts
+
+
+
+
+ NX   Running target test for project api failed
+
+Failed tasks:
+
+- api:test
+
+Hint: run the command with --verbose for more details.
+
+[0m[7m[1m[31m FAIL [39m[22m[27m[0m [0m[7m[37m api [39m[27m[0m [2msrc/two-factor/[22m[1mtwo-factor-login.strategy.http.spec.ts[22m
+[1m[31m  [1m● [22m[1mDesafio e token de API com as estratégias reais (DMTE-551) › AC-10: o token de desafio não abre nenhuma rota autenticada[39m[22m
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    Expected: [32mAny<String>[39m
+    Received: [31mundefined[39m
+
+[2m    [0m [90m 61 |[39m     [36mconst[39m challenge [33m=[39m [36mawait[39m twoFactor[33m.[39mchallengeFor({ id[33m:[39m [33mID[39m[33m.[39mana[33m,[39m passwordVersion[33m:[39m [35m0[39m })[33m;[39m[22m
+[2m     [90m 62 |[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 63 |[39m     expect(challenge[33m?[39m[33m.[39mchallengeToken)[33m.[39mtoEqual(expect[33m.[39many([33mString[39m))[33m;[39m[22m
+[2m     [90m    |[39m                                       [31m[1m^[22m[2m[39m[22m
+[2m     [90m 64 |[39m     expect(([36mawait[39m probe(challenge[33m![39m[33m.[39mchallengeToken))[33m.[39mstatus)[33m.[39mtoBe([35m401[39m)[33m;[39m[22m
+[2m     [90m 65 |[39m   })[33m;[39m[22m
+[2m     [90m 66 |[39m[0m[22m
+
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/two-factor/two-factor-login.strategy.http.spec.ts[39m[0m[2m:63:39)[22m[2m[22m
+
+[0m[7m[1m[31m FAIL [39m[22m[27m[0m [0m[7m[37m api [39m[27m[0m [2msrc/two-factor/[22m[1mtwo-factor-login.http.spec.ts[22m
+[1m[31m  [1m● [22m[1mDesafio do segundo fator no login (DMTE-551) › AC-10: quem tem segundo fator recebe só o desafio, sem JWT, ao acertar a senha[39m[22m
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32mtrue[39m
+    Received: [31mundefined[39m
+
+[2m    [0m [90m 48 |[39m[22m
+[2m     [90m 49 |[39m     expect(res[33m.[39mstatus)[33m.[39mtoBe([35m201[39m)[33m;[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 50 |[39m     expect(res[33m.[39mbody[33m.[39mtwoFactorRequired)[33m.[39mtoBe([36mtrue[39m)[33m;[39m[22m
+[2m     [90m    |[39m                                        [31m[1m^[22m[2m[39m[22m
+[2m     [90m 51 |[39m     expect(res[33m.[39mbody[33m.[39mchallengeToken)[33m.[39mtoEqual(expect[33m.[39many([33mString[39m))[33m;[39m[22m
+[2m     [90m 52 |[39m     expect(res[33m.[39mbody[33m.[39maccess_token)[33m.[39mtoBeUndefined()[33m;[39m[22m
+[2m     [90m 53 |[39m     expect([33mJSON[39m[33m.[39mstringify(res[33m.[39mbody))[33m.[39mnot[33m.[39mtoContain(h[33m.[39mrow([33mID[39m[33m.[39mana)[33m.[39mpassword)[33m;[39m[0m[22m
+
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/two-factor/two-factor-login.http.spec.ts[39m[0m[2m:50:40)[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mDesafio do segundo fator no login (DMTE-551) › AC-10: o código do aplicativo troca o desafio pelo JWT completo, com a versão da senha[39m[22m
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32m201[39m
+    Received: [31m400[39m
+
+[2m    [0m [90m 70 |[39m     [36mconst[39m res [33m=[39m [36mawait[39m second(token[33m,[39m totpAt(secret[33m,[39m now))[33m;[39m[22m
+[2m     [90m 71 |[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 72 |[39m     expect(res[33m.[39mstatus)[33m.[39mtoBe([35m201[39m)[33m;[39m[22m
+[2m     [90m    |[39m                        [31m[1m^[22m[2m[39m[22m
+[2m     [90m 73 |[39m     expect(claim(res[33m.[39mbody[33m.[39maccess_token[33m,[39m [32m'sub'[39m))[33m.[39mtoBe([33mID[39m[33m.[39mana)[33m;[39m[22m
+[2m     [90m 74 |[39m     expect(claim(res[33m.[39mbody[33m.[39maccess_token[33m,[39m [32m'pv'[39m))[33m.[39mtoBe([35m0[39m)[33m;[39m[22m
+[2m     [90m 75 |[39m   })[33m;[39m[0m[22m
+
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/two-factor/two-factor-login.http.spec.ts[39m[0m[2m:72:24)[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mDesafio do segundo fator no login (DMTE-551) › AC-10: desafio adulterado, de outro formato ou vencido (5 min) é recusado[39m[22m
+
+    TypeError: Cannot read properties of undefined (reading 'slice')
+
+[2m    [0m [90m 92 |[39m     [36mconst[39m code [33m=[39m totpAt(secret[33m,[39m now)[33m;[39m[22m
+[2m     [90m 93 |[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 94 |[39m     expect(([36mawait[39m second(token[33m.[39mslice([35m0[39m[33m,[39m [33m-[39m[35m2[39m) [33m+[39m [32m'xx'[39m[33m,[39m code))[33m.[39mstatus)[33m.[39mtoBe([35m401[39m)[33m;[39m[22m
+[2m     [90m    |[39m                                [31m[1m^[22m[2m[39m[22m
+[2m     [90m 95 |[39m     expect(([36mawait[39m second([32m'lixo'[39m[33m,[39m code))[33m.[39mstatus)[33m.[39mtoBe([35m401[39m)[33m;[39m[22m
+[2m     [90m 96 |[39m     now [33m+=[39m [35m6[39m [33m*[39m [35m60[39m_000[33m;[39m[22m
+[2m     [90m 97 |[39m     expect(([36mawait[39m second(token[33m,[39m totpAt(secret[33m,[39m now)))[33m.[39mstatus)[33m.[39mtoBe([35m401[39m)[33m;[39m[0m[22m
+
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/two-factor/two-factor-login.http.spec.ts[39m[0m[2m:94:32)[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mDesafio do segundo fator no login (DMTE-551) › AC-10: o desafio perde o valor quando a senha muda depois dele[39m[22m
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32m401[39m
+    Received: [31m400[39m
+
+[2m    [0m [90m 104 |[39m     now [33m+=[39m [35m2[39m [33m*[39m [33mSTEP[39m[33m;[39m[22m
+[2m     [90m 105 |[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 106 |[39m     expect(([36mawait[39m second(token[33m,[39m totpAt(secret[33m,[39m now)))[33m.[39mstatus)[33m.[39mtoBe([35m401[39m)[33m;[39m[22m
+[2m     [90m     |[39m                                                               [31m[1m^[22m[2m[39m[22m
+[2m     [90m 107 |[39m   })[33m;[39m[22m
+[2m     [90m 108 |[39m[22m
+[2m     [90m 109 |[39m   it([32m'AC-11: o mesmo código do aplicativo não vale duas vezes, nem em outro desafio'[39m[33m,[39m [36masync[39m () [33m=>[39m {[0m[22m
+
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/two-factor/two-factor-login.http.spec.ts[39m[0m[2m:106:63)[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mDesafio do segundo fator no login (DMTE-551) › AC-11: o mesmo código do aplicativo não vale duas vezes, nem em outro desafio[39m[22m
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32m201[39m
+    Received: [31m400[39m
+
+[2m    [0m [90m 112 |[39m     [36mconst[39m code [33m=[39m totpAt(secret[33m,[39m now)[33m;[39m[22m
+[2m     [90m 113 |[39m     [36mconst[39m first [33m=[39m [36mawait[39m challenge()[33m;[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 114 |[39m     expect(([36mawait[39m second(first[33m,[39m code))[33m.[39mstatus)[33m.[39mtoBe([35m201[39m)[33m;[39m[22m
+[2m     [90m     |[39m                                                [31m[1m^[22m[2m[39m[22m
+[2m     [90m 115 |[39m[22m
+[2m     [90m 116 |[39m     expect(([36mawait[39m second([36mawait[39m challenge()[33m,[39m code))[33m.[39mstatus)[33m.[39mtoBe([35m401[39m)[33m;[39m[22m
+[2m     [90m 117 |[39m   })[33m;[39m[0m[22m
+
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/two-factor/two-factor-login.http.spec.ts[39m[0m[2m:114:48)[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mDesafio do segundo fator no login (DMTE-551) › AC-11: um código de recuperação entra uma vez e depois é recusado[39m[22m
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32m201[39m
+    Received: [31m400[39m
+
+[2m    [0m [90m 120 |[39m     [36mconst[39m { codes } [33m=[39m [36mawait[39m activate()[33m;[39m[22m
+[2m     [90m 121 |[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 122 |[39m     expect(([36mawait[39m second([36mawait[39m challenge()[33m,[39m codes[[35m0[39m]))[33m.[39mstatus)[33m.[39mtoBe([35m201[39m)[33m;[39m[22m
+[2m     [90m     |[39m                                                                [31m[1m^[22m[2m[39m[22m
+[2m     [90m 123 |[39m     expect(([36mawait[39m second([36mawait[39m challenge()[33m,[39m codes[[35m0[39m]))[33m.[39mstatus)[33m.[39mtoBe([35m401[39m)[33m;[39m[22m
+[2m     [90m 124 |[39m     expect(([36mawait[39m second([36mawait[39m challenge()[33m,[39m codes[[35m1[39m][33m.[39mtoLowerCase()[33m.[39mreplace([32m'-'[39m[33m,[39m [32m''[39m)))[33m.[39mstatus)[33m.[39mtoBe([35m201[39m)[33m;[39m [90m// sem traço e em minúsculas[39m[22m
+[2m     [90m 125 |[39m   })[33m;[39m[0m[22m
+
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/two-factor/two-factor-login.http.spec.ts[39m[0m[2m:122:64)[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mDesafio do segundo fator no login (DMTE-551) › AC-11: mais de 5 tentativas por minuto recebem 429[39m[22m
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 5[39m
+    [31m+ Received  + 5[39m
+
+    [2m  Array [[22m
+    [32m-   401,[39m
+    [32m-   401,[39m
+    [32m-   401,[39m
+    [32m-   401,[39m
+    [32m-   401,[39m
+    [31m+   400,[39m
+    [31m+   400,[39m
+    [31m+   400,[39m
+    [31m+   400,[39m
+    [31m+   400,[39m
+    [2m  ][22m
+
+[2m    [0m [90m 131 |[39m     [36mfor[39m ([36mlet[39m i [33m=[39m [35m0[39m[33m;[39m i [33m<[39m [35m8[39m[33m;[39m i [33m+=[39m [35m1[39m) statuses[33m.[39mpush(([36mawait[39m second(token[33m,[39m [32m'000000'[39m))[33m.[39mstatus)[33m;[39m[22m
+[2m     [90m 132 |[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 133 |[39m     expect(statuses[33m.[39mslice([35m0[39m[33m,[39m [35m5[39m))[33m.[39mtoEqual([[35m401[39m[33m,[39m [35m401[39m[33m,[39m [35m401[39m[33m,[39m [35m401[39m[33m,[39m [35m401[39m])[33m;[39m[22m
+[2m     [90m     |[39m                                  [31m[1m^[22m[2m[39m[22m
+[2m     [90m 134 |[39m     expect(statuses)[33m.[39mtoContain([35m429[39m)[33m;[39m[22m
+[2m     [90m 135 |[39m   })[33m;[39m[22m
+[2m     [90m 136 |[39m[0m[22m
+
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/two-factor/two-factor-login.http.spec.ts[39m[0m[2m:133:34)[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mDesafio do segundo fator no login (DMTE-551) › AC-11: o limite vale por usuário também quando as tentativas vêm de origens diferentes[39m[22m
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32m429[39m
+    Received: [31m400[39m
+
+[2m    [0m [90m 143 |[39m     [36mconst[39m res [33m=[39m [36mawait[39m second(token[33m,[39m totpAt(secret[33m,[39m now)[33m,[39m [32m'198.51.100.99'[39m)[33m;[39m[22m
+[2m     [90m 144 |[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 145 |[39m     expect(res[33m.[39mstatus)[33m.[39mtoBe([35m429[39m)[33m;[39m[22m
+[2m     [90m     |[39m                        [31m[1m^[22m[2m[39m[22m
+[2m     [90m 146 |[39m   })[33m;[39m[22m
+[2m     [90m 147 |[39m[22m
+[2m     [90m 148 |[39m   it([32m'AC-14: com a flag desligada quem já ativou continua sendo desafiado no login'[39m[33m,[39m [36masync[39m () [33m=>[39m {[0m[22m
+
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/two-factor/two-factor-login.http.spec.ts[39m[0m[2m:145:24)[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mDesafio do segundo fator no login (DMTE-551) › AC-14: com a flag desligada quem já ativou continua sendo desafiado no login[39m[22m
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32mtrue[39m
+    Received: [31mundefined[39m
+
+[2m    [0m [90m 152 |[39m     [36mconst[39m res [33m=[39m [36mawait[39m login()[33m;[39m[22m
+[2m     [90m 153 |[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 154 |[39m     expect(res[33m.[39mbody[33m.[39mtwoFactorRequired)[33m.[39mtoBe([36mtrue[39m)[33m;[39m[22m
+[2m     [90m     |[39m                                        [31m[1m^[22m[2m[39m[22m
+[2m     [90m 155 |[39m     expect(res[33m.[39mbody[33m.[39maccess_token)[33m.[39mtoBeUndefined()[33m;[39m[22m
+[2m     [90m 156 |[39m   })[33m;[39m[22m
+[2m     [90m 157 |[39m })[33m;[39m[0m[22m
+
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/two-factor/two-factor-login.http.spec.ts[39m[0m[2m:154:40)[22m[2m[22m
+
+[1mTest Suites: [22m[1m[31m2 failed[39m[22m, 2 total
+[1mTests:       [22m[1m[31m10 failed[39m[22m, [1m[32m4 passed[39m[22m, 14 total
+[1mSnapshots:   [22m0 total
+[1mTime:[22m        [1m[33m5.032 s[39m[22m
+[2mRan all test suites[22m[2m within paths[22m "src/two-factor/two-factor-login.http.spec.ts", "src/two-factor/two-factor-login.strategy.http.spec.ts"[2m.[22m
+Warning: command "jest --passWithNoTests=true --runTestsByPath src/two-factor/two-factor-login.http.spec.ts src/two-factor/two-factor-login.strategy.http.spec.ts" exited with non-zero status code

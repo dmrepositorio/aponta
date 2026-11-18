@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "phase": "red",
+  "started_at": "2026-11-17T17:51:43.000152+00:00",
+  "finished_at": "2026-11-17T17:52:16.556087+00:00",
+  "command": [
+    "pnpm",
+    "nx",
+    "run",
+    "api:test",
+    "--skip-nx-cache",
+    "--runTestsByPath",
+    "src/auth/password-policy.spec.ts",
+    "src/auth/password-policy.http.spec.ts"
+  ],
+  "base_sha": "35b982f7db2d478d2e8359ca5e601c2fbf3655e8",
+  "head_sha": "872c4ed2c456a0ef9dbfb57a958c19922a0f428a",
+  "exit_code": 1,
+  "tests": {
+    "apps/api/src/auth/password-policy.spec.ts": "68265bb08e1e0bd95bbf601124865ade65c7d470c152c68942402aa20346b48e",
+    "apps/api/src/auth/password-policy.http.spec.ts": "dd4082e876781dc50995b3ce54cd6c1c04300baaed24a95dae673ab15bef8a8b"
+  },
+  "criteria": [
+    "AC-01",
+    "AC-02",
+    "AC-03"
+  ],
+  "source_hashes": {
+    "GLOSSARY.md": "cff532afa28f9c16cbdb1540b2721f6bee93a03c8c3b119134c01c8f2f366dc9",
+    "apps/api/src/auth/password-policy.http.spec.ts": "dd4082e876781dc50995b3ce54cd6c1c04300baaed24a95dae673ab15bef8a8b",
+    "apps/api/src/auth/password-policy.spec.ts": "68265bb08e1e0bd95bbf601124865ade65c7d470c152c68942402aa20346b48e",
+    "apps/api/src/auth/password-policy.ts": "f1cbdea7bdc70bf0fd7501ae7f6cbd415d837c724a6def4a1cb3b979a6e5fd18"
+  },
+  "log": ".delivery/evidence/DMTE-551/red.log",
+  "log_sha256": "96347a2db76de68a698b49d824705927b3ae67f935bfa1bae4b2e63919dc809c"
+}

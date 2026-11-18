@@ -68,14 +68,14 @@ test.describe('authentication', () => {
     await page.goto('/register');
     await page.fill('[name="name"]', 'E2E Change Password User');
     await page.fill('[name="email"]', uniqueEmail);
-    await page.fill('[name="password"]', 'OldPassword123!');
+    await page.fill('[name="password"]', 'Cavalo#Azul-7418');
     await page.click('button[type="submit"]');
     await expect(page).toHaveURL('/', { timeout: 10_000 });
 
     await page.goto('/my-account');
     await page.getByRole('tab', { name: 'Segurança' }).click();
-    await page.fill('#currentPassword', 'OldPassword123!');
-    await page.fill('#newPassword', 'NewPassword456!');
+    await page.fill('#currentPassword', 'Cavalo#Azul-7418');
+    await page.fill('#newPassword', 'Girafa#Verde-5290');
     await page.click('button[type="submit"]');
 
     await expect(page.getByText('Senha atualizada com sucesso!')).toBeVisible();
@@ -89,14 +89,14 @@ test.describe('authentication', () => {
     await expect(page).toHaveURL('/login');
 
     await page.fill('[name="email"]', uniqueEmail);
-    await page.fill('[name="password"]', 'OldPassword123!');
+    await page.fill('[name="password"]', 'Cavalo#Azul-7418');
     await page.click('button[type="submit"]');
     await expect(page.getByRole('alert')).toHaveText(
       'E-mail ou senha inválidos.',
     );
 
     await page.fill('[name="email"]', uniqueEmail);
-    await page.fill('[name="password"]', 'NewPassword456!');
+    await page.fill('[name="password"]', 'Girafa#Verde-5290');
     await page.click('button[type="submit"]');
     await expect(page).toHaveURL('/');
   });

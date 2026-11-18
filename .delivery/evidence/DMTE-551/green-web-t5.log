@@ -1,0 +1,31 @@
+
+ RUN  v4.1.11 /home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-551-8067d53caffe/workdir/aponta/apps/web
+
+ ✓ |web| src/pages/LoginPage.twofactor.test.tsx (6 tests) 1938ms
+     ✓ AC-16: com desafio no lugar do JWT, pede o código e não deixa a pessoa logada  480ms
+     ✓ AC-16: desafio vencido volta para e-mail e senha com o aviso para entrar de novo  350ms
+     ✓ AC-16: o link "Voltar" descarta o desafio e volta para e-mail e senha  339ms
+
+ Test Files  1 passed (1)
+      Tests  6 passed (6)
+   Start at  16:26:07
+   Duration  7.83s (transform 2.78s, setup 262ms, import 4.11s, tests 1.94s, environment 1.06s)
+
+stderr | src/pages/LoginPage.twofactor.test.tsx > LoginPage: segundo fator > AC-16: com desafio no lugar do JWT, pede o código e não deixa a pessoa logada
+Query data cannot be undefined. Please make sure to return a value other than undefined from your query function. Affected query key: ["social-providers"]
+
+stderr | src/pages/LoginPage.twofactor.test.tsx > LoginPage: segundo fator > AC-16: o código válido troca o desafio pelo JWT e entra no sistema
+Query data cannot be undefined. Please make sure to return a value other than undefined from your query function. Affected query key: ["social-providers"]
+
+stderr | src/pages/LoginPage.twofactor.test.tsx > LoginPage: segundo fator > AC-16: código recusado mostra o erro e deixa tentar de novo, sem sair do desafio
+Query data cannot be undefined. Please make sure to return a value other than undefined from your query function. Affected query key: ["social-providers"]
+
+stderr | src/pages/LoginPage.twofactor.test.tsx > LoginPage: segundo fator > AC-16: excesso de tentativas (429) avisa para aguardar
+Query data cannot be undefined. Please make sure to return a value other than undefined from your query function. Affected query key: ["social-providers"]
+
+stderr | src/pages/LoginPage.twofactor.test.tsx > LoginPage: segundo fator > AC-16: desafio vencido volta para e-mail e senha com o aviso para entrar de novo
+Query data cannot be undefined. Please make sure to return a value other than undefined from your query function. Affected query key: ["social-providers"]
+
+stderr | src/pages/LoginPage.twofactor.test.tsx > LoginPage: segundo fator > AC-16: o link "Voltar" descarta o desafio e volta para e-mail e senha
+Query data cannot be undefined. Please make sure to return a value other than undefined from your query function. Affected query key: ["social-providers"]
+

@@ -81,7 +81,7 @@ describe('SetPasswordPage', () => {
 
     await user.click(submit());
 
-    expect(await screen.findByText(/a senha deve ter de 8 a 128 caracteres/i)).toBeInTheDocument();
+    expect(await screen.findByText(/a senha deve ter de 10 a 128 caracteres/i)).toBeInTheDocument();
     expect(newPassword()).toHaveFocus();
     expect(api.post).not.toHaveBeenCalled();
   });
@@ -91,7 +91,7 @@ describe('SetPasswordPage', () => {
     renderPage();
 
     await fillAndSubmit(user, 'curta1');
-    expect(await screen.findByText(/a senha deve ter de 8 a 128 caracteres/i)).toBeInTheDocument();
+    expect(await screen.findByText(/a senha deve ter de 10 a 128 caracteres/i)).toBeInTheDocument();
 
     await user.clear(newPassword());
     await user.clear(confirmation());
@@ -106,7 +106,7 @@ describe('SetPasswordPage', () => {
 
     await fillAndSubmit(user, 'a'.repeat(129));
 
-    expect(await screen.findByText(/a senha deve ter de 8 a 128 caracteres/i)).toBeInTheDocument();
+    expect(await screen.findByText(/a senha deve ter de 10 a 128 caracteres/i)).toBeInTheDocument();
     expect(api.post).not.toHaveBeenCalled();
   });
 
@@ -116,7 +116,7 @@ describe('SetPasswordPage', () => {
 
     await user.click(submit());
 
-    const message = await screen.findByText(/a senha deve ter de 8 a 128 caracteres/i);
+    const message = await screen.findByText(/a senha deve ter de 10 a 128 caracteres/i);
     expect(message.closest('[aria-live="polite"]')).not.toBeNull();
   });
 

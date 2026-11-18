@@ -1,0 +1,17 @@
+
+> nx run api:test --runTestsByPath src/auth/password-version.strategy.http.spec.ts src/auth/password-version.http.spec.ts
+
+> jest --passWithNoTests=true --runTestsByPath src/auth/password-version.strategy.http.spec.ts src/auth/password-version.http.spec.ts
+
+
+
+
+ NX   Successfully ran target test for project api
+
+
+
+[1mTest Suites: [22m[1m[32m2 passed[39m[22m, 2 total
+[1mTests:       [22m[1m[32m7 passed[39m[22m, 7 total
+[1mSnapshots:   [22m0 total
+[1mTime:[22m        [1m[33m10.455 s[39m[22m
+[2mRan all test suites[22m[2m within paths[22m "src/auth/password-version.strategy.http.spec.ts", "src/auth/password-version.http.spec.ts"[2m.[22m

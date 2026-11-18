@@ -72,7 +72,7 @@ describe('UsersService', () => {
     const dto = {
       name: 'Jane Doe',
       email: 'jane@example.com',
-      password: 'plain-password',
+      password: 'Cavalo#Azul-7418',
     };
 
     it('throws ConflictException when the pre-check finds an existing user', async () => {
@@ -212,7 +212,7 @@ describe('UsersService', () => {
         service.changePassword(
           existingUser.id,
           'wrong-current-password',
-          'brand-new-password',
+          'Cavalo#Azul-7418',
         ),
       ).rejects.toBeInstanceOf(UnauthorizedException);
       expect(prisma.user.update).not.toHaveBeenCalled();
@@ -222,7 +222,7 @@ describe('UsersService', () => {
       prisma.user.findUnique.mockResolvedValue(null);
 
       await expect(
-        service.changePassword('missing-user', 'whatever', 'brand-new-password'),
+        service.changePassword('missing-user', 'whatever', 'Cavalo#Azul-7418'),
       ).rejects.toBeInstanceOf(UnauthorizedException);
       expect(prisma.user.update).not.toHaveBeenCalled();
     });
@@ -238,16 +238,16 @@ describe('UsersService', () => {
       await service.changePassword(
         existingUser.id,
         'correct-current-password',
-        'brand-new-password',
+        'Cavalo#Azul-7418',
       );
 
       expect(prisma.user.update).toHaveBeenCalledTimes(1);
       const updateArgs = prisma.user.update.mock.calls[0][0];
       expect(updateArgs.where).toEqual({ id: existingUser.id });
       // The new password must be hashed, never stored in plain text.
-      expect(updateArgs.data.password).not.toBe('brand-new-password');
+      expect(updateArgs.data.password).not.toBe('Cavalo#Azul-7418');
       const isNewPasswordHashCorrect = await bcrypt.compare(
-        'brand-new-password',
+        'Cavalo#Azul-7418',
         updateArgs.data.password,
       );
       expect(isNewPasswordHashCorrect).toBe(true);

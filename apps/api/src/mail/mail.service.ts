@@ -27,15 +27,17 @@ export class MailService {
       this.configService.get<string>('SMTP_FROM') || '"Aponta" <no-reply@aponta.com>';
 
     const host = this.configService.get<string>('SMTP_HOST');
-    const port = this.configService.get<number>('SMTP_PORT');
+    // O ConfigService devolve a variável de ambiente como texto: sem Number, "465" nunca seria a porta segura.
+    const port = Number(this.configService.get<number | string>('SMTP_PORT')) || 587;
     const user = this.configService.get<string>('SMTP_USER');
     const pass = this.configService.get<string>('SMTP_PASS');
 
     if (host && user && pass) {
       this.transporter = nodemailer.createTransport({
         host,
-        port: port || 587,
-        secure: port === 465, // true para 465, false p/ outras
+        port,
+        secure: port === 465, // 465: TLS desde a conexão
+        requireTLS: port !== 465, // demais portas: STARTTLS obrigatório, nunca a senha em claro
         auth: {
           user,
           pass,

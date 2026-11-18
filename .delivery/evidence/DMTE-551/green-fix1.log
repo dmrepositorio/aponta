@@ -1,0 +1,17 @@
+
+> nx run api:test --runTestsByPath src/two-factor/two-factor.race.http.spec.ts src/auth/password-policy.max.http.spec.ts
+
+> jest --passWithNoTests=true --runTestsByPath src/two-factor/two-factor.race.http.spec.ts src/auth/password-policy.max.http.spec.ts
+
+
+
+
+ NX   Successfully ran target test for project api
+
+
+
+[1mTest Suites: [22m[1m[32m2 passed[39m[22m, 2 total
+[1mTests:       [22m[1m[32m4 passed[39m[22m, 4 total
+[1mSnapshots:   [22m0 total
+[1mTime:[22m        4.581 s, estimated 7 s
+[2mRan all test suites[22m[2m within paths[22m "src/two-factor/two-factor.race.http.spec.ts", "src/auth/password-policy.max.http.spec.ts"[2m.[22m

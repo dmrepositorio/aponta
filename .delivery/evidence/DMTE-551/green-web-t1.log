@@ -1,0 +1,17 @@
+
+ RUN  v4.1.11 /home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-551-8067d53caffe/workdir/aponta/apps/web
+
+ ✓ |web| src/components/PasswordRules.test.tsx (3 tests) 885ms
+     ✓ AC-07: lista as cinco exigências, todas pendentes com a senha vazia  683ms
+ ✓ |web| src/pages/passwordRules.pages.test.tsx (5 tests) 4549ms
+     ✓ AC-07: o cadastro mostra a regra e confere nome e e-mail enquanto a pessoa digita  890ms
+     ✓ AC-07: o cadastro mostra o que o servidor recusou na senha, sem dizer "algo deu errado"  1381ms
+     ✓ AC-07: a definição pelo link mostra a regra e, se o servidor recusar a senha, mostra o motivo e mantém o formulário  426ms
+     ✓ AC-07: a definição pelo link continua tratando link recusado (400 com texto) como link inválido  560ms
+     ✓ AC-07: a troca de senha mostra a regra e o motivo recusado pelo servidor  1250ms
+
+ Test Files  2 passed (2)
+      Tests  8 passed (8)
+   Start at  16:25:02
+   Duration  16.48s (transform 6.54s, setup 758ms, import 9.59s, tests 5.43s, environment 1.92s)
+

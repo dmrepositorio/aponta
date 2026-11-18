@@ -4,6 +4,7 @@ import { JwtModule, JwtService } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { Test } from '@nestjs/testing';
 import request from 'supertest';
+import { TwoFactorService } from '../two-factor/two-factor.service';
 import { PermissionsService } from '../permissions/permissions.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { createFakePrisma, FakePrisma } from '../testing/fake-prisma';
@@ -28,6 +29,7 @@ describe('AC-12: JwtStrategy recusa usuário inativo (DMTE-550)', () => {
         AuthService, JwtStrategy, UsersService,
         { provide: PrismaService, useValue: prisma },
         { provide: ConfigService, useValue: { get: (key: string) => (key === 'JWT_SECRET' ? 'test-secret' : undefined) } },
+        { provide: TwoFactorService, useValue: { challengeFor: jest.fn().mockResolvedValue(null), completeChallenge: jest.fn() } },
         {
           provide: PermissionsService,
           useValue: {

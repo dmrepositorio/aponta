@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsersController } from './users.controller';
+import { TwoFactorService } from '../two-factor/two-factor.service';
 import { UsersService } from './users.service';
 import { Role } from '@prisma/client';
 import { PermissionsService } from '../permissions/permissions.service';
@@ -27,6 +28,7 @@ describe('UsersController', () => {
         { provide: UsersService, useValue: service },
         { provide: PermissionsService, useValue: { hasPermission: jest.fn() } },
         { provide: PasswordFlowService, useValue: {} },
+        { provide: TwoFactorService, useValue: {} },
       ],
     }).compile();
 

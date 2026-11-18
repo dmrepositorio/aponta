@@ -29,6 +29,8 @@ export interface UserListItem {
   organizationId: string | null;
   technicalGroup: GroupSummary | null;
   permissionGroups: GroupSummary[];
+  /** Segundo fator ativo (DMTE-551); o segredo e os códigos nunca vêm da API. */
+  twoFactorEnabled: boolean;
 }
 
 export interface UsersListMeta {
@@ -120,5 +122,12 @@ export function useSendUserLink(id: string, kind: 'invite' | 'password-reset') {
     mutationFn: async () => {
       await api.post(`/users/${id}/${kind}`);
     },
+  });
+}
+
+/** Um administrador desativa o segundo fator de outro usuário (permissão DISABLE_USER_TWO_FACTOR). */
+export function useDisableUserTwoFactor(id: string) {
+  return useUsersMutation(async () => {
+    await api.post(`/users/${id}/two-factor/disable`);
   });
 }

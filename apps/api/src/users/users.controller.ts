@@ -7,6 +7,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../auth/guards/permissions.guard';
 import { RequirePermission } from '../auth/decorators/require-permission.decorator';
 import { PermissionsService } from '../permissions/permissions.service';
+import { TwoFactorService } from '../two-factor/two-factor.service';
 import { AdminCreateUserDto } from './dto/admin-create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserQueryDto } from './dto/user-query.dto';
@@ -36,6 +37,7 @@ export class UsersController {
     private readonly usersService: UsersService,
     private readonly passwordFlow: PasswordFlowService,
     private readonly permissions: PermissionsService,
+    private readonly twoFactor: TwoFactorService,
   ) {}
 
   @Get()
@@ -101,6 +103,13 @@ export class UsersController {
   @RequirePermission('SEND_USER_INVITES_AND_RESETS')
   async passwordReset(@Req() req: AuthenticatedRequest, @Param('id', ParseUUIDPipe) id: string) {
     await this.passwordFlow.sendReset(id, req.user.id);
+    return { ok: true };
+  }
+
+  @Post(':id/two-factor/disable')
+  @RequirePermission('DISABLE_USER_TWO_FACTOR')
+  async disableTwoFactor(@Req() req: AuthenticatedRequest, @Param('id', ParseUUIDPipe) id: string) {
+    await this.twoFactor.disableByAdmin(req.user.id, id);
     return { ok: true };
   }
 }

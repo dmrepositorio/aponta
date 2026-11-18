@@ -10,26 +10,37 @@ import { Prisma } from '@prisma/client';
  * Operador fora desta lista lança: estenda aqui em vez de afrouxar o teste.
  */
 type Row = Record<string, any>;
-type Model = 'user' | 'passwordToken' | 'permissionGroup' | 'permissionGroupUser' | 'technicalGroup' | 'organization' | 'serviceDesk';
+type Model = 'user' | 'passwordToken' | 'permissionGroup' | 'permissionGroupUser' | 'technicalGroup' | 'organization' | 'serviceDesk' | 'userTwoFactor' | 'twoFactorRecoveryCode' | 'securityEvent' | 'externalIdentity';
 export type Tables = Record<Model, Row[]>;
 
-const UNIQUE: Partial<Record<Model, string[]>> = { user: ['email'], passwordToken: ['tokenHash'] };
+const UNIQUE: Partial<Record<Model, string[]>> = { user: ['email'], passwordToken: ['tokenHash'], userTwoFactor: ['userId'] };
 const FOREIGN: Partial<Record<Model, Record<string, Model>>> = {
   user: { organizationId: 'organization', technicalGroupId: 'technicalGroup' },
   permissionGroupUser: { permissionGroupId: 'permissionGroup', userId: 'user' },
   passwordToken: { userId: 'user' },
+  userTwoFactor: { userId: 'user' },
+  twoFactorRecoveryCode: { userId: 'user' },
+  externalIdentity: { userId: 'user' },
 };
 const DEFAULTS: Record<Model, () => Row> = {
-  user: () => ({ id: randomUUID(), phone: null, extension: null, role: 'AGENT', active: true, organizationId: null, technicalGroupId: null, createdAt: new Date(), updatedAt: new Date() }),
+  user: () => ({ id: randomUUID(), passwordVersion: 0, phone: null, extension: null, role: 'AGENT', active: true, organizationId: null, technicalGroupId: null, createdAt: new Date(), updatedAt: new Date() }),
   passwordToken: () => ({ id: randomUUID(), usedAt: null, createdById: null, createdAt: new Date() }),
   permissionGroup: () => ({ id: randomUUID(), description: null, permissions: [] }),
   permissionGroupUser: () => ({ createdAt: new Date() }),
   technicalGroup: () => ({ id: randomUUID(), description: null }),
   organization: () => ({ id: randomUUID() }),
   serviceDesk: () => ({ id: randomUUID(), agents: [], agentGroups: [] }),
+  userTwoFactor: () => ({ enabled: false, lastStep: 0, confirmedAt: null, createdAt: new Date() }),
+  twoFactorRecoveryCode: () => ({ id: randomUUID(), usedAt: null, createdAt: new Date() }),
+  securityEvent: () => ({ id: randomUUID(), createdAt: new Date() }),
+  externalIdentity: () => ({ id: randomUUID(), createdAt: new Date() }),
 };
-const RELATIONS = ['technicalGroup', 'organization', 'permissionGroupLinks', 'permissionGroup'];
+const RELATIONS = ['technicalGroup', 'organization', 'permissionGroupLinks', 'permissionGroup', 'twoFactor'];
 const OPERATORS = ['equals', 'not', 'in', 'notIn', 'contains', 'startsWith', 'endsWith', 'gt', 'gte', 'lt', 'lte', 'has', 'some', 'every', 'none', 'is', 'mode'];
+
+/** `{ increment: n }` soma ao valor atual, como o Prisma. */
+const applyIncrements = (row: Row, data: Row): Row =>
+  Object.fromEntries(Object.entries(data).map(([k, v]) => [k, v && typeof v === 'object' && 'increment' in v ? (row[k] ?? 0) + v.increment : v]));
 
 const same = (a: any, b: any) => (a instanceof Date || b instanceof Date ? new Date(a).getTime() === new Date(b).getTime() : a === b);
 const lower = (v: any, insensitive: boolean) => (insensitive && typeof v === 'string' ? v.toLowerCase() : v);
@@ -104,7 +115,7 @@ export interface FakePrisma {
 
 export function createFakePrisma(seed: Partial<Tables> = {}): FakePrisma {
   const tables: Tables = {
-    user: [], passwordToken: [], permissionGroup: [], permissionGroupUser: [], technicalGroup: [], organization: [], serviceDesk: [],
+    user: [], passwordToken: [], permissionGroup: [], permissionGroupUser: [], technicalGroup: [], organization: [], serviceDesk: [], userTwoFactor: [], twoFactorRecoveryCode: [], securityEvent: [], externalIdentity: [],
     ...Object.fromEntries(Object.entries(seed).map(([k, rows]) => [k, rows!.map((r) => ({ ...r }))])),
   };
   const calls: FakePrisma['calls'] = [];
@@ -118,6 +129,7 @@ export function createFakePrisma(seed: Partial<Tables> = {}): FakePrisma {
       ...row,
       technicalGroup: technicalGroup ?? null,
       organization: tables.organization.find((o) => o.id === row.organizationId) ?? null,
+      twoFactor: tables.userTwoFactor.find((t) => t.userId === row.id) ?? null,
       permissionGroupLinks: tables.permissionGroupUser
         .filter((l) => l.userId === row.id)
         .map((l) => ({ ...l, permissionGroup: tables.permissionGroup.find((g) => g.id === l.permissionGroupId) })),
@@ -192,7 +204,7 @@ export function createFakePrisma(seed: Partial<Tables> = {}): FakePrisma {
           const row = select(model, args.where)[0];
           if (!row) throw notFound();
           const { permissionGroupLinks, ...scalars } = args.data;
-          const next = { ...row, ...scalars };
+          const next = { ...row, ...applyIncrements(row, scalars) };
           check(model, next, row);
           Object.assign(row, next);
           if (permissionGroupLinks) nested(row.id, permissionGroupLinks);

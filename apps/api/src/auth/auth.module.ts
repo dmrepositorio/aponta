@@ -10,12 +10,14 @@ import { ApiTokenStrategy } from './api-token.strategy';
 import { UsersModule } from '../users/users.module';
 import { PrismaModule } from '../prisma/prisma.module';
 import { PermissionsModule } from '../permissions/permissions.module';
+import { TwoFactorModule } from '../two-factor/two-factor.module';
 
 @Module({
   imports: [
     UsersModule,
     PrismaModule,
     PermissionsModule,
+    TwoFactorModule,
     PassportModule,
     ConfigModule,
     JwtModule.registerAsync({

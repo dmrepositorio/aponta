@@ -303,7 +303,7 @@ describe('Convite, redefinição e esqueci minha senha: HTTP (DMTE-550)', () => 
       expect(res.status).toBe(400);
       expect(h.row(ID.elisa).password).toBeNull();
       expect(h.validTokens(ID.elisa)).toHaveLength(1);
-      expect([200, 201]).toContain((await setPassword({ token, password: 'a'.repeat(128) })).status); // controle: 128 caracteres vale
+      expect([200, 201]).toContain((await setPassword({ token, password: 'Aa#1'.repeat(32) })).status); // controle: 128 caracteres vale
     });
 
     it('AC-18: com a flag desligada responde 404 e a senha não muda', async () => {

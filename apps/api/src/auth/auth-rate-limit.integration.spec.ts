@@ -10,6 +10,7 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { LocalStrategy } from './local.strategy';
 import { UsersService } from '../users/users.service';
+import { TwoFactorService } from '../two-factor/two-factor.service';
 import { PermissionsService } from '../permissions/permissions.service';
 
 /**
@@ -45,6 +46,7 @@ describe('Auth rate limiting (integration)', () => {
         LocalStrategy,
         { provide: UsersService, useValue: usersService },
         { provide: PermissionsService, useValue: permissionsService },
+        { provide: TwoFactorService, useValue: { challengeFor: jest.fn().mockResolvedValue(null), completeChallenge: jest.fn() } },
         { provide: APP_GUARD, useClass: ThrottlerGuard },
       ],
     }).compile();

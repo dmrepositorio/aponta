@@ -12,6 +12,7 @@ import {
   apiErrorMessage,
   apiErrorStatus,
   useCreateUser,
+  useDisableUserTwoFactor,
   useSendUserLink,
   useSetUserActive,
   useUpdateUser,
@@ -359,6 +360,10 @@ function SecurityPanel({ user }: { user: UserListItem }) {
   const linksOn = useFeatureFlag(USER_LINKS_FLAG);
   const canSend = useHasPermission('SEND_USER_INVITES_AND_RESETS');
   const canToggle = useHasPermission('ACTIVATE_DEACTIVATE_USERS');
+  const canDisableTwoFactor = useHasPermission('DISABLE_USER_TWO_FACTOR');
+  const disableTwoFactor = useDisableUserTwoFactor(user.id);
+  const [confirmingTwoFactor, setConfirmingTwoFactor] = useState(false);
+  const [twoFactorResult, setTwoFactorResult] = useState<{ ok: boolean; text: string } | null>(null);
   const setActive = useSetUserActive();
   const kind = user.pending ? 'invite' : 'password-reset';
   const send = useSendUserLink(user.id, kind);
@@ -388,6 +393,15 @@ function SecurityPanel({ user }: { user: UserListItem }) {
               ? 'Não foi possível enviar o e-mail. Tente novamente.'
               : apiErrorMessage(error),
         }),
+    });
+  };
+
+  const removeTwoFactor = () => {
+    setConfirmingTwoFactor(false);
+    setTwoFactorResult(null);
+    disableTwoFactor.mutate(undefined, {
+      onSuccess: () => setTwoFactorResult({ ok: true, text: 'Segundo fator desativado.' }),
+      onError: (error) => setTwoFactorResult({ ok: false, text: apiErrorMessage(error) }),
     });
   };
 
@@ -448,6 +462,42 @@ function SecurityPanel({ user }: { user: UserListItem }) {
           </div>
         </section>
       )}
+
+      <section className="space-y-2">
+        <h3 className="text-[14px] font-semibold text-gray-900">Segundo fator</h3>
+        <p className="text-sm text-gray-700">
+          {user.twoFactorEnabled
+            ? 'Ativado. O usuário informa um código do aplicativo autenticador a cada entrada.'
+            : 'Desativado. O usuário entra só com a senha.'}
+        </p>
+        {user.twoFactorEnabled && canDisableTwoFactor && (
+          <EzButton
+            type="button"
+            variant="secondary"
+            size="small"
+            label="Desativar segundo fator"
+            disabled={disableTwoFactor.isPending}
+            onClick={() => setConfirmingTwoFactor(true)}
+          />
+        )}
+        <div aria-live="polite">
+          {twoFactorResult &&
+            (twoFactorResult.ok ? (
+              <p className="text-sm font-medium text-green-800">{twoFactorResult.text}</p>
+            ) : (
+              <EzAlert variant="error">{twoFactorResult.text}</EzAlert>
+            ))}
+        </div>
+      </section>
+
+      <EzDialog
+        open={confirmingTwoFactor}
+        variant="warning"
+        title="Desativar o segundo fator?"
+        message="Use quando o usuário perdeu o aplicativo e os códigos de recuperação. Ele passa a entrar só com a senha, e a ação fica registrada."
+        onCancel={() => setConfirmingTwoFactor(false)}
+        onConfirm={removeTwoFactor}
+      />
 
       <EzDialog
         open={confirming}

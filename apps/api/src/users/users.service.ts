@@ -7,6 +7,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
+import { assertPasswordPolicy } from '../auth/password-policy';
 import { Prisma, Role } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -42,11 +43,14 @@ interface GroupSummary {
 export type UserWithGroups = SafeUser & {
   technicalGroup: GroupSummary | null;
   permissionGroups: GroupSummary[];
+  /** Só se o segundo fator está ativo; o segredo e os códigos nunca saem da API (DMTE-551). */
+  twoFactorEnabled: boolean;
 };
 
 type UserWithGroupRelations = User & {
   technicalGroup?: GroupSummary | null;
   permissionGroupLinks?: { permissionGroup: GroupSummary }[];
+  twoFactor?: { enabled: boolean } | null;
 };
 
 export interface PaginatedUsers {
@@ -59,6 +63,7 @@ export interface PaginatedUsers {
 // ambas num único round-trip ao Postgres.
 const USER_GROUPS_INCLUDE = {
   organization: true,
+  twoFactor: { select: { enabled: true } },
   technicalGroup: { select: { id: true, name: true } },
   permissionGroupLinks: {
     include: { permissionGroup: { select: { id: true, name: true } } },
@@ -89,6 +94,7 @@ export class UsersService {
       throw new ConflictException('Email already in use');
     }
 
+    assertPasswordPolicy(dto.password, dto);
     const hashedPassword = await bcrypt.hash(dto.password, SALT_ROUNDS);
 
     let user: User;
@@ -212,8 +218,10 @@ export class UsersService {
   private toUserWithGroups(user: UserWithGroupRelations): UserWithGroups {
     const safe = this.toSafeUser(user) as SafeUser & {
       permissionGroupLinks?: unknown;
+      twoFactor?: unknown;
     };
     delete safe.permissionGroupLinks;
+    delete safe.twoFactor;
 
     return {
       ...safe,
@@ -221,6 +229,7 @@ export class UsersService {
       permissionGroups: (user.permissionGroupLinks ?? []).map(
         (link) => link.permissionGroup,
       ),
+      twoFactorEnabled: user.twoFactor?.enabled === true,
     };
   }
 
@@ -228,7 +237,7 @@ export class UsersService {
     userId: string,
     currentPassword: string,
     newPassword: string,
-  ): Promise<void> {
+  ): Promise<SafeUser> {
     const user = await this.findById(userId);
     if (!user || !user.password) {
       // Same error as a wrong password: never reveal whether the user
@@ -244,11 +253,14 @@ export class UsersService {
       throw new UnauthorizedException('Current password is incorrect');
     }
 
+    assertPasswordPolicy(newPassword, user);
     const hashedNewPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
-    await this.prisma.user.update({
+    // A versão sobe: os outros tokens deixam de valer; quem trocou recebe um novo (AuthController).
+    const updated = await this.prisma.user.update({
       where: { id: userId },
-      data: { password: hashedNewPassword },
+      data: { password: hashedNewPassword, passwordVersion: { increment: 1 } },
     });
+    return this.toSafeUser(updated);
   }
 
   async updateProfile(

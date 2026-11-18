@@ -45,6 +45,27 @@ export const FEATURE_FLAGS: readonly FeatureFlag[] = [
     removeBy: '2027-01-15',
   },
   {
+    key: 'autenticacao-dois-fatores',
+    description: 'Ativar o segundo fator (TOTP) em Minha Conta; quem já ativou segue sendo desafiado no login mesmo com a flag desligada',
+    owner: 'alfredo',
+    defaultValue: false,
+    removeBy: '2027-01-31',
+  },
+  {
+    key: 'login-social-google',
+    description: 'Entrar com a conta Google (só em conta que já existe no Aponta); o botão também depende das variáveis OAUTH_GOOGLE_* do ambiente',
+    owner: 'alfredo',
+    defaultValue: false,
+    removeBy: '2027-01-31',
+  },
+  {
+    key: 'login-social-github',
+    description: 'Entrar com a conta GitHub (só em conta que já existe no Aponta); o botão também depende das variáveis OAUTH_GITHUB_* do ambiente',
+    owner: 'alfredo',
+    defaultValue: false,
+    removeBy: '2027-01-31',
+  },
+  {
     key: 'consulta-cnpj-alternativa',
     description: 'Consulta de CNPJ em ReceitaWS e minhareceita.org quando a BrasilAPI não acha o CNPJ ou falha',
     owner: 'alfredo',

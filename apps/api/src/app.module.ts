@@ -9,6 +9,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
+import { SocialAuthModule } from './social-auth/social-auth.module';
 import { CommentsModule } from './comments/comments.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ServiceDesksModule } from './service-desks/service-desks.module';
@@ -87,6 +88,7 @@ import { LoggerModule } from 'nestjs-pino';
     PrismaModule,
     UsersModule,
     AuthModule,
+    SocialAuthModule,
     ServiceDesksModule,
     TicketsModule, VaultModule, ContractsModule, ReportsModule,
     CommentsModule,

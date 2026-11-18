@@ -1,0 +1,313 @@
+
+> nx run api:test --runTestsByPath src/auth/password-policy.spec.ts src/auth/password-policy.http.spec.ts
+
+> jest --passWithNoTests=true --runTestsByPath src/auth/password-policy.spec.ts src/auth/password-policy.http.spec.ts
+
+
+
+
+ NX   Running target test for project api failed
+
+Failed tasks:
+
+- api:test
+
+Hint: run the command with --verbose for more details.
+
+[0m[7m[1m[31m FAIL [39m[22m[27m[0m [0m[7m[37m api [39m[27m[0m [2msrc/auth/[22m[1mpassword-policy.spec.ts[22m
+[1m[31m  [1m● [22m[1mRegra de senha (DMTE-551) › AC-01: recusa senha menos de 10 caracteres e diz o que falta[39m[22m
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m0[39m
+    Received:   [31m0[39m
+
+[2m    [0m [90m 17 |[39m   ])([32m'AC-01: recusa senha %s e diz o que falta'[39m[33m,[39m (_label[33m,[39m password[33m,[39m expected) [33m=>[39m {[22m
+[2m     [90m 18 |[39m     [36mconst[39m problems [33m=[39m checkPassword(password[33m,[39m owner)[33m;[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 19 |[39m     expect(problems[33m.[39mlength)[33m.[39mtoBeGreaterThan([35m0[39m)[33m;[39m[22m
+[2m     [90m    |[39m                             [31m[1m^[22m[2m[39m[22m
+[2m     [90m 20 |[39m     expect(problems[33m.[39mjoin([32m' | '[39m))[33m.[39mtoContain(expected)[33m;[39m[22m
+[2m     [90m 21 |[39m   })[33m;[39m[22m
+[2m     [90m 22 |[39m[0m[22m
+
+[2m      [2mat [22m[2m[0m[36msrc/auth/password-policy.spec.ts[39m[0m[2m:19:29[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mRegra de senha (DMTE-551) › AC-01: recusa senha sem maiúscula e diz o que falta[39m[22m
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m0[39m
+    Received:   [31m0[39m
+
+[2m    [0m [90m 17 |[39m   ])([32m'AC-01: recusa senha %s e diz o que falta'[39m[33m,[39m (_label[33m,[39m password[33m,[39m expected) [33m=>[39m {[22m
+[2m     [90m 18 |[39m     [36mconst[39m problems [33m=[39m checkPassword(password[33m,[39m owner)[33m;[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 19 |[39m     expect(problems[33m.[39mlength)[33m.[39mtoBeGreaterThan([35m0[39m)[33m;[39m[22m
+[2m     [90m    |[39m                             [31m[1m^[22m[2m[39m[22m
+[2m     [90m 20 |[39m     expect(problems[33m.[39mjoin([32m' | '[39m))[33m.[39mtoContain(expected)[33m;[39m[22m
+[2m     [90m 21 |[39m   })[33m;[39m[22m
+[2m     [90m 22 |[39m[0m[22m
+
+[2m      [2mat [22m[2m[0m[36msrc/auth/password-policy.spec.ts[39m[0m[2m:19:29[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mRegra de senha (DMTE-551) › AC-01: recusa senha sem minúscula e diz o que falta[39m[22m
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m0[39m
+    Received:   [31m0[39m
+
+[2m    [0m [90m 17 |[39m   ])([32m'AC-01: recusa senha %s e diz o que falta'[39m[33m,[39m (_label[33m,[39m password[33m,[39m expected) [33m=>[39m {[22m
+[2m     [90m 18 |[39m     [36mconst[39m problems [33m=[39m checkPassword(password[33m,[39m owner)[33m;[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 19 |[39m     expect(problems[33m.[39mlength)[33m.[39mtoBeGreaterThan([35m0[39m)[33m;[39m[22m
+[2m     [90m    |[39m                             [31m[1m^[22m[2m[39m[22m
+[2m     [90m 20 |[39m     expect(problems[33m.[39mjoin([32m' | '[39m))[33m.[39mtoContain(expected)[33m;[39m[22m
+[2m     [90m 21 |[39m   })[33m;[39m[22m
+[2m     [90m 22 |[39m[0m[22m
+
+[2m      [2mat [22m[2m[0m[36msrc/auth/password-policy.spec.ts[39m[0m[2m:19:29[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mRegra de senha (DMTE-551) › AC-01: recusa senha sem número e diz o que falta[39m[22m
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m0[39m
+    Received:   [31m0[39m
+
+[2m    [0m [90m 17 |[39m   ])([32m'AC-01: recusa senha %s e diz o que falta'[39m[33m,[39m (_label[33m,[39m password[33m,[39m expected) [33m=>[39m {[22m
+[2m     [90m 18 |[39m     [36mconst[39m problems [33m=[39m checkPassword(password[33m,[39m owner)[33m;[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 19 |[39m     expect(problems[33m.[39mlength)[33m.[39mtoBeGreaterThan([35m0[39m)[33m;[39m[22m
+[2m     [90m    |[39m                             [31m[1m^[22m[2m[39m[22m
+[2m     [90m 20 |[39m     expect(problems[33m.[39mjoin([32m' | '[39m))[33m.[39mtoContain(expected)[33m;[39m[22m
+[2m     [90m 21 |[39m   })[33m;[39m[22m
+[2m     [90m 22 |[39m[0m[22m
+
+[2m      [2mat [22m[2m[0m[36msrc/auth/password-policy.spec.ts[39m[0m[2m:19:29[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mRegra de senha (DMTE-551) › AC-01: recusa senha sem símbolo e diz o que falta[39m[22m
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m0[39m
+    Received:   [31m0[39m
+
+[2m    [0m [90m 17 |[39m   ])([32m'AC-01: recusa senha %s e diz o que falta'[39m[33m,[39m (_label[33m,[39m password[33m,[39m expected) [33m=>[39m {[22m
+[2m     [90m 18 |[39m     [36mconst[39m problems [33m=[39m checkPassword(password[33m,[39m owner)[33m;[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 19 |[39m     expect(problems[33m.[39mlength)[33m.[39mtoBeGreaterThan([35m0[39m)[33m;[39m[22m
+[2m     [90m    |[39m                             [31m[1m^[22m[2m[39m[22m
+[2m     [90m 20 |[39m     expect(problems[33m.[39mjoin([32m' | '[39m))[33m.[39mtoContain(expected)[33m;[39m[22m
+[2m     [90m 21 |[39m   })[33m;[39m[22m
+[2m     [90m 22 |[39m[0m[22m
+
+[2m      [2mat [22m[2m[0m[36msrc/auth/password-policy.spec.ts[39m[0m[2m:19:29[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mRegra de senha (DMTE-551) › AC-01: lista todos os requisitos que faltam, não só o primeiro[39m[22m
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: >= [32m4[39m
+    Received:    [31m0[39m
+
+[2m    [0m [90m 22 |[39m[22m
+[2m     [90m 23 |[39m   it([32m'AC-01: lista todos os requisitos que faltam, não só o primeiro'[39m[33m,[39m () [33m=>[39m {[22m
+[2m    [31m[1m>[22m[2m[39m[90m 24 |[39m     expect(checkPassword([32m'abc'[39m[33m,[39m owner)[33m.[39mlength)[33m.[39mtoBeGreaterThanOrEqual([35m4[39m)[33m;[39m[22m
+[2m     [90m    |[39m                                                [31m[1m^[22m[2m[39m[22m
+[2m     [90m 25 |[39m   })[33m;[39m[22m
+[2m     [90m 26 |[39m[22m
+[2m     [90m 27 |[39m   it[33m.[39meach([[0m[22m
+
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/auth/password-policy.spec.ts[39m[0m[2m:24:48)[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mRegra de senha (DMTE-551) › AC-02: recusa senha com parte do nome com números colados[39m[22m
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoMatch[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected pattern: [32m/nome|e-mail/[39m
+    Received string:  [31m""[39m
+
+[2m    [0m [90m 33 |[39m     [[32m'domínio do e-mail'[39m[33m,[39m [32m'Empresa-exemplo#9Az'[39m][33m,[39m[22m
+[2m     [90m 34 |[39m   ])([32m'AC-02: recusa senha com %s'[39m[33m,[39m (_label[33m,[39m password) [33m=>[39m {[22m
+[2m    [31m[1m>[22m[2m[39m[90m 35 |[39m     expect(checkPassword(password[33m,[39m owner)[33m.[39mjoin([32m' | '[39m))[33m.[39mtoMatch([35m/nome|e-mail/[39m)[33m;[39m[22m
+[2m     [90m    |[39m                                                        [31m[1m^[22m[2m[39m[22m
+[2m     [90m 36 |[39m   })[33m;[39m[22m
+[2m     [90m 37 |[39m[22m
+[2m     [90m 38 |[39m   it([32m'AC-02: não recusa pedaços curtos nem comuns de nome, e-mail ou domínio'[39m[33m,[39m () [33m=>[39m {[0m[22m
+
+[2m      [2mat [22m[2m[0m[36msrc/auth/password-policy.spec.ts[39m[0m[2m:35:56[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mRegra de senha (DMTE-551) › AC-02: recusa senha com nome com símbolo e número[39m[22m
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoMatch[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected pattern: [32m/nome|e-mail/[39m
+    Received string:  [31m""[39m
+
+[2m    [0m [90m 33 |[39m     [[32m'domínio do e-mail'[39m[33m,[39m [32m'Empresa-exemplo#9Az'[39m][33m,[39m[22m
+[2m     [90m 34 |[39m   ])([32m'AC-02: recusa senha com %s'[39m[33m,[39m (_label[33m,[39m password) [33m=>[39m {[22m
+[2m    [31m[1m>[22m[2m[39m[90m 35 |[39m     expect(checkPassword(password[33m,[39m owner)[33m.[39mjoin([32m' | '[39m))[33m.[39mtoMatch([35m/nome|e-mail/[39m)[33m;[39m[22m
+[2m     [90m    |[39m                                                        [31m[1m^[22m[2m[39m[22m
+[2m     [90m 36 |[39m   })[33m;[39m[22m
+[2m     [90m 37 |[39m[22m
+[2m     [90m 38 |[39m   it([32m'AC-02: não recusa pedaços curtos nem comuns de nome, e-mail ou domínio'[39m[33m,[39m () [33m=>[39m {[0m[22m
+
+[2m      [2mat [22m[2m[0m[36msrc/auth/password-policy.spec.ts[39m[0m[2m:35:56[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mRegra de senha (DMTE-551) › AC-02: recusa senha com nome em maiúsculas e com acento[39m[22m
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoMatch[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected pattern: [32m/nome|e-mail/[39m
+    Received string:  [31m""[39m
+
+[2m    [0m [90m 33 |[39m     [[32m'domínio do e-mail'[39m[33m,[39m [32m'Empresa-exemplo#9Az'[39m][33m,[39m[22m
+[2m     [90m 34 |[39m   ])([32m'AC-02: recusa senha com %s'[39m[33m,[39m (_label[33m,[39m password) [33m=>[39m {[22m
+[2m    [31m[1m>[22m[2m[39m[90m 35 |[39m     expect(checkPassword(password[33m,[39m owner)[33m.[39mjoin([32m' | '[39m))[33m.[39mtoMatch([35m/nome|e-mail/[39m)[33m;[39m[22m
+[2m     [90m    |[39m                                                        [31m[1m^[22m[2m[39m[22m
+[2m     [90m 36 |[39m   })[33m;[39m[22m
+[2m     [90m 37 |[39m[22m
+[2m     [90m 38 |[39m   it([32m'AC-02: não recusa pedaços curtos nem comuns de nome, e-mail ou domínio'[39m[33m,[39m () [33m=>[39m {[0m[22m
+
+[2m      [2mat [22m[2m[0m[36msrc/auth/password-policy.spec.ts[39m[0m[2m:35:56[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mRegra de senha (DMTE-551) › AC-02: recusa senha com sobrenome no meio[39m[22m
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoMatch[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected pattern: [32m/nome|e-mail/[39m
+    Received string:  [31m""[39m
+
+[2m    [0m [90m 33 |[39m     [[32m'domínio do e-mail'[39m[33m,[39m [32m'Empresa-exemplo#9Az'[39m][33m,[39m[22m
+[2m     [90m 34 |[39m   ])([32m'AC-02: recusa senha com %s'[39m[33m,[39m (_label[33m,[39m password) [33m=>[39m {[22m
+[2m    [31m[1m>[22m[2m[39m[90m 35 |[39m     expect(checkPassword(password[33m,[39m owner)[33m.[39mjoin([32m' | '[39m))[33m.[39mtoMatch([35m/nome|e-mail/[39m)[33m;[39m[22m
+[2m     [90m    |[39m                                                        [31m[1m^[22m[2m[39m[22m
+[2m     [90m 36 |[39m   })[33m;[39m[22m
+[2m     [90m 37 |[39m[22m
+[2m     [90m 38 |[39m   it([32m'AC-02: não recusa pedaços curtos nem comuns de nome, e-mail ou domínio'[39m[33m,[39m () [33m=>[39m {[0m[22m
+
+[2m      [2mat [22m[2m[0m[36msrc/auth/password-policy.spec.ts[39m[0m[2m:35:56[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mRegra de senha (DMTE-551) › AC-02: recusa senha com parte local do e-mail inteira[39m[22m
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoMatch[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected pattern: [32m/nome|e-mail/[39m
+    Received string:  [31m""[39m
+
+[2m    [0m [90m 33 |[39m     [[32m'domínio do e-mail'[39m[33m,[39m [32m'Empresa-exemplo#9Az'[39m][33m,[39m[22m
+[2m     [90m 34 |[39m   ])([32m'AC-02: recusa senha com %s'[39m[33m,[39m (_label[33m,[39m password) [33m=>[39m {[22m
+[2m    [31m[1m>[22m[2m[39m[90m 35 |[39m     expect(checkPassword(password[33m,[39m owner)[33m.[39mjoin([32m' | '[39m))[33m.[39mtoMatch([35m/nome|e-mail/[39m)[33m;[39m[22m
+[2m     [90m    |[39m                                                        [31m[1m^[22m[2m[39m[22m
+[2m     [90m 36 |[39m   })[33m;[39m[22m
+[2m     [90m 37 |[39m[22m
+[2m     [90m 38 |[39m   it([32m'AC-02: não recusa pedaços curtos nem comuns de nome, e-mail ou domínio'[39m[33m,[39m () [33m=>[39m {[0m[22m
+
+[2m      [2mat [22m[2m[0m[36msrc/auth/password-policy.spec.ts[39m[0m[2m:35:56[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mRegra de senha (DMTE-551) › AC-02: recusa senha com domínio do e-mail[39m[22m
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoMatch[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected pattern: [32m/nome|e-mail/[39m
+    Received string:  [31m""[39m
+
+[2m    [0m [90m 33 |[39m     [[32m'domínio do e-mail'[39m[33m,[39m [32m'Empresa-exemplo#9Az'[39m][33m,[39m[22m
+[2m     [90m 34 |[39m   ])([32m'AC-02: recusa senha com %s'[39m[33m,[39m (_label[33m,[39m password) [33m=>[39m {[22m
+[2m    [31m[1m>[22m[2m[39m[90m 35 |[39m     expect(checkPassword(password[33m,[39m owner)[33m.[39mjoin([32m' | '[39m))[33m.[39mtoMatch([35m/nome|e-mail/[39m)[33m;[39m[22m
+[2m     [90m    |[39m                                                        [31m[1m^[22m[2m[39m[22m
+[2m     [90m 36 |[39m   })[33m;[39m[22m
+[2m     [90m 37 |[39m[22m
+[2m     [90m 38 |[39m   it([32m'AC-02: não recusa pedaços curtos nem comuns de nome, e-mail ou domínio'[39m[33m,[39m () [33m=>[39m {[0m[22m
+
+[2m      [2mat [22m[2m[0m[36msrc/auth/password-policy.spec.ts[39m[0m[2m:35:56[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mRegra de senha (DMTE-551) › AC-02: a regra de nome vale também para nome sem acento e e-mail simples[39m[22m
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoMatch[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected pattern: [32m/nome/[39m
+    Received string:  [31m""[39m
+
+[2m    [0m [90m 42 |[39m[22m
+[2m     [90m 43 |[39m   it([32m'AC-02: a regra de nome vale também para nome sem acento e e-mail simples'[39m[33m,[39m () [33m=>[39m {[22m
+[2m    [31m[1m>[22m[2m[39m[90m 44 |[39m     expect(checkPassword([32m'Maria2026#Zz9'[39m[33m,[39m { name[33m:[39m [32m'Maria'[39m[33m,[39m email[33m:[39m [32m'm@x.io'[39m })[33m.[39mjoin([32m' '[39m))[33m.[39mtoMatch([35m/nome/[39m)[33m;[39m[22m
+[2m     [90m    |[39m                                                                                          [31m[1m^[22m[2m[39m[22m
+[2m     [90m 45 |[39m   })[33m;[39m[22m
+[2m     [90m 46 |[39m })[33m;[39m[22m
+[2m     [90m 47 |[39m[0m[22m
+
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/auth/password-policy.spec.ts[39m[0m[2m:44:90)[22m[2m[22m
+
+[0m[7m[1m[31m FAIL [39m[22m[27m[0m [0m[7m[37m api [39m[27m[0m [2msrc/auth/[22m[1mpassword-policy.http.spec.ts[22m ([0m[1m[41m5.415 s[49m[22m[0m)
+[1m[31m  [1m● [22m[1mRegra de senha nas três portas (DMTE-551) › AC-03: o cadastro recusa senha fraca com 400 e diz o que falta, sem criar o usuário[39m[22m
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32m400[39m
+    Received: [31m201[39m
+
+[2m    [0m [90m 19 |[39m   it([32m'AC-03: o cadastro recusa senha fraca com 400 e diz o que falta, sem criar o usuário'[39m[33m,[39m [36masync[39m () [33m=>[39m {[22m
+[2m     [90m 20 |[39m     [36mconst[39m res [33m=[39m [36mawait[39m register([33mWEAK[39m)[33m;[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 21 |[39m     expect(res[33m.[39mstatus)[33m.[39mtoBe([35m400[39m)[33m;[39m[22m
+[2m     [90m    |[39m                        [31m[1m^[22m[2m[39m[22m
+[2m     [90m 22 |[39m     expect([33mJSON[39m[33m.[39mstringify(res[33m.[39mbody[33m.[39mmessage))[33m.[39mtoMatch([35m/pelo menos 10 caracteres/[39m)[33m;[39m[22m
+[2m     [90m 23 |[39m     expect(h[33m.[39mprisma[33m.[39mtables[33m.[39muser[33m.[39msome((u) [33m=>[39m u[33m.[39memail [33m===[39m [32m'novo@cliente.test'[39m))[33m.[39mtoBe([36mfalse[39m)[33m;[39m[22m
+[2m     [90m 24 |[39m   })[33m;[39m[0m[22m
+
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/auth/password-policy.http.spec.ts[39m[0m[2m:21:24)[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mRegra de senha nas três portas (DMTE-551) › AC-03: o cadastro recusa senha com o nome ou o e-mail, e aceita a forte[39m[22m
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32m400[39m
+    Received: [31m201[39m
+
+[2m    [0m [90m 25 |[39m[22m
+[2m     [90m 26 |[39m   it([32m'AC-03: o cadastro recusa senha com o nome ou o e-mail, e aceita a forte'[39m[33m,[39m [36masync[39m () [33m=>[39m {[22m
+[2m    [31m[1m>[22m[2m[39m[90m 27 |[39m     expect(([36mawait[39m register([32m'Novo2026#Zz9'[39m))[33m.[39mstatus)[33m.[39mtoBe([35m400[39m)[33m;[39m[22m
+[2m     [90m    |[39m                                                     [31m[1m^[22m[2m[39m[22m
+[2m     [90m 28 |[39m     expect(([36mawait[39m register([32m'Cliente!123456'[39m))[33m.[39mstatus)[33m.[39mtoBe([35m400[39m)[33m;[39m[22m
+[2m     [90m 29 |[39m     expect(([36mawait[39m register([33mSTRONG[39m))[33m.[39mstatus)[33m.[39mtoBe([35m201[39m)[33m;[39m[22m
+[2m     [90m 30 |[39m     expect(h[33m.[39mprisma[33m.[39mtables[33m.[39muser[33m.[39msome((u) [33m=>[39m u[33m.[39memail [33m===[39m [32m'novo@cliente.test'[39m))[33m.[39mtoBe([36mtrue[39m)[33m;[39m[0m[22m
+
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/auth/password-policy.http.spec.ts[39m[0m[2m:27:53)[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mRegra de senha nas três portas (DMTE-551) › AC-03: a troca de senha recusa a fraca (a senha antiga segue valendo) e aceita a forte[39m[22m
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32m400[39m
+    Received: [31m201[39m
+
+[2m    [0m [90m 33 |[39m   it([32m'AC-03: a troca de senha recusa a fraca (a senha antiga segue valendo) e aceita a forte'[39m[33m,[39m [36masync[39m () [33m=>[39m {[22m
+[2m     [90m 34 |[39m     [36mconst[39m weak [33m=[39m [36mawait[39m h[33m.[39m[36mas[39m([32m'post'[39m[33m,[39m [32m'/auth/change-password'[39m[33m,[39m [33mID[39m[33m.[39mana)[33m.[39msend({ currentPassword[33m:[39m [33mOLD_PASSWORD[39m[33m,[39m newPassword[33m:[39m [33mWEAK[39m })[33m;[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 35 |[39m     expect(weak[33m.[39mstatus)[33m.[39mtoBe([35m400[39m)[33m;[39m[22m
+[2m     [90m    |[39m                         [31m[1m^[22m[2m[39m[22m
+[2m     [90m 36 |[39m     expect([36mawait[39m bcrypt[33m.[39mcompare([33mOLD_PASSWORD[39m[33m,[39m h[33m.[39mrow([33mID[39m[33m.[39mana)[33m.[39mpassword))[33m.[39mtoBe([36mtrue[39m)[33m;[39m[22m
+[2m     [90m 37 |[39m[22m
+[2m     [90m 38 |[39m     [36mconst[39m nameBased [33m=[39m [36mawait[39m h[33m.[39m[36mas[39m([32m'post'[39m[33m,[39m [32m'/auth/change-password'[39m[33m,[39m [33mID[39m[33m.[39mana)[33m.[39msend({ currentPassword[33m:[39m [33mOLD_PASSWORD[39m[33m,[39m newPassword[33m:[39m [32m'Souza2026#Xy'[39m })[33m;[39m[0m[22m
+
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/auth/password-policy.http.spec.ts[39m[0m[2m:35:25)[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mRegra de senha nas três portas (DMTE-551) › AC-03: definir a senha pelo link recusa a fraca sem queimar o link, e aceita a forte[39m[22m
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32m400[39m
+    Received: [31m201[39m
+
+[2m    [0m [90m 50 |[39m[22m
+[2m     [90m 51 |[39m     [36mconst[39m weak [33m=[39m [36mawait[39m pub([32m'/auth/password/set'[39m)[33m.[39msend({ token[33m,[39m password[33m:[39m [33mWEAK[39m })[33m;[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 52 |[39m     expect(weak[33m.[39mstatus)[33m.[39mtoBe([35m400[39m)[33m;[39m[22m
+[2m     [90m    |[39m                         [31m[1m^[22m[2m[39m[22m
+[2m     [90m 53 |[39m     expect([33mJSON[39m[33m.[39mstringify(weak[33m.[39mbody[33m.[39mmessage))[33m.[39mtoMatch([35m/pelo menos 10 caracteres/[39m)[33m;[39m[22m
+[2m     [90m 54 |[39m     expect(h[33m.[39mvalidTokens([33mID[39m[33m.[39melisa))[33m.[39mtoHaveLength([35m1[39m)[33m;[39m[22m
+[2m     [90m 55 |[39m[0m[22m
+
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/auth/password-policy.http.spec.ts[39m[0m[2m:52:25)[22m[2m[22m
+
+[1mTest Suites: [22m[1m[31m2 failed[39m[22m, 2 total
+[1mTests:       [22m[1m[31m17 failed[39m[22m, [1m[32m4 passed[39m[22m, 21 total
+[1mSnapshots:   [22m0 total
+[1mTime:[22m        [1m[33m8.382 s[39m[22m
+[2mRan all test suites[22m[2m within paths[22m "src/auth/password-policy.spec.ts", "src/auth/password-policy.http.spec.ts"[2m.[22m
+Warning: command "jest --passWithNoTests=true --runTestsByPath src/auth/password-policy.spec.ts src/auth/password-policy.http.spec.ts" exited with non-zero status code

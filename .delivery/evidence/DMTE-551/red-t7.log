@@ -1,0 +1,473 @@
+
+> nx run api:test --runTestsByPath src/social-auth/social-auth.google.http.spec.ts
+
+> jest --passWithNoTests=true --runTestsByPath src/social-auth/social-auth.google.http.spec.ts
+
+
+
+
+ NX   Running target test for project api failed
+
+Failed tasks:
+
+- api:test
+
+Hint: run the command with --verbose for more details.
+
+[0m[7m[1m[31m FAIL [39m[22m[27m[0m [0m[7m[37m api [39m[27m[0m [2msrc/social-auth/[22m[1msocial-auth.google.http.spec.ts[22m ([0m[1m[41m5.825 s[49m[22m[0m)
+[1m[31m  [1m● [22m[1mLogin com Google (DMTE-551) › quais provedores o login oferece › AC-22: só oferece o Google com a flag ligada e as variáveis do provedor configuradas[39m[22m
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoEqual[2m([22m[32mexpected[39m[2m) // deep equality[22m
+
+    [32m- Expected  - 3[39m
+    [31m+ Received  + 1[39m
+
+    [2m  Object {[22m
+    [32m-   "providers": Array [[39m
+    [32m-     "google",[39m
+    [32m-   ],[39m
+    [31m+   "providers": Array [],[39m
+    [2m  }[22m
+
+[2m    [0m [90m 55 |[39m   describe([32m'quais provedores o login oferece'[39m[33m,[39m () [33m=>[39m {[22m
+[2m     [90m 56 |[39m     it([32m'AC-22: só oferece o Google com a flag ligada e as variáveis do provedor configuradas'[39m[33m,[39m [36masync[39m () [33m=>[39m {[22m
+[2m    [31m[1m>[22m[2m[39m[90m 57 |[39m       expect(([36mawait[39m [36mget[39m([32m'/auth/social/providers'[39m))[33m.[39mbody)[33m.[39mtoEqual({ providers[33m:[39m [[32m'google'[39m] })[33m;[39m[22m
+[2m     [90m    |[39m                                                          [31m[1m^[22m[2m[39m[22m
+[2m     [90m 58 |[39m[22m
+[2m     [90m 59 |[39m       h[33m.[39msetSocialFlag([32m'google'[39m[33m,[39m [36mfalse[39m)[33m;[39m[22m
+[2m     [90m 60 |[39m       expect(([36mawait[39m [36mget[39m([32m'/auth/social/providers'[39m))[33m.[39mbody)[33m.[39mtoEqual({ providers[33m:[39m [] })[33m;[39m[0m[22m
+
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:57:58)[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mLogin com Google (DMTE-551) › quais provedores o login oferece › AC-22: sem a flag, sem as variáveis ou com provedor desconhecido, início e retorno respondem 404[39m[22m
+
+    [2mexpect([22m[31mreceived[39m[2m).[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: [32m404[39m
+    Received: [31m302[39m
+
+[2m    [0m [90m 68 |[39m       h[33m.[39msetSocialFlag([32m'google'[39m[33m,[39m [36mfalse[39m)[33m;[39m[22m
+[2m     [90m 69 |[39m       expect(([36mawait[39m [36mget[39m([32m'/auth/social/google/start'[39m))[33m.[39mstatus)[33m.[39mtoBe([35m404[39m)[33m;[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 70 |[39m       expect(([36mawait[39m [36mget[39m([32m'/auth/social/google/callback?code=x&state=y'[39m))[33m.[39mstatus)[33m.[39mtoBe([35m404[39m)[33m;[39m[22m
+[2m     [90m    |[39m                                                                                 [31m[1m^[22m[2m[39m[22m
+[2m     [90m 71 |[39m[22m
+[2m     [90m 72 |[39m       h[33m.[39msetSocialFlag([32m'google'[39m[33m,[39m [36mtrue[39m)[33m;[39m[22m
+[2m     [90m 73 |[39m       expect(([36mawait[39m [36mget[39m([32m'/auth/social/orkut/start'[39m))[33m.[39mstatus)[33m.[39mtoBe([35m404[39m)[33m;[39m[0m[22m
+
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:70:81)[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mLogin com Google (DMTE-551) › início › AC-17: leva ao Google com state, nonce, PKCE S256 e o redirect da API, sem o segredo, e prende o navegador por cookie[39m[22m
+
+    TypeError: Invalid URL
+
+[2m    [0m [90m 34 |[39m   [36mconst[39m start [33m=[39m [36masync[39m () [33m=>[39m {[22m
+[2m     [90m 35 |[39m     [36mconst[39m res [33m=[39m [36mawait[39m [36mget[39m([32m'/auth/social/google/start'[39m)[33m;[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 36 |[39m     [36mconst[39m url [33m=[39m [36mnew[39m [33mURL[39m(res[33m.[39mheaders[33m.[39mlocation)[33m;[39m[22m
+[2m     [90m    |[39m                 [31m[1m^[22m[2m[39m[22m
+[2m     [90m 37 |[39m     h[33m.[39moauth[33m.[39mauthorize [33m=[39m {[22m
+[2m     [90m 38 |[39m       codeChallenge[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'code_challenge'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m[22m
+[2m     [90m 39 |[39m       nonce[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'nonce'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m[0m[22m
+
+[2m      [2mat start ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:36:17)[22m[2m[22m
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:83:35)[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mLogin com Google (DMTE-551) › retorno e troca do código › AC-17: conta existente e ativa com e-mail verificado entra: liga a identidade e devolve um código de troca, sem JWT na URL[39m[22m
+
+    TypeError: Invalid URL
+
+[2m    [0m [90m 34 |[39m   [36mconst[39m start [33m=[39m [36masync[39m () [33m=>[39m {[22m
+[2m     [90m 35 |[39m     [36mconst[39m res [33m=[39m [36mawait[39m [36mget[39m([32m'/auth/social/google/start'[39m)[33m;[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 36 |[39m     [36mconst[39m url [33m=[39m [36mnew[39m [33mURL[39m(res[33m.[39mheaders[33m.[39mlocation)[33m;[39m[22m
+[2m     [90m    |[39m                 [31m[1m^[22m[2m[39m[22m
+[2m     [90m 37 |[39m     h[33m.[39moauth[33m.[39mauthorize [33m=[39m {[22m
+[2m     [90m 38 |[39m       codeChallenge[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'code_challenge'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m[22m
+[2m     [90m 39 |[39m       nonce[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'nonce'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m[0m[22m
+
+[2m      [2mat start ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:36:17)[22m[2m[22m
+[2m      [2mat signIn ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:49:21)[22m[2m[22m
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:107:19)[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mLogin com Google (DMTE-551) › retorno e troca do código › AC-19: o código de troca vale uma vez só[39m[22m
+
+    TypeError: Invalid URL
+
+[2m    [0m [90m 34 |[39m   [36mconst[39m start [33m=[39m [36masync[39m () [33m=>[39m {[22m
+[2m     [90m 35 |[39m     [36mconst[39m res [33m=[39m [36mawait[39m [36mget[39m([32m'/auth/social/google/start'[39m)[33m;[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 36 |[39m     [36mconst[39m url [33m=[39m [36mnew[39m [33mURL[39m(res[33m.[39mheaders[33m.[39mlocation)[33m;[39m[22m
+[2m     [90m    |[39m                 [31m[1m^[22m[2m[39m[22m
+[2m     [90m 37 |[39m     h[33m.[39moauth[33m.[39mauthorize [33m=[39m {[22m
+[2m     [90m 38 |[39m       codeChallenge[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'code_challenge'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m[22m
+[2m     [90m 39 |[39m       nonce[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'nonce'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m[0m[22m
+
+[2m      [2mat start ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:36:17)[22m[2m[22m
+[2m      [2mat signIn ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:49:21)[22m[2m[22m
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:121:30)[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mLogin com Google (DMTE-551) › retorno e troca do código › AC-19: o código de troca vence em 60 segundos[39m[22m
+
+    TypeError: Invalid URL
+
+[2m    [0m [90m 34 |[39m   [36mconst[39m start [33m=[39m [36masync[39m () [33m=>[39m {[22m
+[2m     [90m 35 |[39m     [36mconst[39m res [33m=[39m [36mawait[39m [36mget[39m([32m'/auth/social/google/start'[39m)[33m;[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 36 |[39m     [36mconst[39m url [33m=[39m [36mnew[39m [33mURL[39m(res[33m.[39mheaders[33m.[39mlocation)[33m;[39m[22m
+[2m     [90m    |[39m                 [31m[1m^[22m[2m[39m[22m
+[2m     [90m 37 |[39m     h[33m.[39moauth[33m.[39mauthorize [33m=[39m {[22m
+[2m     [90m 38 |[39m       codeChallenge[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'code_challenge'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m[22m
+[2m     [90m 39 |[39m       nonce[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'nonce'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m[0m[22m
+
+[2m      [2mat start ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:36:17)[22m[2m[22m
+[2m      [2mat signIn ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:49:21)[22m[2m[22m
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:128:30)[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mLogin com Google (DMTE-551) › retorno e troca do código › AC-18: nunca cria usuário: e-mail desconhecido volta com "not_found" e nada é gravado[39m[22m
+
+    TypeError: Invalid URL
+
+[2m    [0m [90m 34 |[39m   [36mconst[39m start [33m=[39m [36masync[39m () [33m=>[39m {[22m
+[2m     [90m 35 |[39m     [36mconst[39m res [33m=[39m [36mawait[39m [36mget[39m([32m'/auth/social/google/start'[39m)[33m;[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 36 |[39m     [36mconst[39m url [33m=[39m [36mnew[39m [33mURL[39m(res[33m.[39mheaders[33m.[39mlocation)[33m;[39m[22m
+[2m     [90m    |[39m                 [31m[1m^[22m[2m[39m[22m
+[2m     [90m 37 |[39m     h[33m.[39moauth[33m.[39mauthorize [33m=[39m {[22m
+[2m     [90m 38 |[39m       codeChallenge[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'code_challenge'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m[22m
+[2m     [90m 39 |[39m       nonce[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'nonce'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m[0m[22m
+
+[2m      [2mat start ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:36:17)[22m[2m[22m
+[2m      [2mat signIn ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:49:21)[22m[2m[22m
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:142:19)[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mLogin com Google (DMTE-551) › retorno e troca do código › AC-18: conta inativa volta com "inactive" e convite pendente com "not_found", sem ligar identidade[39m[22m
+
+    TypeError: Invalid URL
+
+[2m    [0m [90m 34 |[39m   [36mconst[39m start [33m=[39m [36masync[39m () [33m=>[39m {[22m
+[2m     [90m 35 |[39m     [36mconst[39m res [33m=[39m [36mawait[39m [36mget[39m([32m'/auth/social/google/start'[39m)[33m;[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 36 |[39m     [36mconst[39m url [33m=[39m [36mnew[39m [33mURL[39m(res[33m.[39mheaders[33m.[39mlocation)[33m;[39m[22m
+[2m     [90m    |[39m                 [31m[1m^[22m[2m[39m[22m
+[2m     [90m 37 |[39m     h[33m.[39moauth[33m.[39mauthorize [33m=[39m {[22m
+[2m     [90m 38 |[39m       codeChallenge[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'code_challenge'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m[22m
+[2m     [90m 39 |[39m       nonce[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'nonce'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m[0m[22m
+
+[2m      [2mat start ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:36:17)[22m[2m[22m
+[2m      [2mat signIn ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:49:21)[22m[2m[22m
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:150:22)[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mLogin com Google (DMTE-551) › retorno e troca do código › AC-18: e-mail não verificado (false) volta com "unverified" e nada é ligado[39m[22m
+
+    TypeError: Invalid URL
+
+[2m    [0m [90m 34 |[39m   [36mconst[39m start [33m=[39m [36masync[39m () [33m=>[39m {[22m
+[2m     [90m 35 |[39m     [36mconst[39m res [33m=[39m [36mawait[39m [36mget[39m([32m'/auth/social/google/start'[39m)[33m;[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 36 |[39m     [36mconst[39m url [33m=[39m [36mnew[39m [33mURL[39m(res[33m.[39mheaders[33m.[39mlocation)[33m;[39m[22m
+[2m     [90m    |[39m                 [31m[1m^[22m[2m[39m[22m
+[2m     [90m 37 |[39m     h[33m.[39moauth[33m.[39mauthorize [33m=[39m {[22m
+[2m     [90m 38 |[39m       codeChallenge[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'code_challenge'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m[22m
+[2m     [90m 39 |[39m       nonce[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'nonce'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m[0m[22m
+
+[2m      [2mat start ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:36:17)[22m[2m[22m
+[2m      [2mat signIn ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:49:21)[22m[2m[22m
+[2m      [2mat [22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:156:19[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mLogin com Google (DMTE-551) › retorno e troca do código › AC-18: e-mail não verificado (false) volta com "unverified" e nada é ligado[39m[22m
+
+    TypeError: Invalid URL
+
+[2m    [0m [90m 34 |[39m   [36mconst[39m start [33m=[39m [36masync[39m () [33m=>[39m {[22m
+[2m     [90m 35 |[39m     [36mconst[39m res [33m=[39m [36mawait[39m [36mget[39m([32m'/auth/social/google/start'[39m)[33m;[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 36 |[39m     [36mconst[39m url [33m=[39m [36mnew[39m [33mURL[39m(res[33m.[39mheaders[33m.[39mlocation)[33m;[39m[22m
+[2m     [90m    |[39m                 [31m[1m^[22m[2m[39m[22m
+[2m     [90m 37 |[39m     h[33m.[39moauth[33m.[39mauthorize [33m=[39m {[22m
+[2m     [90m 38 |[39m       codeChallenge[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'code_challenge'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m[22m
+[2m     [90m 39 |[39m       nonce[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'nonce'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m[0m[22m
+
+[2m      [2mat start ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:36:17)[22m[2m[22m
+[2m      [2mat signIn ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:49:21)[22m[2m[22m
+[2m      [2mat [22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:156:19[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mLogin com Google (DMTE-551) › retorno e troca do código › AC-18: e-mail não verificado (undefined) volta com "unverified" e nada é ligado[39m[22m
+
+    TypeError: Invalid URL
+
+[2m    [0m [90m 34 |[39m   [36mconst[39m start [33m=[39m [36masync[39m () [33m=>[39m {[22m
+[2m     [90m 35 |[39m     [36mconst[39m res [33m=[39m [36mawait[39m [36mget[39m([32m'/auth/social/google/start'[39m)[33m;[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 36 |[39m     [36mconst[39m url [33m=[39m [36mnew[39m [33mURL[39m(res[33m.[39mheaders[33m.[39mlocation)[33m;[39m[22m
+[2m     [90m    |[39m                 [31m[1m^[22m[2m[39m[22m
+[2m     [90m 37 |[39m     h[33m.[39moauth[33m.[39mauthorize [33m=[39m {[22m
+[2m     [90m 38 |[39m       codeChallenge[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'code_challenge'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m[22m
+[2m     [90m 39 |[39m       nonce[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'nonce'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m[0m[22m
+
+[2m      [2mat start ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:36:17)[22m[2m[22m
+[2m      [2mat signIn ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:49:21)[22m[2m[22m
+[2m      [2mat [22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:156:19[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mLogin com Google (DMTE-551) › retorno e troca do código › AC-18: sem e-mail no token volta com "unverified"[39m[22m
+
+    TypeError: Invalid URL
+
+[2m    [0m [90m 34 |[39m   [36mconst[39m start [33m=[39m [36masync[39m () [33m=>[39m {[22m
+[2m     [90m 35 |[39m     [36mconst[39m res [33m=[39m [36mawait[39m [36mget[39m([32m'/auth/social/google/start'[39m)[33m;[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 36 |[39m     [36mconst[39m url [33m=[39m [36mnew[39m [33mURL[39m(res[33m.[39mheaders[33m.[39mlocation)[33m;[39m[22m
+[2m     [90m    |[39m                 [31m[1m^[22m[2m[39m[22m
+[2m     [90m 37 |[39m     h[33m.[39moauth[33m.[39mauthorize [33m=[39m {[22m
+[2m     [90m 38 |[39m       codeChallenge[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'code_challenge'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m[22m
+[2m     [90m 39 |[39m       nonce[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'nonce'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m[0m[22m
+
+[2m      [2mat start ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:36:17)[22m[2m[22m
+[2m      [2mat signIn ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:49:21)[22m[2m[22m
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:163:22)[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mLogin com Google (DMTE-551) › retorno e troca do código › AC-20: depois de ligada, a entrada é pelo identificador do provedor: trocar o e-mail da conta não muda quem entra[39m[22m
+
+    TypeError: Invalid URL
+
+[2m    [0m [90m 34 |[39m   [36mconst[39m start [33m=[39m [36masync[39m () [33m=>[39m {[22m
+[2m     [90m 35 |[39m     [36mconst[39m res [33m=[39m [36mawait[39m [36mget[39m([32m'/auth/social/google/start'[39m)[33m;[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 36 |[39m     [36mconst[39m url [33m=[39m [36mnew[39m [33mURL[39m(res[33m.[39mheaders[33m.[39mlocation)[33m;[39m[22m
+[2m     [90m    |[39m                 [31m[1m^[22m[2m[39m[22m
+[2m     [90m 37 |[39m     h[33m.[39moauth[33m.[39mauthorize [33m=[39m {[22m
+[2m     [90m 38 |[39m       codeChallenge[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'code_challenge'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m[22m
+[2m     [90m 39 |[39m       nonce[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'nonce'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m[0m[22m
+
+[2m      [2mat start ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:36:17)[22m[2m[22m
+[2m      [2mat signIn ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:49:21)[22m[2m[22m
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:167:7)[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mLogin com Google (DMTE-551) › retorno e troca do código › AC-20: o identificador ligado a uma conta nunca entra na conta de outra, mesmo que o e-mail do token seja o dela[39m[22m
+
+    TypeError: Invalid URL
+
+[2m    [0m [90m 34 |[39m   [36mconst[39m start [33m=[39m [36masync[39m () [33m=>[39m {[22m
+[2m     [90m 35 |[39m     [36mconst[39m res [33m=[39m [36mawait[39m [36mget[39m([32m'/auth/social/google/start'[39m)[33m;[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 36 |[39m     [36mconst[39m url [33m=[39m [36mnew[39m [33mURL[39m(res[33m.[39mheaders[33m.[39mlocation)[33m;[39m[22m
+[2m     [90m    |[39m                 [31m[1m^[22m[2m[39m[22m
+[2m     [90m 37 |[39m     h[33m.[39moauth[33m.[39mauthorize [33m=[39m {[22m
+[2m     [90m 38 |[39m       codeChallenge[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'code_challenge'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m[22m
+[2m     [90m 39 |[39m       nonce[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'nonce'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m[0m[22m
+
+[2m      [2mat start ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:36:17)[22m[2m[22m
+[2m      [2mat signIn ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:49:21)[22m[2m[22m
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:178:7)[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mLogin com Google (DMTE-551) › retorno e troca do código › AC-20: o login social não muda o papel nem a organização do usuário[39m[22m
+
+    TypeError: Invalid URL
+
+[2m    [0m [90m 34 |[39m   [36mconst[39m start [33m=[39m [36masync[39m () [33m=>[39m {[22m
+[2m     [90m 35 |[39m     [36mconst[39m res [33m=[39m [36mawait[39m [36mget[39m([32m'/auth/social/google/start'[39m)[33m;[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 36 |[39m     [36mconst[39m url [33m=[39m [36mnew[39m [33mURL[39m(res[33m.[39mheaders[33m.[39mlocation)[33m;[39m[22m
+[2m     [90m    |[39m                 [31m[1m^[22m[2m[39m[22m
+[2m     [90m 37 |[39m     h[33m.[39moauth[33m.[39mauthorize [33m=[39m {[22m
+[2m     [90m 38 |[39m       codeChallenge[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'code_challenge'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m[22m
+[2m     [90m 39 |[39m       nonce[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'nonce'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m[0m[22m
+
+[2m      [2mat start ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:36:17)[22m[2m[22m
+[2m      [2mat signIn ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:49:21)[22m[2m[22m
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:188:7)[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mLogin com Google (DMTE-551) › retorno e troca do código › AC-21: quem tem segundo fator recebe o desafio, não o JWT, depois do login social[39m[22m
+
+    TypeError: Invalid URL
+
+[2m    [0m [90m 34 |[39m   [36mconst[39m start [33m=[39m [36masync[39m () [33m=>[39m {[22m
+[2m     [90m 35 |[39m     [36mconst[39m res [33m=[39m [36mawait[39m [36mget[39m([32m'/auth/social/google/start'[39m)[33m;[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 36 |[39m     [36mconst[39m url [33m=[39m [36mnew[39m [33mURL[39m(res[33m.[39mheaders[33m.[39mlocation)[33m;[39m[22m
+[2m     [90m    |[39m                 [31m[1m^[22m[2m[39m[22m
+[2m     [90m 37 |[39m     h[33m.[39moauth[33m.[39mauthorize [33m=[39m {[22m
+[2m     [90m 38 |[39m       codeChallenge[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'code_challenge'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m[22m
+[2m     [90m 39 |[39m       nonce[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'nonce'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m[0m[22m
+
+[2m      [2mat start ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:36:17)[22m[2m[22m
+[2m      [2mat signIn ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:49:21)[22m[2m[22m
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:197:19)[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mLogin com Google (DMTE-551) › retorno e troca do código › AC-19: conta inativada depois do retorno e antes da troca não entra[39m[22m
+
+    TypeError: Invalid URL
+
+[2m    [0m [90m 34 |[39m   [36mconst[39m start [33m=[39m [36masync[39m () [33m=>[39m {[22m
+[2m     [90m 35 |[39m     [36mconst[39m res [33m=[39m [36mawait[39m [36mget[39m([32m'/auth/social/google/start'[39m)[33m;[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 36 |[39m     [36mconst[39m url [33m=[39m [36mnew[39m [33mURL[39m(res[33m.[39mheaders[33m.[39mlocation)[33m;[39m[22m
+[2m     [90m    |[39m                 [31m[1m^[22m[2m[39m[22m
+[2m     [90m 37 |[39m     h[33m.[39moauth[33m.[39mauthorize [33m=[39m {[22m
+[2m     [90m 38 |[39m       codeChallenge[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'code_challenge'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m[22m
+[2m     [90m 39 |[39m       nonce[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'nonce'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m[0m[22m
+
+[2m      [2mat start ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:36:17)[22m[2m[22m
+[2m      [2mat signIn ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:49:21)[22m[2m[22m
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:206:30)[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mLogin com Google (DMTE-551) › validações do retorno › AC-19: state adulterado, de outro formato ou reutilizado é recusado[39m[22m
+
+    TypeError: Invalid URL
+
+[2m    [0m [90m 34 |[39m   [36mconst[39m start [33m=[39m [36masync[39m () [33m=>[39m {[22m
+[2m     [90m 35 |[39m     [36mconst[39m res [33m=[39m [36mawait[39m [36mget[39m([32m'/auth/social/google/start'[39m)[33m;[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 36 |[39m     [36mconst[39m url [33m=[39m [36mnew[39m [33mURL[39m(res[33m.[39mheaders[33m.[39mlocation)[33m;[39m[22m
+[2m     [90m    |[39m                 [31m[1m^[22m[2m[39m[22m
+[2m     [90m 37 |[39m     h[33m.[39moauth[33m.[39mauthorize [33m=[39m {[22m
+[2m     [90m 38 |[39m       codeChallenge[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'code_challenge'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m[22m
+[2m     [90m 39 |[39m       nonce[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'nonce'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m[0m[22m
+
+[2m      [2mat start ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:36:17)[22m[2m[22m
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:215:21)[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mLogin com Google (DMTE-551) › validações do retorno › AC-19: state vencido (10 minutos) é recusado[39m[22m
+
+    TypeError: Invalid URL
+
+[2m    [0m [90m 34 |[39m   [36mconst[39m start [33m=[39m [36masync[39m () [33m=>[39m {[22m
+[2m     [90m 35 |[39m     [36mconst[39m res [33m=[39m [36mawait[39m [36mget[39m([32m'/auth/social/google/start'[39m)[33m;[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 36 |[39m     [36mconst[39m url [33m=[39m [36mnew[39m [33mURL[39m(res[33m.[39mheaders[33m.[39mlocation)[33m;[39m[22m
+[2m     [90m    |[39m                 [31m[1m^[22m[2m[39m[22m
+[2m     [90m 37 |[39m     h[33m.[39moauth[33m.[39mauthorize [33m=[39m {[22m
+[2m     [90m 38 |[39m       codeChallenge[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'code_challenge'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m[22m
+[2m     [90m 39 |[39m       nonce[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'nonce'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m[0m[22m
+
+[2m      [2mat start ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:36:17)[22m[2m[22m
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:225:17)[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mLogin com Google (DMTE-551) › validações do retorno › AC-19: sem o cookie, ou com o cookie de outra sessão, o retorno é recusado[39m[22m
+
+    TypeError: Invalid URL
+
+[2m    [0m [90m 34 |[39m   [36mconst[39m start [33m=[39m [36masync[39m () [33m=>[39m {[22m
+[2m     [90m 35 |[39m     [36mconst[39m res [33m=[39m [36mawait[39m [36mget[39m([32m'/auth/social/google/start'[39m)[33m;[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 36 |[39m     [36mconst[39m url [33m=[39m [36mnew[39m [33mURL[39m(res[33m.[39mheaders[33m.[39mlocation)[33m;[39m[22m
+[2m     [90m    |[39m                 [31m[1m^[22m[2m[39m[22m
+[2m     [90m 37 |[39m     h[33m.[39moauth[33m.[39mauthorize [33m=[39m {[22m
+[2m     [90m 38 |[39m       codeChallenge[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'code_challenge'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m[22m
+[2m     [90m 39 |[39m       nonce[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'nonce'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m[0m[22m
+
+[2m      [2mat start ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:36:17)[22m[2m[22m
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:232:21)[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mLogin com Google (DMTE-551) › validações do retorno › AC-19: id_token com nonce diferente do pedido é recusado e nada é ligado[39m[22m
+
+    TypeError: Invalid URL
+
+[2m    [0m [90m 34 |[39m   [36mconst[39m start [33m=[39m [36masync[39m () [33m=>[39m {[22m
+[2m     [90m 35 |[39m     [36mconst[39m res [33m=[39m [36mawait[39m [36mget[39m([32m'/auth/social/google/start'[39m)[33m;[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 36 |[39m     [36mconst[39m url [33m=[39m [36mnew[39m [33mURL[39m(res[33m.[39mheaders[33m.[39mlocation)[33m;[39m[22m
+[2m     [90m    |[39m                 [31m[1m^[22m[2m[39m[22m
+[2m     [90m 37 |[39m     h[33m.[39moauth[33m.[39mauthorize [33m=[39m {[22m
+[2m     [90m 38 |[39m       codeChallenge[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'code_challenge'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m[22m
+[2m     [90m 39 |[39m       nonce[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'nonce'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m[0m[22m
+
+[2m      [2mat start ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:36:17)[22m[2m[22m
+[2m      [2mat signIn ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:49:21)[22m[2m[22m
+[2m      [2mat [22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:248:22[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mLogin com Google (DMTE-551) › validações do retorno › AC-19: id_token com audiência de outro aplicativo é recusado e nada é ligado[39m[22m
+
+    TypeError: Invalid URL
+
+[2m    [0m [90m 34 |[39m   [36mconst[39m start [33m=[39m [36masync[39m () [33m=>[39m {[22m
+[2m     [90m 35 |[39m     [36mconst[39m res [33m=[39m [36mawait[39m [36mget[39m([32m'/auth/social/google/start'[39m)[33m;[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 36 |[39m     [36mconst[39m url [33m=[39m [36mnew[39m [33mURL[39m(res[33m.[39mheaders[33m.[39mlocation)[33m;[39m[22m
+[2m     [90m    |[39m                 [31m[1m^[22m[2m[39m[22m
+[2m     [90m 37 |[39m     h[33m.[39moauth[33m.[39mauthorize [33m=[39m {[22m
+[2m     [90m 38 |[39m       codeChallenge[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'code_challenge'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m[22m
+[2m     [90m 39 |[39m       nonce[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'nonce'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m[0m[22m
+
+[2m      [2mat start ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:36:17)[22m[2m[22m
+[2m      [2mat signIn ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:49:21)[22m[2m[22m
+[2m      [2mat [22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:248:22[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mLogin com Google (DMTE-551) › validações do retorno › AC-19: id_token com emissor desconhecido é recusado e nada é ligado[39m[22m
+
+    TypeError: Invalid URL
+
+[2m    [0m [90m 34 |[39m   [36mconst[39m start [33m=[39m [36masync[39m () [33m=>[39m {[22m
+[2m     [90m 35 |[39m     [36mconst[39m res [33m=[39m [36mawait[39m [36mget[39m([32m'/auth/social/google/start'[39m)[33m;[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 36 |[39m     [36mconst[39m url [33m=[39m [36mnew[39m [33mURL[39m(res[33m.[39mheaders[33m.[39mlocation)[33m;[39m[22m
+[2m     [90m    |[39m                 [31m[1m^[22m[2m[39m[22m
+[2m     [90m 37 |[39m     h[33m.[39moauth[33m.[39mauthorize [33m=[39m {[22m
+[2m     [90m 38 |[39m       codeChallenge[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'code_challenge'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m[22m
+[2m     [90m 39 |[39m       nonce[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'nonce'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m[0m[22m
+
+[2m      [2mat start ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:36:17)[22m[2m[22m
+[2m      [2mat signIn ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:49:21)[22m[2m[22m
+[2m      [2mat [22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:248:22[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mLogin com Google (DMTE-551) › validações do retorno › AC-19: id_token com token já vencido é recusado e nada é ligado[39m[22m
+
+    TypeError: Invalid URL
+
+[2m    [0m [90m 34 |[39m   [36mconst[39m start [33m=[39m [36masync[39m () [33m=>[39m {[22m
+[2m     [90m 35 |[39m     [36mconst[39m res [33m=[39m [36mawait[39m [36mget[39m([32m'/auth/social/google/start'[39m)[33m;[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 36 |[39m     [36mconst[39m url [33m=[39m [36mnew[39m [33mURL[39m(res[33m.[39mheaders[33m.[39mlocation)[33m;[39m[22m
+[2m     [90m    |[39m                 [31m[1m^[22m[2m[39m[22m
+[2m     [90m 37 |[39m     h[33m.[39moauth[33m.[39mauthorize [33m=[39m {[22m
+[2m     [90m 38 |[39m       codeChallenge[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'code_challenge'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m[22m
+[2m     [90m 39 |[39m       nonce[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'nonce'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m[0m[22m
+
+[2m      [2mat start ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:36:17)[22m[2m[22m
+[2m      [2mat signIn ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:49:21)[22m[2m[22m
+[2m      [2mat [22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:248:22[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mLogin com Google (DMTE-551) › validações do retorno › AC-19: id_token com sem identificador (sub) é recusado e nada é ligado[39m[22m
+
+    TypeError: Invalid URL
+
+[2m    [0m [90m 34 |[39m   [36mconst[39m start [33m=[39m [36masync[39m () [33m=>[39m {[22m
+[2m     [90m 35 |[39m     [36mconst[39m res [33m=[39m [36mawait[39m [36mget[39m([32m'/auth/social/google/start'[39m)[33m;[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 36 |[39m     [36mconst[39m url [33m=[39m [36mnew[39m [33mURL[39m(res[33m.[39mheaders[33m.[39mlocation)[33m;[39m[22m
+[2m     [90m    |[39m                 [31m[1m^[22m[2m[39m[22m
+[2m     [90m 37 |[39m     h[33m.[39moauth[33m.[39mauthorize [33m=[39m {[22m
+[2m     [90m 38 |[39m       codeChallenge[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'code_challenge'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m[22m
+[2m     [90m 39 |[39m       nonce[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'nonce'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m[0m[22m
+
+[2m      [2mat start ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:36:17)[22m[2m[22m
+[2m      [2mat signIn ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:49:21)[22m[2m[22m
+[2m      [2mat [22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:248:22[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mLogin com Google (DMTE-551) › validações do retorno › AC-19: recusa do usuário no Google (error), código recusado e falha do provedor voltam com "failed"[39m[22m
+
+    TypeError: Invalid URL
+
+[2m    [0m [90m 34 |[39m   [36mconst[39m start [33m=[39m [36masync[39m () [33m=>[39m {[22m
+[2m     [90m 35 |[39m     [36mconst[39m res [33m=[39m [36mawait[39m [36mget[39m([32m'/auth/social/google/start'[39m)[33m;[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 36 |[39m     [36mconst[39m url [33m=[39m [36mnew[39m [33mURL[39m(res[33m.[39mheaders[33m.[39mlocation)[33m;[39m[22m
+[2m     [90m    |[39m                 [31m[1m^[22m[2m[39m[22m
+[2m     [90m 37 |[39m     h[33m.[39moauth[33m.[39mauthorize [33m=[39m {[22m
+[2m     [90m 38 |[39m       codeChallenge[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'code_challenge'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m[22m
+[2m     [90m 39 |[39m       nonce[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'nonce'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m[0m[22m
+
+[2m      [2mat start ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:36:17)[22m[2m[22m
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:253:17)[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mLogin com Google (DMTE-551) › validações do retorno › AC-06: entrada hostil em code e state volta com "failed", sem erro 500 e sem tocar o provedor[39m[22m
+
+    TypeError: Invalid URL
+
+[2m    [0m [90m 34 |[39m   [36mconst[39m start [33m=[39m [36masync[39m () [33m=>[39m {[22m
+[2m     [90m 35 |[39m     [36mconst[39m res [33m=[39m [36mawait[39m [36mget[39m([32m'/auth/social/google/start'[39m)[33m;[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 36 |[39m     [36mconst[39m url [33m=[39m [36mnew[39m [33mURL[39m(res[33m.[39mheaders[33m.[39mlocation)[33m;[39m[22m
+[2m     [90m    |[39m                 [31m[1m^[22m[2m[39m[22m
+[2m     [90m 37 |[39m     h[33m.[39moauth[33m.[39mauthorize [33m=[39m {[22m
+[2m     [90m 38 |[39m       codeChallenge[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'code_challenge'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m[22m
+[2m     [90m 39 |[39m       nonce[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'nonce'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m[0m[22m
+
+[2m      [2mat start ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:36:17)[22m[2m[22m
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:264:17)[22m[2m[22m
+
+[1m[31m  [1m● [22m[1mLogin com Google (DMTE-551) › AC-23: o segredo do provedor não aparece em nenhuma resposta nem em log[39m[22m
+
+    TypeError: Invalid URL
+
+[2m    [0m [90m 34 |[39m   [36mconst[39m start [33m=[39m [36masync[39m () [33m=>[39m {[22m
+[2m     [90m 35 |[39m     [36mconst[39m res [33m=[39m [36mawait[39m [36mget[39m([32m'/auth/social/google/start'[39m)[33m;[39m[22m
+[2m    [31m[1m>[22m[2m[39m[90m 36 |[39m     [36mconst[39m url [33m=[39m [36mnew[39m [33mURL[39m(res[33m.[39mheaders[33m.[39mlocation)[33m;[39m[22m
+[2m     [90m    |[39m                 [31m[1m^[22m[2m[39m[22m
+[2m     [90m 37 |[39m     h[33m.[39moauth[33m.[39mauthorize [33m=[39m {[22m
+[2m     [90m 38 |[39m       codeChallenge[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'code_challenge'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m[22m
+[2m     [90m 39 |[39m       nonce[33m:[39m url[33m.[39msearchParams[33m.[39m[36mget[39m([32m'nonce'[39m) [33m?[39m[33m?[39m [32m''[39m[33m,[39m[0m[22m
+
+[2m      [2mat start ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:36:17)[22m[2m[22m
+[2m      [2mat Object.<anonymous> ([22m[2m[0m[36msrc/social-auth/social-auth.google.http.spec.ts[39m[0m[2m:283:15)[22m[2m[22m
+
+[1mTest Suites: [22m[1m[31m1 failed[39m[22m, 1 total
+[1mTests:       [22m[1m[31m28 failed[39m[22m, [1m[32m1 passed[39m[22m, 29 total
+[1mSnapshots:   [22m0 total
+[1mTime:[22m        6.38 s
+[2mRan all test suites[22m[2m within paths[22m "src/social-auth/social-auth.google.http.spec.ts"[2m.[22m
+Warning: command "jest --passWithNoTests=true --runTestsByPath src/social-auth/social-auth.google.http.spec.ts" exited with non-zero status code

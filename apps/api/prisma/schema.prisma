@@ -163,6 +163,8 @@ model User {
   extension String?
   /// Nulo = convite pendente (DMTE-550): o usuário ainda não definiu a própria senha.
   password String?
+  /// Sobe a cada troca ou definição de senha; o JWT leva a versão e token de versão antiga deixa de valer (DMTE-551).
+  passwordVersion Int @default(0)
   role     Role    @default(AGENT)
   /// Tiflux-parity (DMTE-84, Tarefa 3): toggle "Usuário ativo" no perfil —
   /// inativo não consegue autenticar, mas histórico/auditoria continua legível.
@@ -198,6 +200,9 @@ model User {
   apiTokens   ApiToken[]
   appointments Appointment[]
   passwordTokens PasswordToken[]
+  twoFactor      UserTwoFactor?
+  twoFactorRecoveryCodes TwoFactorRecoveryCode[]
+  externalIdentities ExternalIdentity[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -221,6 +226,55 @@ model PasswordToken {
   createdAt   DateTime             @default(now())
 
   @@index([userId, purpose])
+}
+
+/// DMTE-551: segundo fator (TOTP) do usuário. `secretEnc` é o segredo cifrado (AES-256-GCM); `enabled` só vira true depois de um código válido.
+model UserTwoFactor {
+  userId      String    @id
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  secretEnc   String
+  enabled     Boolean   @default(false)
+  /// Último passo de 30 s aceito: o mesmo código não vale duas vezes.
+  lastStep    Int       @default(0)
+  confirmedAt DateTime?
+  createdAt   DateTime  @default(now())
+}
+
+/// DMTE-551: código de recuperação do segundo fator; só o hash SHA-256 é guardado e cada um vale uma vez.
+model TwoFactorRecoveryCode {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  codeHash  String
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+}
+
+/// DMTE-551: trilha de eventos de segurança (hoje, o segundo fator desativado por um administrador). Sem chave estrangeira: o registro sobrevive à exclusão dos usuários.
+model SecurityEvent {
+  id        String   @id @default(uuid())
+  type      String
+  actorId   String
+  subjectId String
+  createdAt DateTime @default(now())
+
+  @@index([subjectId])
+}
+
+/// DMTE-551: conta de um provedor de login social (Google, GitHub) ligada a um usuário existente. Nunca cria usuário.
+model ExternalIdentity {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider  String
+  /// Identificador do usuário no provedor; é por ele, não pelo e-mail, que a entrada acontece depois da primeira vez.
+  subject   String
+  createdAt DateTime @default(now())
+
+  @@unique([provider, subject])
+  @@index([userId])
 }
 
 model ServiceDesk {

@@ -1,0 +1,31 @@
+
+ RUN  v4.1.11 /home/hermes/multica_workspaces/dm-tecnolog-0773f65cfff4/dmte-551-8067d53caffe/workdir/aponta/apps/web
+
+ ❯ |web| src/pages/MyAccountPage.session.test.tsx (2 tests | 1 failed) 3788ms
+     × AC-04: guarda o token novo devolvido pela troca de senha e continua logado 2456ms
+     ✓ AC-04: troca recusada não mexe no token da sessão  1307ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed (2)
+   Start at  15:12:34
+   Duration  24.87s (transform 8.10s, setup 1.35s, import 13.58s, tests 3.79s, environment 4.31s)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |web| src/pages/MyAccountPage.session.test.tsx > MyAccountPage: sessão depois da troca de senha (DMTE-551) > AC-04: guarda o token novo devolvido pela troca de senha e continua logado
+AssertionError: expected 'token-antigo' to be 'h.eyJzdWIiOiJ1LTEiLCJlbWFpbCI6ImphbmV…' // Object.is equality
+
+Expected: "h.eyJzdWIiOiJ1LTEiLCJlbWFpbCI6ImphbmVAZXhhbXBsZS5jb20iLCJyb2xlIjoiQUdFTlQiLCJwdiI6MX0=.s"
+Received: "token-antigo"
+
+ ❯ src/pages/MyAccountPage.session.test.tsx:41:43
+     39|
+     40|     expect(await screen.findByText(/senha atualizada com sucesso/i)).t…
+     41|     expect(useAuthStore.getState().token).toBe(NEW_TOKEN);
+       |                                           ^
+     42|     expect(useAuthStore.getState().user?.email).toBe('jane@example.com…
+     43|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
