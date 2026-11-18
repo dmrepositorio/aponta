@@ -232,8 +232,8 @@
   "spec": "docs/delivery/specs/DMTE-560.md",
   "tdd": {
     "mode": "required",
-    "red": ".delivery/evidence/DMTE-560/red-r3.json",
-    "green": ".delivery/evidence/DMTE-560/green-r3.json"
+    "red": ".delivery/evidence/DMTE-560/red-r3-completo.json",
+    "green": ".delivery/evidence/DMTE-560/green-r3-completo.json"
   },
   "design_system": {
     "applicable": true,
