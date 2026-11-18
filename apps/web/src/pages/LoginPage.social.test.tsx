@@ -36,7 +36,7 @@ describe('LoginPage: login social', () => {
 
     const google = await screen.findByRole('link', { name: /entrar com google/i });
     expect(google).toHaveAttribute('href', '/api/auth/social/google/start');
-    expect(screen.queryByRole('link', { name: /github|facebook/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /github/i })).not.toBeInTheDocument();
   });
 
   it('AC-22: sem provedores, ou se a lista não carrega, não mostra botão e o login por senha segue normal', async () => {

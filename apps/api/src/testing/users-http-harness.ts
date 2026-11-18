@@ -77,8 +77,6 @@ export const GOOGLE_CLIENT_SECRET = 'google-secret-test';
 export const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token';
 export const FACEBOOK_CLIENT_ID = 'facebook-client-id-test';
 export const FACEBOOK_CLIENT_SECRET = 'facebook-secret-test';
-export const FACEBOOK_TOKEN_URL = 'https://graph.facebook.com/v24.0/oauth/access_token';
-export const FACEBOOK_ME_URL = 'https://graph.facebook.com/v24.0/me?fields=id,email';
 export const GITHUB_CLIENT_ID = 'github-client-id-test';
 export const GITHUB_CLIENT_SECRET = 'github-secret-test';
 export const GITHUB_TOKEN_URL = 'https://github.com/login/oauth/access_token';
@@ -95,8 +93,6 @@ export interface FakeOAuth {
   requests: { url: string; body: URLSearchParams; headers: Record<string, string> }[];
   /** GitHub simulado: perfil, e-mails, e o que o endpoint de e-mails responde. */
   github: { user: Record<string, unknown>; emails: unknown; emailsStatus: number; tokenError: boolean };
-  /** Facebook simulado: perfil devolvido pelo Graph (o e-mail só vem se o usuário tem um e-mail confirmado) e falhas. */
-  facebook: { me: Record<string, unknown>; meStatus: number; tokenError: boolean };
 }
 
 const unsigned = (claims: object) => `e30.${Buffer.from(JSON.stringify(claims)).toString('base64url')}.assinatura`;
@@ -124,12 +120,11 @@ export interface Harness {
   close(): Promise<void>;
 }
 
-export async function buildHarness(options: { flag?: boolean; limit?: number; twoFactorKey?: string | null; googleConfigured?: boolean; githubConfigured?: boolean; facebookConfigured?: boolean } = {}): Promise<Harness> {
+export async function buildHarness(options: { flag?: boolean; limit?: number; twoFactorKey?: string | null; googleConfigured?: boolean; githubConfigured?: boolean } = {}): Promise<Harness> {
   const prisma = createFakePrisma(seedTables());
   const state = { flag: options.flag ?? true, twoFactor: true, social: { google: true, github: true, facebook: true } as Record<string, boolean> };
   const oauth: FakeOAuth = {
     claims: {}, tokenStatus: 200, requests: [],
-    facebook: { me: { id: '777', email: 'ana@aponta.test' }, meStatus: 200, tokenError: false },
     github: { user: { id: 4242, login: 'ana' }, emails: [{ email: 'ana@aponta.test', primary: true, verified: true }], emailsStatus: 200, tokenError: false },
   };
   const fakeFetch: OAuthFetch = async (url, init) => {
@@ -156,17 +151,6 @@ export async function buildHarness(options: { flag?: boolean; limit?: number; tw
       if (init?.headers?.['authorization'] !== 'Bearer gh-token' || !init?.headers?.['user-agent']) return refuse(401);
       if (url === GITHUB_EMAILS_URL && oauth.github.emailsStatus !== 200) return refuse(oauth.github.emailsStatus);
       return reply(url === GITHUB_USER_URL ? oauth.github.user : oauth.github.emails);
-    }
-    if (url === FACEBOOK_TOKEN_URL) {
-      if (oauth.tokenStatus !== 200 || oauth.facebook.tokenError) return refuse(400);
-      // O Facebook não recebe PKCE: o pedido não leva code_verifier.
-      if (body.get('code') !== 'code-ok' || body.get('redirect_uri') !== sent?.redirectUri || body.get('code_verifier') !== null
-        || body.get('client_secret') !== FACEBOOK_CLIENT_SECRET || body.get('client_id') !== FACEBOOK_CLIENT_ID) return refuse(400);
-      return reply({ access_token: 'fb-token', token_type: 'bearer' });
-    }
-    if (url === FACEBOOK_ME_URL) {
-      if (init?.headers?.['authorization'] !== 'Bearer fb-token') return refuse(401);
-      return oauth.facebook.meStatus === 200 ? reply(oauth.facebook.me) : refuse(oauth.facebook.meStatus);
     }
     throw new Error(`Chamada inesperada ao provedor: ${url}`);
   };
@@ -206,7 +190,7 @@ export async function buildHarness(options: { flag?: boolean; limit?: number; tw
           getEffectivePermissions: jest.fn(async () => new Set<string>()),
         },
       },
-      { provide: ConfigService, useValue: { get: (key: string) => ({ PUBLIC_APP_URL: 'https://aponta.test', JWT_SECRET: 'test-secret', ...(twoFactorKey ? { TWO_FACTOR_ENCRYPTION_KEY: twoFactorKey } : {}), ...(options.googleConfigured === false ? {} : { OAUTH_GOOGLE_CLIENT_ID: GOOGLE_CLIENT_ID, OAUTH_GOOGLE_CLIENT_SECRET: GOOGLE_CLIENT_SECRET }), ...(options.githubConfigured === false ? {} : { OAUTH_GITHUB_CLIENT_ID: GITHUB_CLIENT_ID, OAUTH_GITHUB_CLIENT_SECRET: GITHUB_CLIENT_SECRET }), ...(options.facebookConfigured === false ? {} : { OAUTH_FACEBOOK_CLIENT_ID: FACEBOOK_CLIENT_ID, OAUTH_FACEBOOK_CLIENT_SECRET: FACEBOOK_CLIENT_SECRET }) } as Record<string, string>)[key] } },
+      { provide: ConfigService, useValue: { get: (key: string) => ({ PUBLIC_APP_URL: 'https://aponta.test', JWT_SECRET: 'test-secret', ...(twoFactorKey ? { TWO_FACTOR_ENCRYPTION_KEY: twoFactorKey } : {}), ...(options.googleConfigured === false ? {} : { OAUTH_GOOGLE_CLIENT_ID: GOOGLE_CLIENT_ID, OAUTH_GOOGLE_CLIENT_SECRET: GOOGLE_CLIENT_SECRET }), ...(options.githubConfigured === false ? {} : { OAUTH_GITHUB_CLIENT_ID: GITHUB_CLIENT_ID, OAUTH_GITHUB_CLIENT_SECRET: GITHUB_CLIENT_SECRET }), OAUTH_FACEBOOK_CLIENT_ID: FACEBOOK_CLIENT_ID, OAUTH_FACEBOOK_CLIENT_SECRET: FACEBOOK_CLIENT_SECRET } as Record<string, string>)[key] } },
       { provide: APP_GUARD, useClass: ThrottlerGuard },
     ],
   })

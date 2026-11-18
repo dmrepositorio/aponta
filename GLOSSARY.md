@@ -101,5 +101,5 @@ Um dos 10 códigos de uso único mostrados na ativação do segundo fator, que o
 _Avoid_: Código de backup, código de emergência
 
 **Login social**:
-Entrada com a conta Google, GitHub ou Facebook de quem já tem conta ativa no Aponta, ligada pelo e-mail verificado do provedor; nunca cria usuário.
+Entrada com a conta Google ou GitHub de quem já tem conta ativa no Aponta, ligada pelo e-mail verificado do provedor; nunca cria usuário.
 _Avoid_: Cadastro social, SSO

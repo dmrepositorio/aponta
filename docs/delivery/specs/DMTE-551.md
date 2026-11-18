@@ -2,6 +2,8 @@
 
 Identidade: DMTE-551, issue dmrepositorio/aponta#310, pai Multica `01a1e7d3-5980-779f-8b61-200fa5eac492`, Tier 3, ciclo 2026-11-09/2026-11-22. Pedido de Alfredo em 17/11/2026: redefinir senha por e-mail com regra de complexidade, entrar com GitHub, Google e Facebook, e ativar autenticação em dois fatores na conta. Decisões confirmadas por Alfredo no pai (Q1 a Q12). Base de planejamento: `main` em `35b982f`.
 
+**Emenda da rodada 2 (decisão de Alfredo no pai, 17/11/2026): o Facebook sai desta entrega.** A documentação do Graph API não garante que o `email` seja confirmado e não oferece campo que diga isso; tratar a presença do e-mail como verificação deixaria alguém assumir a conta de outra pessoa. Esta entrega traz só Google e GitHub. O Facebook volta em ticket próprio, com a ligação da conta feita em Minha Conta por quem já está logado. Onde o texto abaixo cita o Facebook (histórias 9 e 12, AC-17 em diante) vale a emenda; a flag e as variáveis `OAUTH_FACEBOOK_*` não existem.
+
 **Reconciliação com a DMTE-550 (#311, integrada em `35b982f`).** A redefinição de senha por e-mail já existe por ela: "Esqueci minha senha" no login, `POST /auth/forgot-password`, `POST /auth/password/set`, página `/definir-senha`, token com hash e uso único, flag `convite-e-redefinicao-usuario`, `PUBLIC_APP_URL`, link de 1 h e 5 pedidos por minuto por origem e por e-mail. Alfredo aceitou manter esses valores (Q10). Esta SPEC não recria esse fluxo: acrescenta o que a DMTE-550 deixou de fora, a regra de senha forte e a queda das sessões antigas, e entrega o segundo fator e o login social.
 
 ## Problem Statement
@@ -72,7 +74,7 @@ Três blocos, entregues nesta ordem: A (senha forte e sessões), B (segundo fato
 **Dados e contratos**
 - Novas estruturas: versão de senha no usuário, estado do segundo fator do usuário (segredo cifrado, ativo, códigos de recuperação com hash), identidade externa (provedor, identificador no provedor, usuário) e evento de segurança. Migração só aditiva e reversível pelo aplicativo anterior.
 - Endpoints públicos novos limitados e com resposta uniforme; endpoints de segundo fator autenticados; desativação por outro usuário pela permissão nova.
-- Feature flags registradas no registro existente com dono `alfredo`, padrão desligado e data de remoção 2027-01-31: `autenticacao-dois-fatores`, `login-social-google`, `login-social-github`, `login-social-facebook`.
+- Feature flags registradas no registro existente com dono `alfredo`, padrão desligado e data de remoção 2027-01-31: `autenticacao-dois-fatores`, `login-social-google`, `login-social-github`.
 - Web: botões de provedor e desafio de código no login, seção Segurança em Minha Conta e ação de administrador na aba Segurança do formulário de usuário; a regra da senha aparece nas telas de cadastro, troca e definição de senha. Reusar componentes e tokens do DS; sem Carbon nem Next.js.
 
 **Configuração de ambiente (sem valores no repositório)**
@@ -102,7 +104,7 @@ Bloco B: segundo fator
 
 Bloco C: login social
 - AC-17: com provedor simulado, o retorno com e-mail verificado de conta existente e ativa liga a identidade, devolve o código de troca de uso único e o web o troca por JWT; o JWT nunca aparece na URL.
-- AC-18: o login social nunca cria usuário; conta inexistente, inativa, com convite pendente ou e-mail sem verificação (inclusive Facebook sem e-mail verificado) falha com mensagem clara e sem ligar identidade.
+- AC-18: o login social nunca cria usuário; conta inexistente, inativa, com convite pendente ou ou e-mail sem verificação falha com mensagem clara e sem ligar identidade.
 - AC-19: estado inválido, reutilizado ou expirado, `nonce` divergente (Google) e código de troca reutilizado são recusados.
 - AC-20: depois de ligada, a entrada é pelo identificador do provedor, não mais pelo e-mail; papel e organização do usuário não mudam.
 - AC-21: quem tem segundo fator é desafiado depois do login social do mesmo modo que depois da senha.
@@ -115,7 +117,7 @@ Bloco C: login social
 - Seams, na ordem de preferência: (1) controllers de autenticação por HTTP com Prisma de teste (estilo do `auth-rate-limit.integration.spec.ts`), com provedores OAuth simulados por um servidor falso em memória; (2) a regra de senha como função pura, com tabela de casos; (3) páginas do web com Testing Library (login, Minha Conta, definição de senha, formulário de usuário) e API simulada; (4) E2E por `scripts/e2e_isolated.sh`, sem provedor real.
 - Prior art: `auth.controller.spec.ts`, `auth.service.spec.ts`, `auth-rate-limit.integration.spec.ts`, `LoginPage.test.tsx`, `MyAccountPage.test.tsx`, `feature-flags.spec.ts`.
 - TOTP conferido contra os vetores de teste do RFC 6238. Testes de injeção com payloads fixos.
-- Provedores reais (Google, GitHub, Facebook) e SMTP real não entram em teste automatizado; a validação nos provedores é um passo de Alfredo com os aplicativos criados, em staging.
+- Provedores reais (Google, GitHub) e SMTP real não entram em teste automatizado; a validação nos provedores é um passo de Alfredo com os aplicativos criados, em staging.
 - RED/GREEN reais por ticket com o coletor do projeto; evidência por ticket no manifest.
 
 ## Out of Scope
@@ -140,7 +142,7 @@ Bloco C: login social
 
 **Riscos**
 - Segurança de autenticação: erro de lógica aqui expõe contas. O QA examina RBAC, resposta uniforme, expiração, uso único, `state`/`nonce`, tentativas e a ausência de segredo em log.
-- Facebook nem sempre devolve e-mail verificado; parte dos usuários não consegue usar esse login, por decisão (mensagem clara, sem cadastro).
+- Facebook fora desta entrega: o Graph não informa se o e-mail foi confirmado (decisão de Alfredo, emenda da rodada 2). A rota do Facebook responde 404 mesmo com variáveis configuradas.
 - Perda de acesso: quem perde o aplicativo e os códigos depende de quem tem a permissão de desativar. Se o único ADMIN perder o segundo fator, a recuperação exige intervenção no banco, fora do aplicativo.
 - A chave de cifra do segredo do segundo fator, se trocada, invalida todos os segredos guardados; a rotação de chave fica fora desta entrega e precisa de decisão própria.
 - O JWT de 1 dia sem revogação por token continua; a versão de senha cobre só troca e definição de senha.

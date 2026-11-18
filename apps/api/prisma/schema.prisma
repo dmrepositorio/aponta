@@ -263,7 +263,7 @@ model SecurityEvent {
   @@index([subjectId])
 }
 
-/// DMTE-551: conta de um provedor de login social (Google, GitHub, Facebook) ligada a um usuário existente. Nunca cria usuário.
+/// DMTE-551: conta de um provedor de login social (Google, GitHub) ligada a um usuário existente. Nunca cria usuário.
 model ExternalIdentity {
   id        String   @id @default(uuid())
   userId    String

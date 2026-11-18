@@ -17,7 +17,7 @@ const loginSchema = z.object({
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
-const PROVIDER_LABELS: Record<string, string> = { google: 'Google', github: 'GitHub', facebook: 'Facebook' };
+const PROVIDER_LABELS: Record<string, string> = { google: 'Google', github: 'GitHub' };
 
 /** Motivo da falha do login social que a API põe no fragmento da URL (DMTE-551); qualquer outro vira a mensagem genérica. */
 const SOCIAL_ERRORS: Record<string, string> = {

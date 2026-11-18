@@ -163,44 +163,40 @@
       "tests": [
         "apps/api/src/social-auth/social-auth.google.http.spec.ts",
         "apps/api/src/social-auth/social-auth.github.http.spec.ts",
-        "apps/api/src/social-auth/social-auth.facebook.http.spec.ts",
         "apps/web/src/pages/LoginPage.social.test.tsx: testes com o prefixo AC-17:"
       ],
       "tdd_required": false,
-      "reason": "TDD comprovado por par auxiliar do mesmo coletor (RED antes da implementação, GREEN no mesmo comando): .delivery/evidence/DMTE-551/red-t7/red-t8/red-t9/red-web-t7.json e o green correspondente; o manifest aceita um par oficial por entrega (o do T1, AC-01 a AC-03)"
+      "reason": "TDD comprovado por par auxiliar do mesmo coletor (RED antes da implementação, GREEN no mesmo comando): .delivery/evidence/DMTE-551/red-t7/red-t8/red-web-t7.json e o green correspondente; o manifest aceita um par oficial por entrega (o do T1, AC-01 a AC-03)"
     },
     {
       "id": "AC-18",
-      "description": "o login social nunca cria usuário; conta inexistente, inativa, com convite pendente ou e-mail sem verificação (inclusive Facebook sem e-mail verificado) falha com mensagem clara e sem ligar identidade.",
+      "description": "o login social nunca cria usuário; conta inexistente, inativa, com convite pendente ou e-mail sem verificação falha com mensagem clara e sem ligar identidade.",
       "tests": [
         "apps/api/src/social-auth/social-auth.google.http.spec.ts: testes com o prefixo AC-18:",
-        "apps/api/src/social-auth/social-auth.github.http.spec.ts: AC-18",
-        "apps/api/src/social-auth/social-auth.facebook.http.spec.ts: AC-18"
+        "apps/api/src/social-auth/social-auth.github.http.spec.ts: AC-18"
       ],
       "tdd_required": false,
-      "reason": "TDD comprovado por par auxiliar do mesmo coletor (RED antes da implementação, GREEN no mesmo comando): .delivery/evidence/DMTE-551/red-t7/red-t8/red-t9/red-web-t7.json e o green correspondente; o manifest aceita um par oficial por entrega (o do T1, AC-01 a AC-03)"
+      "reason": "TDD comprovado por par auxiliar do mesmo coletor (RED antes da implementação, GREEN no mesmo comando): .delivery/evidence/DMTE-551/red-t7/red-t8/red-web-t7.json e o green correspondente; o manifest aceita um par oficial por entrega (o do T1, AC-01 a AC-03)"
     },
     {
       "id": "AC-19",
       "description": "estado inválido, reutilizado ou expirado, `nonce` divergente (Google) e código de troca reutilizado são recusados.",
       "tests": [
         "apps/api/src/social-auth/social-auth.google.http.spec.ts: testes com o prefixo AC-19:",
-        "apps/api/src/social-auth/social-auth.github.http.spec.ts: AC-19",
-        "apps/api/src/social-auth/social-auth.facebook.http.spec.ts: AC-19"
+        "apps/api/src/social-auth/social-auth.github.http.spec.ts: AC-19"
       ],
       "tdd_required": false,
-      "reason": "TDD comprovado por par auxiliar do mesmo coletor (RED antes da implementação, GREEN no mesmo comando): .delivery/evidence/DMTE-551/red-t7/red-t8/red-t9.json e o green correspondente; o manifest aceita um par oficial por entrega (o do T1, AC-01 a AC-03)"
+      "reason": "TDD comprovado por par auxiliar do mesmo coletor (RED antes da implementação, GREEN no mesmo comando): .delivery/evidence/DMTE-551/red-t7/red-t8.json e o green correspondente; o manifest aceita um par oficial por entrega (o do T1, AC-01 a AC-03)"
     },
     {
       "id": "AC-20",
       "description": "depois de ligada, a entrada é pelo identificador do provedor, não mais pelo e-mail; papel e organização do usuário não mudam.",
       "tests": [
         "apps/api/src/social-auth/social-auth.google.http.spec.ts: testes com o prefixo AC-20:",
-        "apps/api/src/social-auth/social-auth.github.http.spec.ts: AC-20",
-        "apps/api/src/social-auth/social-auth.facebook.http.spec.ts: AC-20"
+        "apps/api/src/social-auth/social-auth.github.http.spec.ts: AC-20"
       ],
       "tdd_required": false,
-      "reason": "TDD comprovado por par auxiliar do mesmo coletor (RED antes da implementação, GREEN no mesmo comando): .delivery/evidence/DMTE-551/red-t7/red-t8/red-t9.json e o green correspondente; o manifest aceita um par oficial por entrega (o do T1, AC-01 a AC-03)"
+      "reason": "TDD comprovado por par auxiliar do mesmo coletor (RED antes da implementação, GREEN no mesmo comando): .delivery/evidence/DMTE-551/red-t7/red-t8.json e o green correspondente; o manifest aceita um par oficial por entrega (o do T1, AC-01 a AC-03)"
     },
     {
       "id": "AC-21",
@@ -214,27 +210,26 @@
     },
     {
       "id": "AC-22",
-      "description": "cada provedor tem sua flag e variáveis; sem elas o botão não aparece e a rota recusa; as três flags são independentes.",
+      "description": "cada provedor tem sua flag e variáveis; sem elas o botão não aparece e a rota recusa; as flags são independentes; o Facebook não é oferecido nem aceito, mesmo configurado.",
       "tests": [
         "apps/api/src/social-auth/social-auth.google.http.spec.ts: testes com o prefixo AC-22:",
         "apps/api/src/social-auth/social-auth.github.http.spec.ts: AC-22",
-        "apps/api/src/social-auth/social-auth.facebook.http.spec.ts: AC-22",
         "apps/web/src/pages/LoginPage.social.test.tsx: AC-22",
+        "apps/api/src/social-auth/social-auth.providers.http.spec.ts: AC-22",
         "apps/web/src/pages/LoginPage.providers.test.tsx: AC-22"
       ],
       "tdd_required": false,
-      "reason": "TDD comprovado por par auxiliar do mesmo coletor (RED antes da implementação, GREEN no mesmo comando): .delivery/evidence/DMTE-551/red-t7/red-t8/red-t9/red-web-t7.json e o green correspondente; o manifest aceita um par oficial por entrega (o do T1, AC-01 a AC-03)"
+      "reason": "TDD comprovado por par auxiliar do mesmo coletor (RED antes da implementação, GREEN no mesmo comando): .delivery/evidence/DMTE-551/red-t7/red-t8/red-web-t7/red-fix2.json e o green correspondente; o manifest aceita um par oficial por entrega (o do T1, AC-01 a AC-03)"
     },
     {
       "id": "AC-23",
       "description": "nenhum segredo de provedor, de SMTP ou chave de cifra aparece no repositório, em fixtures, em log ou na resposta de qualquer endpoint.",
       "tests": [
         "apps/api/src/social-auth/social-auth.google.http.spec.ts: AC-23",
-        "apps/api/src/social-auth/social-auth.github.http.spec.ts: AC-23",
-        "apps/api/src/social-auth/social-auth.facebook.http.spec.ts: AC-23"
+        "apps/api/src/social-auth/social-auth.github.http.spec.ts: AC-23"
       ],
       "tdd_required": false,
-      "reason": "TDD comprovado por par auxiliar do mesmo coletor (RED antes da implementação, GREEN no mesmo comando): .delivery/evidence/DMTE-551/red-t7/red-t8/red-t9.json e o green correspondente; o manifest aceita um par oficial por entrega (o do T1, AC-01 a AC-03)"
+      "reason": "TDD comprovado por par auxiliar do mesmo coletor (RED antes da implementação, GREEN no mesmo comando): .delivery/evidence/DMTE-551/red-t7/red-t8.json e o green correspondente; o manifest aceita um par oficial por entrega (o do T1, AC-01 a AC-03)"
     }
   ],
   "spec": "docs/delivery/specs/DMTE-551.md",
