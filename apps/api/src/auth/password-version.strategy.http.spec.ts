@@ -38,6 +38,7 @@ describe('Versão da senha no JWT (DMTE-551)', () => {
             canEditWorklogStartTime: jest.fn(async () => false),
             canReleaseWorklogWithoutSchedule: jest.fn(async () => false),
             canReleaseWorklogs: jest.fn(async () => false),
+            canDeleteTickets: jest.fn(async () => false),
           },
         },
       ],
