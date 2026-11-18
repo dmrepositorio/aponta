@@ -53,7 +53,7 @@ Três blocos, entregues nesta ordem: A (senha forte e sessões), B (segundo fato
 - Versão de senha no usuário, levada no JWT e conferida na estratégia JWT, que já consulta o usuário a cada requisição. Trocar a senha em Minha Conta e definir a senha pelo link incrementam a versão; token de versão diferente é recusado. A sessão que fez a troca recebe um token novo.
 - O envio de e-mail exige TLS quando a porta não é a 465. Sem SMTP configurado, o comportamento da DMTE-550 se mantém.
 - Segurança contra injeção: nenhum SQL cru nos fluxos novos, acesso a dados só pelo ORM parametrizado, toda entrada validada por DTO com tamanho máximo. Símbolos e aspas na senha não são proibidos.
-- A redefinição por e-mail (endpoints, página, token, flag `convite-e-redefinicao-usuario`, `PUBLIC_APP_URL`, 1 h, 5 por minuto) é da DMTE-550 e não muda.
+- A redefinição por e-mail (endpoints, página, token, flag `convite-e-redefinicao-usuario`, `PUBLIC_APP_URL`, 1 h, 5 por minuto) é da DMTE-550 e não muda, com uma exceção da rodada 3: `POST /auth/forgot-password` passa a responder 200 (antes 201), porque não cria recurso; o web aceita qualquer 2xx e o spec da DMTE-550 aceita 200 ou 201.
 
 **Segundo fator (B)**
 - TOTP (RFC 6238), compatível com aplicativos autenticadores comuns. Ativação em Minha Conta: o servidor gera um segredo pendente, o usuário confirma com um código válido, só então o segundo fator fica ativo e os 10 códigos de recuperação são mostrados uma única vez.
