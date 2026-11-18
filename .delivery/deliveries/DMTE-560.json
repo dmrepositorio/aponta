@@ -227,13 +227,20 @@
       "tests": [
         "apps/api/src/organizations/organizations.service.spec.ts: OrganizationsService > deletionCheck (DMTE-560 T2) > AC-10: devolve todos os bloqueios numa resposta, com contagem, até 5 itens e a saída de cada um"
       ]
+    },
+    {
+      "id": "AC-29",
+      "description": "o título do vínculo N:N de mesas na aba Relacionamentos do cliente é \"Mesas (Mesa↔Cliente é N:N)\", sem o nome Tiflux; só esse título muda.",
+      "tests": [
+        "apps/web/src/pages/OrganizationsPage.test.tsx: OrganizationsPage > DMTE-560 AC-29: o título do vínculo N:N de mesas na aba Relacionamentos não cita o Tiflux"
+      ]
     }
   ],
   "spec": "docs/delivery/specs/DMTE-560.md",
   "tdd": {
     "mode": "required",
-    "red": ".delivery/evidence/DMTE-560/red-r4.json",
-    "green": ".delivery/evidence/DMTE-560/green-r4-limpo.json"
+    "red": ".delivery/evidence/DMTE-560/red-r5.json",
+    "green": ".delivery/evidence/DMTE-560/green-r5.json"
   },
   "design_system": {
     "applicable": true,
