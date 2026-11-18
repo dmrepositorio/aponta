@@ -1,8 +1,8 @@
 {
   "version": 1,
   "phase": "red",
-  "started_at": "2026-11-18T01:56:07.360004+00:00",
-  "finished_at": "2026-11-18T01:56:22.826620+00:00",
+  "started_at": "2026-11-18T02:08:05.303427+00:00",
+  "finished_at": "2026-11-18T02:08:22.661961+00:00",
   "command": [
     "pnpm",
     "--dir",
@@ -13,10 +13,10 @@
     "src/pages/VaultPage.test.tsx"
   ],
   "base_sha": "4cc713a25a0494e08d1d8b0e871f1cc665616b85",
-  "head_sha": "a60ede96cf92bfd51d787e11b14d8e66db94afa7",
+  "head_sha": "a12b10fd403323eed3e8746cfe5b9091d1354099",
   "exit_code": 1,
   "tests": {
-    "apps/web/src/pages/VaultPage.test.tsx": "4c00e05c8d873d987b9c7f88783c734ae07d032d1b13562d9fae36be5456a639"
+    "apps/web/src/pages/VaultPage.test.tsx": "03d87fc22f33fc864d4bef5cf610d28fca2bb349ccfe6f4e85c55861711ee6e6"
   },
   "criteria": [
     "AC-01",
@@ -27,8 +27,11 @@
     "AC-06"
   ],
   "source_hashes": {
-    "apps/web/src/pages/VaultPage.test.tsx": "4c00e05c8d873d987b9c7f88783c734ae07d032d1b13562d9fae36be5456a639"
+    "apps/web/src/components/ds/escapeOverlays.test.tsx": "fd77be39d111afbf0bd215d5170034bcfa90e63c36dd4c3878f80a65ebca819c",
+    "apps/web/src/pages/VaultPage.test.tsx": "03d87fc22f33fc864d4bef5cf610d28fca2bb349ccfe6f4e85c55861711ee6e6",
+    "apps/web/src/pages/VaultPage.tsx": "a65a7a0fc905909e8cc83f02629e8b6cff15a950b78a895c9e5b6819fa1267ac",
+    "scripts/vault_modals_check.mjs": "ac43c9bb24495736c064da7905ac27f8c01bb446ad0f758dd04a551bb03f25d2"
   },
   "log": ".delivery/evidence/DMTE-545/red.log",
-  "log_sha256": "72b23eaea5fb390b26564aff304c79785fca8aa2e401ee383d414f4bbda8d1bd"
+  "log_sha256": "6b907c08c13d0adf52ce389015662bd260d102270f500b891cbd6a4be64c56d8"
 }
