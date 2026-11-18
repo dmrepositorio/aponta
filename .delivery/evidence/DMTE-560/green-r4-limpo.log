@@ -1,0 +1,166 @@
+
+ NX   Running target test for 2 projects:
+
+- web
+- api
+
+With additional flags:
+  src/pages/TicketDetailPage.test.tsx src/pages/ServiceDesksPage.test.tsx src/tickets/tickets.service.spec.ts src/tickets/tickets.controller.spec.ts src/permission-groups/permission-catalog.delete-tickets.spec.ts src/permissions/permissions.service.spec.ts src/auth/auth.controller.spec.ts src/organizations/organizations.service.spec.ts src/organizations/organizations.controller.spec.ts src/organizations/dto/deletion-check.dto.spec.ts
+  --passWithNoTests=src/pages/OrganizationsPage.test.tsx
+
+
+
+> nx run api:test --passWithNoTests src/pages/OrganizationsPage.test.tsx src/pages/TicketDetailPage.test.tsx src/pages/ServiceDesksPage.test.tsx src/tickets/tickets.service.spec.ts src/tickets/tickets.controller.spec.ts src/permission-groups/permission-catalog.delete-tickets.spec.ts src/permissions/permissions.service.spec.ts src/auth/auth.controller.spec.ts src/organizations/organizations.service.spec.ts src/organizations/organizations.controller.spec.ts src/organizations/dto/deletion-check.dto.spec.ts
+
+> jest --passWithNoTests src/pages/OrganizationsPage.test.tsx src/pages/TicketDetailPage.test.tsx src/pages/ServiceDesksPage.test.tsx src/tickets/tickets.service.spec.ts src/tickets/tickets.controller.spec.ts src/permission-groups/permission-catalog.delete-tickets.spec.ts src/permissions/permissions.service.spec.ts src/auth/auth.controller.spec.ts src/organizations/organizations.service.spec.ts src/organizations/organizations.controller.spec.ts src/organizations/dto/deletion-check.dto.spec.ts
+
+[32m[Nest] 4162889  - [39m11/17/2026, 10:13:24 PM [32m    LOG[39m [38;5;3m[OrganizationsService] [39m[32mCliente org-1 excluído por admin-1[39m
+[32m[Nest] 4162889  - [39m11/17/2026, 10:13:24 PM [32m    LOG[39m [38;5;3m[OrganizationsService] [39m[32mCliente org-1 excluído por admin-1[39m
+
+[1mTest Suites: [22m[1m[32m8 passed[39m[22m, 8 total
+[1mTests:       [22m[1m[32m286 passed[39m[22m, 286 total
+[1mSnapshots:   [22m0 total
+[1mTime:[22m        6.048 s
+[2mRan all test suites[22m[2m matching [22msrc/pages/OrganizationsPage.test.tsx|src/pages/TicketDetailPage.test.tsx|src/pages/ServiceDesksPage.test.tsx|src/tickets/tickets.service.spec.ts|src/tickets/tickets.controller.spec.ts|src/permission-groups/permission-catalog.delete-tickets.spec.ts|src/permissions/permissions.service.spec.ts|src/auth/auth.controller.spec.ts|src/organizations/organizations.service.spec.ts|src/organizations/organizations.controller.spec.ts|src/organizations/dto/deletion-check.dto.spec.ts[2m.[22m
+
+> nx run web:test --passWithNoTests src/pages/OrganizationsPage.test.tsx src/pages/TicketDetailPage.test.tsx src/pages/ServiceDesksPage.test.tsx src/tickets/tickets.service.spec.ts src/tickets/tickets.controller.spec.ts src/permission-groups/permission-catalog.delete-tickets.spec.ts src/permissions/permissions.service.spec.ts src/auth/auth.controller.spec.ts src/organizations/organizations.service.spec.ts src/organizations/organizations.controller.spec.ts src/organizations/dto/deletion-check.dto.spec.ts
+
+> vitest --passWithNoTests src/pages/OrganizationsPage.test.tsx src/pages/TicketDetailPage.test.tsx src/pages/ServiceDesksPage.test.tsx src/tickets/tickets.service.spec.ts src/tickets/tickets.controller.spec.ts src/permission-groups/permission-catalog.delete-tickets.spec.ts src/permissions/permissions.service.spec.ts src/auth/auth.controller.spec.ts src/organizations/organizations.service.spec.ts src/organizations/organizations.controller.spec.ts src/organizations/dto/deletion-check.dto.spec.ts
+
+
+ RUN  v4.1.11 /home/hermes/repos/aponta-green/apps/web
+
+stderr | src/pages/OrganizationsPage.test.tsx > OrganizationsPage > shows an access-denied message for non-ADMIN roles
+An update to OrganizationsPage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to OrganizationsPage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/pages/ServiceDesksPage.test.tsx > ServiceDesksPage > should show an access-denied message for a non-ADMIN user
+An update to ServiceDesksPageContent inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to ServiceDesksPageContent inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+ ✓ |web| src/pages/TicketDetailPage.test.tsx (30 tests) 4787ms
+     ✓ should show the comment form and post a new comment  346ms
+     ✓ starts a TiFlux-style pré-apontamento from the header play on any tab  462ms
+       ✓ AC-07: Confirmar chama DELETE /tickets/:id uma vez, desabilita Confirmar durante o envio e, no sucesso, volta à lista de Tickets  353ms
+       ✓ AC-07: a recusa da API aparece no diálogo, que continua aberto  305ms
+ ✓ |web| src/pages/ServiceDesksPage.test.tsx (39 tests) 11598ms
+     ✓ should list existing service desks for an ADMIN user  435ms
+     ✓ should enable Excluir and Duplicar once a row is selected, and call the delete endpoint on confirmation  371ms
+     ✓ should open the create form only after clicking Incluir, and create a new service desk  399ms
+     ✓ should link a service desk to a client and save its SLA overrides  699ms
+     ✓ DMTE-560 AC-27: a aba Clientes lista os clientes vinculados (N:N) e permite desvincular um deles  372ms
+     ✓ filters the grid by search text and status (Sankhya filter drawer)  782ms
+     ✓ filters dynamically by any column using the rule builder (Sankhya Filtros parity)  646ms
+     ✓ saves, applies, and deletes a saved filter from the drawer (Sankhya saved filters parity)  721ms
+     ✓ AC-04, AC-05: an unsaved flag shows the pending line and asks before leaving the tab; Cancelar keeps it, Confirmar discards it  438ms
+     ✓ AC-04: undoing the edit clears the pending line, and leaving a clean tab never asks  306ms
+     ✓ AC-05: the back button and a new desk also ask before discarding  491ms
+     ✓ AC-01: Cliente e SLA, Membros and Estágios report the result  567ms
+     ✓ AC-05: Duplicar asks too, Escape keeps the edit and Confirmar opens the copy  377ms
+     ✓ AC-02: a failed save in Cliente e SLA and in Estágios shows the alert and keeps the edit  536ms
+stderr | src/pages/OrganizationsPage.test.tsx > OrganizationsPage > exclusão de cliente (DMTE-560 T3) > AC-20: Confirmar fica desabilitado enquanto a exclusão roda (sem envio duplo)
+An update to OrganizationsPage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to OrganizationsPage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+An update to OrganizationsPage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+ ✓ |web| src/pages/OrganizationsPage.test.tsx (61 tests) 18920ms
+     ✓ keeps the grid scrollable by touch in both axes on phones (DMTE-455)  445ms
+     ✓ shows the list view by default with a mode toggle (Tiflux/Sankhya-parity, issue #57)  430ms
+     ✓ switches to the full-page form via Ações > Cadastrar manualmente and validates it  397ms
+     ✓ switches between Grid Mode and Form Mode via the toolbar toggle  368ms
+     ✓ creates a new organization with rich fields  866ms
+       ✓ shows the API message in an alert when the server refuses the new client  538ms
+       ✓ shows a generic alert when the server fails without a message  390ms
+       ✓ does not send blank CNPJ/CPF, which would collide on the unique columns  468ms
+       ✓ says the CNPJ was not found or is invalid when the API answers 404  731ms
+       ✓ says the CNPJ was not found or is invalid when the API answers 400  730ms
+       ✓ says the lookup is unavailable when it fails with 502  591ms
+       ✓ says the lookup is unavailable when it fails with no response  453ms
+     ✓ locks CNPJ and Razão Social after a Receita lookup, standardizing form-mode editability (Sankhya parity)  339ms
+     ✓ updates organization name and legal name on blur in Geral tab  480ms
+     ✓ toggles visibility and quarterly billing from the detail header  323ms
+     ✓ adds a new contact from the Geral tab  301ms
+     ✓ saves serviceType/healthStatus from the Geral tab (Perfil do Cliente, issue #56)  309ms
+     ✓ manages Mesas (N:N) and Grupo de Atendentes in the Relacionamentos tab (Tiflux-parity, issue #57)  459ms
+     ✓ renders billing preferences and updates quarterly billing in Faturamento tab (issue #58)  987ms
+     ✓ supports inline editing of cells and Cadastrar por CNPJ via toolbar actions (Sankhya parity)  492ms
+     ✓ filters the grid by search text, status, and document type (Sankhya filter drawer)  581ms
+     ✓ saves, applies, and deletes a saved filter from the drawer (Sankhya saved filters parity)  347ms
+     ✓ persists column visibility toggles to the per-user screen config (server, DMTE-527 T2)  526ms
+     ✓ edits the optional grid columns (IE, IM, Pasta, Perfil, Saúde) once made visible via screen config  701ms
+     ✓ filters dynamically by any column using the rule builder (Sankhya Filtros parity)  338ms
+
+ Test Files  3 passed (3)
+      Tests  130 passed (130)
+   Start at  22:13:21
+   Duration  25.22s (transform 8.01s, setup 763ms, import 14.15s, tests 35.31s, environment 3.49s)
+
+
+
+
+ NX   Successfully ran target test for 2 projects
+
+

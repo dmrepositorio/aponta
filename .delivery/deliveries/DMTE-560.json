@@ -85,9 +85,9 @@
     },
     {
       "id": "AC-10",
-      "description": "todos os bloqueios do cliente voltam numa só resposta, cada um com `code`, `message`, `count`, até 5 `items`, `resolvable` e `howToResolve`; USERS tem `resolvable=false`, os demais dependem do item.",
+      "description": "todos os bloqueios do cliente voltam numa só resposta, cada um com `code`, `message`, `count`, até 5 `items`, `resolvable` e `howToResolve`; USERS é resolvível (AC-26), os demais dependem do item.",
       "tests": [
-        "apps/api/src/organizations/organizations.service.spec.ts: OrganizationsService > deletionCheck (DMTE-560 T2) > AC-10 (todos os bloqueios, contagem, até 5 itens, saída; USERS não resolvível)"
+        "apps/api/src/organizations/organizations.service.spec.ts: OrganizationsService > deletionCheck (DMTE-560 T2) > AC-10: devolve todos os bloqueios numa resposta, com contagem, até 5 itens e a saída de cada um"
       ]
     },
     {
@@ -145,7 +145,7 @@
     },
     {
       "id": "AC-18",
-      "description": "cliente bloqueado: cada bloqueio aparece com a mensagem e a quantidade, até 5 exemplos (\"e mais N\" além disso; os tickets com o motivo de cada um) e \"Como resolver: …\" quando dá para resolver ou \"Não é possível resolver: inative o cliente\" quando não dá; ticket aberto pelo cliente mostra o motivo \"aberto pelo cliente\".",
+      "description": "cliente bloqueado: cada bloqueio aparece com a mensagem e a quantidade, até 5 exemplos (\"e mais N\" além disso; os tickets com o motivo de cada um) e \"Como resolver: …\" quando dá para resolver (inclusive usuário vinculado: AC-26) ou \"Não é possível resolver: inative o cliente\" quando não dá; ticket aberto pelo cliente mostra o motivo \"aberto pelo cliente\".",
       "tests": [
         "apps/web/src/pages/OrganizationsPage.test.tsx: OrganizationsPage > exclusão de cliente (DMTE-560 T3) > AC-18 e AC-21: cliente bloqueado lista cada bloqueio com quantidade, exemplos, \"e mais N\" e a saída; Confirmar não exclui; o diálogo não exclui ticket",
         "apps/web/src/pages/OrganizationsPage.test.tsx: OrganizationsPage > exclusão de cliente (DMTE-560 T3) > AC-18: ticket do cliente aparece com o motivo de cada um e a orientação de excluir em Tickets"
@@ -205,13 +205,35 @@
       "tests": [
         "apps/api/src/organizations/organizations.service.spec.ts: OrganizationsService > deletionCheck (DMTE-560 T2) > AC-25: o cofre e os tickets não vazam nomes: credencial e pasta aparecem só pelo tipo e o ticket só pelo protocolo"
       ]
+    },
+    {
+      "id": "AC-26",
+      "description": "USERS é resolvível: `resolvable=true` e `howToResolve` manda abrir o usuário em Usuários e escolher Nenhum no campo Cliente (o responsável confirmou em produção que desvincular resolve; não existe exclusão de usuário).",
+      "tests": [
+        "apps/api/src/organizations/organizations.service.spec.ts: OrganizationsService > deletionCheck (DMTE-560 T2) > AC-26: USERS é resolvível: desvincular o usuário do cliente em Usuários (não existe exclusão de usuário)"
+      ]
+    },
+    {
+      "id": "AC-27",
+      "description": "a aba Clientes da mesa mostra todos os clientes vinculados (N:N, lista com o nome acessível \"Clientes vinculados\") ou \"Mesa compartilhada (sem cliente)\"; ao editar, desvincula e adiciona clientes, e Salvar envia `organizationIds` sem o campo legado `organizationId`, que a API recusa.",
+      "tests": [
+        "apps/web/src/pages/ServiceDesksPage.test.tsx: ServiceDesksPage > should link a service desk to a client and save its SLA overrides",
+        "apps/web/src/pages/ServiceDesksPage.test.tsx: ServiceDesksPage > DMTE-560 AC-27: a aba Clientes lista os clientes vinculados (N:N) e permite desvincular um deles"
+      ]
+    },
+    {
+      "id": "AC-28",
+      "description": "em SERVICE_DESKS, `howToResolve` dá o caminho completo: abrir o cliente e usar a aba Relacionamentos, ou abrir a mesa em Mesas e usar a aba Clientes.",
+      "tests": [
+        "apps/api/src/organizations/organizations.service.spec.ts: OrganizationsService > deletionCheck (DMTE-560 T2) > AC-10: devolve todos os bloqueios numa resposta, com contagem, até 5 itens e a saída de cada um"
+      ]
     }
   ],
   "spec": "docs/delivery/specs/DMTE-560.md",
   "tdd": {
     "mode": "required",
-    "red": ".delivery/evidence/DMTE-560/red-r2.json",
-    "green": ".delivery/evidence/DMTE-560/green-r2.json"
+    "red": ".delivery/evidence/DMTE-560/red-r4.json",
+    "green": ".delivery/evidence/DMTE-560/green-r4-limpo.json"
   },
   "design_system": {
     "applicable": true,

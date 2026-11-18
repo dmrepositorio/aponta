@@ -10,8 +10,8 @@ interface Organization {
 }
 
 interface ServiceDeskSlaFields {
-  organizationId?: string | null;
-  organizationName?: string | null;
+  /** Clientes vinculados à mesa (N:N). */
+  organizations: Organization[];
   slaCriticalResponseHours?: number | null;
   slaCriticalResolveHours?: number | null;
   slaHighResponseHours?: number | null;
@@ -54,7 +54,7 @@ function toSlaValues(initial: ServiceDeskSlaFields): Record<string, string> {
 }
 
 /**
- * Lets ADMIN link a ServiceDesk to a specific client (Organization) and
+ * Lets ADMIN link a ServiceDesk to specific clients (Organization, N:N) and
  * configure per-priority SLA targets that override the global defaults
  * in `tickets.service.ts`'s SLA_HOURS — Tiflux-parity "Mesa do cliente"
  * + "Meta de SLA". A blank field falls back to the global default for
@@ -69,12 +69,14 @@ export function ServiceDeskSlaEditor({
 }) {
   const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(false);
-  const [organizationId, setOrganizationId] = useState(initial.organizationId ?? '');
+  const labelId = `desk-orgs-${deskId}`;
+  const initialOrgIds = initial.organizations.map((org) => org.id);
+  const [organizationIds, setOrganizationIds] = useState(initialOrgIds);
   const [slaValues, setSlaValues] = useState<Record<string, string>>(() => toSlaValues(initial));
   const initialSla = toSlaValues(initial);
   const dirty =
     isEditing &&
-    (organizationId !== (initial.organizationId ?? '') ||
+    (organizationIds.join() !== initialOrgIds.join() ||
       Object.keys(initialSla).some((key) => slaValues[key] !== initialSla[key]));
   const feedback = useMesaSave(dirty);
 
@@ -87,10 +89,14 @@ export function ServiceDeskSlaEditor({
     enabled: isEditing,
   });
 
+  const nameOf = (id: string) =>
+    [...initial.organizations, ...(organizations ?? [])].find((org) => org.id === id)?.name ?? id;
+  const addable = (organizations ?? []).filter((org) => !organizationIds.includes(org.id));
+
   const mutation = useMutation({
     mutationFn: async () => {
       await api.patch(`/service-desks/${deskId}`, {
-        organizationId: organizationId || null,
+        organizationIds,
         slaCriticalResponseHours: toApiValue(slaValues.CriticalResponse),
         slaCriticalResolveHours: toApiValue(slaValues.CriticalResolve),
         slaHighResponseHours: toApiValue(slaValues.HighResponse),
@@ -111,7 +117,7 @@ export function ServiceDeskSlaEditor({
 
   // Abrir a edição parte sempre do valor atual da mesa, não de um rascunho antigo.
   const startEditing = () => {
-    setOrganizationId(initial.organizationId ?? '');
+    setOrganizationIds(initialOrgIds);
     setSlaValues(initialSla);
     setIsEditing(true);
   };
@@ -120,10 +126,16 @@ export function ServiceDeskSlaEditor({
     return (
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="text-sm text-gray-600">
-          <span className="mb-1 block text-xs font-medium text-gray-500">Cliente vinculado</span>
-          <strong className="text-gray-900">
-            {initial.organizationName ?? 'Mesa compartilhada (sem cliente)'}
-          </strong>
+          <span id={labelId} className="mb-1 block text-xs font-medium text-gray-500">Clientes vinculados</span>
+          {initial.organizations.length === 0 ? (
+            <strong className="text-gray-900">Mesa compartilhada (sem cliente)</strong>
+          ) : (
+            <ul aria-labelledby={labelId} className="font-semibold text-gray-900">
+              {initial.organizations.map((org) => (
+                <li key={org.id}>{org.name}</li>
+              ))}
+            </ul>
+          )}
         </div>
         <EzButton type="button" variant="secondary" size="small" onClick={startEditing}>
           Editar cliente e SLA
@@ -135,19 +147,44 @@ export function ServiceDeskSlaEditor({
   return (
     <div className="flex flex-col gap-4 text-sm">
       <div className="max-w-md">
-        <EzComboBox
-          id={`desk-org-${deskId}`}
-          label="Cliente vinculado (opcional)"
-          value={organizationId}
-          onChange={(e) => setOrganizationId(e.target.value)}
-        >
-          <option value="">Mesa compartilhada (sem cliente)</option>
-          {(organizations ?? []).map((org) => (
-            <option key={org.id} value={org.id}>
-              {org.name}
-            </option>
-          ))}
-        </EzComboBox>
+        <span id={labelId} className="mb-1 block text-xs font-medium text-gray-500">Clientes vinculados</span>
+        {organizationIds.length === 0 ? (
+          <p className="text-gray-900">
+            <strong>Mesa compartilhada (sem cliente)</strong>: atende todos os clientes.
+          </p>
+        ) : (
+          <ul aria-labelledby={labelId} className="divide-y divide-gray-100 rounded-[12px] border border-gray-200">
+            {organizationIds.map((id) => (
+              <li key={id} className="flex items-center justify-between px-3 py-2">
+                <span className="min-w-0 truncate text-gray-900">{nameOf(id)}</span>
+                <EzButton
+                  type="button"
+                  variant="tertiary"
+                  size="x-small"
+                  aria-label={`Desvincular ${nameOf(id)}`}
+                  onClick={() => setOrganizationIds((ids) => ids.filter((other) => other !== id))}
+                >
+                  Desvincular
+                </EzButton>
+              </li>
+            ))}
+          </ul>
+        )}
+        <div className="mt-2">
+          <EzComboBox
+            id={`desk-org-${deskId}`}
+            label="Adicionar cliente"
+            value=""
+            onChange={(e) => e.target.value && setOrganizationIds((ids) => [...ids, e.target.value])}
+          >
+            <option value="">Selecione um cliente…</option>
+            {addable.map((org) => (
+              <option key={org.id} value={org.id}>
+                {org.name}
+              </option>
+            ))}
+          </EzComboBox>
+        </div>
       </div>
 
       <div>
