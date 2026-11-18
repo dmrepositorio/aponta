@@ -1,4 +1,4 @@
-# Login: senha forte, sessões que caem, segundo fator e login social (Google, GitHub, Facebook)
+# Login: senha forte, sessões que caem, segundo fator e login social (Google e GitHub; Facebook fora, ver a emenda da rodada 2)
 
 Identidade: DMTE-551, issue dmrepositorio/aponta#310, pai Multica `01a1e7d3-5980-779f-8b61-200fa5eac492`, Tier 3, ciclo 2026-11-09/2026-11-22. Pedido de Alfredo em 17/11/2026: redefinir senha por e-mail com regra de complexidade, entrar com GitHub, Google e Facebook, e ativar autenticação em dois fatores na conta. Decisões confirmadas por Alfredo no pai (Q1 a Q12). Base de planejamento: `main` em `35b982f`.
 
@@ -104,11 +104,11 @@ Bloco B: segundo fator
 
 Bloco C: login social
 - AC-17: com provedor simulado, o retorno com e-mail verificado de conta existente e ativa liga a identidade, devolve o código de troca de uso único e o web o troca por JWT; o JWT nunca aparece na URL.
-- AC-18: o login social nunca cria usuário; conta inexistente, inativa, com convite pendente ou ou e-mail sem verificação falha com mensagem clara e sem ligar identidade.
+- AC-18: o login social nunca cria usuário; conta inexistente, inativa, com convite pendente ou e-mail sem verificação falha com mensagem clara e sem ligar identidade.
 - AC-19: estado inválido, reutilizado ou expirado, `nonce` divergente (Google) e código de troca reutilizado são recusados.
 - AC-20: depois de ligada, a entrada é pelo identificador do provedor, não mais pelo e-mail; papel e organização do usuário não mudam.
 - AC-21: quem tem segundo fator é desafiado depois do login social do mesmo modo que depois da senha.
-- AC-22: cada provedor tem sua flag e variáveis; sem elas o botão não aparece e a rota recusa; as três flags são independentes.
+- AC-22: cada provedor tem sua flag e variáveis; sem elas o botão não aparece e a rota recusa; as flags são independentes; o Facebook não é oferecido nem aceito, mesmo com variáveis configuradas (emenda da rodada 2).
 - AC-23: nenhum segredo de provedor, de SMTP ou chave de cifra aparece no repositório, em fixtures, em log ou na resposta de qualquer endpoint.
 
 ## Testing Decisions

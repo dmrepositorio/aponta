@@ -75,6 +75,7 @@ export function seedTables(): Partial<Tables> {
 export const GOOGLE_CLIENT_ID = 'google-client-id-test';
 export const GOOGLE_CLIENT_SECRET = 'google-secret-test';
 export const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token';
+// O Facebook fica configurado e com a flag ligada de propósito: prova que a rota continua 404 mesmo assim (social-auth.providers.http.spec.ts).
 export const FACEBOOK_CLIENT_ID = 'facebook-client-id-test';
 export const FACEBOOK_CLIENT_SECRET = 'facebook-secret-test';
 export const GITHUB_CLIENT_ID = 'github-client-id-test';
