@@ -106,7 +106,7 @@ export async function checkOrganizationDeletion(
       count: count.serviceDesks,
       items: named(organization.serviceDesks, 'Mesa'),
       resolvable: true,
-      howToResolve: 'Desvincule a mesa em Clientes > Relacionamentos.',
+      howToResolve: 'Desvincule a mesa: abra o cliente e use a aba Relacionamentos, ou abra a mesa em Mesas e use a aba Clientes.',
     });
   }
   if (count.contracts > 0) {
@@ -125,8 +125,8 @@ export async function checkOrganizationDeletion(
       message: `Há ${plural(count.users, 'usuário vinculado', 'usuários vinculados')} ao cliente.`,
       count: count.users,
       items: named(organization.users, 'Usuário'),
-      resolvable: false,
-      howToResolve: null,
+      resolvable: true,
+      howToResolve: 'Desvincule o usuário do cliente: em Usuários, abra o usuário e deixe o campo Cliente em branco.',
     });
   }
   const vault = count.credentials + count.credentialFolders;

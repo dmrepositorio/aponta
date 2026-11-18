@@ -57,7 +57,6 @@ interface ServiceDesk {
   agents?: { id: string; name: string }[];
   organizations?: { id: string; name: string }[];
   organization?: { id: string; name: string } | null;
-  organizationId?: string | null;
   slaCriticalResponseHours?: number | null;
   slaCriticalResolveHours?: number | null;
   slaHighResponseHours?: number | null;
@@ -538,8 +537,7 @@ function ServiceDesksPageContent() {
                       <ServiceDeskSlaEditor
                         deskId={activeDesk.id}
                         initial={{
-                          organizationId: activeDesk.organizationId ?? activeDesk.organization?.id ?? null,
-                          organizationName: activeDesk.organization?.name ?? null,
+                          organizations: activeDesk.organizations ?? [],
                           slaCriticalResponseHours: activeDesk.slaCriticalResponseHours,
                           slaCriticalResolveHours: activeDesk.slaCriticalResolveHours,
                           slaHighResponseHours: activeDesk.slaHighResponseHours,
