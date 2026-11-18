@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "phase": "green",
+  "started_at": "2026-11-18T11:30:59.038044+00:00",
+  "finished_at": "2026-11-18T11:31:06.860642+00:00",
+  "command": [
+    "pnpm",
+    "nx",
+    "run",
+    "api:test",
+    "--skip-nx-cache",
+    "--runTestsByPath",
+    "src/auth/password-flow.wiring.http.spec.ts"
+  ],
+  "base_sha": "e64c060182ff8d840716985010aeb1f26bc4d5c6",
+  "head_sha": "25824545df0aeb8862b30487679ec3126214953f",
+  "exit_code": 0,
+  "tests": {
+    "apps/api/src/auth/password-flow.wiring.http.spec.ts": "d319d037287c9e55c5acac05a22dce740e8884f670ce5dbc04ad480e11a5655c"
+  },
+  "criteria": [
+    "AC-24"
+  ],
+  "source_hashes": {
+    "apps/api/src/auth/auth.controller.ts": "b30c675bc7bc00a1e29c6f8bad0fc75f961cd2eab2118a1db60efd7c1f389c41",
+    "apps/api/src/auth/auth.module.ts": "7268ae0f67dbf06bb6d27bf85132bd05ce60d7a6d1cb1d99ec11fa7f80892436",
+    "apps/api/src/auth/password-flow.wiring.http.spec.ts": "d319d037287c9e55c5acac05a22dce740e8884f670ce5dbc04ad480e11a5655c"
+  },
+  "log": ".delivery/evidence/DMTE-551/green-fix4.log",
+  "log_sha256": "dd36c6633776781d828f809700a8142e59044e7690c8f5161ba068f04cf1b511"
+}
