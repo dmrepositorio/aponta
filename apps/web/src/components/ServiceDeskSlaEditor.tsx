@@ -69,6 +69,7 @@ export function ServiceDeskSlaEditor({
 }) {
   const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(false);
+  const labelId = `desk-orgs-${deskId}`;
   const initialOrgIds = initial.organizations.map((org) => org.id);
   const [organizationIds, setOrganizationIds] = useState(initialOrgIds);
   const [slaValues, setSlaValues] = useState<Record<string, string>>(() => toSlaValues(initial));
@@ -125,11 +126,11 @@ export function ServiceDeskSlaEditor({
     return (
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="text-sm text-gray-600">
-          <span className="mb-1 block text-xs font-medium text-gray-500">Clientes vinculados</span>
+          <span id={labelId} className="mb-1 block text-xs font-medium text-gray-500">Clientes vinculados</span>
           {initial.organizations.length === 0 ? (
             <strong className="text-gray-900">Mesa compartilhada (sem cliente)</strong>
           ) : (
-            <ul className="font-semibold text-gray-900">
+            <ul aria-labelledby={labelId} className="font-semibold text-gray-900">
               {initial.organizations.map((org) => (
                 <li key={org.id}>{org.name}</li>
               ))}
@@ -146,13 +147,13 @@ export function ServiceDeskSlaEditor({
   return (
     <div className="flex flex-col gap-4 text-sm">
       <div className="max-w-md">
-        <span className="mb-1 block text-xs font-medium text-gray-500">Clientes vinculados</span>
+        <span id={labelId} className="mb-1 block text-xs font-medium text-gray-500">Clientes vinculados</span>
         {organizationIds.length === 0 ? (
           <p className="text-gray-900">
             <strong>Mesa compartilhada (sem cliente)</strong>: atende todos os clientes.
           </p>
         ) : (
-          <ul className="divide-y divide-gray-100 rounded-[12px] border border-gray-200">
+          <ul aria-labelledby={labelId} className="divide-y divide-gray-100 rounded-[12px] border border-gray-200">
             {organizationIds.map((id) => (
               <li key={id} className="flex items-center justify-between px-3 py-2">
                 <span className="min-w-0 truncate text-gray-900">{nameOf(id)}</span>

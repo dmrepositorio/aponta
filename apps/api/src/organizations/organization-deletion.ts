@@ -126,7 +126,7 @@ export async function checkOrganizationDeletion(
       count: count.users,
       items: named(organization.users, 'Usuário'),
       resolvable: true,
-      howToResolve: 'Desvincule o usuário do cliente: em Usuários, abra o usuário e deixe o campo Cliente em branco.',
+      howToResolve: 'Desvincule o usuário do cliente: em Usuários, abra o usuário e escolha Nenhum no campo Cliente.',
     });
   }
   const vault = count.credentials + count.credentialFolders;
