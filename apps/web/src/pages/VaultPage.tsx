@@ -93,6 +93,7 @@ function FolderModal({
       aria-label={title}
       maxWidth="md"
       trapFocus
+      preventOutsideClose
       dirty={name !== initialName}
       footer={<ModalFooter formId="vault-folder-form" saving={saving} onClose={onClose} />}
     >
@@ -184,6 +185,7 @@ function CredentialModal({
       aria-label={title}
       maxWidth="md"
       trapFocus
+      preventOutsideClose
       dirty={dirty}
       footer={<ModalFooter formId="vault-credential-form" saving={saving} onClose={onClose} />}
     >
@@ -367,27 +369,27 @@ export function VaultPage() {
     }
   };
 
-  const newModal = () => {
+  const startModalSession = () => {
     modalIdRef.current += 1;
     setModalId(modalIdRef.current);
     setModalError(null);
   };
   const openFolderModal = (next: { folder?: VaultFolder }) => {
-    newModal();
+    startModalSession();
     setFolderModal(next);
   };
   const openCredentialModal = (next: { credential?: VaultCredential }) => {
-    newModal();
+    startModalSession();
     setCredentialModal(next);
   };
   const closeModals = () => {
-    newModal();
+    startModalSession();
     setFolderModal(null);
     setCredentialModal(null);
   };
 
   // The modal closes only when the API answers; a refusal keeps it open with what was typed.
-  const runSave = async (action: () => Promise<unknown>, failure: string) => {
+  const runSave = async (action: () => Promise<unknown>, fallbackMessage: string) => {
     if (savingId === modalId) return;
     const id = modalIdRef.current;
     showFeedback(null);
@@ -398,7 +400,7 @@ export function VaultPage() {
       hideAllFields();
       if (id === modalIdRef.current) closeModals();
     } catch (error) {
-      const message = apiErrorMessage(error, failure);
+      const message = apiErrorMessage(error, fallbackMessage);
       if (id === modalIdRef.current) setModalError(message);
       else showFeedback({ kind: 'error', text: message });
     } finally {
