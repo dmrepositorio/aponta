@@ -110,6 +110,7 @@ Bloco C: login social
 - AC-21: quem tem segundo fator é desafiado depois do login social do mesmo modo que depois da senha.
 - AC-22: cada provedor tem sua flag e variáveis; sem elas o botão não aparece e a rota recusa; as flags são independentes; o Facebook não é oferecido nem aceito, mesmo com variáveis configuradas (emenda da rodada 2).
 - AC-23: nenhum segredo de provedor, de SMTP ou chave de cifra aparece no repositório, em fixtures, em log ou na resposta de qualquer endpoint.
+- AC-24 (rodada 3, defeito achado na validação humana em produção): na aplicação real, com a flag `convite-e-redefinicao-usuario` ligada, `POST /auth/forgot-password` responde 200 com `{ ok: true }` e `POST /auth/password/set` com link inválido responde 400; com a flag desligada as duas respondem 404. Causa: o `AuthModule` não importava o `FeatureFlagsModule`, o guard das rotas recebia a flag vazia (`@Optional`) e a rota dava 404 em produção, embora `/api/feature-flags` dissesse que a flag estava ligada.
 
 ## Testing Decisions
 
@@ -158,4 +159,5 @@ Bloco C: login social
 - AC-01 a AC-07: testes de API, da regra pura e das páginas.
 - AC-08 a AC-16: testes de API (incluindo vetores RFC 6238), das páginas e E2E isolado.
 - AC-17 a AC-23: testes de API com provedor simulado e das páginas; AC-23 também por busca de segredo no diff.
+- AC-24: teste de API sobre o `AppModule` real (sem montar providers à mão), que é o seam que pega módulo sem a flag injetada.
 - Validação real em staging com SMTP e provedores configurados: passo de Alfredo, fora dos testes automatizados.

@@ -12,14 +12,18 @@
       "description": "a regra de senha recusa senha com menos de 10 caracteres ou sem maiúscula, minúscula, número ou símbolo, e aceita uma que cumpre tudo.",
       "tests": [
         "apps/api/src/auth/password-policy.spec.ts: testes com o prefixo AC-01:"
-      ]
+      ],
+      "tdd_required": false,
+      "reason": "TDD comprovado no PR #335, integrado em 677613e (par oficial red.json/green.json, base 35b982f); nesta correção o par oficial é o do AC-24"
     },
     {
       "id": "AC-02",
       "description": "a regra recusa senha que contém parte do nome (3 letras ou mais), a parte local do e-mail ou o domínio, sem diferenciar maiúsculas, acentos ou números e símbolos colados (`joao2026`, `Joao!123`, `JOÃO_1`).",
       "tests": [
         "apps/api/src/auth/password-policy.spec.ts: testes com o prefixo AC-02:"
-      ]
+      ],
+      "tdd_required": false,
+      "reason": "TDD comprovado no PR #335, integrado em 677613e (par oficial red.json/green.json, base 35b982f); nesta correção o par oficial é o do AC-24"
     },
     {
       "id": "AC-03",
@@ -27,7 +31,9 @@
       "tests": [
         "apps/api/src/auth/password-policy.http.spec.ts: testes com o prefixo AC-03:",
         "apps/api/src/auth/password-policy.max.http.spec.ts: testes com o prefixo AC-03:"
-      ]
+      ],
+      "tdd_required": false,
+      "reason": "TDD comprovado no PR #335, integrado em 677613e (par oficial red.json/green.json, base 35b982f); nesta correção o par oficial é o do AC-24"
     },
     {
       "id": "AC-04",
@@ -230,13 +236,20 @@
       ],
       "tdd_required": false,
       "reason": "TDD comprovado por par auxiliar do mesmo coletor (RED antes da implementação, GREEN no mesmo comando): .delivery/evidence/DMTE-551/red-t7/red-t8.json e o green correspondente; o manifest aceita um par oficial por entrega (o do T1, AC-01 a AC-03)"
+    },
+    {
+      "id": "AC-24",
+      "description": "na aplicação real (AppModule), com a flag `convite-e-redefinicao-usuario` ligada, `POST /auth/forgot-password` responde 200 com `{ ok: true }` e `POST /auth/password/set` com link inválido responde 400; com a flag desligada as duas respondem 404.",
+      "tests": [
+        "apps/api/src/auth/password-flow.wiring.http.spec.ts: testes com o prefixo AC-24:"
+      ]
     }
   ],
   "spec": "docs/delivery/specs/DMTE-551.md",
   "tdd": {
     "mode": "required",
-    "red": ".delivery/evidence/DMTE-551/red.json",
-    "green": ".delivery/evidence/DMTE-551/green.json"
+    "red": ".delivery/evidence/DMTE-551/red-fix4.json",
+    "green": ".delivery/evidence/DMTE-551/green-fix4.json"
   },
   "design_system": {
     "applicable": true,

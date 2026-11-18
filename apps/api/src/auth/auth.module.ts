@@ -11,6 +11,7 @@ import { UsersModule } from '../users/users.module';
 import { PrismaModule } from '../prisma/prisma.module';
 import { PermissionsModule } from '../permissions/permissions.module';
 import { TwoFactorModule } from '../two-factor/two-factor.module';
+import { FeatureFlagsModule } from '../feature-flags/feature-flags.module';
 
 @Module({
   imports: [
@@ -18,6 +19,8 @@ import { TwoFactorModule } from '../two-factor/two-factor.module';
     PrismaModule,
     PermissionsModule,
     TwoFactorModule,
+    // PasswordFlowFlagGuard, das rotas públicas de senha, lê a flag aqui; sem este módulo ele é injetado vazio e a rota dá 404.
+    FeatureFlagsModule,
     PassportModule,
     ConfigModule,
     JwtModule.registerAsync({

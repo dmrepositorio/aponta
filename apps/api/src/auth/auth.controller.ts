@@ -1,4 +1,4 @@
-import { Body, CallHandler, Controller, ExecutionContext, Get, NestInterceptor, Optional, Patch, Post, Request, UnauthorizedException, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, CallHandler, Controller, ExecutionContext, Get, HttpCode, HttpStatus, NestInterceptor, Optional, Patch, Post, Request, UnauthorizedException, UseGuards, UseInterceptors } from '@nestjs/common';
 import { Role } from '@prisma/client';
 import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
@@ -84,6 +84,7 @@ export class AuthController {
   @UseInterceptors(noStore)
   @UseGuards(PasswordFlowFlagGuard)
   @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @HttpCode(HttpStatus.OK) // não cria recurso: o e-mail sai depois da resposta
   @Post('forgot-password')
   async forgotPassword(@Body() dto: ForgotPasswordDto) {
     this.passwordFlow!.forgot(dto.email);
