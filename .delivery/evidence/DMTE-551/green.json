@@ -1,8 +1,8 @@
 {
   "version": 1,
   "phase": "green",
-  "started_at": "2026-11-17T21:15:31.777348+00:00",
-  "finished_at": "2026-11-17T21:16:08.061963+00:00",
+  "started_at": "2026-11-18T01:24:54.311135+00:00",
+  "finished_at": "2026-11-18T01:24:58.610787+00:00",
   "command": [
     "pnpm",
     "nx",
@@ -14,7 +14,7 @@
     "src/auth/password-policy.http.spec.ts"
   ],
   "base_sha": "35b982f7db2d478d2e8359ca5e601c2fbf3655e8",
-  "head_sha": "e134f9daf2a9141dbd346df1c5ec50b96934b6b5",
+  "head_sha": "a1b91daef5d8a2a58dddc578bca71a9b52620fcf",
   "exit_code": 0,
   "tests": {
     "apps/api/src/auth/password-policy.spec.ts": "68265bb08e1e0bd95bbf601124865ade65c7d470c152c68942402aa20346b48e",
@@ -26,13 +26,13 @@
     "AC-03"
   ],
   "source_hashes": {
-    ".env.example": "5e193ea5280c9135eca421bf41f6d81fe053eefe7bf5e01970ec5d214f7936fb",
-    "GLOSSARY.md": "cff532afa28f9c16cbdb1540b2721f6bee93a03c8c3b119134c01c8f2f366dc9",
+    ".env.example": "f1341d3a9c3b1056f6038d11976ce52c70b6037d9237b65a8206ff883afc91e9",
+    "GLOSSARY.md": "723299ab4cb3781864a9d53639f9bf63e2b7884978c31c83b87648d7d576e18c",
     "apps/api/prisma/migrations/20261117180000_user_password_version/migration.sql": "279b0d7018dea18fc74da41ffcd5f44336b33f7b73d263b015799ef6f5a4f2ec",
     "apps/api/prisma/migrations/20261117190000_two_factor/migration.sql": "1282717b3ff705d89947ff996f05f06a1c5941a0155f71da65cf1fd5d737fce6",
     "apps/api/prisma/migrations/20261117200000_security_event/migration.sql": "c394b246eb124ce5a45fd3ae5691e3f48c1a42841e9f217d0fcc558fbe14f390",
     "apps/api/prisma/migrations/20261117210000_external_identity/migration.sql": "661be67a02e26f37291cace8446869cc8939b425627325c621e49dc27d29e24f",
-    "apps/api/prisma/schema.prisma": "024e0ac27507b19453ad7cfcf6ff342af92497c9c04b236414d293ca0c93b40d",
+    "apps/api/prisma/schema.prisma": "dfa0d4b6edb2a53eb6d4ec91f2be75b394aae9591d16e65c44895c41cf25897d",
     "apps/api/src/app.module.ts": "c4ec474d97eef4afd3eefc5a01bd3c752a4187c60da6e576c5d87e5766bc3ba7",
     "apps/api/src/auth/auth-rate-limit.integration.spec.ts": "14a6584a5e7ec16cd5702635deb1f2b44dd18d97801fda5b57e2ebe29c1c3bfb",
     "apps/api/src/auth/auth.controller.spec.ts": "28c04cf0d20a59cb399740d09fce7a4f7e1ea640f15da81e1035fb70ea8eadd9",
@@ -49,20 +49,20 @@
     "apps/api/src/auth/password-version.http.spec.ts": "76887eaee7871983db7f03ff3789a5298ecbae82db68bca1f976a15c5f21c74a",
     "apps/api/src/auth/password-version.strategy.http.spec.ts": "c8b8707ced4ff543bfd85d1d1ca868bcc00bfb9a5c959fa67e830029ed98a182",
     "apps/api/src/common/secret-box.ts": "fb2256a8e8ca7d9945f50f319dae64e83181a21fb4fb4e63bb679beab9b7e57f",
-    "apps/api/src/feature-flags/feature-flags.ts": "b9d8ac6f0cb8eb94ec379da4acc24d00b9892c8487652986090ca39d6117b364",
+    "apps/api/src/feature-flags/feature-flags.ts": "0f16cbbe5873113a291277d86618377ad4e33066ddf2491f6d073793d5551952",
     "apps/api/src/mail/mail.service.tls.spec.ts": "ec3385af50484e19a90ea50867152cc4d0a00e9ae7750509e0ad240745e160e6",
     "apps/api/src/mail/mail.service.ts": "9ec2ba4ec21d7f618973e6c3c357bbd34c5b31a7e18b5c14730f5bb9139eb61a",
     "apps/api/src/permission-groups/permission-catalog.ts": "5ddaedde70c738e0b96a530f9609d35cd4f5c3b139f040b7bb5ddc0e3be6a9cc",
     "apps/api/src/social-auth/social-auth.controller.ts": "7fb762a3f58809edcfb657b605ca2eee92a9dbfe077766e190fb0a35bacc7bc7",
     "apps/api/src/social-auth/social-auth.dto.ts": "0e01b35fec8c788af8ab18b17187503197e9290f3759f80baba13e65b9ed16c2",
-    "apps/api/src/social-auth/social-auth.facebook.http.spec.ts": "7a6e2633a20fd0d6644c4ca650844e0b9ec2c8b481fbb5e8faaccb1e896955d0",
-    "apps/api/src/social-auth/social-auth.github.http.spec.ts": "be20c2e72da7ce1c1eaaa0eba531800333fcf409617a2ff48d671861d3b848ac",
-    "apps/api/src/social-auth/social-auth.google.http.spec.ts": "642aee65e78c27833f83c773826fdee6b550b5e4b3bfcd75df86473a023bd041",
+    "apps/api/src/social-auth/social-auth.github.http.spec.ts": "b97bf1d1565af6e54f47ae067d11353707d5d83883486831f213db95e756476b",
+    "apps/api/src/social-auth/social-auth.google.http.spec.ts": "bcbe4fe7a8fe56dcc54b68b5e8db98ade9a082392f2cb3a38d25a8bbc175f8bf",
     "apps/api/src/social-auth/social-auth.module.ts": "184bc5daded9823b6e8d65cc3bd302db98fa348a39ea0acff5766c099ba2ab76",
+    "apps/api/src/social-auth/social-auth.providers.http.spec.ts": "a8a818db55cb15d4d0550bebdced3b1a8509877b90e3e0e37a7e8944979a538c",
     "apps/api/src/social-auth/social-auth.service.ts": "badd9e151089313d00fe58d446c4f388e270b2bceca24a8a905a334f4c33ccfc",
-    "apps/api/src/social-auth/social-providers.ts": "fa882ac507e9cb2293b42197c6e3f3463685404fa165f7b777db4fe10bb71c96",
+    "apps/api/src/social-auth/social-providers.ts": "556e4787b60f006ac8b356cb94c441da601f01cc98f613c09c701901c1951420",
     "apps/api/src/testing/fake-prisma.ts": "f4d6daa4f40a23506e82c2009f40e27e21a8ef34fa7d75a1e35832a2d0f0b230",
-    "apps/api/src/testing/users-http-harness.ts": "1fb7b7d78417f8596e7101500dc7c99e5b9704b52b4d828d9d3620606ea4cf93",
+    "apps/api/src/testing/users-http-harness.ts": "7c5779f8978da8363dc026113a46e3244635bc2b48fbfd7ff3ff7fa539db5f65",
     "apps/api/src/two-factor/totp.spec.ts": "cd502e112ac90315e592a11f9934473c5fd781f78d39c6541030a5462b741f31",
     "apps/api/src/two-factor/totp.ts": "f51b3197373832d3b3d807470cf30aa0b8acd8f944998922ec54c22d11a06e85",
     "apps/api/src/two-factor/two-factor-login.http.spec.ts": "157471badc6fedcef7c815147d9e598d93903a3b75ed885593818070f513221a",
@@ -96,9 +96,9 @@
     "apps/web/src/components/users/UserForm.twofactor.test.tsx": "e25793b7c46759fd5a89f63bb63ad050d150af9438fc926575c8c83bf55caff8",
     "apps/web/src/hooks/useUsers.ts": "f4cd690b6c5de6fc640f750228c5becdcff44070eedcca2ffe3a483133140293",
     "apps/web/src/lib/passwordRules.ts": "a4d36649d90b552fecfc24928e772862740c70de7e360bffcd2111b4a68f8fc4",
-    "apps/web/src/pages/LoginPage.providers.test.tsx": "a957d8ae182c526a04e2bda0c809de010208160c9a8ea3c92c4208c5055040f8",
-    "apps/web/src/pages/LoginPage.social.test.tsx": "a19ffc7c5bb70bd27902b11cad5f603e21b251bc4e652b0aa93a0c0282db9344",
-    "apps/web/src/pages/LoginPage.tsx": "da11ab4f59bd748b4ef452f28be5a01eb35c12d50983c3cf993072c342ebbba4",
+    "apps/web/src/pages/LoginPage.providers.test.tsx": "395de85f2c372a36185d700ff2483de1a104b71e2ebe53ebe929c545345abad8",
+    "apps/web/src/pages/LoginPage.social.test.tsx": "dfa39cf4af0ca8c558b84376e011d9651c221612be9db5a7e64a60921b8793e7",
+    "apps/web/src/pages/LoginPage.tsx": "e3739ee332f514c0f9c00a2dbe45b1c20ff64624e67730573516417060c22eab",
     "apps/web/src/pages/LoginPage.twofactor.test.tsx": "155b0e16a0057e805a9bc38da200311dbedb57940eb7a2456fc11c7c32b5d6fc",
     "apps/web/src/pages/MyAccountPage.session.test.tsx": "da181b660ff8c7bd330e1c78e9443c8512833a3ec072e3c4aa4f6c0f5fc79a84",
     "apps/web/src/pages/MyAccountPage.tsx": "8e6cafccd873a25a9b139ac7810fa34c21c595f891648ef0a8f36428183aef8c",
@@ -110,5 +110,5 @@
     "pnpm-lock.yaml": "4932d82ece9d563113e6e47dc0f9885aca0db9661ad74bf6db5c711a01f976a1"
   },
   "log": ".delivery/evidence/DMTE-551/green.log",
-  "log_sha256": "aa5fe1b8d9a88d7bb3daaaa561bbe1186d8be293a64dd64c68c3552d8cd31bdd"
+  "log_sha256": "3c19a57185b8c068ccbd09c219709273673870bf4fd57bbcde5c20a9a0384bf4"
 }
