@@ -45,7 +45,7 @@ Não aplicável: grill-with-docs → to-spec → to-tickets completos. Melhoria 
 ## Testes (seams: a página `VaultPage`, nível do projeto: vitest + Testing Library, `api` mockado como hoje; layout medido no navegador)
 
 - AC-01 a AC-06: `apps/web/src/pages/VaultPage.test.tsx`. Os testes existentes que abrem e salvam modais seguem válidos (o botão "Salvar" e o `role="dialog"` permanecem); os que esperam o fechamento imediato passam a aguardar a resposta (`waitFor`). Promise controlada para a chamada pendente (AC-02, AC-03, AC-05); `api.post`/`api.patch` rejeitando com `{ isAxiosError: true, response: { data: { message } } }` e sem corpo (AC-04); `api.get` rejeitando e depois resolvendo para AC-06.
-- AC-07: `scripts/vault_modals_check.mjs` (novo; Chromium com dados sintéticos e API interceptada, mesma montagem de `scripts/vault_actions_check.mjs`). A base "antes" é gravada com `--no-assert --json`.
+- AC-07: `scripts/vault_modals_check.mjs` (novo; Chromium com dados sintéticos e API interceptada, mesma montagem de `scripts/vault_actions_check.mjs`). A base "antes" é gravada com `--no-assert` (capturas do código da base).
 - AC-08: `python3 scripts/aponta_delivery.py check --manifest .delivery/deliveries/DMTE-545.json` e a suíte `web` completa antes do QA.
 - Comando do RED/GREEN: `pnpm --dir apps/web exec vitest run src/pages/VaultPage.test.tsx`.
 
