@@ -127,6 +127,7 @@ Correções da revisão independente (rodada 2):
 - AC-26 (rodada 3, teste do responsável em produção): USERS é resolvível: `resolvable=true` e `howToResolve` manda abrir o usuário em Usuários e escolher Nenhum no campo Cliente. Substitui a parte de AC-10 que dizia `resolvable=false`. O campo Cliente do usuário é um seletor cuja opção vazia se chama "Nenhum".
 - AC-27 (rodada 3): a aba Clientes da mesa mostra todos os clientes vinculados (N:N, `organizations`), ou "Mesa compartilhada (sem cliente)" quando não há nenhum; as duas listas têm o nome acessível "Clientes vinculados"; ao editar, é possível desvincular cada cliente e adicionar outro (sem nenhum cliente, o editor avisa que a mesa atende todos os clientes: remover o último vínculo torna a mesa compartilhada), e Salvar envia `organizationIds` sem o campo legado `organizationId` (a API o recusa por `forbidNonWhitelisted`).
 - AC-28 (rodada 3): em SERVICE_DESKS, `howToResolve` dá o caminho completo: abrir o cliente e usar a aba Relacionamentos, ou abrir a mesa em Mesas e usar a aba Clientes.
+- AC-29 (rodada 5, pedido do responsável): o título do vínculo N:N de mesas na aba Relacionamentos do cliente é "Mesas (Mesa↔Cliente é N:N)", sem o nome Tiflux. Só esse título; os outros textos da tela não mudam.
 - AC-25: o `deletion-check` não devolve título de ticket nem nome de credencial ou pasta do cofre: o ticket aparece pelo protocolo, o cofre pelo tipo ("Credencial", "Pasta") e o compromisso de agenda como "Compromisso na agenda".
 
 ## Matriz AC → verificação
@@ -139,6 +140,7 @@ Correções da revisão independente (rodada 2):
 | AC-08 a AC-14 | API, Prisma simulado | `apps/api/src/organizations/organizations.service.spec.ts`, `organizations.controller.spec.ts` |
 | AC-26, AC-28 | API, Prisma simulado | `organizations.service.spec.ts` |
 | AC-27 | Web | `apps/web/src/pages/ServiceDesksPage.test.tsx` |
+| AC-29 | Web | `apps/web/src/pages/OrganizationsPage.test.tsx` |
 | AC-22 a AC-25 | API, Prisma simulado | `tickets.service.spec.ts` (AC-22, AC-24) e `organizations.service.spec.ts` (AC-22, AC-23, AC-25) |
 | AC-15 | E2E, banco real | `apps/web-e2e/src/organization-delete.spec.ts` via `scripts/e2e_isolated.sh` |
 | AC-16 a AC-21 | Web | `apps/web/src/pages/OrganizationsPage.test.tsx` (substitui os casos da DMTE-481) |

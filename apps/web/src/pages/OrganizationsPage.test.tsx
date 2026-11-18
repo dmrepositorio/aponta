@@ -692,6 +692,19 @@ describe('OrganizationsPage', { timeout: 15000 }, () => {
     });
   });
 
+  it('DMTE-560 AC-29: o título do vínculo N:N de mesas na aba Relacionamentos não cita o Tiflux', async () => {
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    renderPage();
+
+    await openDetail(user);
+    await user.click(screen.getByRole('tab', { name: /relacionamentos/i }));
+
+    const heading = await screen.findByRole('heading', { name: /Mesa↔Cliente/ });
+    expect(heading).toHaveTextContent('Mesas (Mesa↔Cliente é N:N)');
+    expect(heading.textContent).not.toMatch(/tiflux/i);
+  });
+
   it('renders billing preferences and updates quarterly billing in Faturamento tab (issue #58)', async () => {
     vi.mocked(api.patch).mockResolvedValue({ data: { ...orgDetail, quarterlyBilling: true } });
     loginAs('ADMIN');

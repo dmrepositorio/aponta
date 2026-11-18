@@ -1579,7 +1579,7 @@ className="isolate flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll
                 <div className="space-y-6">
                   <div>
                     <h4 className="text-sm font-semibold text-gray-900 mb-2">
-                      Mesas (Tiflux-parity: Mesa↔Cliente é N:N)
+                      Mesas (Mesa↔Cliente é N:N)
                     </h4>
                     <ul className="divide-y divide-gray-100 border border-gray-200 rounded-[12px]">
                       {(orgDetail.serviceDesks ?? []).map((desk) => (
