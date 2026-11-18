@@ -1189,6 +1189,51 @@ describe('VaultPage modals and load error (DMTE-545)', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('Não foi possível salvar a pasta. Tente novamente.');
   });
 
+  it('does not close a modal by a click on the backdrop, which would drop what was typed', async () => {
+    const user = await loaded();
+    const backdrop = () => document.body.querySelector('.bg-gray-900\\/60') as HTMLElement;
+
+    const folderDialog = await openNewFolder(user);
+    await user.click(backdrop());
+    expect(screen.getByRole('dialog', { name: 'Nova pasta' })).toBeInTheDocument();
+    expect(fieldFor(folderDialog, 'Nome da pasta')).toHaveValue('Rede');
+    await user.click(within(folderDialog).getByRole('button', { name: 'Cancelar' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+
+    const credentialDialog = await openNewCredential(user);
+    await user.click(backdrop());
+    expect(screen.getByRole('dialog', { name: 'Nova senha' })).toBeInTheDocument();
+    expect(fieldFor(credentialDialog, 'Senha')).toHaveValue('fake-password-123');
+  });
+
+  it('does not touch a newer modal when an older save answers after the modal was closed', async () => {
+    const user = await loaded();
+    const saving = deferred();
+    vi.mocked(api.post).mockImplementation((url: string) =>
+      REVEAL_URL.test(url) ? Promise.resolve({ data: { value: 'fake-password-123' } }) : (saving.promise as Promise<never>),
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Revelar senha de Servidor FTP' }));
+    expect(await screen.findByText('fake-password-123')).toBeInTheDocument();
+    const folderDialog = await openNewFolder(user);
+    await user.click(save(folderDialog));
+    await within(folderDialog).findByRole('button', { name: 'Salvando…' });
+    await user.click(within(folderDialog).getByRole('button', { name: 'Fechar' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+
+    await openActionsMenu(user);
+    await user.click(screen.getByRole('menuitem', { name: 'Nova senha' }));
+    const newer = screen.getByRole('dialog', { name: 'Nova senha' });
+    expect(save(newer)).toBeEnabled();
+
+    await act(async () => saving.resolve({ data: {} }));
+
+    expect(screen.getByRole('dialog', { name: 'Nova senha' })).toBeInTheDocument();
+    expect(save(newer)).toBeEnabled();
+    expect(within(newer).queryByRole('alert')).not.toBeInTheDocument();
+    expect(screen.queryByText('fake-password-123')).not.toBeInTheDocument();
+  });
+
   it('offers a retry on the load error and refetches only the failed queries', async () => {
     let foldersFail = true;
     vi.mocked(api.get).mockImplementation(async (url: string) => {

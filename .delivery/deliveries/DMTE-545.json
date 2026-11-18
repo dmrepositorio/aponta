@@ -30,9 +30,10 @@
     },
     {
       "id": "AC-04",
-      "description": "se a API recusa (pasta e senha, criar e editar), o modal continua aberto, o `EzAlert` de erro dentro do modal mostra a mensagem da API ou o texto padrão, todos os campos mantêm o digitado (inclusive a senha), \"Salvar\" volta a habilitar e uma nova tentativa com sucesso fecha o modal e envia o conteúdo mantido.",
+      "description": "se a API recusa (pasta e senha, criar e editar), o modal continua aberto, o `EzAlert` de erro dentro do modal mostra a mensagem da API ou o texto padrão, todos os campos mantêm o digitado (inclusive a senha), \"Salvar\" volta a habilitar e uma nova tentativa com sucesso fecha o modal e envia o conteúdo mantido; um clique no fundo do modal não o fecha.",
       "tests": [
-        "apps/web/src/pages/VaultPage.test.tsx: keeps the modal open with the typed values and an error when the API refuses (folder and credential, create and edit)"
+        "apps/web/src/pages/VaultPage.test.tsx: keeps the modal open with the typed values and an error when the API refuses (folder and credential, create and edit)",
+        "apps/web/src/pages/VaultPage.test.tsx: does not close a modal by a click on the backdrop, which would drop what was typed"
       ]
     },
     {
@@ -40,7 +41,8 @@
       "description": "o alerta de erro do modal some ao tentar de novo e não reaparece ao abrir o modal outra vez; erro que chega depois de o modal ter sido fechado aparece no aviso de erro da página.",
       "tests": [
         "apps/web/src/pages/VaultPage.test.tsx: clears the modal error when trying again and when the modal is reopened",
-        "apps/web/src/pages/VaultPage.test.tsx: shows the error on the page when the modal was closed before the API refused"
+        "apps/web/src/pages/VaultPage.test.tsx: shows the error on the page when the modal was closed before the API refused",
+        "apps/web/src/pages/VaultPage.test.tsx: does not touch a newer modal when an older save answers after the modal was closed"
       ]
     },
     {
