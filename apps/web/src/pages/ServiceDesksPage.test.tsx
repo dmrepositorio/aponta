@@ -291,6 +291,7 @@ describe('ServiceDesksPage', () => {
     await user.click(await screen.findByRole('tab', { name: 'Clientes' }));
 
     const panel = screen.getByRole('tabpanel');
+    expect(within(within(panel).getByRole('list', { name: 'Clientes vinculados' })).getAllByRole('listitem')).toHaveLength(2);
     expect(within(panel).getByText('Acme Ltda')).toBeInTheDocument();
     expect(within(panel).getByText('Beta SA')).toBeInTheDocument();
     expect(within(panel).queryByText(/mesa compartilhada/i)).not.toBeInTheDocument();
@@ -302,6 +303,27 @@ describe('ServiceDesksPage', () => {
     await waitFor(() => {
       expect(api.patch).toHaveBeenCalledWith('/service-desks/sd-1', expect.objectContaining({ organizationIds: ['org-1'] }));
     });
+  });
+
+  it('DMTE-560 AC-27: sem nenhum cliente a aba mostra "Mesa compartilhada (sem cliente)" e, ao editar, deixa adicionar um cliente', async () => {
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    renderPage();
+    await screen.findByText('Suporte N1');
+    await user.click(screen.getByText('Suporte N1'));
+    await user.click(await screen.findByRole('tab', { name: 'Clientes' }));
+
+    const panel = screen.getByRole('tabpanel');
+    expect(within(panel).getByText('Mesa compartilhada (sem cliente)')).toBeInTheDocument();
+    expect(within(panel).queryByRole('list', { name: 'Clientes vinculados' })).not.toBeInTheDocument();
+
+    await user.click(within(panel).getByRole('button', { name: /editar cliente e sla/i }));
+    expect(within(panel).getByText(/atende todos os clientes/i)).toBeInTheDocument();
+    await user.selectOptions(await within(panel).findByLabelText(/adicionar cliente/i, { selector: 'select' }), 'org-1');
+
+    const list = within(panel).getByRole('list', { name: 'Clientes vinculados' });
+    expect(within(list).getByText('Acme Ltda')).toBeInTheDocument();
+    expect(within(panel).queryByText(/atende todos os clientes/i)).not.toBeInTheDocument();
   });
 
   it("DMTE-485 AC-13: a opção de catálogo da mesa aparece como \"Mostrar o catálogo ao abrir (permite 'não catalogado')\"", async () => {

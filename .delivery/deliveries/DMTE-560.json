@@ -208,14 +208,14 @@
     },
     {
       "id": "AC-26",
-      "description": "USERS é resolvível: `resolvable=true` e `howToResolve` manda abrir o usuário em Usuários e deixar o campo Cliente em branco (o responsável confirmou em produção que desvincular resolve; não existe exclusão de usuário).",
+      "description": "USERS é resolvível: `resolvable=true` e `howToResolve` manda abrir o usuário em Usuários e escolher Nenhum no campo Cliente (o responsável confirmou em produção que desvincular resolve; não existe exclusão de usuário).",
       "tests": [
         "apps/api/src/organizations/organizations.service.spec.ts: OrganizationsService > deletionCheck (DMTE-560 T2) > AC-26: USERS é resolvível: desvincular o usuário do cliente em Usuários (não existe exclusão de usuário)"
       ]
     },
     {
       "id": "AC-27",
-      "description": "a aba Clientes da mesa mostra todos os clientes vinculados (N:N) ou \"Mesa compartilhada (sem cliente)\"; ao editar, desvincula e adiciona clientes, e Salvar envia `organizationIds` sem o campo legado `organizationId`, que a API recusa.",
+      "description": "a aba Clientes da mesa mostra todos os clientes vinculados (N:N, lista com o nome acessível \"Clientes vinculados\") ou \"Mesa compartilhada (sem cliente)\"; ao editar, desvincula e adiciona clientes, e Salvar envia `organizationIds` sem o campo legado `organizationId`, que a API recusa.",
       "tests": [
         "apps/web/src/pages/ServiceDesksPage.test.tsx: ServiceDesksPage > should link a service desk to a client and save its SLA overrides",
         "apps/web/src/pages/ServiceDesksPage.test.tsx: ServiceDesksPage > DMTE-560 AC-27: a aba Clientes lista os clientes vinculados (N:N) e permite desvincular um deles"
@@ -232,8 +232,8 @@
   "spec": "docs/delivery/specs/DMTE-560.md",
   "tdd": {
     "mode": "required",
-    "red": ".delivery/evidence/DMTE-560/red-r3-completo.json",
-    "green": ".delivery/evidence/DMTE-560/green-r3-completo.json"
+    "red": ".delivery/evidence/DMTE-560/red-r4.json",
+    "green": ".delivery/evidence/DMTE-560/green-r4.json"
   },
   "design_system": {
     "applicable": true,

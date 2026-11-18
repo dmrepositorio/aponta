@@ -969,7 +969,7 @@ describe('OrganizationsPage', { timeout: 15000 }, () => {
     const usersBlocker = {
       code: 'USERS', message: 'Há 1 usuário vinculado ao cliente.', count: 1,
       items: [{ id: 'u1', label: 'Ana' }], resolvable: true,
-      howToResolve: 'Desvincule o usuário do cliente: em Usuários, abra o usuário e deixe o campo Cliente em branco.',
+      howToResolve: 'Desvincule o usuário do cliente: em Usuários, abra o usuário e escolha Nenhum no campo Cliente.',
     };
 
     async function selectAndTrash(user: ReturnType<typeof userEvent.setup>, rows: number[]) {

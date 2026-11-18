@@ -392,7 +392,7 @@ describe('OrganizationsService', () => {
 
       expect(blockerOf([entry], 'USERS')).toMatchObject({
         resolvable: true,
-        howToResolve: expect.stringMatching(/Usuários.*campo Cliente em branco/i),
+        howToResolve: expect.stringMatching(/Usuários.*campo Cliente.*Nenhum/i),
       });
     });
 
