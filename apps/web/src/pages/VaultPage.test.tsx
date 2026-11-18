@@ -1012,7 +1012,9 @@ describe('VaultPage modals and load error (DMTE-545)', () => {
 
     await openActionsMenu(user);
     await user.click(screen.getByRole('menuitem', { name: 'Nova pasta' }));
-    expect(screen.getByRole('dialog', { name: 'Nova pasta' })).toBeInTheDocument();
+    const folderDialog = screen.getByRole('dialog', { name: 'Nova pasta' });
+    // The DS gives the first Esc to the focused text field; leave it first so Esc reaches the modal.
+    await user.click(within(folderDialog).getByText('Nova pasta'));
     await user.keyboard('{Escape}');
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
 
@@ -1022,6 +1024,7 @@ describe('VaultPage modals and load error (DMTE-545)', () => {
     expect(within(credentialDialog).getByRole('button', { name: 'Cancelar' })).toBeInTheDocument();
     expect(within(credentialDialog).getByRole('button', { name: 'Salvar' })).toBeInTheDocument();
     await user.type(fieldFor(credentialDialog, 'Nome'), 'Algo digitado');
+    await user.click(within(credentialDialog).getByText('Nova senha'));
     await user.keyboard('{Escape}');
     expect(await screen.findByText('Descartar alterações?')).toBeInTheDocument();
     expect(screen.getByRole('dialog', { name: 'Nova senha' })).toBeInTheDocument();
