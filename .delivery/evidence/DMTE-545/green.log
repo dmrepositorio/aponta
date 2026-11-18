@@ -1,0 +1,64 @@
+
+ RUN  v4.1.11 /home/hermes/multica/dmte-545/apps/web
+
+ ✓ |web| src/pages/VaultPage.test.tsx (45 tests) 9399ms
+     ✓ creates a folder via "Nova pasta" and edits a selected folder's name  612ms
+     ✓ creates a credential via "Nova senha" and edits one without touching blank username/password  772ms
+     ✓ does not save a new credential with a blank/whitespace-only name, nor without a password  526ms
+     ✓ confirms a successful copy in a polite status region that clears by itself  347ms
+     ✓ masks every revealed field after a credential is saved or deleted  309ms
+     ✓ keeps the modal open with the typed values and an error when the API refuses (folder and credential, create and edit)  1052ms
+
+ Test Files  1 passed (1)
+      Tests  45 passed (45)
+   Start at  22:56:31
+   Duration  12.46s (transform 1.58s, setup 106ms, import 2.36s, tests 9.40s, environment 411ms)
+
+stderr | src/pages/VaultPage.test.tsx > VaultPage > copies the username via the reveal endpoint (intent=copy) without ever rendering it
+An update to VaultPage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/pages/VaultPage.test.tsx > VaultPage > copies the password via the reveal endpoint (intent=copy) without ever rendering it
+An update to VaultPage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/pages/VaultPage.test.tsx > VaultPage > lets ADMIN copy and open the URL of a credential that has one
+An update to VaultPage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
+stderr | src/pages/VaultPage.test.tsx > VaultPage > lets ADMIN copy and open the URL of a credential that has one
+An update to VaultPage inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+
