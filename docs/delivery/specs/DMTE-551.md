@@ -111,7 +111,7 @@ Bloco C: login social
 - AC-22: cada provedor tem sua flag e variáveis; sem elas o botão não aparece e a rota recusa; as flags são independentes; o Facebook não é oferecido nem aceito, mesmo com variáveis configuradas (emenda da rodada 2).
 - AC-23: nenhum segredo de provedor, de SMTP ou chave de cifra aparece no repositório, em fixtures, em log ou na resposta de qualquer endpoint.
 - AC-24 (rodada 3, defeito achado na validação humana em produção): na aplicação real, com a flag `convite-e-redefinicao-usuario` ligada, `POST /auth/forgot-password` responde 200 com `{ ok: true }` e `POST /auth/password/set` com link inválido responde 400; com a flag desligada as duas respondem 404. Causa: o `AuthModule` não importava o `FeatureFlagsModule`, o guard das rotas recebia a flag vazia (`@Optional`) e a rota dava 404 em produção, embora `/api/feature-flags` dissesse que a flag estava ligada.
-- AC-25 (rodada 4, pedido do usuário na validação em produção): cada botão "Entrar com Google" e "Entrar com GitHub" da tela de login mostra o logo do provedor; o logo é decorativo para leitor de tela (`aria-hidden`) e o nome acessível do link continua "Entrar com <provedor>".
+- AC-25 (rodada 4, pedido do usuário na validação em produção): cada botão "Entrar com Google" e "Entrar com GitHub" da tela de login mostra o logo do provedor; o logo é decorativo para leitor de tela (`aria-hidden`) e o nome acessível do link continua `Entrar com <provedor>`.
 
 ## Testing Decisions
 
