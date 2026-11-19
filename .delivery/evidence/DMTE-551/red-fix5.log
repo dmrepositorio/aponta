@@ -1,0 +1,37 @@
+
+ RUN  v4.1.11 /home/hermes/repos/aponta-551-r4/apps/web
+
+ ❯ |web| src/pages/LoginPage.icons.test.tsx (1 test | 1 failed) 170ms
+     × AC-25: cada botão traz o seu logo, decorativo para leitor de tela, e o nome acessível continua "Entrar com <provedor>" 166ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  11:35:18
+   Duration  8.37s (transform 3.65s, setup 730ms, import 5.53s, tests 170ms, environment 1.63s)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |web| src/pages/LoginPage.icons.test.tsx > LoginPage: logos nos botões de Google e GitHub > AC-25: cada botão traz o seu logo, decorativo para leitor de tela, e o nome acessível continua "Entrar com <provedor>"
+AssertionError: expected [ +0, +0 ] to deeply equal [ 1, 1 ]
+
+- Expected
++ Received
+
+  [
+-   1,
+-   1,
++   0,
++   0,
+  ]
+
+ ❯ src/pages/LoginPage.icons.test.tsx:23:48
+     21|
+     22|     const logos = [google, github].map((link) => link.querySelectorAll…
+     23|     expect(logos.map((found) => found.length)).toEqual([1, 1]);
+       |                                                ^
+     24|     const [googleLogo, githubLogo] = logos.map((found) => found[0]);
+     25|     expect(googleLogo).toHaveAttribute('aria-hidden', 'true');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

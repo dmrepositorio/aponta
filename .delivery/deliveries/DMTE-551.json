@@ -242,17 +242,29 @@
       "description": "na aplicação real (AppModule), com a flag `convite-e-redefinicao-usuario` ligada, `POST /auth/forgot-password` responde 200 com `{ ok: true }` e `POST /auth/password/set` com link inválido responde 400; com a flag desligada as duas respondem 404.",
       "tests": [
         "apps/api/src/auth/password-flow.wiring.http.spec.ts: testes com o prefixo AC-24:"
+      ],
+      "tdd_required": false,
+      "reason": "TDD comprovado no PR #346, integrado em 557950d (par oficial red-fix4.json/green-fix4.json, base e64c060); nesta rodada o par oficial é o do AC-25"
+    },
+    {
+      "id": "AC-25",
+      "description": "cada botão \"Entrar com Google\" e \"Entrar com GitHub\" da tela de login mostra o logo do provedor; o logo é decorativo para leitor de tela (`aria-hidden`) e o nome acessível do link continua `Entrar com <provedor>`.",
+      "tests": [
+        "apps/web/src/pages/LoginPage.icons.test.tsx: testes com o prefixo AC-25:"
       ]
     }
   ],
   "spec": "docs/delivery/specs/DMTE-551.md",
   "tdd": {
     "mode": "required",
-    "red": ".delivery/evidence/DMTE-551/red-fix4.json",
-    "green": ".delivery/evidence/DMTE-551/green-fix4.json"
+    "red": ".delivery/evidence/DMTE-551/red-fix5.json",
+    "green": ".delivery/evidence/DMTE-551/green-fix5.json"
   },
   "design_system": {
-    "applicable": false,
-    "reason": "Rodada 3 só mexe na API (importação de módulo, código HTTP de uma rota e teste); nenhuma tela, componente ou token muda."
+    "applicable": true,
+    "reused": [
+      "EzButton"
+    ],
+    "reason": "Rodada 4 acrescenta o logo SVG de Google e GitHub aos links de entrada social da LoginPage, que segue usando os componentes do DS (EzButton, EzAlert, EzCardItem). O logo é um componente simples fora do DS (SocialProviderIcon), sem token novo; as cores do Google são as da marca. Aceite visual é de Alfredo."
   }
 }

@@ -1,0 +1,10 @@
+
+ RUN  v4.1.11 /home/hermes/repos/aponta-551-r4/apps/web
+
+ ✓ |web| src/pages/LoginPage.icons.test.tsx (1 test) 126ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  11:39:39
+   Duration  3.27s (transform 1.43s, setup 90ms, import 2.20s, tests 126ms, environment 637ms)
+
