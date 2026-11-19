@@ -8,6 +8,7 @@ import axios from 'axios';
 import { api } from '../lib/api';
 import { useAuthStore } from '../stores/authStore';
 import { EzAlert, EzButton, EzCardItem, EzModal, EzTextInput } from '../components/ds';
+import { SocialProviderIcon } from '../components/SocialProviderIcon';
 import { useFeatureFlag } from '../hooks/useFeatureFlag';
 
 const loginSchema = z.object({
@@ -271,8 +272,9 @@ export function LoginPage() {
                 <a
                   key={provider}
                   href={`/api/auth/social/${provider}/start`}
-                  className="flex h-[42px] w-full items-center justify-center rounded-[12px] border border-gray-300 bg-white text-sm font-medium text-gray-900 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"
+                  className="flex h-[42px] w-full items-center justify-center gap-2 rounded-[12px] border border-gray-300 bg-white text-sm font-medium text-gray-900 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"
                 >
+                  <SocialProviderIcon provider={provider} />
                   Entrar com {PROVIDER_LABELS[provider] ?? provider}
                 </a>
               ))}
