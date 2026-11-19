@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "phase": "green",
+  "started_at": "2026-11-19T14:39:36.657719+00:00",
+  "finished_at": "2026-11-19T14:39:43.188016+00:00",
+  "command": [
+    "pnpm",
+    "--dir",
+    "apps/web",
+    "exec",
+    "vitest",
+    "run",
+    "src/pages/LoginPage.icons.test.tsx"
+  ],
+  "base_sha": "871de382694823bd620e6c57d6f7f317387095d3",
+  "head_sha": "19c24267ae331f2e5b6cc9567ff88e89eab6d8b9",
+  "exit_code": 0,
+  "tests": {
+    "apps/web/src/pages/LoginPage.icons.test.tsx": "e6eef4018edf3e5db703f38212d0dbaef3ca006f2008a97603beb3c50d1bd761"
+  },
+  "criteria": [
+    "AC-25"
+  ],
+  "source_hashes": {
+    "apps/web/src/components/SocialProviderIcon.tsx": "6304c2815b2418242199149bb6bcf934653514584f4fa2f00efe0515cbbbb57c",
+    "apps/web/src/pages/LoginPage.icons.test.tsx": "e6eef4018edf3e5db703f38212d0dbaef3ca006f2008a97603beb3c50d1bd761",
+    "apps/web/src/pages/LoginPage.tsx": "7946ab784f6c722c61c08954d2c2d1dbe25cd7c31b25dab76d794008ef288490"
+  },
+  "log": ".delivery/evidence/DMTE-551/green-fix5.log",
+  "log_sha256": "0354c9cff67a66ce8b20b874c8869e3b8e887e919524897f27c522e2cc3dff27"
+}
