@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "phase": "red",
+  "started_at": "2026-11-19T14:35:17.097772+00:00",
+  "finished_at": "2026-11-19T14:35:27.269568+00:00",
+  "command": [
+    "pnpm",
+    "--dir",
+    "apps/web",
+    "exec",
+    "vitest",
+    "run",
+    "src/pages/LoginPage.icons.test.tsx"
+  ],
+  "base_sha": "871de382694823bd620e6c57d6f7f317387095d3",
+  "head_sha": "494b444c4dc4e30c58210e97adcc1a3d51cb8453",
+  "exit_code": 1,
+  "tests": {
+    "apps/web/src/pages/LoginPage.icons.test.tsx": "e6eef4018edf3e5db703f38212d0dbaef3ca006f2008a97603beb3c50d1bd761"
+  },
+  "criteria": [
+    "AC-25"
+  ],
+  "source_hashes": {
+    "apps/web/src/pages/LoginPage.icons.test.tsx": "e6eef4018edf3e5db703f38212d0dbaef3ca006f2008a97603beb3c50d1bd761"
+  },
+  "log": ".delivery/evidence/DMTE-551/red-fix5.log",
+  "log_sha256": "db63b6270a8916468282c334e7bb63aa38f39564f635a0cf162512e580e3aba2"
+}
