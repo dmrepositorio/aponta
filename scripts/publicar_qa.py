@@ -19,7 +19,8 @@ CANONICAL_REPOSITORY = os.environ.get('GITHUB_REPOSITORY', 'dmrepositorio/aponta
 QA = '3501c5bf-c0eb-497b-9840-32ae3e9d9076'  # dev_qa (Squad Dev Aponta)
 RAPIDO_QA = 'a75c9214-2636-4c5d-8dbb-64a8927ff542'  # dev_rapido_qa (Squad Rápido)
 ULTRA_QA = '6cea4f83-0bf4-4652-a5fe-db283601ec53'  # dev_ultra_qa (Squad Ultra Rápido)
-QA_AGENTS = (QA, RAPIDO_QA, ULTRA_QA)
+SKILLS_QA = '29622273-d33e-4e3e-9cad-2d61e1ed875b'  # skills_qa (Squad Agent Skills)
+QA_AGENTS = (QA, RAPIDO_QA, ULTRA_QA, SKILLS_QA)
 
 
 # A result line starts the line, as the comment gate requires; RESULTADO= cited mid-sentence is prose.

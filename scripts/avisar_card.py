@@ -14,7 +14,7 @@ import urllib.request
 from publicar_qa import parent_of
 
 ROOT = Path(__file__).resolve().parent.parent
-LEADER = '[@dev_ultra_lider](mention://agent/0427564a-c9cc-494e-8ea1-592a98588251)'
+LEADER = '[@skills_lider](mention://agent/22484e3d-c0a4-4f2d-8638-87ea490c69fb)'
 SERVER = 'https://multica.aponta.cloud'
 WORKSPACE = 'dabf7eb3-4a03-4e26-8eb0-0773f65cfff4'
 PRODUCTION = 'https://dm.aponta.cloud'

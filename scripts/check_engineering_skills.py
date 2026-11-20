@@ -73,9 +73,6 @@ def main():
         if folder.name == 'SKILL.md':
             folder = folder.parent
         errors.extend(str(folder) + ': ' + error for error in validate_bundle(folder))
-    if not args.folders and Path('docs/agents/matt-workflow.json').exists():
-        from check_matt_workflow import validate_workflow
-        errors.extend(validate_workflow(Path.cwd()))
     for error in errors:
         print(error)
     if not errors:

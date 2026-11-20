@@ -4,7 +4,7 @@ from pathlib import Path
 import subprocess
 import tempfile
 import unittest
-from publicar_qa import assess, build_query, carry_source, parent_of, status_payload, QA, RAPIDO_QA, ULTRA_QA
+from publicar_qa import assess, build_query, carry_source, parent_of, status_payload, QA, RAPIDO_QA, ULTRA_QA, SKILLS_QA
 from qa_merge_queue import pr_number, queue_verdict
 
 
@@ -39,6 +39,10 @@ class QaProofTests(unittest.TestCase):
     def test_squad_ultra_qa_can_approve_from_its_own_run(self):
         running = {**self.valid, 'author_id': ULTRA_QA, 'task_agent': ULTRA_QA, 'task_status': 'running'}
         self.assertEqual(assess([running], self.sha, current=('task', ULTRA_QA)), running)
+
+    def test_squad_agent_skills_qa_can_approve_from_its_own_run(self):
+        running = {**self.valid, 'author_id': SKILLS_QA, 'task_agent': SKILLS_QA, 'task_status': 'running'}
+        self.assertEqual(assess([running], self.sha, current=('task', SKILLS_QA)), running)
 
     def test_squad_ultra_leader_cannot_approve(self):
         leader = '0427564a-c9cc-494e-8ea1-592a98588251'
