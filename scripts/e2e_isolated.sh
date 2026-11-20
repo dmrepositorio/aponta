@@ -3,7 +3,7 @@
 #
 # Cada execução ganha um identificador, um Postgres descartável próprio e portas livres
 # próprias para API e web. A limpeza remove só o que tem o rótulo desta execução; nunca
-# toca em outra execução, em staging ou em produção. No GitHub Actions isso não é
+# toca em outra execução ou em produção. No GitHub Actions isso não é
 # necessário: cada job roda numa máquina própria, com o Postgres do próprio job.
 #
 # Uma execução por checkout: duas no mesmo checkout disputam o diretório de build da API e
