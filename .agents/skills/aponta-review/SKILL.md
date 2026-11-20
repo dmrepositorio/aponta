@@ -17,7 +17,7 @@ Na revisão de entrega, use um resultado geral inequívoco: `RESULTADO=APROVADO`
 
 Entregue um resultado conclusivo `APROVADO`/`REJEITADO`, ou `BLOQUEADO` quando não for possível avaliar, SHA exato quando conhecido, critérios e verificações, achados com severidade, arquivo/localização e reprodução. Achado Important ou superior impede aprovação. Não implemente a correção no papel de QA nem autoaprove mudanças feitas por você.
 
-Publique o resultado como resposta no fio da menção, no pai, sem alterar o status do pai; na rejeição, o líder faz uma nova menção ao Developer e depois uma nova revisão. Falta de contexto necessário ou indisponibilidade de ambiente é BLOQUEADO, com causa, pergunta e responsável no mesmo fio. Não invente reprovação de código. Após complemento suficiente, o líder reativa a mesma fase sem nova rodada de correção por simples espera. Após duas rodadas rejeitadas para a mesma causa ou dois erros idênticos de infraestrutura, peça avaliação do líder em vez de repetir indefinidamente.
+Em squads por menção, publique o resultado como resposta no fio da menção, no pai, sem alterar o status do pai; na rejeição, o líder faz uma nova menção ao Developer e depois uma nova revisão. Falta de contexto necessário ou indisponibilidade de ambiente é BLOQUEADO, com causa, pergunta e responsável no mesmo fio. Não invente reprovação de código. Após complemento suficiente, o líder reativa a mesma fase sem nova rodada de correção por simples espera. Após duas rodadas rejeitadas para a mesma causa ou dois erros idênticos de infraestrutura, peça avaliação do líder em vez de repetir indefinidamente.
 
 
 ## Alegação contra evidência
@@ -36,4 +36,4 @@ Leia as fontes de alinhamento e a referência visual/fluxo confirmadas, não ape
 
 ## Método de revisão
 
-code-review original define os eixos Standards e Spec, mantidos separados. Este perfil acrescenta reprodução independente e os gates do Aponta, sem redefinir aqueles eixos. A revisão interna do Developer não substitui QA do SHA final; QA não modifica código. Leia aponta-flow para o contrato de métodos e passagem vigente.
+Aplique code-review-and-quality ao diff e aos critérios de aceite. Registre achados reproduzíveis e confira o SHA antes de publicar Independent QA.

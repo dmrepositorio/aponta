@@ -34,9 +34,10 @@ jobs:
         run: python3 -m unittest discover -s scripts -p test_publicar_qa.py -v
       - name: Test the CD notice to the Multica card
         run: python3 -m unittest discover -s scripts -p test_avisar_card.py -v
-      - name: Verify reusable engineering skill bundles
+      - name: Verify pinned Agent Skills and project bundles
         run: |
           python3 -m unittest discover -s scripts -p test_engineering_skills.py -v
+          python3 -m unittest discover -s scripts -p test_agent_skills.py -v
           python3 scripts/check_engineering_skills.py
       - name: Verify identity, SPEC, TDD and design system
         env:
