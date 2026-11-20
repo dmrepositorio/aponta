@@ -1,6 +1,6 @@
 # Domain Docs
 
-How the engineering skills (`domain-modeling`, `to-spec`, `to-tickets`, `diagnosing-bugs`, `code-review`, `triage`) should consume this repo's domain documentation when exploring the codebase.
+How the engineering skills (`documentation-and-adrs`, `spec-driven-development`, `planning-and-task-breakdown`, `debugging-and-error-recovery`, `code-review-and-quality`) should consume this repo's domain documentation when exploring the codebase.
 
 ## Layout: single-context
 
@@ -23,7 +23,7 @@ This repo is **single-context** (confirmed 2026-10-31: `pnpm-workspace.yaml` lis
 - **`GLOSSARY.md`** at the repo root, if it exists.
 - **`docs/adr/`**: read ADRs that touch the area you're about to work in.
 
-If neither exists yet, **proceed silently** — don't flag their absence or suggest creating them upfront. The `domain-modeling` skill creates them lazily, the moment a term is actually resolved or a real architectural trade-off is made (not for every decision — see the skill's own criteria: hard to reverse, surprising without context, result of a real trade-off).
+If neither exists yet, **proceed silently** — don't flag their absence or suggest creating them upfront. The `documentation-and-adrs` skill creates them lazily, the moment a term is actually resolved or a real architectural trade-off is made (not for every decision — see the skill's own criteria: hard to reverse, surprising without context, result of a real trade-off).
 
 ## Use the glossary's vocabulary
 
