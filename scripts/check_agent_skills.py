@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 import re
 
-ROLES = {'dev_triagem', 'dev_arquiteto', 'dev_executor', 'dev_qa', 'dev_entrega'}
+ROLES = {'dev_pipeline_triagem', 'dev_pipeline_arquiteto', 'dev_pipeline_executor', 'dev_pipeline_qa', 'dev_pipeline_entrega'}
 
 
 def validate_workflow(root: Path) -> list[str]:

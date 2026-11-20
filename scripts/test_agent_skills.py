@@ -21,7 +21,7 @@ class WorkflowTest(unittest.TestCase):
     def test_missing_role(self):
         path = self.root / 'catalog.json'
         manifest = json.loads(path.read_text())
-        del manifest['roles']['dev_qa']
+        del manifest['roles']['dev_pipeline_qa']
         path.write_text(json.dumps(manifest))
         self.assertTrue(validate_workflow(self.root))
 
