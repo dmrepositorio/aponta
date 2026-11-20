@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "delivery": "DMTE-572",
+  "repository": "dmrepositorio/aponta",
+  "github_issue": 350,
+  "multica_id": "01a1f861-00f2-7861-a00a-c7bca4de9c69",
+  "cycle": "2026-11-09/2026-11-22",
+  "tier": 2,
+  "criteria": [
+    {
+      "id": "AC-01",
+      "description": "o checkout contém os catálogos dos squads e um catálogo independente para as cinco etapas do piloto.",
+      "tests": [
+        "python3 scripts/check_engineering_skills.py e python3 scripts/check_agent_skills.py"
+      ]
+    },
+    {
+      "id": "AC-02",
+      "description": "o CI confere as atribuições, a revisão e a integridade dos arquivos do piloto e continua executando o verificador dos squads.",
+      "tests": [
+        "python3 -m unittest discover -s scripts -p test_agent_skills.py"
+      ]
+    },
+    {
+      "id": "AC-03",
+      "description": "o ensaio do wrapper confirma o CLI nativo para os cinco agentes e detecta um controle positivo que passa pelo shim.",
+      "tests": [
+        "bash tools/dev-pipeline/test-workdir-gate.sh <checkout-wrapper>"
+      ]
+    }
+  ],
+  "spec": "docs/delivery/specs/DMTE-572.md",
+  "tdd": {
+    "mode": "required",
+    "red": ".delivery/evidence/DMTE-572/red.json",
+    "green": ".delivery/evidence/DMTE-572/green.json"
+  },
+  "design_system": {
+    "applicable": false,
+    "reason": "Catálogo de ferramentas e validação de CI, sem interface de produto."
+  }
+}
