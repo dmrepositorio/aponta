@@ -1,5 +1,9 @@
 name: CD (Produção)
 
+# O título do run mostra o que está sendo publicado: o assunto do commit da main, que no squash da
+# merge queue traz o número do PR (ex.: "Título do PR (#351)").
+run-name: "CD · ${{ github.event.workflow_run.display_title }}"
+
 # Entrega direta em produção, sempre da ponta da main com CI verde:
 #   production  exporta a árvore do commit, constrói as imagens uma vez, sobe a produção e roda
 #               o smoke (saúde e commit no ar). Exige a aprovação do environment `production`
