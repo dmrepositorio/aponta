@@ -134,6 +134,38 @@ export class TicketTrendDayDto {
   @ApiProperty() cancelled!: number;
 }
 
+export class PeriodRangeDto {
+  @ApiProperty() start!: string;
+  @ApiProperty() end!: string;
+}
+
+export class TimeComparisonDto {
+  @ApiPropertyOptional() currentMedianMinutes!: number | null;
+  @ApiPropertyOptional() previousMedianMinutes!: number | null;
+  @ApiProperty() currentCount!: number;
+  @ApiProperty() previousCount!: number;
+  @ApiPropertyOptional() absoluteChangeMinutes!: number | null;
+  @ApiPropertyOptional() percentChange!: number | null;
+  @ApiPropertyOptional({ description: 'melhora, piora ou estavel; null quando não há dados suficientes' })
+  verdict!: 'melhora' | 'piora' | 'estavel' | null;
+  @ApiProperty({ description: 'Variação percentual (fração) considerada estável, ex.: 0.05 = 5%' })
+  threshold!: number;
+  @ApiProperty({ description: 'true quando algum dos períodos tem menos de 10 amostras' })
+  smallSample!: boolean;
+}
+
+export class ResponseTimeComparisonDto {
+  @ApiProperty({ description: 'Último mês fechado (UTC)' }) periodCurrent!: PeriodRangeDto;
+  @ApiProperty({ description: 'Mês anterior ao último mês fechado (UTC)' }) periodPrevious!: PeriodRangeDto;
+  @ApiProperty({ description: 'Tempo até a primeira resposta pública, por período' })
+  firstResponse!: TimeComparisonDto;
+  @ApiProperty({ description: 'Tempo até a resolução (Ticket.closedAt - Ticket.createdAt), por período' })
+  resolution!: TimeComparisonDto;
+  @ApiProperty({ description: 'Campos de origem dos dados' }) source!: string[];
+  @ApiProperty({ description: 'Tempo corrido, sem desconto de pausa de SLA' }) elapsedTimeNote!: string;
+  @ApiProperty() extractedAt!: string;
+}
+
 export class DashboardSummaryDto {
   @ApiProperty({ description: 'Chamados com status diferente de RESOLVED/CLOSED' })
   openCount!: number;

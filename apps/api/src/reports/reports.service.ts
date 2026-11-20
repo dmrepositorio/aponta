@@ -4,11 +4,18 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CurrentUserPayload } from '../tickets/decorators/current-user.decorator';
 import { TenantHelper } from '../core/security/tenant.helper';
 import { Role, TicketStatus } from '@prisma/client';
-import { WorkloadReportItemDto, BillingReportItemDto, DashboardSummaryDto } from './dto/report.dto';
+import { WorkloadReportItemDto, BillingReportItemDto, DashboardSummaryDto, ResponseTimeComparisonDto } from './dto/report.dto';
 import { getSlaStatus } from '../scheduling/sla-status';
 import { PermissionsService } from '../permissions/permissions.service';
+import { getClosedMonthRanges } from './closed-month-range';
+import { compareResponseTimes } from './response-time-comparison';
 
 const CLOSED_STATUSES: TicketStatus[] = [TicketStatus.RESOLVED, TicketStatus.CLOSED];
+
+// SPEC DMTE-575: variação até 5% na mediana conta como "estável"; períodos
+// com menos de 10 amostras ficam marcados como amostra pequena no relatório.
+const RESPONSE_TIME_STABLE_THRESHOLD = 0.05;
+const RESPONSE_TIME_SMALL_SAMPLE_THRESHOLD = 10;
 
 @Injectable()
 export class ReportsService {
@@ -122,6 +129,81 @@ export class ReportsService {
     }
 
     return Array.from(grouped.values()).sort((a, b) => b.billableMinutes - a.billableMinutes);
+  }
+
+  async getResponseTimeComparison(
+    user: CurrentUserPayload,
+    referenceDate: Date = new Date(),
+  ): Promise<ResponseTimeComparisonDto> {
+    const baseWhere = TenantHelper.getTicketWhere(user);
+    if (baseWhere.id === '00000000-0000-0000-0000-000000000000') {
+      throw new ForbiddenException('Acesso negado aos relatórios');
+    }
+
+    const { current, previous } = getClosedMonthRanges(referenceDate);
+
+    const [resolutionTickets, firstResponseTickets] = await Promise.all([
+      this.prisma.ticket.findMany({
+        where: { ...baseWhere, closedAt: { gte: previous.start, lt: current.end } },
+        select: { createdAt: true, closedAt: true },
+      }),
+      this.prisma.ticket.findMany({
+        where: { ...baseWhere, createdAt: { gte: previous.start, lt: current.end } },
+        select: {
+          createdAt: true,
+          requesterId: true,
+          comments: {
+            orderBy: { createdAt: 'asc' },
+            select: { createdAt: true, authorId: true, isInternal: true },
+          },
+        },
+      }),
+    ]);
+
+    const inRange = (date: Date, range: { start: Date; end: Date }) =>
+      date >= range.start && date < range.end;
+    const minutesBetween = (from: Date, to: Date) => (to.getTime() - from.getTime()) / 60000;
+
+    const resolutionCurrentMinutes: number[] = [];
+    const resolutionPreviousMinutes: number[] = [];
+    for (const ticket of resolutionTickets) {
+      if (!ticket.closedAt) continue;
+      const minutes = minutesBetween(ticket.createdAt, ticket.closedAt);
+      if (inRange(ticket.closedAt, current)) resolutionCurrentMinutes.push(minutes);
+      else if (inRange(ticket.closedAt, previous)) resolutionPreviousMinutes.push(minutes);
+    }
+
+    const firstResponseCurrentMinutes: number[] = [];
+    const firstResponsePreviousMinutes: number[] = [];
+    for (const ticket of firstResponseTickets) {
+      const firstResponse = ticket.comments.find(
+        (comment) => !comment.isInternal && comment.authorId !== ticket.requesterId,
+      );
+      if (!firstResponse) continue;
+      const minutes = minutesBetween(ticket.createdAt, firstResponse.createdAt);
+      if (inRange(ticket.createdAt, current)) firstResponseCurrentMinutes.push(minutes);
+      else if (inRange(ticket.createdAt, previous)) firstResponsePreviousMinutes.push(minutes);
+    }
+
+    return {
+      periodCurrent: { start: current.start.toISOString(), end: current.end.toISOString() },
+      periodPrevious: { start: previous.start.toISOString(), end: previous.end.toISOString() },
+      resolution: compareResponseTimes(
+        resolutionCurrentMinutes,
+        resolutionPreviousMinutes,
+        RESPONSE_TIME_STABLE_THRESHOLD,
+        RESPONSE_TIME_SMALL_SAMPLE_THRESHOLD,
+      ),
+      firstResponse: compareResponseTimes(
+        firstResponseCurrentMinutes,
+        firstResponsePreviousMinutes,
+        RESPONSE_TIME_STABLE_THRESHOLD,
+        RESPONSE_TIME_SMALL_SAMPLE_THRESHOLD,
+      ),
+      source: ['Ticket.createdAt', 'Ticket.closedAt', 'Comment.createdAt'],
+      elapsedTimeNote: 'Tempo corrido, sem desconto de pausa de SLA.',
+      extractedAt: new Date().toISOString(),
+    };
   }
 
   async getSummary(user: CurrentUserPayload): Promise<DashboardSummaryDto> {

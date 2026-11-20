@@ -2,10 +2,12 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ReportsController } from './reports.controller';
 import { ReportsService } from './reports.service';
 import { PermissionsService } from '../permissions/permissions.service';
+import { PERMISSIONS_KEY } from '../auth/decorators/require-permission.decorator';
 
 const mockReportsService = {
   getWorkload: jest.fn(),
   getBilling: jest.fn(),
+  getResponseTimeComparison: jest.fn(),
 };
 
 describe('ReportsController', () => {
@@ -58,6 +60,24 @@ describe('ReportsController', () => {
 
       expect(mockReportsService.getBilling).toHaveBeenCalledWith(user);
       expect(result).toEqual([{ organizationId: 'org-1' }]);
+    });
+  });
+
+  describe('getResponseTimeComparison', () => {
+    it('delegates to the service with the current user', async () => {
+      const user = { id: 'u1' } as any;
+      mockReportsService.getResponseTimeComparison.mockResolvedValue({ resolution: {} });
+
+      const result = await controller.getResponseTimeComparison(user);
+
+      expect(mockReportsService.getResponseTimeComparison).toHaveBeenCalledWith(user);
+      expect(result).toEqual({ resolution: {} });
+    });
+
+    it('requires VIEW_ADMIN_REPORTS, so requesters without it are denied by PermissionsGuard', () => {
+      expect(Reflect.getMetadata(PERMISSIONS_KEY, controller.getResponseTimeComparison)).toEqual([
+        'VIEW_ADMIN_REPORTS',
+      ]);
     });
   });
 });
