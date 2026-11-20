@@ -4,7 +4,7 @@ GitHub Issues em dmrepositorio/aponta, via gh CLI. Configuração do setup prese
 
 ## Identidade e publicação
 
-Uma entrega tem uma issue GitHub principal e um pai Multica, declarados no manifest .delivery/deliveries/DMTE-N.json (o .delivery/registry.json guarda épicos e entregas anteriores a DMTE-470). spec-driven-development publica a SPEC na issue principal existente quando houver; criação nova só quando não existir uma origem canônica. O espelho docs/delivery/specs/DMTE-N.md contém o mesmo corpo, para verificação local.
+Uma entrega tem uma issue GitHub principal e um pai Multica, identificados pela issue GitHub e pelo nome da entrega (DMTE-N); `.delivery/` guarda só o histórico anterior. spec-driven-development publica a SPEC na issue principal existente quando houver; criação nova só quando não existir uma origem canônica. O espelho docs/delivery/specs/DMTE-N.md contém o mesmo corpo, como cópia versionada.
 
 planning-and-task-breakdown publica UMA issue GitHub por ticket aprovado. Cada ticket é sub-issue da SPEC e herda a identidade da entrega; isso substitui a antiga proibição de outras issues técnicas para estes tickets de implementação. As etapas /spec, /plan, /build, /review e /ship são status do pai Multica, sem issue GitHub nem issue Multica por fase ou por ticket. O líder (`/plan`) publica os tickets no planning-and-task-breakdown, como sub-issues GitHub, antes de encerrar o planejamento; a etapa `/build` recebe o próximo ticket elegível, ou vários sequenciais. O briefing lista IDs reais de tickets e dependências; não criar um pai Multica de entrega nem uma issue filha Multica por ticket, nem triá-los novamente.
 

@@ -11,7 +11,7 @@ Fontes analisadas em 10/11/2026: os artigos "Falando um pouco sobre minhas skill
 | Contribuidores externos hostis | Agentes próprios, repositório público | Conteúdo de issue e PR é dado não confiável do mesmo jeito; aprovação de workflow de fork não se aplica hoje |
 | Ruby, Bundler, Dependabot | pnpm, Nx, lockfile único, sem bot | `deprecation-and-migration`, genérica: descobre o gerenciador no repositório |
 | Biblioteca pública com semver, changelog e tag | Aplicação implantada, versionada pelo SHA | Sem bump nem tag; a "release" é a promoção do commit validado |
-| Deploy por script a partir da árvore local | Imagens por commit, staging e promoção | `scripts/aponta_release.py` |
+| Deploy por script a partir da árvore local | Imagens por commit e deploy direto | `scripts/aponta_release.py` |
 
 ## Mapeamento
 
@@ -34,10 +34,10 @@ Fontes analisadas em 10/11/2026: os artigos "Falando um pouco sobre minhas skill
 | Origem da dependência conferida antes de instalar | pr-bump | `deprecation-and-migration`  | Lockfile congelado no CI; revisão ALTA para os sinais de risco |
 | Agrupar atualizações com critério | pr-bump | `deprecation-and-migration` | Um PR por grupo, pela fila |
 | Versão a partir do que mudou; nada de release que ninguém pediu | release | `shipping-and-launch` | Versão é o SHA; não há workflow de tag |
-| Evidência de staging para o artefato promovido | release, artigo de deploy | `shipping-and-launch` | `aponta_release.py promote` recusa commit sem registro aprovado ou com imagem diferente |
+| Evidência do artefato publicado | release, artigo de deploy | `shipping-and-launch` | `aponta_release.py deploy` registra o commit, as imagens e o resultado do smoke |
 | Não reescrever tag nem histórico publicado | release | `shipping-and-launch`, `AGENTS.md` | Ruleset: `non_fast_forward` e `deletion` bloqueados na `main` |
 | Publicar só pelo mecanismo autorizado | release | `shipping-and-launch` | Só `deploy.yml` tem os secrets de deploy; roda só para CI de push na `main` |
-| Staging de verdade antes de usuário real | artigo de deploy | — | Job Staging do CD e registro por commit |
+| Ambiente de teste antes de usuário real | artigo de deploy | — | Não adotado: o E2E roda no CI e a produção exige aprovação do environment |
 | Feature flag controla quem vê; flag morta é removida | artigo de deploy | — | Registro com responsável e data; teste falha depois da data |
 | Rollback rápido; banco não volta com `git revert` | artigo de deploy | `code-review-and-quality`, `shipping-and-launch` | `promote --rollback` sem build; expandir e contrair conferido na revisão |
 

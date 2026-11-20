@@ -20,17 +20,17 @@ Transversais: `using-agent-skills`, `context-engineering`, `source-driven-develo
 
 **`/plan`** — `planning-and-task-breakdown` divide em tarefas finas, ordenadas e com dependências; cada uma vira sub-issue da SPEC (`Blocked by` como fallback). O humano aprova a divisão antes da publicação. Funcionalidade nova ou grande refatoração sempre passa por `/spec` e `/plan` completos, qualquer que seja o Tier; bug pequeno com critérios confirmados pode usar os critérios da issue.
 
-**`/build` + `/test`** — O executor trabalha um ticket por vez, em contexto novo, só com bloqueadores concluídos. `incremental-implementation`: fatias finas, um commit por fatia. `test-driven-development` com `aponta-tdd`: RED real antes da implementação, GREEN no mesmo teste, coletados por `scripts/aponta_delivery.py record`. Bug difícil usa `debugging-and-error-recovery` antes de editar. WIP 1 entrega; até dois tickets liberados da mesma entrega podem andar em paralelo, cada um em worktree novo, exclusivo e limpo. Integração é branch de trabalho, nunca `main`. O PR abre em draft com `Aponta-Delivery` e `Refs`; a entrega ao QA é o SHA final de 40 caracteres.
+**`/build` + `/test`** — O executor trabalha um ticket por vez, em contexto novo, só com bloqueadores concluídos. `incremental-implementation`: fatias finas, um commit por fatia. `test-driven-development` com `aponta-tdd`: o teste que descreve o comportamento falha por asserção antes da implementação e passa depois; o PR registra qual teste falhou primeiro e o comando que provou. Bug difícil usa `debugging-and-error-recovery` antes de editar. WIP 1 entrega; até dois tickets liberados da mesma entrega podem andar em paralelo, cada um em worktree novo, exclusivo e limpo. Integração é branch de trabalho, nunca `main`. O PR abre em draft com `Refs`; a entrega ao QA é o SHA final de 40 caracteres.
 
-**`/review`** — O QA é independente: revisa o diff exato de todos os commits (`code-review-and-quality`, `security-and-hardening`), reproduz os testes, audita o RED/GREEN e confere contrato, tenant e DS. Resultado numa linha `RESULTADO=APROVADO|REJEITADO|BLOQUEADO` com `SHA=`. Aprovado: `scripts/publicar_qa.py`. Rejeitado: volta a `desenvolvimento`; o QA nunca corrige o próprio achado. Commit novo que muda código, critérios ou SPEC invalida o parecer.
+**`/review`** — O QA é independente: revisa o diff exato de todos os commits (`code-review-and-quality`, `security-and-hardening`), reproduz os testes, audita o TDD e confere contrato, tenant e DS. O parecer é um comentário no PR, com resultado inequívoco (aprovado, rejeitado ou bloqueado) e o SHA revisado. Rejeitado: volta a `desenvolvimento`; o QA nunca corrige o próprio achado. Commit novo que muda código, critérios ou SPEC invalida o parecer.
 
-**`/ship`** — O líder confere os checks no head exato e o atestado no mesmo SHA e declara só o estado que a evidência prova (Implementado, Revisado, Apto para integração, Integrado, Validado em staging, Publicado em produção; ver `docs/delivery/WORKFLOW.md`). O usuário coloca o PR na merge queue e o aceite é só dele. Sem fechamento automático por merge: `Refs`, nunca `Closes`/`Fixes`.
+**`/ship`** — O líder confere os checks do CI no head exato e o parecer do QA no mesmo SHA e declara só o estado que a evidência prova (Implementado, Revisado, Apto para integração, Integrado, Publicado em produção; ver `docs/delivery/WORKFLOW.md`). O usuário coloca o PR na merge queue, aprova o deploy no environment `production` e o aceite é só dele. Sem fechamento automático por merge: `Refs`, nunca `Closes`/`Fixes`.
 
 ## Regras comuns
 
 - Cada status acorda o agente da etapa; o resultado vai como comentário no fio da issue, com fontes e decisões, SHA, comandos, pendências e próximo responsável. Fonte humana ausente bloqueia só a ação dependente; silêncio nunca vale como aprovação.
 - Duas rejeições pela mesma causa, ou dois erros iguais de ambiente, devolvem diagnóstico ao humano em vez de repetir.
-- Nunca Docker, CD ou `aponta_release.py` contra staging/produção; nunca merge fora da fila; nunca credenciais em logs ou fixtures.
+- Nunca Docker, CD ou `aponta_release.py` contra produção; nunca merge fora da fila; nunca credenciais em logs ou fixtures.
 - Perda de contexto entre sessões é declarada, nunca tratada como continuidade comprovada.
 
 ## UI, memória e passagem
