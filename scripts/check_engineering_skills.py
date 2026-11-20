@@ -61,28 +61,25 @@ def main():
     args = parser.parse_args()
     # Project profiles can deliberately point at repository tools/docs. This
     # check targets reusable methods, not those repository-scoped contracts.
-    try:
-        catalog = {} if args.folders else json.loads(Path('docs/agents/agent-skills.json').read_text())
-        upstream_names = {name for names in catalog.get('roles', {}).values() for name in names}
-    except (OSError, ValueError, TypeError, AttributeError) as error:
-        print(f'Invalid skill catalog: {error}')
-        return True
     folders = args.folders or sorted(
         path for path in Path('.agents/skills').glob('*/SKILL.md')
-        if not path.parent.name.startswith('aponta-') and path.parent.name not in upstream_names
+        if not path.parent.name.startswith('aponta-')
     )
+    if not folders:
+        print('No reusable skill bundles found; verification requires an existing collection.')
+        return True
     errors = []
     for folder in folders:
         if folder.name == 'SKILL.md':
             folder = folder.parent
         errors.extend(str(folder) + ': ' + error for error in validate_bundle(folder))
-    if not args.folders:
-        from check_agent_skills import validate_workflow
+    if not args.folders and Path('docs/agents/matt-workflow.json').exists():
+        from check_matt_workflow import validate_workflow
         errors.extend(validate_workflow(Path.cwd()))
     for error in errors:
         print(error)
     if not errors:
-        print(f'{len(folders) + len(upstream_names)} skill bundles verified.')
+        print(f'{len(folders)} skill bundles: references and pinned sources verified.')
     return bool(errors)
 
 

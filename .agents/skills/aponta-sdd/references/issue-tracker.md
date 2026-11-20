@@ -4,9 +4,9 @@ GitHub Issues em alfredo-maia/aponta, via gh CLI. Configuração do setup preser
 
 ## Identidade e publicação
 
-Uma entrega tem uma issue GitHub principal e um pai Multica em .delivery/registry.json. spec-driven-development publica a SPEC na issue principal existente quando houver; criação nova só quando não existir uma origem canônica. O espelho docs/specs/YYYY-MM-DD-<tema>.md contém o mesmo corpo, para verificação local.
+Uma entrega tem uma issue GitHub principal e um pai Multica em .delivery/registry.json. to-spec publica a SPEC na issue principal existente quando houver; criação nova só quando não existir uma origem canônica. O espelho docs/superpowers/specs/YYYY-MM-DD-<tema>.md contém o mesmo corpo, para verificação local.
 
-planning-and-task-breakdown publica UMA issue GitHub por ticket aprovado. Cada ticket é sub-issue da SPEC e herda a identidade da entrega; isso substitui a antiga proibição de outras issues técnicas para estes tickets de implementação. Triagem/Architect/Developer/QA/Delivery são etapas delegadas por menção no pai Multica, sem issue GitHub nem issue Multica por fase ou por ticket. O Architect publica os tickets no planning-and-task-breakdown, como sub-issues GitHub, antes de encerrar o planejamento; a etapa Developer recebe por menção o próximo ticket elegível, ou vários sequenciais. O briefing lista IDs reais de tickets e dependências; não criar um pai Multica de entrega nem uma issue filha Multica por ticket, nem triá-los novamente.
+to-tickets publica UMA issue GitHub por ticket aprovado. Cada ticket é sub-issue da SPEC e herda a identidade da entrega; isso substitui a antiga proibição de outras issues técnicas para estes tickets de implementação. Triagem/Architect/Developer/QA/Delivery são etapas delegadas por menção no pai Multica, sem issue GitHub nem issue Multica por fase ou por ticket. O Architect publica os tickets no to-tickets, como sub-issues GitHub, antes de encerrar o planejamento; a etapa Developer recebe por menção o próximo ticket elegível, ou vários sequenciais. O briefing lista IDs reais de tickets e dependências; não criar um pai Multica de entrega nem uma issue filha Multica por ticket, nem triá-los novamente.
 
 - Criar/listar/comentar: gh issue create/list/comment -R alfredo-maia/aponta, com título/corpo/labels explícitos. Para textos grandes usar --body-file.
 - Ler corpo e comentários: gh issue view <N> -R alfredo-maia/aponta --json number,title,body,comments,labels,state,url.
@@ -15,8 +15,8 @@ planning-and-task-breakdown publica UMA issue GitHub por ticket aprovado. Cada t
 
 ## Fechamento e PR
 
-Este tracker NÃO fecha trabalho automaticamente por PR. Manter Aponta-Delivery: DMTE-N e Refs alfredo-maia/aponta#N; usar Refs também nos tickets. Não usar Closes/Fixes. incremental-implementation abre draft PR após a primeira integração e o torna pronto após sua revisão; QA e Delivery continuam verificações adicionais. Implementado, integrado, publicado e aceito são estados distintos. Delivery fecha produto/tickets por gh issue close apenas após entrega comprovada/aceite aplicável; o Tech Lead consolida o pai Multica. Cancelamentos e exclusões explícitos do usuário prevalecem.
+Este tracker NÃO fecha trabalho automaticamente por PR. Manter Aponta-Delivery: DMTE-N e Refs alfredo-maia/aponta#N; usar Refs também nos tickets. Não usar Closes/Fixes. implement-spec abre draft PR após a primeira integração e o torna pronto após sua revisão; QA e Delivery continuam verificações adicionais. Implementado, integrado, publicado e aceito são estados distintos. Delivery fecha produto/tickets por gh issue close apenas após entrega comprovada/aceite aplicável; o Tech Lead consolida o pai Multica. Cancelamentos e exclusões explícitos do usuário prevalecem.
 
 ## Triage
 
-Apenas entradas externas brutas; tickets gerados por planning-and-task-breakdown já são ready-for-agent. A skill triage original define categorias, labels, recomendação/confirmação e disclaimer dos comentários. Não fechar uma issue por wontfix sem a decisão prevista no método. PRs externos não são superfície de triagem por padrão.
+Apenas entradas externas brutas; tickets gerados por to-tickets já são ready-for-agent. A skill triage original define categorias, labels, recomendação/confirmação e disclaimer dos comentários. Não fechar uma issue por wontfix sem a decisão prevista no método. PRs externos não são superfície de triagem por padrão.

@@ -1,13 +1,13 @@
 ---
 name: aponta-flow
-description: Coordenar ou executar o fluxo de engenharia no Squad Dev Aponta, com papéis, etapas por menção e evidências próprios do Multica.
+description: Coordenar ou executar o fluxo Matt original no Squad Dev Aponta, com papéis, etapas por menção e evidências próprios do Multica.
 ---
 
 # Fluxo Aponta
 
-Leia [references/engineering-workflow.md](references/engineering-workflow.md) antes de planejar ou executar uma fase. Esse contrato define a composição dos métodos originais, os papéis e as exceções explícitas de projeto. O mapa de métodos e arquivos originais está em docs/agents/agent-skills.json.
+Leia [references/engineering-workflow.md](references/engineering-workflow.md) antes de planejar ou executar uma fase. Esse contrato define a composição dos métodos originais, os papéis e as exceções explícitas de projeto. O mapa de métodos e arquivos originais está em [references/matt-workflow.json](references/matt-workflow.json).
 
-## Orquestração de squads por menção
+## Orquestração Multica
 
 Squad Dev Aponta 9892f209-3612-411f-a5e1-708cee418bfc, líder dev_lider; Squad Rápido 07ed3021-160a-46aa-a52c-eeca3b20b849, líder dev_rapido_lider, que acumula Triagem e Architect, com dev_rapido_executor como Developer e dev_rapido_qa acumulando QA e Delivery; Squad Ultra Rápido 56e14177-9bb3-4547-af91-419edd3df4db, líder dev_ultra_lider, que acumula Triagem, Architect, Developer e Delivery, com dev_ultra_qa só na revisão independente (ver docs/delivery/WORKFLOW.md). Delegue cada etapa por menção no pai canônico, uma por vez: Triagem → Architect → Developer → QA → Delivery. Entrada já planejada não ganha nova triagem; registre no pai a etapa dispensada e o motivo. Funcionalidade nova/grande refatoração exige planejamento completo no Architect. Só o líder promove fases elegíveis e confere fontes/artefatos antes da implementação.
 

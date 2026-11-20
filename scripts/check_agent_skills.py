@@ -10,7 +10,7 @@ ROLES = {'dev_triagem', 'dev_arquiteto', 'dev_executor', 'dev_qa', 'dev_entrega'
 def validate_workflow(root: Path) -> list[str]:
     errors = []
     try:
-        manifest = json.loads((root / 'docs/agents/agent-skills.json').read_text())
+        manifest = json.loads((root / 'catalog.json').read_text())
         lock = json.loads((root / 'skills-lock.json').read_text())['skills']
         roles = manifest['roles']
         files = manifest['files']
@@ -29,16 +29,23 @@ def validate_workflow(root: Path) -> list[str]:
             ):
                 errors.append(f'{name}: lock differs from the workflow manifest')
             required.add(rel)
-            content = (root / '.agents' / rel).read_text()
+            content = (root / rel).read_text()
             required.update(re.findall(r'\.\./\.\./(references/[\w.-]+\.md)', content))
         if set(files) != required:
             errors.append('Pinned files differ from the required skills and references')
         for name in required:
-            path = (root / '.agents' / name).resolve()
-            if not path.is_relative_to((root / '.agents').resolve()) or not path.is_file():
+            path = (root / name).resolve()
+            if not path.is_relative_to(root.resolve()) or not path.is_file():
                 errors.append(f'Missing or unsafe file: {name}')
             elif hashlib.sha256(path.read_bytes()).hexdigest() != files.get(name):
                 errors.append(f'Pinned source hash mismatch: {name}')
     except (OSError, ValueError, KeyError, TypeError) as error:
         errors.append(f'Invalid Agent Skills workflow: {error}')
     return errors
+
+
+if __name__ == '__main__':
+    errors = validate_workflow(Path('tools/dev-pipeline'))
+    for error in errors:
+        print(error)
+    raise SystemExit(bool(errors))
