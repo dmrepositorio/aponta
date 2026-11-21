@@ -9,7 +9,7 @@ Leia [references/engineering-workflow.md](references/engineering-workflow.md) an
 
 ## Orquestração Multica
 
-Squad Agent Skills, workflow `Agent Skills Flow`: `skills_lider` (`/spec`, `/plan`, `/ship`), `skills_executor` (`/build` + `/test`) e `skills_qa` (`/review`). Cada status do pai acorda o agente da etapa: `todo` → `planejamento` → `desenvolvimento` → `auditoria_qa` → `entrega` → `done`. Rejeição do QA volta a `desenvolvimento`.
+Squad Agent Skills, workflow `Agent Skills Flow`: `dm_lider` (`/spec`, `/plan`, `/ship`), `skills_executor` (`/build` + `/test`) e `skills_qa` (`/review`). Cada status do pai acorda o agente da etapa: `todo` → `planejamento` → `desenvolvimento` → `auditoria_qa` → `entrega` → `done`. Rejeição do QA volta a `desenvolvimento`.
 
 No comentário de cada etapa registre: o que foi feito, fontes e decisões, SPEC e tickets, base e SHA, comandos e evidências, pendências e próximo responsável. Teste não executado é declarado. O parecer do QA diz de forma inequívoca se está aprovado, rejeitado ou bloqueado e cita o SHA de 40 caracteres revisado. BLOQUEADO identifica pergunta, responsável e evento de retomada.
 

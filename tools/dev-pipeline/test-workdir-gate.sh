@@ -26,7 +26,7 @@ else
 fi
 PROBE
 chmod +x "$temp/probe" "$temp/native/multica"
-for agent in dev_pipeline_triagem dev_pipeline_arquiteto dev_pipeline_executor dev_pipeline_qa dev_pipeline_entrega wrapper_control; do
+for agent in dm_triagem dm_arquiteto dm_developer dm_qualidade dm_entrega wrapper_control; do
     env -i HOME="$temp" PATH="$temp/native:/usr/bin:/bin" MULTICA_AGENT_NAME="$agent" \
         LWD_GATE_AGENTS=wrapper_control MULTICA_CLI_PATH="$temp/native/multica" \
         NATIVE_CLI="$temp/native/multica" LOCAL_WORKING_PATH="$temp/project" \
