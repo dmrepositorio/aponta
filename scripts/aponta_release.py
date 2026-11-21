@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Staging -> production release tool for Aponta (Python standard library).
+"""Production release tool for Aponta (Python standard library).
 
-One commit is built once into images tagged with its SHA, deployed to staging, tested there
-and recorded; production only receives a commit whose record says staging passed with those
-same images. See docs/delivery/RELEASE.md.
+One commit is built once into images tagged with its SHA and deployed straight to production,
+then checked by a smoke test that confirms the stack answers from that commit. The tool never
+replaces a newer commit with an older one unless a rollback is requested. See docs/delivery/RELEASE.md.
 """
 from __future__ import annotations
 
@@ -15,7 +15,6 @@ import json
 import os
 from pathlib import Path
 import re
-import secrets
 import subprocess
 import sys
 import time
@@ -25,11 +24,8 @@ import urllib.request
 SERVICES = ('api', 'web', 'storybook')
 ENVIRONMENTS = {
     # project, interpolation env file, service env file, extra compose file, services brought up
-    'staging': ('aponta-staging', '.env.staging', '.env.staging', 'docker-compose.staging.yml',
-                ['postgres', 'migrate', 'api', 'web']),
     'production': ('aponta-prod', '.env.prod', '.env', None, []),
 }
-SEED_LOGIN = {'email': 'agent@aponta.com', 'password': 'Password123!'}
 
 
 def now() -> str:
@@ -39,21 +35,6 @@ def now() -> str:
 def run(*command: str, env: dict | None = None, check: bool = True) -> subprocess.CompletedProcess:
     return subprocess.run(command, capture_output=True, text=True, check=check,
                           env={**os.environ, **(env or {})})
-
-
-def promotion_errors(record, sha, images) -> list[str]:
-    """Why this commit may not go to production; empty when it may."""
-    if not record:
-        return ['No staging record for this commit.']
-    errors = []
-    if record.get('sha') != sha:
-        errors.append('Staging record belongs to another commit.')
-    if (record.get('staging') or {}).get('result') != 'passed':
-        errors.append('Staging did not pass for this commit.')
-    validated = record.get('images') or {}
-    errors += ['Image differs from the one validated in staging: ' + name
-               for name in SERVICES if not images.get(name) or images.get(name) != validated.get(name)]
-    return errors
 
 
 def is_ancestor(root: Path, older: str, newer: str) -> bool:
@@ -80,22 +61,6 @@ def env_values(text: str) -> dict:
         if match:
             values[match.group(1)] = match.group(2).strip().strip('"\'')
     return values
-
-
-def new_staging_env() -> str:
-    """A staging env file with its own random secrets; mail and inbox stay unconfigured."""
-    return '\n'.join([
-        '# Aponta staging. Gerado por scripts/aponta_release.py init-staging; nunca copie valores de produção.',
-        'POSTGRES_USER=aponta_staging',
-        'POSTGRES_PASSWORD=' + secrets.token_urlsafe(24),
-        'POSTGRES_DB=aponta_staging',
-        'JWT_SECRET=' + secrets.token_urlsafe(48),
-        'API_PORT=8191',
-        'WEB_PORT=8190',
-        'WEB_ORIGIN=https://staging.aponta.cloud',
-        'VITE_API_URL=/api',
-        '',
-    ])
 
 
 def compose_command(environment, sha, home: Path, config: Path) -> list[str]:
@@ -165,25 +130,9 @@ def http_fetch(base: str, token: str | None = None):
     return fetch
 
 
-def critical_flows(base: str) -> list[dict]:
-    """Staging only: sign in with the synthetic seed user and read protected data."""
-    checks = []
-    try:
-        status, body = http_fetch(base)('/api/auth/login', SEED_LOGIN)
-        token = json.loads(body).get('access_token') or json.loads(body).get('accessToken') or json.loads(body).get('token')
-        checks.append({'name': 'login (seed user)', 'ok': status in (200, 201) and bool(token), 'detail': 'HTTP %s' % status})
-        fetch = http_fetch(base, token)
-        for name, path in (('session', '/api/auth/me'), ('tickets list', '/api/tickets')):
-            status, _ = fetch(path)
-            checks.append({'name': name, 'ok': status == 200, 'detail': 'HTTP %s' % status})
-    except (OSError, ValueError) as error:
-        checks.append({'name': 'critical flows', 'ok': False, 'detail': str(error)[:200]})
-    return checks
-
-
 @contextlib.contextmanager
 def locked(home: Path, name: str):
-    """One deploy -> test -> record cycle per environment at a time on this host; waits for its turn."""
+    """One deploy at a time per environment on this host; waits for its turn."""
     path = home / 'locks' / (name + '.lock')
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open('a+') as handle:
@@ -256,44 +205,12 @@ def wait_and_smoke(base: str, sha: str) -> list[dict]:
     return checks
 
 
-def stage(repo: Path, home: Path, config: Path, sha: str) -> int:
-    with locked(home, 'staging'):
-        export_release(repo, home, sha)
-        compose = compose_command('staging', sha, home, config)
-        env = compose_env('staging', sha, config)
-        if not all(image_ids(sha).values()):
-            # Built once, from the exported tree of the commit; production reuses these exact images.
-            built = run(*compose, '--profile', 'seed', 'build', env=env, check=False)
-            if built.returncode != 0:
-                print((built.stderr or built.stdout)[-2000:], file=sys.stderr)
-                return 1
-            # `storybook` is not part of the staging stack; it is built here so production gets it.
-            production = compose_command('production', sha, home, config)
-            run(*production, 'build', 'storybook', env=compose_env('production', sha, config))
-        record = {'version': 1, 'sha': sha, 'images': image_ids(sha), 'staging': {'result': 'failed', 'checks': []}}
-        try:
-            up('staging', sha, home, config)
-            seeded = run(*compose, '--profile', 'seed', 'run', '--rm', 'seed', env=env, check=False)
-            base = 'http://127.0.0.1:' + env_values((config / '.env.staging').read_text())['WEB_PORT']
-            checks = [{'name': 'synthetic seed', 'ok': seeded.returncode == 0,
-                       'detail': '' if seeded.returncode == 0 else (seeded.stderr or seeded.stdout)[-400:]}]
-            checks += wait_and_smoke(base, sha) + critical_flows(base)
-        except (ValueError, OSError, KeyError) as error:
-            checks = [{'name': 'deploy', 'ok': False, 'detail': str(error)[-800:]}]
-        passed = all(check['ok'] for check in checks)
-        record['staging'] = {'result': 'passed' if passed else 'failed', 'at': now(), 'checks': checks}
-        save_record(home, record)
-        if passed:
-            mark_deployed(home, 'staging', sha)
-        print(json.dumps(record, ensure_ascii=False, indent=2))
-        return 0 if passed else 1
-
-
-def promote(repo: Path, home: Path, config: Path, sha: str, rollback: bool) -> int:
+def deploy(repo: Path, home: Path, config: Path, sha: str, rollback: bool) -> int:
+    """Build the commit once, bring production up on those images and smoke-test it."""
     with locked(home, 'production'):
-        record = load_record(home, sha)
+        export_release(repo, home, sha)
         current = deployed(home, 'production')
-        errors = promotion_errors(record, sha, image_ids(sha)) + ordering_errors(repo, current, sha, rollback)
+        errors = ordering_errors(repo, current, sha, rollback)
         if errors:
             for error in errors:
                 print('ERROR: ' + error, file=sys.stderr)
@@ -302,10 +219,17 @@ def promote(repo: Path, home: Path, config: Path, sha: str, rollback: bool) -> i
         if current == sha and all(check['ok'] for check in smoke(sha, http_fetch(base))):
             print(sha + ' já está em produção. Nada a fazer.')
             return 0
+        record = {'version': 2, 'sha': sha, 'images': {}, 'production': {'result': 'failed', 'checks': []}}
         try:
+            if not all(image_ids(sha).values()):
+                compose = compose_command('production', sha, home, config)
+                built = run(*compose, 'build', env=compose_env('production', sha, config), check=False)
+                if built.returncode != 0:
+                    raise ValueError('docker compose build failed: ' + (built.stderr or built.stdout)[-800:])
+            record['images'] = image_ids(sha)
             up('production', sha, home, config)
             checks = wait_and_smoke(base, sha)
-        except ValueError as error:
+        except (ValueError, OSError, KeyError) as error:
             checks = [{'name': 'deploy', 'ok': False, 'detail': str(error)[-800:]}]
         passed = all(check['ok'] for check in checks)
         record['production'] = {'result': 'passed' if passed else 'failed', 'at': now(), 'checks': checks,
@@ -322,33 +246,20 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--repo', type=Path, default=Path('/home/hermes/repos/aponta'), help='Git checkout used to export commits')
     parser.add_argument('--home', type=Path, default=Path.home() / 'deploy/aponta', help='releases, records, state and locks')
-    parser.add_argument('--config', type=Path, help='directory holding .env, .env.prod and .env.staging (default: --repo)')
+    parser.add_argument('--config', type=Path, help='directory holding .env and .env.prod (default: --repo)')
     sub = parser.add_subparsers(dest='action', required=True)
-    for name in ('stage', 'promote'):
-        command = sub.add_parser(name)
-        command.add_argument('--sha', required=True)
-    sub.choices['promote'].add_argument('--rollback', action='store_true')
-    sub.add_parser('init-staging', help='create .env.staging with its own secrets, if absent')
+    command = sub.add_parser('deploy', help='build the commit and publish it to production')
+    command.add_argument('--sha', required=True)
+    command.add_argument('--rollback', action='store_true', help='go back on purpose to an ancestor of the deployed commit')
     sub.add_parser('status')
     args = parser.parse_args()
     config = args.config or args.repo
-    if args.action == 'init-staging':
-        path = config / '.env.staging'
-        if path.exists():
-            print('Já existe: ' + str(path))
-            return 0
-        path.touch(mode=0o600)
-        path.write_text(new_staging_env())
-        print('Criado: ' + str(path))
-        return 0
     if args.action == 'status':
         print(json.dumps({name: deployed(args.home, name) for name in ENVIRONMENTS}, indent=2))
         return 0
     if not re.fullmatch(r'[0-9a-f]{40}', args.sha):
         raise ValueError('Use a full commit SHA.')
-    if args.action == 'stage':
-        return stage(args.repo, args.home, config, args.sha)
-    return promote(args.repo, args.home, config, args.sha, args.rollback)
+    return deploy(args.repo, args.home, config, args.sha, args.rollback)
 
 
 if __name__ == '__main__':

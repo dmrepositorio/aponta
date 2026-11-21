@@ -1,11 +1,15 @@
 name: CD (Produção)
 
-# Entrega em duas etapas, sempre do mesmo commit e das mesmas imagens:
-#   staging   constrói as imagens do commit uma vez, sobe o staging, roda seed sintético,
-#             smoke e fluxos críticos, e grava o registro do commit;
-#   produção  só sobe um commit cujo registro diz que o staging passou com aquelas imagens,
-#             e nunca um commit anterior ao que está no ar.
-# As regras estão em scripts/aponta_release.py (com testes) e em docs/delivery/RELEASE.md.
+# O título do run mostra o que está sendo publicado: o assunto do commit da main, que no squash da
+# merge queue traz o número do PR (ex.: "Título do PR (#351)").
+run-name: "CD · ${{ github.event.workflow_run.display_title }}"
+
+# Entrega direta em produção, sempre da ponta da main com CI verde:
+#   production  exporta a árvore do commit, constrói as imagens uma vez, sobe a produção e roda
+#               o smoke (saúde e commit no ar). Exige a aprovação do environment `production`
+#               (Settings > Environments > production > Required reviewers).
+# As regras (ordem dos commits, rollback, smoke) estão em scripts/aponta_release.py, com testes,
+# e em docs/delivery/RELEASE.md.
 on:
   # Never trigger directly on push — that let deploy race the CI workflow
   # on the exact same commit. Deploy only after the CI workflow itself
@@ -15,9 +19,8 @@ on:
     types: [completed]
     branches: [main]
 
-# Um ciclo por vez no repositório inteiro: outro run não troca a versão do staging
-# enquanto ela é validada, e nenhum run em andamento é cancelado (uma migração
-# interrompida deixaria o banco pela metade). Isto não é uma fila: o GitHub mantém só
+# Um deploy por vez no repositório inteiro, e nenhum run em andamento é cancelado
+# (uma migração interrompida deixaria o banco pela metade). Isto não é uma fila: o GitHub mantém só
 # o run pendente mais novo, e por isso qualquer run publica a ponta da main.
 concurrency:
   group: deploy-production
@@ -37,20 +40,7 @@ jobs:
     if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push'
     outputs:
       sha: ${{ steps.target.outputs.sha }}
-      previous_sha: ${{ steps.previous.outputs.previous_sha }}
     steps:
-      # The commit in production before this run deploys anything: the notice to the Multica cards
-      # covers everything between it and the published tip (DMTE-510). Concurrency above keeps any
-      # other deploy from running now. Any failure leaves it empty and the notice falls back to the tip.
-      - name: Read the commit in production
-        id: previous
-        run: |
-          previous=$(curl -fsS --max-time 10 https://dm.aponta.cloud/api/version | jq -r '.commit // empty' || true)
-          if [[ "$previous" =~ ^[0-9a-f]{40}$ ]]; then
-            echo "previous_sha=$previous" >> "$GITHUB_OUTPUT"
-          else
-            echo "Commit em produção ilegível: o aviso cobre só o commit publicado."
-          fi
       # What ships is always the tip of main, never "the commit whose CI just
       # finished": CI runs of commits that leave the merge queue together finish
       # out of order (DMTE-472). Any run may publish the tip, but only once the
@@ -72,14 +62,16 @@ jobs:
           fi
           echo "sha=$tip" >> "$GITHUB_OUTPUT"
 
-  staging:
-    name: Staging (deploy, testes, registro)
+  production:
+    name: Produção (build e deploy do commit)
     needs: resolve
     if: needs.resolve.outputs.sha != ''
     runs-on: ubuntu-latest
-    environment: staging
+    # A aprovação humana antes de produção vem dos revisores obrigatórios deste environment.
+    # Sem eles, o deploy é automático quando o CI da ponta da main passa.
+    environment: production
     steps:
-      - name: Build once, deploy to staging and test
+      - name: Build once and deploy to production
         uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5
         env:
           DEPLOY_SHA: ${{ needs.resolve.outputs.sha }}
@@ -99,56 +91,4 @@ jobs:
             release="$HOME/deploy/aponta/releases/$DEPLOY_SHA"
             mkdir -p "$release"
             git archive "$DEPLOY_SHA" | tar -x -C "$release"
-            python3 "$release/scripts/aponta_release.py" init-staging
-            python3 "$release/scripts/aponta_release.py" stage --sha "$DEPLOY_SHA"
-
-  production:
-    name: Produção (promoção do commit validado)
-    needs: [resolve, staging]
-    runs-on: ubuntu-latest
-    # Para exigir aprovação humana antes de produção, configure revisores obrigatórios
-    # neste environment (Settings > Environments > production). Sem isso a promoção é
-    # automática quando o staging passa.
-    environment: production
-    steps:
-      - name: Promote the validated images to production
-        uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5
-        env:
-          DEPLOY_SHA: ${{ needs.resolve.outputs.sha }}
-        with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          key: ${{ secrets.DEPLOY_KEY }}
-          port: 2000
-          envs: DEPLOY_SHA
-          command_timeout: 20m
-          script: |
-            set -e
-            python3 "$HOME/deploy/aponta/releases/$DEPLOY_SHA/scripts/aponta_release.py" promote --sha "$DEPLOY_SHA"
-
-  # Devolve o resultado do CD ao card Multica da entrega, para o líder não agendar horário.
-  # Nunca altera o resultado do CD: o script termina com 0 e o passo tem continue-on-error.
-  notify:
-    name: Aviso ao card Multica
-    needs: [resolve, staging, production]
-    if: always() && needs.resolve.outputs.sha != ''
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: read
-    steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-        with:
-          ref: ${{ needs.resolve.outputs.sha }}
-          persist-credentials: false
-        continue-on-error: true
-      - name: Comment the CD result on the delivery card
-        continue-on-error: true
-        env:
-          GH_TOKEN: ${{ github.token }}
-          MULTICA_TOKEN: ${{ secrets.MULTICA_TOKEN }}
-          SHA: ${{ needs.resolve.outputs.sha }}
-          PREVIOUS_SHA: ${{ needs.resolve.outputs.previous_sha }}
-          STAGING_RESULT: ${{ needs.staging.result }}
-          PRODUCTION_RESULT: ${{ needs.production.result }}
-        run: python3 scripts/avisar_card.py
+            python3 "$release/scripts/aponta_release.py" deploy --sha "$DEPLOY_SHA"

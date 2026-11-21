@@ -52,7 +52,6 @@ test-output
 .env.local
 .env.*.local
 .env.prod
-.env.staging
 apps/**/.env
 apps/**/.env.*
 !apps/**/.env.example

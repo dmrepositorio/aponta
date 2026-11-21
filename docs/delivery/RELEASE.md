@@ -1,111 +1,83 @@
-# Integração, staging e produção
+# Integração e produção
 
-Como uma mudança sai de um PR e chega a produção. As regras que decidem estão em código com testes (`scripts/aponta_release.py`, `scripts/aponta_delivery.py`) e nas proteções do repositório; este documento explica e não substitui nenhuma delas.
+Como uma mudança sai de um PR e chega a produção. As regras que decidem estão em código com testes (`scripts/aponta_release.py`) e nas proteções do repositório; este documento explica e não substitui nenhuma delas. Não há staging: o que protege a produção é o CI (incluindo E2E), a revisão do QA, a fila de merge, a aprovação do deploy e o smoke depois da troca.
 
 ## Fluxo
 
 ```mermaid
 flowchart TD
-  A[Agentes em checkouts isolados] -->|PR| B[CI do PR: lint, typecheck, testes, build, E2E]
-  A -->|PR| C[Delivery contract]
-  B --> D[QA independente no SHA exato]
-  C --> D
-  D -->|Independent QA| E[Fila de merge: main + PR, os quatro checks de novo]
+  A[Agentes em checkouts isolados] -->|PR| B[CI do PR: typecheck, testes, build, E2E]
+  B --> D[Revisão do QA no SHA exato]
+  D --> E[Fila de merge: main + PR, CI de novo]
   E -->|combinação falhou| A
   E -->|squash| F[main]
   F --> G[CI do push]
   G --> H[CD: ponta da main com CI verde]
-  H --> I[Constrói as imagens do commit, uma vez]
-  I --> J[Staging: deploy, seed sintético, smoke, fluxos críticos]
-  J -->|falhou: registro failed| A
-  J -->|passou: registro por commit| K[Produção: mesmas imagens, --no-build]
+  H --> I[Aprovação do environment production]
+  I --> J[Build das imagens do commit, uma vez]
+  J --> K[Produção sobe as imagens]
   K --> L[Smoke: saúde e commit no ar]
-  L -->|feedback e falhas| A
-  K -.->|rollback explícito para commit já validado| K
-  FF[Feature flags: quem vê a funcionalidade] -.-> J
-  FF -.-> K
+  L -->|falhou| A
+  L -.->|rollback explícito| K
+  FF[Feature flags: quem vê a funcionalidade] -.-> K
 ```
 
-Feature flag não é uma etapa: é um controle da funcionalidade, lido em tempo de execução em qualquer ambiente.
+Feature flag não é uma etapa: é um controle da funcionalidade, lido em tempo de execução.
 
 ## Integração de agentes em paralelo
 
 - Cada PR roda o CI sozinho e em paralelo com os outros (`concurrency` por PR; um push novo cancela só o run anterior do mesmo PR).
-- Dois PRs verdes isolados não provam que a combinação funciona. Quem prova é a **fila de merge nativa** (regra `main`, ruleset 26762558): ela monta um commit candidato com a `main` atual mais o PR, roda `Lint, typecheck, unit tests`, `E2E (Playwright, full stack)`, `Delivery contract` e `Independent QA` nesse commit (`merge_group`) e só então integra. Candidato que falha volta para o PR.
+- Dois PRs verdes isolados não provam que a combinação funciona. Quem prova é a **fila de merge nativa** (regra `main`, ruleset 26762558): monta um commit candidato com a `main` atual mais o PR, roda `Typecheck, unit tests, build` e `E2E (Playwright, full stack)` nele e só então integra.
 - A fila integra um PR por vez (`max_entries_to_merge: 1`, `ALLGREEN`), então cada candidato já contém o que entrou antes.
-- Os nomes dos quatro checks são os nomes dos jobs e não mudam com o evento. Nenhum job obrigatório tem `continue-on-error` nem condição que o pule; check ausente, cancelado ou pendente não libera a fila.
-- `concurrency` do Actions não é fila: ele descarta pendentes. A ordem e a validação da combinação vêm da fila de merge.
-- Atualizar a branch com a `main` não é exigido (`strict` desligado): a fila testa a combinação. A base andar muda o candidato, e o candidato é sempre validado de novo.
+- Os nomes dos checks são os nomes dos jobs e não mudam com o evento. Nenhum job obrigatório tem `continue-on-error` nem condição que o pule; check ausente, cancelado ou pendente não libera a fila.
+- Atualizar a branch com a `main` não é exigido (`strict` desligado): a fila testa a combinação.
 
 ## Artefato
 
-`docker-compose.yml` nomeia as imagens pelo commit: `aponta-api:<sha>`, `aponta-web:<sha>`, `aponta-storybook:<sha>`. O deploy constrói uma vez, a partir da árvore exportada do commit (`git archive`), e produção sobe com `--no-build` as imagens que o staging validou. O identificador de cada imagem fica no registro do commit, e a promoção é recusada se a imagem com aquele nome não for mais a mesma.
+`docker-compose.yml` nomeia as imagens pelo commit: `aponta-api:<sha>`, `aponta-web:<sha>`, `aponta-storybook:<sha>`. O deploy constrói uma vez, a partir da árvore exportada do commit (`git archive`), e produção sobe com `--no-build` essas imagens. O identificador de cada imagem fica no registro do commit.
 
 - A API devolve o commit em `GET /api/version`; o front, em `/version.json`. O smoke compara os dois com o commit esperado.
-- O bundle do front embute `VITE_API_URL`. Staging e produção usam o mesmo valor, `/api` (mesma origem, com proxy do nginx), então a imagem é a mesma. Se um ambiente passar a usar outro valor, a imagem deixa de ser promovível e o build precisa ser por ambiente; não mude esse valor sem tratar isso.
-- Segredos e configuração ficam fora da imagem, em arquivos de ambiente no servidor: `.env.staging`, `.env.prod` e `.env`.
-- Limite: as imagens existem só na VPS. Não há registro externo nem cópia fora do servidor; o identificador é o da imagem local, não um digest de registro.
-
-## Staging
-
-Projeto Compose `aponta-staging`, na mesma VPS: rede, containers, volume do Postgres e volume de uploads próprios (`aponta-staging_*`), portas `127.0.0.1:8190` (web) e `127.0.0.1:8191` (API), credenciais geradas por `aponta_release.py init-staging` e nunca copiadas de produção.
-
-- **Dados**: o seed do projeto (`api:prisma-seed`), sintético. Nenhum dado de produção.
-- **Integrações**: `docker-compose.staging.yml` zera SMTP e desliga IMAP; sem transporte o `MailService` aborta todo envio. Não há fila, cobrança nem outro serviço externo no produto hoje.
-- **Acesso**: só `127.0.0.1` na VPS. Publicar numa URL exige DNS e um bloco no Caddy com autenticação (ver "Ativação").
-- **Compartilhado, não por PR**: um único staging. O ciclo deploy → testes → registro roda sob trava no host (`~/deploy/aponta/locks/staging.lock`) e o workflow roda um ciclo por vez, então nenhum deploy troca a versão enquanto ela é validada. Ambiente por PR não se justifica hoje: a combinação já é validada na fila e a VPS é a mesma de produção.
-- **Testes**: página do front, saúde da API, commit da API, commit do front, e os fluxos críticos com o usuário do seed (login, sessão, lista de tickets). A suíte Playwright completa continua rodando no CI; rodá-la contra o staging depende da URL pública.
-
-O resultado vai para `~/deploy/aponta/records/<sha>.json`: commit, identificadores das imagens, cada verificação e o resultado.
+- O bundle do front embute `VITE_API_URL` (`/api`, mesma origem, com proxy do nginx).
+- Segredos e configuração ficam fora da imagem, em arquivos de ambiente no servidor: `.env.prod` e `.env`.
+- Limite: as imagens existem só na VPS. Não há registro externo; o identificador é o da imagem local, não um digest de registro.
 
 ## Produção
 
-`aponta_release.py promote` recusa quando: não há registro do commit; o staging não passou; o registro é de outro commit; alguma imagem mudou desde a validação; ou o commit não contém o que está no ar. Um commit mais antigo nunca substitui um mais novo, exceto com `--rollback`.
+`aponta_release.py deploy --sha <commit>` (chamado pelo `CD (Produção)`, dentro do environment `production`):
 
-Depois da troca ele confere saúde e commit em produção e grava o resultado no mesmo registro. Em produção o smoke só lê; não faz login nem cria dado.
+1. exporta a árvore do commit e recusa se o commit for mais antigo que o no ar, ou se não contiver o que está no ar (só `--rollback` volta, e apenas para um ancestral);
+2. constrói as imagens do commit, se ainda não existirem;
+3. sobe a produção com `up --wait --no-build`;
+4. roda o smoke (página do front, saúde da API, commit da API e do front) e grava o resultado em `~/deploy/aponta/records/<sha>.json`.
 
-O workflow publica sempre a ponta da `main` com CI verde, e não o commit do CI que acabou de terminar. Nenhum run em andamento é cancelado, para não interromper uma migração.
+Em produção o smoke só lê; não faz login nem cria dado. O workflow publica sempre a ponta da `main` com CI verde, e não o commit do CI que acabou de terminar; nenhum run em andamento é cancelado, para não interromper uma migração. Há trava no host (`~/deploy/aponta/locks/production.lock`): um deploy por vez.
+
+Sem staging, o **primeiro** deploy de cada mudança de risco acontece em produção. Por isso a aprovação do environment é obrigatória, o smoke confere o commit no ar, o rollback é rápido e a funcionalidade com efeito externo novo entra atrás de feature flag desligada.
 
 ## Recuperação
 
-- **Aplicativo**: `python3 ~/deploy/aponta/releases/<sha-atual>/scripts/aponta_release.py promote --sha <sha-anterior> --rollback`. O alvo precisa ser ancestral do commit no ar, ter registro de staging aprovado e ainda ter as imagens no servidor. Não há build: a troca leva o tempo de recriar os containers.
-- **Banco**: rollback de código não desfaz migração. Migrações seguem expandir e contrair: a versão anterior do código precisa funcionar com o schema novo. Só assim o rollback do aplicativo é seguro. Para desfazer dado, o caminho é o backup (`scripts/backup.sh`, dump diário com sete dias de retenção), decidido pelo usuário.
-- **Efeitos externos**: e-mail enviado não volta. Funcionalidade com efeito externo novo entra atrás de feature flag desligada.
+- **Aplicativo**: `python3 ~/deploy/aponta/releases/<sha-atual>/scripts/aponta_release.py deploy --sha <sha-anterior> --rollback`. O alvo precisa ser ancestral do commit no ar; se as imagens ainda existem no servidor não há build, senão elas são reconstruídas da árvore do commit.
+- **Banco**: rollback de código não desfaz migração. Migrações seguem expandir e contrair: a versão anterior do código precisa funcionar com o schema novo. Para desfazer dado, o caminho é o backup (`scripts/backup.sh`, dump diário com sete dias de retenção), decidido pelo usuário.
+- **Efeitos externos**: e-mail enviado não volta.
 
 ## Feature flags
 
-Registro em `apps/api/src/feature-flags/feature-flags.ts`: chave, descrição, responsável, valor padrão e data de remoção. O valor por ambiente vem de `FEATURE_<CHAVE>` no arquivo de ambiente; `GET /api/feature-flags` devolve os valores e `useFeatureFlag` os lê no front, desligado por padrão em caso de dúvida. O teste do registro falha no CI quando uma flag passa da data de remoção. O registro começa vazio: nenhuma funcionalidade atual precisa de flag.
+Registro em `apps/api/src/feature-flags/feature-flags.ts`: chave, descrição, responsável, valor padrão e data de remoção. O valor por ambiente vem de `FEATURE_<CHAVE>` no arquivo de ambiente; `GET /api/feature-flags` devolve os valores e `useFeatureFlag` os lê no front, desligado por padrão em caso de dúvida. O teste do registro falha no CI quando uma flag passa da data de remoção.
 
 ## Isolamento
 
-- **CI**: cada job roda numa máquina do GitHub, com o Postgres do próprio job. Nada é compartilhado entre execuções; o relatório do Playwright leva o id e a tentativa da execução no nome.
-- **Agentes na VPS**: `scripts/e2e_isolated.sh` sobe um Postgres descartável e portas livres por execução e remove só os containers com o rótulo daquela execução.
-- **Ambientes**: nomes de projeto, arquivos de ambiente e portas distintos; `aponta_release.py` monta os comandos e tem teste que impede o staging de usar o arquivo de produção.
+- **CI**: cada job roda numa máquina do GitHub, com o Postgres do próprio job. Nada é compartilhado entre execuções.
+- **Agentes na VPS**: `scripts/e2e_isolated.sh` sobe um Postgres descartável e portas livres por execução e remove só os containers com o rótulo daquela execução. Agentes nunca rodam Docker contra a produção.
 
 ## Segurança dos workflows
 
-- Actions fixadas pelo SHA do commit. `appleboy/ssh-action` estava em `@master`.
+- Actions fixadas pelo SHA do commit.
 - `ci.yml` tem `contents: read` e não recebe secret; o checkout não persiste credencial. PR de fork roda sem secret.
 - Não há `pull_request_target`. O deploy roda em `workflow_run`, só para CI de `push` na `main` com sucesso, e é o único workflow com os secrets `DEPLOY_*`.
 - O deploy não executa código de PR: a árvore vem do commit da `main`, já revisado e validado na fila.
 
-## Ativação e pendências
+## Pendências
 
-O que este repositório não consegue fazer sozinho:
-
-1. **Primeiro deploy pelo fluxo novo**: troca os containers de produção para as imagens nomeadas por commit. Acompanhe o run; `.env.staging` é criado na primeira execução se não existir.
-2. **URL do staging** (opcional): registro DNS `staging.aponta.cloud` para a VPS e, em `/etc/caddy/Caddyfile`:
-   ```
-   staging.aponta.cloud {
-       tls <e-mail do certificado>
-       basic_auth {
-           <usuario> <hash gerado por `caddy hash-password`>
-       }
-       reverse_proxy 127.0.0.1:8190
-   }
-   ```
-   Depois `sudo systemctl reload caddy`. Sem isso o staging funciona e é testado pela VPS, mas ninguém o abre no navegador.
-3. **Aprovação humana antes de produção** (opcional): Settings → Environments → `production` → Required reviewers. Sem isso a promoção é automática quando o staging passa.
-4. **Secret `TEST_SECRET`**: não é usado por nenhum workflow; pode ser removido.
-5. **Custo**: nenhum serviço novo. O staging usa memória e disco da VPS de produção; um servidor separado isolaria falhas de recurso e é decisão de custo do usuário.
-6. **Não coberto**: imagens fora do servidor (registro), deploy sem nenhuma indisponibilidade na troca, Playwright contra o staging, e bot de atualização de dependências.
+1. **Aprovação humana antes de produção**: Settings → Environments → `production` → Required reviewers. Sem isso o deploy é automático quando o CI da `main` passa.
+2. **Primeiro deploy pelo fluxo novo**: acompanhe o run.
+3. **Não coberto**: imagens fora do servidor (registro), deploy sem nenhuma indisponibilidade na troca e bot de atualização de dependências.
