@@ -4,7 +4,13 @@ import json
 from pathlib import Path
 import re
 
-ROLES = {'dev_pipeline_triagem', 'dev_pipeline_arquiteto', 'dev_pipeline_executor', 'dev_pipeline_qa', 'dev_pipeline_entrega'}
+PRIMARY_METHODS = {
+    'dev_pipeline_triagem': 'spec-driven-development',
+    'dev_pipeline_arquiteto': 'planning-and-task-breakdown',
+    'dev_pipeline_executor': 'incremental-implementation',
+    'dev_pipeline_qa': 'code-review-and-quality',
+    'dev_pipeline_entrega': 'git-workflow-and-versioning',
+}
 
 
 def validate_workflow(root: Path) -> list[str]:
@@ -14,8 +20,11 @@ def validate_workflow(root: Path) -> list[str]:
         lock = json.loads((root / 'skills-lock.json').read_text())['skills']
         roles = manifest['roles']
         files = manifest['files']
-        if set(roles) != ROLES or any(not names for names in roles.values()):
+        if set(roles) != set(PRIMARY_METHODS) or any(not names for names in roles.values()):
             errors.append('Expected a skill assignment for every Dev Pipeline role')
+        for role, method in PRIMARY_METHODS.items():
+            if method not in roles.get(role, []):
+                errors.append(f'{role}: expected its primary method {method}')
         if manifest['source'] != 'addyosmani/agent-skills' or not re.fullmatch('[0-9a-f]{40}', manifest['revision']):
             errors.append('Invalid upstream or revision')
         required = {'LICENSE'}
