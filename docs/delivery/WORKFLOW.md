@@ -58,7 +58,7 @@ Aceite é um sexto fato, declarado só pelo usuário, depois de Publicado. Funci
 
 ## Fechamento
 
-A issue GitHub fecha depois da entrega verificada em produção, e o pai Multica recebe um único comentário em prosa curta com **Solicitado** (o pedido em 2 a 4 linhas), **Entregue** (o que mudou, PR e SHA, onde está no ar e como conferir) e o que ficou fora do escopo. O pai fica em `in_review`; o aceite (`done`) é do usuário. Use `Refs` no PR para evitar fechamento automático no merge.
+Use `Refs` no PR. No card em `entrega`, o agente registra o pedido, o que foi entregue, o PR, o SHA, como conferir e as issues abrangidas. Quando houver aceite humano pendente, peça uma resposta no card com menção ao agente de entrega. Depois do aceite, o agente fecha as issues abrangidas no GitHub, confere estado e motivo de cada uma e só então move o card para `done`. A sequência e os comandos estão em [Issue Tracker](../agents/issue-tracker.md#fechamento-e-pr).
 
 ## Medição
 
