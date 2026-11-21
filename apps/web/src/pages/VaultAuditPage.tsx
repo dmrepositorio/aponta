@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react';
-import { ShieldCheck } from 'lucide-react';
 import {
   useVaultAudit,
   useVaultAgents,
@@ -13,6 +12,8 @@ import {
   EzDateInput,
   EzEmptyCard,
   EzMultiSelect,
+  EzPageHeader,
+  EzPageLayout,
   EzPagination,
   EzSpinner,
   EzTextInput,
@@ -80,11 +81,8 @@ export function VaultAuditPage() {
   const meta = auditQuery.data?.meta;
 
   return (
+    <EzPageLayout header={<EzPageHeader title="Auditoria do Cofre de Senhas" />}>
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-        <ShieldCheck className="h-8 w-8" /> Auditoria do Cofre de Senhas
-      </h1>
-
       <EzAlert variant="info">
         O endereço IP de origem e o horário exato de cada ação também são registrados, mesmo quando não exibidos
         diretamente na tabela abaixo.
@@ -141,6 +139,7 @@ export function VaultAuditPage() {
           {!logs.length ? (
             <EzEmptyCard title="Nenhum registro de auditoria encontrado para os filtros selecionados." />
           ) : (
+            <div className="overflow-x-auto">
             <table className="w-full text-left text-[14px]">
               <thead className="bg-gray-90/60 text-gray-600">
                 <tr>
@@ -163,6 +162,7 @@ export function VaultAuditPage() {
                 ))}
               </tbody>
             </table>
+            </div>
           )}
 
           {meta && meta.totalPages > 1 && (
@@ -173,5 +173,6 @@ export function VaultAuditPage() {
         </EzCardItem>
       )}
     </div>
+    </EzPageLayout>
   );
 }
