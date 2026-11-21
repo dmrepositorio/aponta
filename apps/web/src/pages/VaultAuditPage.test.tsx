@@ -132,3 +132,35 @@ describe('VaultAuditPage', () => {
     });
   });
 });
+
+describe('VaultAuditPage — header and table at the app scale (DMTE-546)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('renders the title inside EzPageHeader, at the app scale, without the decorative icon (AC-01)', () => {
+    mockGets();
+    renderPage();
+
+    const heading = screen.getByRole('heading', { name: 'Auditoria do Cofre de Senhas' });
+    expect(heading.tagName).toBe('H1');
+    expect(heading).toHaveClass('text-[20px]', 'font-semibold');
+    expect(heading.querySelector('svg')).not.toBeInTheDocument();
+  });
+
+  it('wraps the audit table in a horizontal-scroll container, same fix as the Cofre (AC-03 parity)', async () => {
+    mockGets();
+    const user = userEvent.setup();
+    renderPage();
+
+    await waitFor(() => expect(screen.getByPlaceholderText('Todos os atendentes')).toBeInTheDocument());
+    await user.click(screen.getByRole('button', { name: /exibir/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText('Servidor FTP')).toBeInTheDocument();
+    });
+
+    const table = screen.getByRole('table');
+    expect(table.parentElement).toHaveClass('overflow-x-auto');
+  });
+});

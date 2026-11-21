@@ -2,7 +2,6 @@ import { useEffect, useMemo, useRef, useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiErrorMessage } from '../hooks/useUsers';
 import {
-  Lock,
   Copy,
   Eye,
   EyeOff,
@@ -31,6 +30,8 @@ import {
   EzCardItem,
   EzEmptyCard,
   EzModal,
+  EzPageHeader,
+  EzPageLayout,
   EzPagination,
   EzSelect,
   EzSpinner,
@@ -482,38 +483,45 @@ export function VaultPage() {
 
   if (foldersQuery.isLoading || credentialsQuery.isLoading)
     return (
-      <div className="flex justify-center p-8">
-        <EzSpinner label="Carregando cofre..." />
-      </div>
+      <EzPageLayout header={<EzPageHeader title="Cofre de Senhas" />}>
+        <div className="flex justify-center p-8">
+          <EzSpinner label="Carregando cofre..." />
+        </div>
+      </EzPageLayout>
     );
   if (foldersQuery.isError || credentialsQuery.isError)
     return (
-      <div className="space-y-3 p-8">
-        <EzAlert variant="error">Erro ao carregar o cofre de senhas.</EzAlert>
-        <EzButton variant="secondary" label="Tentar de novo" onClick={retryLoad} />
-      </div>
+      <EzPageLayout header={<EzPageHeader title="Cofre de Senhas" />}>
+        <div className="space-y-3 p-8">
+          <EzAlert variant="error">Erro ao carregar o cofre de senhas.</EzAlert>
+          <EzButton variant="secondary" label="Tentar de novo" onClick={retryLoad} />
+        </div>
+      </EzPageLayout>
     );
 
   const credentials = credentialsQuery.data?.data ?? [];
   const meta = credentialsQuery.data?.meta;
 
   return (
+    <EzPageLayout
+      header={
+        <EzPageHeader
+          title="Cofre de Senhas"
+          actions={
+            canEdit && (
+              <EzButton
+                variant="secondary"
+                label="Auditoria"
+                leftIcon={ShieldCheck}
+                onClick={() => navigate('/vault/audit')}
+              />
+            )
+          }
+        />
+      }
+    >
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-          <Lock className="h-8 w-8" /> Cofre de Senhas
-        </h1>
-        {canEdit && (
-          <EzButton
-            variant="secondary"
-            label="Auditoria"
-            leftIcon={ShieldCheck}
-            onClick={() => navigate('/vault/audit')}
-          />
-        )}
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-[260px_1fr]">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[260px_1fr]">
         <EzCardItem flat className="p-3">
           <EzTree
             nodes={treeNodes}
@@ -525,14 +533,40 @@ export function VaultPage() {
 
         <EzCardItem flat className="overflow-hidden">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 px-4 py-3">
-            <EzTextInput
-              type="search"
-              placeholder="Buscar senha..."
-              value={search}
-              onChange={(e) => handleSearch(e.target.value)}
-              leftIcon={<Search className="h-4 w-4" />}
-              className="max-w-xs"
-            />
+            <div className="flex flex-wrap items-center gap-3">
+              <EzTextInput
+                type="search"
+                placeholder="Buscar senha..."
+                value={search}
+                onChange={(e) => handleSearch(e.target.value)}
+                leftIcon={<Search className="h-4 w-4" />}
+                className="max-w-xs"
+              />
+              {canEdit && selectedFolder && (
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <span>
+                    Pasta: <strong>{selectedFolder.name}</strong>
+                  </span>
+                  <EzButton
+                    variant="tertiary"
+                    size="small"
+                    leftIcon={Pencil}
+                    title="Editar pasta"
+                    aria-label={`Editar pasta ${selectedFolder.name}`}
+                    onClick={() => openFolderModal({ folder: selectedFolder })}
+                  />
+                  <EzButton
+                    variant="tertiary"
+                    size="small"
+                    leftIcon={Trash2}
+                    title="Remover pasta"
+                    aria-label={`Remover pasta ${selectedFolder.name}`}
+                    className={DANGER_ICON}
+                    onClick={() => handleRemoveFolder(selectedFolder)}
+                  />
+                </div>
+              )}
+            </div>
             {canEdit && (
               <EzActionsButton
                 label="Ações"
@@ -543,33 +577,6 @@ export function VaultPage() {
               />
             )}
           </div>
-
-          {canEdit && selectedFolder && (
-            <div className="flex items-center justify-between gap-2 border-b border-gray-100 bg-gray-90/40 px-4 py-2 text-sm text-gray-600">
-              <span>
-                Pasta: <strong>{selectedFolder.name}</strong>
-              </span>
-              <div className="flex gap-2">
-                <EzButton
-                  variant="tertiary"
-                  size="small"
-                  leftIcon={Pencil}
-                  title="Editar pasta"
-                  aria-label={`Editar pasta ${selectedFolder.name}`}
-                  onClick={() => openFolderModal({ folder: selectedFolder })}
-                />
-                <EzButton
-                  variant="tertiary"
-                  size="small"
-                  leftIcon={Trash2}
-                  title="Remover pasta"
-                  aria-label={`Remover pasta ${selectedFolder.name}`}
-                  className={DANGER_ICON}
-                  onClick={() => handleRemoveFolder(selectedFolder)}
-                />
-              </div>
-            </div>
-          )}
 
           <div role="status" aria-live="polite">
             {feedback?.kind === 'success' && (
@@ -585,6 +592,7 @@ export function VaultPage() {
           {!credentials.length ? (
             <EzEmptyCard title="Nenhuma credencial liberada para esta operação." />
           ) : (
+          <div className="overflow-x-auto">
           <table className="w-full text-left text-[14px]">
             <thead className="bg-gray-90/60 text-gray-600">
               <tr>
@@ -606,7 +614,7 @@ export function VaultPage() {
                   <td className="px-4 py-1.5">
                     {cred.url ? (
                       <div className="flex items-center gap-1 text-gray-700">
-                        <span className="truncate max-w-[160px]">{cred.url}</span>
+                        <span className="truncate max-w-[160px]" title={cred.url}>{cred.url}</span>
                         <EzButton
                           variant="tertiary"
                           size="small"
@@ -657,6 +665,7 @@ export function VaultPage() {
               ))}
             </tbody>
           </table>
+          </div>
           )}
 
           {meta && meta.totalPages > 1 && (
@@ -689,5 +698,6 @@ export function VaultPage() {
         />
       )}
     </div>
+    </EzPageLayout>
   );
 }
