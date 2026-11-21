@@ -22,7 +22,7 @@ env:
 # main or merge_group run must NEVER be cancelled mid-flight, since deploy.yml
 # waits on this exact workflow's conclusion via workflow_run.
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}
+  group: ci-${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.sha }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
@@ -70,6 +70,8 @@ jobs:
           python3 -m unittest discover -s scripts -p test_aponta_release.py -v
           python3 -m unittest discover -s scripts -p test_engineering_skills.py -v
           python3 scripts/check_engineering_skills.py
+          python3 -m unittest discover -s scripts -p test_agent_skills.py -v
+          python3 scripts/check_agent_skills.py
 
       - name: Typecheck
         run: pnpm exec nx run-many -t typecheck --projects=api,web,web-e2e
@@ -86,7 +88,11 @@ jobs:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          if git diff --name-only "$BASE_SHA...$HEAD_SHA" -- apps/web/src/components/ds apps/web/.storybook | grep -q .; then
+          if git diff --quiet "$BASE_SHA...$HEAD_SHA" -- apps/web/src/components/ds apps/web/.storybook; then
+            exit 0
+          else
+            result=$?
+            [ "$result" -eq 1 ] || exit "$result"
             pnpm exec nx run web:build-storybook
           fi
 

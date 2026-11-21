@@ -1,6 +1,6 @@
 # Fluxo de engenharia: Squad Agent Skills
 
-O método de trabalho é o pacote `addyosmani/agent-skills`, instalado em `.agents/skills/` e fixado em `skills-lock.json` (fonte, revisão e hash de cada skill). Os comandos `/spec`, `/plan`, `/build`, `/test`, `/review` e `/ship` ficam em `.claude/commands/`. Os perfis `aponta-*` acrescentam contexto, evidência e governança do projeto; não substituem o método. Para atualizar o pacote: `npx skills update` e revisar o diff do lock.
+O método de trabalho é o pacote `addyosmani/agent-skills`, instalado em `.agents/skills/` e fixado em `skills-lock.json` (fonte, revisão e hash de cada skill). No Claude Code, o plugin upstream fornece os comandos de especificação, planejamento, implementação, testes, revisão e entrega. No Multica, o status aciona o agente e as skills vinculadas. O clone do projeto contém o catálogo em `.agents/skills/`; os seis arquivos de comandos do Claude pertencem ao plugin. A entrega segue as permissões e o processo deste repositório. Os perfis `aponta-*` acrescentam contexto, evidência e governança do projeto; não substituem o método. Para atualizar o pacote: `npx skills update` e revisar o diff do lock.
 
 ## Comando → skill → agente
 

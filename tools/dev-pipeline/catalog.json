@@ -1,0 +1,44 @@
+{
+  "source": "addyosmani/agent-skills",
+  "revision": "8c99fa36d90068c82d547f7c12a9d67a3e95f4ee",
+  "roles": {
+    "dev_pipeline_triagem": [
+      "spec-driven-development",
+      "interview-me"
+    ],
+    "dev_pipeline_arquiteto": [
+      "spec-driven-development",
+      "planning-and-task-breakdown"
+    ],
+    "dev_pipeline_executor": [
+      "incremental-implementation",
+      "test-driven-development",
+      "debugging-and-error-recovery",
+      "git-workflow-and-versioning"
+    ],
+    "dev_pipeline_qa": [
+      "code-review-and-quality"
+    ],
+    "dev_pipeline_entrega": [
+      "git-workflow-and-versioning",
+      "shipping-and-launch"
+    ]
+  },
+  "files": {
+    "skills/code-review-and-quality/SKILL.md": "4699e7a1b4ad2f325a77cad28d9f78ea11fd9f7f0e1e813e0cbbbab4e7964607",
+    "references/security-checklist.md": "594615c28ae13b90c53bf723aa5d43fd96dc2f0e707b3f56727dc91243a2815a",
+    "references/performance-checklist.md": "ce946457d4a502846e781a2747cf6af50bcc79b1957a66dc024f50557e8982e1",
+    "LICENSE": "6f202f8bd568cd730dbb2b0d1f8e243bc74c2fa1f64dbce9b2c7ea08bd5c9fd7",
+    "skills/debugging-and-error-recovery/SKILL.md": "95e393819043b50b3ba6f4d89f0fea620d03e560eb52b592b3eb7a41836aaea1",
+    "skills/git-workflow-and-versioning/SKILL.md": "d77c955f57cfafde73efb7641ed9a478ffaa0f61c0f31bd9fe87317702f1b60d",
+    "skills/incremental-implementation/SKILL.md": "df66536610071727feae1ca95f3c391c248ad828041750ccd3699cce763aa00b",
+    "references/definition-of-done.md": "d1c75d2ae65d2c7a9cd01f93fa8de63e00e75f2fe5d08be224d576157054dcee",
+    "skills/interview-me/SKILL.md": "ace4b675999bb504593d572e0f73f3d7e803ad6fddf318445598c82c11939db2",
+    "skills/planning-and-task-breakdown/SKILL.md": "b38e35d4f6030a11423082679b1c4d0988c91a3569a3434ff0f8b9799657d630",
+    "skills/shipping-and-launch/SKILL.md": "92fec446ec4e947a7b8aac88b851aa5743ff8cb39d5987fb53df08ba8a160d64",
+    "references/accessibility-checklist.md": "290870b5d6b00d4e359c28c0fb98ea5ac625cd651bde3cbe276d61a39e69d743",
+    "skills/spec-driven-development/SKILL.md": "516eaa5fbe8b1dd2e3a675f0a4361443d3828c41aec04750ae4b3143bb4f82ed",
+    "skills/test-driven-development/SKILL.md": "24ff76db6227bd74075381f16a5830add333439968f23c3f73987fac2290fe2a",
+    "references/testing-patterns.md": "8607fda9150f639eae3097d322399e08c5978cce56fe3a3c6291553cb89edf88"
+  }
+}
