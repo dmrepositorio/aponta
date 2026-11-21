@@ -15,7 +15,9 @@ planning-and-task-breakdown publica UMA issue GitHub por ticket aprovado. Cada t
 
 ## Fechamento e PR
 
-Este tracker NÃO fecha trabalho automaticamente por PR. Manter Aponta-Delivery: DMTE-N e Refs alfredo-maia/aponta#N; usar Refs também nos tickets. Não usar Closes/Fixes. incremental-implementation abre o draft PR após a primeira fatia integrada e o torna pronto após a revisão; QA e Delivery continuam verificações adicionais. Implementado, integrado, publicado e aceito são estados distintos. Delivery fecha produto/tickets por gh issue close apenas após entrega comprovada/aceite aplicável; o Tech Lead consolida o pai Multica. Cancelamentos e exclusões explícitos do usuário prevalecem.
+Mantenha `Refs dmrepositorio/aponta#N` no PR e registre a issue principal e as subtarefas de implementação no pai Multica. Na etapa de entrega, confira o repositório, o PR, o SHA e os critérios de cada issue. Identifique no resumo quais números estão prontos para fechar, quais ficam abertos e por quê. Quando faltar aceite, peça ao usuário que responda no próprio card mencionando o agente de entrega e mantenha o card em `entrega`.
+
+Com a entrega comprovada e o aceite aplicável registrado, execute `gh issue close N -R dmrepositorio/aponta --reason completed` para cada item aceito. Uma retirada explícita de escopo usa `--reason "not planned"`. Confira cada resultado com `gh issue view N -R dmrepositorio/aponta --json state,stateReason`. Em retomadas, aproveite os fechamentos já confirmados. Se houver erro, motivo divergente ou requisito pendente, registre o número e a pendência. Conclua o pai depois de conferir o resultado de cada item; trabalho adiado deve ter destino registrado. Quando um pai já tiver sido encerrado manualmente, confira o autor e o escopo do aceite na timeline antes de reconciliar o GitHub.
 
 ## Triage
 
