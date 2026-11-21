@@ -364,4 +364,88 @@ describe('ReportsService', () => {
       expect(res.allAppointments).toEqual({ total: 0, today: 0, week: 0, month: 0 });
     });
   });
+
+  describe('getResponseTimeComparison', () => {
+    // Reference date 2026-11-20: current (closed) period is October 2026,
+    // previous period is September 2026 — see closed-month-range.spec.ts.
+    const referenceDate = new Date('2026-11-20T12:00:00.000Z');
+
+    const mockFindManyByQuery = (resolutionRows: any[], firstResponseRows: any[]) => {
+      mockPrisma.ticket.findMany.mockImplementation((args: any) => {
+        if (args.where && 'closedAt' in args.where) return Promise.resolve(resolutionRows);
+        return Promise.resolve(firstResponseRows);
+      });
+    };
+
+    it('computes resolution time from closedAt - createdAt, never from updatedAt', async () => {
+      mockFindManyByQuery(
+        [
+          {
+            createdAt: new Date('2026-10-05T00:00:00.000Z'),
+            closedAt: new Date('2026-10-05T01:40:00.000Z'), // 100 minutes later
+            updatedAt: new Date('2026-10-05T23:59:00.000Z'), // would give a very different number if misused
+          },
+        ],
+        [],
+      );
+
+      const res = await service.getResponseTimeComparison({ id: 'admin', role: Role.ADMIN }, referenceDate);
+
+      expect(res.resolution.currentMedianMinutes).toBe(100);
+      expect(res.resolution.currentCount).toBe(1);
+    });
+
+    it('derives first response time from the first public comment, ignoring internal notes and the requester\'s own comment', async () => {
+      const ticketCreatedAt = new Date('2026-10-05T00:00:00.000Z');
+      mockFindManyByQuery(
+        [],
+        [
+          {
+            createdAt: ticketCreatedAt,
+            requesterId: 'req-1',
+            comments: [
+              { createdAt: new Date('2026-10-05T00:05:00.000Z'), authorId: 'req-1', isInternal: false }, // requester's own — ignored
+              { createdAt: new Date('2026-10-05T00:10:00.000Z'), authorId: 'agent-1', isInternal: true }, // internal note — ignored
+              { createdAt: new Date('2026-10-05T00:15:00.000Z'), authorId: 'agent-1', isInternal: false }, // the real first response
+            ],
+          },
+        ],
+      );
+
+      const res = await service.getResponseTimeComparison({ id: 'admin', role: Role.ADMIN }, referenceDate);
+
+      expect(res.firstResponse.currentMedianMinutes).toBe(15);
+      expect(res.firstResponse.currentCount).toBe(1);
+    });
+
+    it('never includes agent identification in its aggregated output', async () => {
+      mockFindManyByQuery(
+        [
+          {
+            createdAt: new Date('2026-10-05T00:00:00.000Z'),
+            closedAt: new Date('2026-10-05T01:00:00.000Z'),
+            agentId: 'agent-should-not-leak',
+          },
+        ],
+        [
+          {
+            createdAt: new Date('2026-10-05T00:00:00.000Z'),
+            requesterId: 'req-1',
+            agentId: 'agent-should-not-leak',
+            comments: [{ createdAt: new Date('2026-10-05T00:15:00.000Z'), authorId: 'agent-1', isInternal: false }],
+          },
+        ],
+      );
+
+      const res = await service.getResponseTimeComparison({ id: 'admin', role: Role.ADMIN }, referenceDate);
+
+      expect(JSON.stringify(res)).not.toContain('agent');
+    });
+
+    it('blocks roles the TenantHelper fails closed for, same as the other report endpoints', async () => {
+      await expect(
+        service.getResponseTimeComparison({ id: 'x', role: 'UNKNOWN' as Role }, referenceDate),
+      ).rejects.toThrow(ForbiddenException);
+    });
+  });
 });

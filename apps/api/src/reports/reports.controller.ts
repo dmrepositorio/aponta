@@ -6,7 +6,7 @@ import { PermissionsGuard } from '../auth/guards/permissions.guard';
 import { RequirePermission } from '../auth/decorators/require-permission.decorator';
 import { CurrentUser, CurrentUserPayload } from '../tickets/decorators/current-user.decorator';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
-import { WorkloadReportItemDto, BillingReportItemDto, DashboardSummaryDto } from './dto/report.dto';
+import { WorkloadReportItemDto, BillingReportItemDto, DashboardSummaryDto, ResponseTimeComparisonDto } from './dto/report.dto';
 
 @ApiTags('Reports')
 @ApiBearerAuth()
@@ -38,5 +38,13 @@ export class ReportsController {
   @ApiResponse({ status: 200, type: [BillingReportItemDto] })
   getBilling(@CurrentUser() user: CurrentUserPayload, @Query() filters?: BillingFilterDto) {
     return filters ? this.reportsService.getBilling(user, filters) : this.reportsService.getBilling(user);
+  }
+
+  @Get('response-time-comparison')
+  @RequirePermission('VIEW_ADMIN_REPORTS')
+  @ApiOperation({ summary: 'Comparação do tempo de 1ª resposta e de resolução entre o último mês fechado e o anterior (diretoria)' })
+  @ApiResponse({ status: 200, type: ResponseTimeComparisonDto })
+  getResponseTimeComparison(@CurrentUser() user: CurrentUserPayload) {
+    return this.reportsService.getResponseTimeComparison(user);
   }
 }
