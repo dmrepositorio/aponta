@@ -25,6 +25,16 @@ class WorkflowTest(unittest.TestCase):
         path.write_text(json.dumps(manifest))
         self.assertTrue(validate_workflow(self.root))
 
+    def test_qa_cannot_be_assigned_only_the_shipping_methods(self):
+        path = self.root / 'catalog.json'
+        manifest = json.loads(path.read_text())
+        roles = manifest['roles']
+        roles['dev_pipeline_qa'], roles['dev_pipeline_entrega'] = (
+            roles['dev_pipeline_entrega'], roles['dev_pipeline_qa']
+        )
+        path.write_text(json.dumps(manifest))
+        self.assertTrue(validate_workflow(self.root))
+
     def test_modified_shared_reference(self):
         (self.root / 'references/testing-patterns.md').write_text('modified')
         self.assertTrue(validate_workflow(self.root))
