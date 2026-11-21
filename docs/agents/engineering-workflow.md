@@ -6,11 +6,11 @@ O método de trabalho é o pacote `addyosmani/agent-skills`, instalado em `.agen
 
 | Comando | Status Multica | Agente | Skills |
 |---|---|---|---|
-| `/spec` | `todo` | `dm_lider` | `interview-me`, `spec-driven-development`, `documentation-and-adrs` |
-| `/plan` | `planejamento` | `dm_lider` | `planning-and-task-breakdown`, `api-and-interface-design` |
+| `/spec` | `todo` | `skills_lider` | `interview-me`, `spec-driven-development`, `documentation-and-adrs` |
+| `/plan` | `planejamento` | `skills_lider` | `planning-and-task-breakdown`, `api-and-interface-design` |
 | `/build` + `/test` | `desenvolvimento` | `skills_executor` | `incremental-implementation`, `test-driven-development`, `debugging-and-error-recovery`, `frontend-ui-engineering` |
 | `/review` | `auditoria_qa` | `skills_qa` | `code-review-and-quality`, `security-and-hardening`, `accessibility-engineering` |
-| `/ship` | `entrega` | `dm_lider` | `shipping-and-launch`, `git-workflow-and-versioning` |
+| `/ship` | `entrega` | `skills_lider` | `shipping-and-launch`, `git-workflow-and-versioning` |
 
 Transversais: `using-agent-skills`, `context-engineering`, `source-driven-development`, `performance-optimization`, `code-simplification`, `constraint-driven-development`, `doubt-driven-development`, `deprecation-and-migration`, `observability-and-instrumentation`, `browser-testing-with-devtools`, `ci-cd-and-automation`, `idea-refine`.
 

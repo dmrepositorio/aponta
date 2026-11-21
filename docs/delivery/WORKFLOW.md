@@ -6,11 +6,11 @@ Fluxo enxuto do Squad Agent Skills: `/spec` → `/plan` → `/build` + `/test` �
 
 | Comando | Status Multica | Agente | Saída |
 |---|---|---|---|
-| `/spec` | `todo` | `dm_lider` | SPEC com critérios `AC-NN` na issue principal, espelhada em `docs/delivery/specs/DMTE-N.md` |
-| `/plan` | `planejamento` | `dm_lider` | tarefas como sub-issues da SPEC, com dependências; divisão aprovada pelo humano |
+| `/spec` | `todo` | `skills_lider` | SPEC com critérios `AC-NN` na issue principal, espelhada em `docs/delivery/specs/DMTE-N.md` |
+| `/plan` | `planejamento` | `skills_lider` | tarefas como sub-issues da SPEC, com dependências; divisão aprovada pelo humano |
 | `/build` + `/test` | `desenvolvimento` | `skills_executor` | commits por fatia, PR em draft com `Refs`, SHA final |
 | `/review` | `auditoria_qa` | `skills_qa` | revisão no SHA final, como comentário no PR |
-| `/ship` | `entrega` | `dm_lider` | checks verdes, PR pronto, fila de merge, deploy acompanhado |
+| `/ship` | `entrega` | `skills_lider` | checks verdes, PR pronto, fila de merge, deploy acompanhado |
 
 Uma entrega tem uma issue GitHub principal e um pai Multica. Cada status acorda o agente da etapa; o resultado vai como comentário no fio. Tickets de implementação são sub-issues da SPEC e herdam a identidade da entrega (`docs/agents/issue-tracker.md`).
 
