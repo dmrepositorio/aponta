@@ -580,6 +580,85 @@ describe('VaultPage', () => {
   });
 });
 
+describe('VaultPage — header, toolbar and table at the app scale (DMTE-546)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    useAuthStore.setState({ token: null, user: null });
+    window.confirm = vi.fn(() => true);
+  });
+
+  it('renders the title inside EzPageHeader, at the app scale, without the decorative lock icon, with "Auditoria" in the header (AC-01)', async () => {
+    mockDefaultGets();
+    loginAs('ADMIN');
+    renderPage();
+
+    await waitFor(() => {
+      expect(screen.getByText('Servidor FTP')).toBeInTheDocument();
+    });
+
+    const heading = screen.getByRole('heading', { name: 'Cofre de Senhas' });
+    expect(heading.tagName).toBe('H1');
+    expect(heading).toHaveClass('text-[20px]', 'font-semibold');
+    expect(heading.querySelector('svg')).not.toBeInTheDocument();
+
+    const header = heading.closest('.bg-white.border-b') as HTMLElement;
+    expect(header).not.toBeNull();
+    expect(within(header).getByRole('button', { name: 'Auditoria' })).toBeInTheDocument();
+  });
+
+  it('keeps the selected folder\'s actions inside the toolbar row, leaving only the toolbar and the table head above the first row (AC-02)', async () => {
+    mockDefaultGets();
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    renderPage();
+
+    await waitFor(() => {
+      expect(screen.getByText('Servidor FTP')).toBeInTheDocument();
+    });
+    await user.click(screen.getByTestId('tree-node-f1'));
+    await waitFor(() => {
+      expect(screen.getByText('Pasta:')).toBeInTheDocument();
+    });
+
+    const toolbar = screen.getByPlaceholderText('Buscar senha...').closest('div.border-b') as HTMLElement;
+    expect(within(toolbar).getByText('Pasta:')).toBeInTheDocument();
+    expect(within(toolbar).getByRole('button', { name: 'Ações' })).toBeInTheDocument();
+
+    const card = toolbar.parentElement as HTMLElement;
+    expect(card.querySelectorAll(':scope > div.border-b')).toHaveLength(1);
+  });
+
+  it('gives the truncated URL a title with the full value (AC-05)', async () => {
+    mockDefaultGets();
+    loginAs('ADMIN');
+    renderPage();
+
+    await waitFor(() => {
+      expect(screen.getByText('Servidor FTP')).toBeInTheDocument();
+    });
+
+    const row = screen.getByText('Servidor FTP').closest('tr') as HTMLElement;
+    expect(within(row).getByText('https://ftp.example.com')).toHaveAttribute('title', 'https://ftp.example.com');
+  });
+
+  it('wraps the table in a horizontal-scroll container and stacks the tree above it until lg (AC-03/AC-04)', async () => {
+    mockDefaultGets();
+    loginAs('ADMIN');
+    renderPage();
+
+    await waitFor(() => {
+      expect(screen.getByText('Servidor FTP')).toBeInTheDocument();
+    });
+
+    const table = screen.getByRole('table');
+    expect(table.parentElement).toHaveClass('overflow-x-auto');
+
+    const grid = screen.getByTestId('tree-node-root').closest('.grid') as HTMLElement;
+    expect(grid).toHaveClass('lg:grid-cols-[260px_1fr]');
+    expect(grid).not.toHaveClass('md:grid-cols-[260px_1fr]');
+  });
+});
+
 describe('VaultPage — row actions and per-field reveal (DMTE-544)', () => {
   const REVEAL_VALUES: Record<string, string> = { username: 'ftpuser', password: 'fake-password-123' };
 
