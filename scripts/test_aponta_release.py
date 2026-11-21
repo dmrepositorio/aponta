@@ -1,10 +1,12 @@
-"""Behavioral tests for the staging -> production release tool (DMTE-473)."""
+"""Behavioral tests for the direct-to-production release tool."""
 import json
 import os
 from pathlib import Path
 import subprocess
 import tempfile
 import unittest
+from contextlib import ExitStack, nullcontext
+from unittest import mock
 
 import aponta_release as release
 
@@ -13,31 +15,8 @@ IMAGES = {'api': 'sha256:1', 'web': 'sha256:2', 'storybook': 'sha256:3'}
 
 
 def passed_record(**changes):
-    return {'version': 1, 'sha': SHA, 'images': dict(IMAGES),
-            'staging': {'result': 'passed', 'checks': []}, **changes}
-
-
-class PromotionGateTests(unittest.TestCase):
-    """Production only receives the commit and the images that passed staging."""
-
-    def test_commit_without_a_staging_record_is_refused(self):
-        self.assertIn('No staging record for this commit.', release.promotion_errors(None, SHA, IMAGES))
-
-    def test_commit_whose_staging_failed_is_refused(self):
-        record = passed_record(staging={'result': 'failed', 'checks': []})
-        self.assertIn('Staging did not pass for this commit.', release.promotion_errors(record, SHA, IMAGES))
-
-    def test_record_of_another_commit_is_refused(self):
-        self.assertIn('Staging record belongs to another commit.',
-                      release.promotion_errors(passed_record(sha='b' * 40), SHA, IMAGES))
-
-    def test_images_rebuilt_after_staging_are_refused(self):
-        rebuilt = {**IMAGES, 'api': 'sha256:9'}
-        self.assertIn('Image differs from the one validated in staging: api',
-                      release.promotion_errors(passed_record(), SHA, rebuilt))
-
-    def test_validated_commit_and_images_are_accepted(self):
-        self.assertEqual(release.promotion_errors(passed_record(), SHA, IMAGES), [])
+    return {'version': 2, 'sha': SHA, 'images': dict(IMAGES),
+            'production': {'result': 'passed', 'checks': []}, **changes}
 
 
 class OrderingTests(unittest.TestCase):
@@ -82,31 +61,21 @@ class OrderingTests(unittest.TestCase):
 
 
 class EnvironmentTests(unittest.TestCase):
-    """Staging never shares names, files, ports or secrets with production."""
-    PROD = 'POSTGRES_PASSWORD=prod-db-secret\nJWT_SECRET=prod-jwt-secret\nSMTP_PASS=prod-mail-secret\nWEB_PORT=8090\n'
+    """Production has a single compose project and its own env file."""
 
     def test_env_file_values_are_read_without_comments(self):
         self.assertEqual(release.env_values('# c\nWEB_PORT=8190\n\nA="x y"\n'), {'WEB_PORT': '8190', 'A': 'x y'})
 
-    def test_new_staging_env_has_its_own_secrets_and_no_mail(self):
-        text = release.new_staging_env()
-        values = release.env_values(text)
-        for key in ('POSTGRES_USER', 'POSTGRES_PASSWORD', 'POSTGRES_DB', 'JWT_SECRET', 'WEB_PORT', 'API_PORT'):
-            self.assertTrue(values.get(key), key)
-        self.assertNotEqual(values['WEB_PORT'], release.env_values(self.PROD)['WEB_PORT'])
-        self.assertNotEqual(release.env_values(release.new_staging_env())['JWT_SECRET'], values['JWT_SECRET'])
-        self.assertFalse([key for key in values if key.startswith(('SMTP_', 'IMAP_'))])
-
-    def test_compose_command_keeps_each_environment_in_its_own_project(self):
+    def test_compose_command_uses_the_production_project_and_env_file(self):
         home, config = Path('/srv/deploy'), Path('/srv/config')
-        staging = release.compose_command('staging', SHA, home, config)
         production = release.compose_command('production', SHA, home, config)
-        self.assertEqual(staging[staging.index('-p') + 1], 'aponta-staging')
         self.assertEqual(production[production.index('-p') + 1], 'aponta-prod')
-        self.assertIn(str(config / '.env.staging'), staging)
-        self.assertNotIn(str(config / '.env.prod'), staging)
-        self.assertIn(str(home / 'releases' / SHA / 'docker-compose.staging.yml'), staging)
-        self.assertNotIn(str(home / 'releases' / SHA / 'docker-compose.staging.yml'), production)
+        self.assertIn(str(config / '.env.prod'), production)
+        self.assertIn(str(home / 'releases' / SHA / 'docker-compose.yml'), production)
+
+    def test_staging_no_longer_exists(self):
+        with self.assertRaises(ValueError):
+            release.compose_command('staging', SHA, Path('/a'), Path('/b'))
 
     def test_unknown_environment_is_refused(self):
         with self.assertRaises(ValueError):
@@ -143,6 +112,62 @@ class SmokeTests(unittest.TestCase):
         def fetch(path):
             raise OSError('connection refused')
         self.assertEqual(len(self.failed(release.smoke(SHA, fetch))), 4)
+
+
+class DeployTests(unittest.TestCase):
+    """deploy builds once, brings production up and only records a deployed commit when smoke passes."""
+
+    def run_deploy(self, smoke_ok=True, built_images=None):
+        done = subprocess.CompletedProcess([], 0, '', '')
+        images = iter([built_images or {name: None for name in IMAGES}, dict(IMAGES)])
+        with tempfile.TemporaryDirectory() as tmp, ExitStack() as stack:
+            home, config = Path(tmp) / 'home', Path(tmp) / 'config'
+            config.mkdir()
+            (config / '.env.prod').write_text('WEB_PORT=8090\n')
+            patch = lambda name, **kw: stack.enter_context(mock.patch.object(release, name, **kw))
+            patch('locked', new=lambda *a: nullcontext())
+            patch('export_release')
+            patch('deployed', return_value=None)
+            patch('ordering_errors', return_value=[])
+            patch('image_ids', side_effect=lambda sha: next(images))
+            run = patch('run', return_value=done)
+            up = patch('up')
+            patch('wait_and_smoke', return_value=[{'name': 'x', 'ok': smoke_ok}])
+            mark = patch('mark_deployed')
+            patch('prune')
+            code = release.deploy(Path('/repo'), home, config, SHA, False)
+            record = release.load_record(home, SHA)
+            return code, record, run, up, mark
+
+    def test_successful_deploy_builds_records_and_marks_the_commit(self):
+        code, record, run, up, mark = self.run_deploy()
+        self.assertEqual(code, 0)
+        self.assertEqual(record['production']['result'], 'passed')
+        self.assertEqual(record['images'], IMAGES)
+        self.assertIn('build', run.call_args.args)
+        up.assert_called_once()
+        mark.assert_called_once()
+
+    def test_images_already_built_are_not_rebuilt(self):
+        code, _, run, _, _ = self.run_deploy(built_images=dict(IMAGES))
+        self.assertEqual(code, 0)
+        run.assert_not_called()
+
+    def test_failed_smoke_fails_and_does_not_mark_the_commit(self):
+        code, record, _, _, mark = self.run_deploy(smoke_ok=False)
+        self.assertEqual(code, 1)
+        self.assertEqual(record['production']['result'], 'failed')
+        mark.assert_not_called()
+
+    def test_older_commit_is_refused_before_anything_runs(self):
+        with tempfile.TemporaryDirectory() as tmp, ExitStack() as stack:
+            for name, kw in (('export_release', {}), ('deployed', {'return_value': 'b' * 40}),
+                             ('ordering_errors', {'return_value': ['Commit is older']})):
+                stack.enter_context(mock.patch.object(release, name, **kw))
+            stack.enter_context(mock.patch.object(release, 'locked', new=lambda *a: nullcontext()))
+            up = stack.enter_context(mock.patch.object(release, 'up'))
+            self.assertEqual(release.deploy(Path('/repo'), Path(tmp), Path(tmp), SHA, False), 1)
+            up.assert_not_called()
 
 
 class RecordTests(unittest.TestCase):

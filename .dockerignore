@@ -23,5 +23,4 @@ coverage
 
 # Docs / non-runtime
 *.md
-.superpowers
 docs

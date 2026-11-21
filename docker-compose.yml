@@ -1,5 +1,5 @@
 # Imagens identificadas pelo commit: APONTA_TAG=<sha> constrói e usa aponta-api:<sha>,
-# aponta-web:<sha> e aponta-storybook:<sha>. O deploy constrói uma vez, valida em staging e
+# aponta-web:<sha> e aponta-storybook:<sha>. O deploy constrói uma vez e
 # sobe produção com `--no-build`, a partir das mesmas imagens (scripts/aponta_release.py,
 # docs/delivery/RELEASE.md). Sem APONTA_TAG vale `local`, para uso manual.
 # APONTA_ENV_FILE é o arquivo de ambiente dos serviços; cada ambiente tem o seu.

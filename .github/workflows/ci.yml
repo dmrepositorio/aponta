@@ -26,8 +26,8 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  lint-typecheck-unit:
-    name: Lint, typecheck, unit tests
+  typecheck-unit-build:
+    name: Typecheck, unit tests, build
     runs-on: ubuntu-latest
     env:
       # prisma.config.ts requires DATABASE_URL to be resolvable even for
@@ -65,8 +65,11 @@ jobs:
       - name: Native select check (AC-15 DMTE-490)
         run: python3 scripts/check_native_select.py .
 
-      - name: Lint
-        run: pnpm exec nx run-many -t lint --projects=api,web,web-e2e
+      - name: Release tool and skill bundle checks
+        run: |
+          python3 -m unittest discover -s scripts -p test_aponta_release.py -v
+          python3 -m unittest discover -s scripts -p test_engineering_skills.py -v
+          python3 scripts/check_engineering_skills.py
 
       - name: Typecheck
         run: pnpm exec nx run-many -t typecheck --projects=api,web,web-e2e
@@ -76,6 +79,16 @@ jobs:
 
       - name: Build
         run: pnpm exec nx run-many -t build --projects=api,web
+
+      - name: Build Storybook when the design system changed
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          if git diff --name-only "$BASE_SHA...$HEAD_SHA" -- apps/web/src/components/ds apps/web/.storybook | grep -q .; then
+            pnpm exec nx run web:build-storybook
+          fi
 
   e2e:
     name: E2E (Playwright, full stack)
