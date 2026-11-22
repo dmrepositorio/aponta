@@ -37,7 +37,7 @@ Fontes analisadas em 10/11/2026: os artigos "Falando um pouco sobre minhas skill
 | Evidência do artefato publicado | release, artigo de deploy | `shipping-and-launch` | `aponta_release.py deploy` registra o commit, as imagens e o resultado do smoke |
 | Não reescrever tag nem histórico publicado | release | `shipping-and-launch`, `AGENTS.md` | Ruleset: `non_fast_forward` e `deletion` bloqueados na `main` |
 | Publicar só pelo mecanismo autorizado | release | `shipping-and-launch` | Só `deploy.yml` tem os secrets de deploy; roda só para CI de push na `main` |
-| Ambiente de teste antes de usuário real | artigo de deploy | — | Não adotado: o E2E roda no CI e a produção exige aprovação do environment |
+| Ambiente de teste antes de usuário real | artigo de deploy | — | Não adotado: o E2E roda no CI e o deploy sobe sozinho depois da fila, com smoke e rollback |
 | Feature flag controla quem vê; flag morta é removida | artigo de deploy | — | Registro com responsável e data; teste falha depois da data |
 | Rollback rápido; banco não volta com `git revert` | artigo de deploy | `code-review-and-quality`, `shipping-and-launch` | `deploy --rollback` sem build; expandir e contrair conferido na revisão |
 

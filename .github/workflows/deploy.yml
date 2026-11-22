@@ -6,8 +6,8 @@ run-name: "CD · ${{ github.event.workflow_run.display_title }}"
 
 # Entrega direta em produção, sempre da ponta da main com CI verde:
 #   production  exporta a árvore do commit, constrói as imagens uma vez, sobe a produção e roda
-#               o smoke (saúde e commit no ar). Exige a aprovação do environment `production`
-#               (Settings > Environments > production > Required reviewers).
+#               o smoke (saúde e commit no ar). Sem aprovação manual: o environment `production` não tem
+#               revisores e o deploy sobe sozinho quando o CI da ponta da main passa.
 # As regras (ordem dos commits, rollback, smoke) estão em scripts/aponta_release.py, com testes,
 # e em docs/delivery/RELEASE.md.
 on:
@@ -80,8 +80,9 @@ jobs:
     needs: resolve
     if: needs.resolve.outputs.sha != ''
     runs-on: ubuntu-latest
-    # A aprovação humana antes de produção vem dos revisores obrigatórios deste environment.
-    # Sem eles, o deploy é automático quando o CI da ponta da main passa.
+    # Sem revisores obrigatórios: o deploy é automático quando o CI da ponta da main passa. O freio
+    # são o smoke, a trava de ordem e o rollback. Para voltar a exigir aprovação, configure
+    # Settings > Environments > production > Required reviewers.
     environment: production
     steps:
       - name: Build once and deploy to production

@@ -21,7 +21,7 @@ Só o que prova que o software funciona bloqueia a integração:
 1. **CI** (`.github/workflows/ci.yml`): `Typecheck, unit tests, build` e `E2E (Playwright, full stack)`. Rodam no PR, no candidato da fila de merge e na `main`.
 2. **Revisão independente do QA**: o `dm_qualidade` revisa o diff exato do SHA final (todos os commits), reproduz os testes e confere contrato, tenant/RBAC e DS. O parecer é um comentário no PR com o resultado (aprovado, rejeitado ou bloqueado) e o SHA revisado. Rejeição devolve o status a `desenvolvimento`, uma única vez por entrega (a segunda vai ao humano); o QA nunca corrige o próprio achado. Commit novo que muda código invalida o parecer.
 3. **Fila de merge** (ruleset `main`): monta `main` + PR, re-roda o CI e integra um PR por vez. Quem coloca o PR na fila é o `dm_entrega`, em `/ship`, e só com os gates provados: o PR não está em draft; o parecer do `dm_qualidade` é aprovado para o SHA exato do head, sem commit depois; `Typecheck, unit tests, build` e `E2E (Playwright, full stack)` estão verdes no head; o título começa com `DMTE-N` e o corpo tem `Entrega:` e `Refs`, sem `Closes`/`Fixes`. O comando é `gh pr merge N --squash`, que entra na fila nativa. Nunca `--admin`, bypass, merge fora da fila, nem PR com gate pendente. Se o candidato da fila falhar, o PR sai dela: o `dm_entrega` devolve a `desenvolvimento` com o diagnóstico, se ainda não houve devolução nesta entrega (limite de 1; senão `blocked` para o humano), e o `dm_lider` destrava erro de ambiente.
-4. **Aprovação do deploy**: o environment `production` exige revisor (a única decisão que continua sendo do usuário) (`docs/delivery/RELEASE.md`).
+4. **Deploy sem aprovação manual**: o environment `production` não tem revisores; depois da fila, o CD publica sozinho. O freio é o smoke, a trava de ordem e o rollback (`docs/delivery/RELEASE.md`).
 
 Não há manifest, atestado de status nem etapa de staging.
 
@@ -45,7 +45,7 @@ Declare só o estado que a evidência prova.
 | **Revisado** | comentário do QA no SHA final com resultado aprovado |
 | **Apto para integração** | `Typecheck, unit tests, build` e `E2E` verdes no head do PR, sem commit depois da revisão |
 | **Integrado** | commit de merge na `main` e CI do push verde |
-| **Publicado em produção** | run `CD (Produção)` aprovado e concluído; `/api/version` e `/version.json` devolvem o commit |
+| **Publicado em produção** | run `CD (Produção)` concluído; `/api/version` e `/version.json` devolvem o commit |
 
 Aceite é um sexto fato, declarado só pelo usuário, depois de Publicado: a issue fecha sozinha ao publicar, e ele a reabre se recusar a entrega. Funcionalidade atrás de flag desligada está publicada, mas não exposta.
 
