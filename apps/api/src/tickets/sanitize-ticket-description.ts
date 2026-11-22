@@ -31,12 +31,26 @@ const ALLOWED_ATTRIBUTES: Record<string, string[]> = {
   mark: ['data-color'],
 };
 
-// Mesma ideia do HTML_TAG_RE do front (RichContentView), ampliada com o que o
-// editor produz e o renderizador achata.
-const RECOGNIZED_TAG_RE =
-  /<\/?(p|div|span|br|strong|b|em|i|u|s|strike|del|ul|ol|li|a|img|h[1-6]|blockquote|table|code|pre|mark|hr|sub|sup|colgroup|col|thead|tbody|tr|th|td)\b/i;
-const DANGEROUS_TAG_RE =
-  /<\/?(script|style|iframe|object|embed|svg|math|form|link|meta|base)\b/i;
+// Nomes de tag HTML5 conhecidos. A decisão "isto parece HTML?" não depende de
+// lista curta: qualquer tag conhecida (ou atributo on* dentro de tag, abaixo)
+// manda a entrada pelo sanitizador. Também serve de nomes aceitos no log.
+export const KNOWN_HTML_TAGS: ReadonlySet<string> = new Set(
+  (
+    'a abbr acronym address applet area article aside audio b base basefont bdi bdo big ' +
+    'blockquote body br button canvas caption center cite code col colgroup data datalist dd ' +
+    'del details dfn dialog dir div dl dt em embed fieldset figcaption figure font footer ' +
+    'form frame frameset h1 h2 h3 h4 h5 h6 head header hgroup hr html i iframe img input ins ' +
+    'kbd label legend li link main map mark marquee math menu meta meter nav noframes noscript ' +
+    'object ol optgroup option output p param picture pre progress q rp rt ruby s samp script ' +
+    'search section select slot small source span strike strong style sub summary sup svg ' +
+    'table tbody td template textarea tfoot th thead time title tr track tt u ul var video wbr'
+  ).split(' '),
+);
+
+const KNOWN_TAG_RE = new RegExp(`<\/?(${[...KNOWN_HTML_TAGS].join('|')})(?![a-z0-9-])`, 'i');
+// Atributo on* dentro de uma tag, com espaço, quebra de linha, tab, `/` ou
+// aspas antes do nome.
+const EVENT_HANDLER_IN_TAG_RE = /<[a-z][^<>]*[\s/"'`]on[a-z]+\s*=/i;
 
 const NUMERIC_SIZE_RE = /^\d{1,5}$/;
 const SAFE_ABSOLUTE_URL_RE = /^(https?:\/\/|mailto:)/i;
@@ -94,7 +108,7 @@ const OPTIONS: sanitizeHtml.IOptions = {
 };
 
 export function hasHtmlMarkup(input: string): boolean {
-  return RECOGNIZED_TAG_RE.test(input) || DANGEROUS_TAG_RE.test(input);
+  return KNOWN_TAG_RE.test(input) || EVENT_HANDLER_IN_TAG_RE.test(input);
 }
 
 export function sanitizeTicketDescription(input: string): string {
