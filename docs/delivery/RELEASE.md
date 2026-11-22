@@ -8,7 +8,7 @@ Como uma mudança sai de um PR e chega a produção. As regras que decidem estã
 flowchart TD
   A[Agentes em checkouts isolados] -->|PR| B[CI do PR: typecheck, testes, build, E2E]
   B --> D[Revisão do QA no SHA exato]
-  D --> E[Fila de merge: main + PR, CI de novo]
+  D -->|dm_entrega enfileira| E[Fila de merge: main + PR, CI de novo]
   E -->|combinação falhou| A
   E -->|squash| F[main]
   F --> G[CI do push]

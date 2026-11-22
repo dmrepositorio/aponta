@@ -1,16 +1,16 @@
 # Fluxo de entrega Aponta
 
-Fluxo enxuto do Squad Agent Skills: `/spec` → `/plan` → `/build` + `/test` → `/review` → `/ship`. GitHub registra produto (issue, PR, CI); o Multica registra a execução, no workflow `Agent Skills Flow`. O mapa comando → skill → agente está em `docs/agents/engineering-workflow.md`; integração e deploy em `docs/delivery/RELEASE.md`.
+Fluxo enxuto do Squad DM: `/spec` → `/plan` → `/build` + `/test` → `/review` → `/ship`. GitHub registra produto (issue, PR, CI); o Multica registra a execução, no workflow `Agent Skills Flow`. O mapa comando → skill → agente está em `docs/agents/engineering-workflow.md`; integração e deploy em `docs/delivery/RELEASE.md`.
 
 ## Etapas
 
 | Comando | Status Multica | Agente | Saída |
 |---|---|---|---|
-| `/spec` | `todo` | `skills_lider` | SPEC com critérios `AC-NN` na issue principal, espelhada em `docs/delivery/specs/DMTE-N.md` |
-| `/plan` | `planejamento` | `skills_lider` | tarefas como sub-issues da SPEC, com dependências; divisão aprovada pelo humano |
-| `/build` + `/test` | `desenvolvimento` | `skills_executor` | commits por fatia, PR em draft com `Refs`, SHA final |
-| `/review` | `auditoria_qa` | `skills_qa` | revisão no SHA final, como comentário no PR |
-| `/ship` | `entrega` | `skills_lider` | checks verdes, PR pronto, fila de merge, deploy acompanhado |
+| `/spec` | `todo` | `dm_triagem` | SPEC com critérios `AC-NN` na issue principal, espelhada em `docs/delivery/specs/DMTE-N.md` |
+| `/plan` | `planejamento` | `dm_arquiteto` | tarefas como sub-issues da SPEC, com dependências; divisão aprovada pelo humano |
+| `/build` + `/test` | `desenvolvimento` | `dm_developer` | commits por fatia, PR em draft com `Refs`, SHA final |
+| `/review` | `auditoria_qa` | `dm_qualidade` | revisão no SHA final, como comentário no PR |
+| `/ship` | `entrega` | `dm_entrega` | checks verdes, PR pronto, PR na fila de merge, deploy acompanhado |
 
 Uma entrega tem uma issue GitHub principal e um pai Multica. Cada status acorda o agente da etapa; o resultado vai como comentário no fio. Tickets de implementação são sub-issues da SPEC e herdam a identidade da entrega (`docs/agents/issue-tracker.md`).
 
@@ -19,9 +19,9 @@ Uma entrega tem uma issue GitHub principal e um pai Multica. Cada status acorda 
 Só o que prova que o software funciona bloqueia a integração:
 
 1. **CI** (`.github/workflows/ci.yml`): `Typecheck, unit tests, build` e `E2E (Playwright, full stack)`. Rodam no PR, no candidato da fila de merge e na `main`.
-2. **Revisão independente do QA**: o `skills_qa` revisa o diff exato do SHA final (todos os commits), reproduz os testes e confere contrato, tenant/RBAC e DS. O parecer é um comentário no PR com o resultado (aprovado, rejeitado ou bloqueado) e o SHA revisado. Rejeição devolve o status a `desenvolvimento`; o QA nunca corrige o próprio achado. Commit novo que muda código invalida o parecer.
-3. **Fila de merge** (ruleset `main`): monta `main` + PR, re-roda o CI e integra um PR por vez. Quem coloca o PR na fila é o usuário.
-4. **Aprovação do deploy**: o environment `production` exige revisor (`docs/delivery/RELEASE.md`).
+2. **Revisão independente do QA**: o `dm_qualidade` revisa o diff exato do SHA final (todos os commits), reproduz os testes e confere contrato, tenant/RBAC e DS. O parecer é um comentário no PR com o resultado (aprovado, rejeitado ou bloqueado) e o SHA revisado. Rejeição devolve o status a `desenvolvimento`; o QA nunca corrige o próprio achado. Commit novo que muda código invalida o parecer.
+3. **Fila de merge** (ruleset `main`): monta `main` + PR, re-roda o CI e integra um PR por vez. Quem coloca o PR na fila é o `dm_entrega`, em `/ship`, e só com os gates provados: o PR não está em draft; o parecer do `dm_qualidade` é aprovado para o SHA exato do head, sem commit depois; `Typecheck, unit tests, build` e `E2E (Playwright, full stack)` estão verdes no head; o título começa com `DMTE-N` e o corpo tem `Entrega:` e `Refs`, sem `Closes`/`Fixes`. O comando é `gh pr merge N --squash`, que entra na fila nativa. Nunca `--admin`, bypass, merge fora da fila, nem PR com gate pendente. Se o candidato da fila falhar, o PR sai dela: o `dm_entrega` devolve a `desenvolvimento` com o diagnóstico, e o `dm_lider` destrava se travar.
+4. **Aprovação do deploy**: o environment `production` exige revisor (a única decisão que continua sendo do usuário) (`docs/delivery/RELEASE.md`).
 
 Não há manifest, atestado de status nem etapa de staging.
 
