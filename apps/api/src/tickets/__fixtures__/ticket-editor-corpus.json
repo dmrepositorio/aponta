@@ -1,0 +1,77 @@
+[
+  {
+    "nome": "parágrafo simples",
+    "html": "<p>Erro na emissão da nota 123</p>",
+    "expected": "<p>Erro na emissão da nota 123</p>"
+  },
+  {
+    "nome": "negrito, itálico, sublinhado e tachado juntos",
+    "html": "<p><strong>negrito</strong> <em>itálico</em> <u>sublinhado</u> <s>tachado</s> <strong><em><u><s>todos</s></u></em></strong></p>",
+    "expected": "<p><strong>negrito</strong> <em>itálico</em> <u>sublinhado</u> <s>tachado</s> <strong><em><u><s>todos</s></u></em></strong></p>"
+  },
+  {
+    "nome": "code inline",
+    "html": "<p>Rode <code>npm test</code> de novo</p>",
+    "expected": "<p>Rode <code>npm test</code> de novo</p>"
+  },
+  {
+    "nome": "pre com code",
+    "html": "<pre><code>linha 1\nlinha 2</code></pre>",
+    "expected": "<pre><code>linha 1\nlinha 2</code></pre>"
+  },
+  {
+    "nome": "citação",
+    "html": "<blockquote><p>Resposta do cliente</p></blockquote>",
+    "expected": "<blockquote><p>Resposta do cliente</p></blockquote>"
+  },
+  {
+    "nome": "títulos h1 a h3",
+    "html": "<h1>Título 1</h1><h2>Título 2</h2><h3>Título 3</h3>",
+    "expected": "<h1>Título 1</h1><h2>Título 2</h2><h3>Título 3</h3>"
+  },
+  {
+    "nome": "lista com marcadores e numerada aninhada",
+    "html": "<ul><li><p>item A</p></li><li><p>item B</p><ol><li><p>sub 1</p></li><li><p>sub 2</p></li></ol></li></ul>",
+    "expected": "<ul><li><p>item A</p></li><li><p>item B</p><ol><li><p>sub 1</p></li><li><p>sub 2</p></li></ol></li></ul>"
+  },
+  {
+    "nome": "hr",
+    "html": "<p>antes</p><hr><p>depois</p>",
+    "expected": "<p>antes</p><hr /><p>depois</p>"
+  },
+  {
+    "nome": "link https com target blank",
+    "html": "<p><a target=\"_blank\" rel=\"noopener noreferrer nofollow\" href=\"https://exemplo.test/x\">link</a></p>",
+    "expected": "<p><a target=\"_blank\" rel=\"noopener noreferrer nofollow\" href=\"https://exemplo.test/x\">link</a></p>"
+  },
+  {
+    "nome": "imagem https com dimensões",
+    "html": "<p><img src=\"https://exemplo.test/a.png\" alt=\"captura\" width=\"320\" height=\"200\"></p>",
+    "expected": "<p><img src=\"https://exemplo.test/a.png\" alt=\"captura\" width=\"320\" height=\"200\" /></p>"
+  },
+  {
+    "nome": "imagem relativa com barra",
+    "html": "<p><img src=\"/uploads/a.png\" alt=\"anexo\"></p>",
+    "expected": "<p><img src=\"/uploads/a.png\" alt=\"anexo\" /></p>"
+  },
+  {
+    "nome": "tabela com colgroup, th colspan e td",
+    "html": "<table><colgroup><col><col></colgroup><tbody><tr><th colspan=\"2\"><p>Cabeçalho</p></th></tr><tr><td><p>a</p></td><td><p>b</p></td></tr></tbody></table>",
+    "expected": "<table><colgroup><col /><col /></colgroup><tbody><tr><th colspan=\"2\"><p>Cabeçalho</p></th></tr><tr><td><p>a</p></td><td><p>b</p></td></tr></tbody></table>"
+  },
+  {
+    "nome": "alinhamento centralizado",
+    "html": "<p style=\"text-align: center\">Centro</p>",
+    "expected": "<p style=\"text-align:center\">Centro</p>"
+  },
+  {
+    "nome": "cor com hex e rgb",
+    "html": "<p><span style=\"color: #ff0000\">vermelho</span> <span style=\"color: rgb(0, 128, 0)\">verde</span></p>",
+    "expected": "<p><span style=\"color:#ff0000\">vermelho</span> <span style=\"color:rgb(0, 128, 0)\">verde</span></p>"
+  },
+  {
+    "nome": "destaque mark com color inherit (diferença conhecida: color: inherit sai)",
+    "html": "<p><mark data-color=\"#fde68a\" style=\"background-color: #fde68a; color: inherit\">destaque</mark></p>",
+    "expected": "<p><mark data-color=\"#fde68a\" style=\"background-color:#fde68a\">destaque</mark></p>"
+  }
+]

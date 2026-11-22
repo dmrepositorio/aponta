@@ -29,6 +29,7 @@ import {
   DEFAULT_PERMISSION_GROUPS,
   ROLE_GROUP_NAME,
 } from '../src/permission-groups/default-permission-groups';
+import { ticketDescriptionFields } from '../src/tickets/ticket-description-fields';
 
 const SALT_ROUNDS = 10;
 
@@ -182,7 +183,7 @@ async function main() {
         data: {
           protocol: 'AP-2026-0001',
           title: 'Chamado de Exemplo para Apontamento de Horas',
-          description: 'Ticket inicial de teste criado pelo seed.',
+          ...ticketDescriptionFields('Ticket inicial de teste criado pelo seed.'),
           serviceDeskId: serviceDesk.id,
           requesterId: user.id,
           agentId: user.id,

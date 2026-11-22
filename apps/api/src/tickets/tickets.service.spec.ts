@@ -13,6 +13,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { TicketsService } from './tickets.service';
+import * as sanitizer from './sanitize-ticket-description';
 import { PrismaService } from '../prisma/prisma.service';
 
 jest.mock('fs/promises', () => ({ unlink: jest.fn().mockResolvedValue(undefined) }));
@@ -1308,6 +1309,127 @@ describe('TicketsService', () => {
       await expect(
         service.update('missing', { title: 'x' }, actingUser),
       ).rejects.toThrow(NotFoundException);
+    });
+  });
+
+  describe('GH-368: descrição sanitizada ao gravar', () => {
+    const MALICIOUS = '<p>ok</p><script>alert(1)</script><img src="/a.png" onerror="alert(1)">';
+    const existing = {
+      id: 't1',
+      title: 'old',
+      description: 'old-desc',
+      priority: TicketPriority.MEDIUM,
+      createdAt: new Date('2026-01-01T00:00:00.000Z'),
+      serviceDeskId: 'desk-1',
+    };
+
+    function expectSanitized(description: unknown) {
+      expect(description).toEqual(expect.any(String));
+      expect(description).toContain('ok');
+      expect(description).not.toMatch(/<script|onerror|alert\(1\)/i);
+    }
+
+    it('AC-01: create grava description sanitizada', async () => {
+      mockTx.ticket.findFirst.mockResolvedValue(null);
+      mockTx.ticket.create.mockImplementation(({ data }) => ({ id: 'ticket-1', ...data }));
+
+      await service.create(
+        { title: 't', description: MALICIOUS, serviceDeskId: 'desk-1' },
+        { id: 'requester-1', role: Role.AGENT },
+      );
+
+      expectSanitized(mockTx.ticket.create.mock.calls[0][0].data.description);
+    });
+
+    it('AC-01: update grava description sanitizada', async () => {
+      mockPrismaService.ticket.findUnique.mockResolvedValue(existing);
+      mockPrismaService.ticket.update.mockResolvedValue({});
+
+      await service.update('t1', { description: MALICIOUS }, actingUser);
+
+      expectSanitized(mockPrismaService.ticket.update.mock.calls[0][0].data.description);
+    });
+
+    it('AC-02: texto puro é gravado idêntico em create e update', async () => {
+      const plain = 'linha 1\nlinha 2 a < b & c ![x](u)';
+      mockTx.ticket.findFirst.mockResolvedValue(null);
+      mockTx.ticket.create.mockImplementation(({ data }) => ({ id: 'ticket-1', ...data }));
+      mockPrismaService.ticket.findUnique.mockResolvedValue(existing);
+      mockPrismaService.ticket.update.mockResolvedValue({});
+
+      await service.create(
+        { title: 't', description: plain, serviceDeskId: 'desk-1' },
+        { id: 'requester-1', role: Role.AGENT },
+      );
+      await service.update('t1', { description: plain }, actingUser);
+
+      expect(mockTx.ticket.create.mock.calls[0][0].data.description).toBe(plain);
+      expect(mockPrismaService.ticket.update.mock.calls[0][0].data.description).toBe(plain);
+    });
+
+    it('AC-08: update sem description não toca a descrição nem chama o sanitizador', async () => {
+      const spy = jest.spyOn(sanitizer, 'sanitizeTicketDescription');
+      mockPrismaService.ticket.findUnique.mockResolvedValue(existing);
+      mockPrismaService.ticket.update.mockResolvedValue({});
+
+      await service.update('t1', { title: 'novo título' }, actingUser);
+
+      expect(mockPrismaService.ticket.update.mock.calls[0][0].data).not.toHaveProperty(
+        'description',
+      );
+      expect(spy).not.toHaveBeenCalled();
+      spy.mockRestore();
+    });
+
+    it('AC-12: falha do sanitizador vira 400 e nada é gravado (create e update)', async () => {
+      const spy = jest.spyOn(sanitizer, 'sanitizeTicketDescription').mockImplementation(() => {
+        throw new Error('boom');
+      });
+      mockTx.ticket.findFirst.mockResolvedValue(null);
+      mockTx.ticket.create.mockImplementation(({ data }) => ({ id: 'ticket-1', ...data }));
+      mockPrismaService.ticket.findUnique.mockResolvedValue(existing);
+      mockPrismaService.ticket.update.mockResolvedValue({});
+
+      await expect(
+        service.create(
+          { title: 't', description: '<p>x</p>', serviceDeskId: 'desk-1' },
+          { id: 'requester-1', role: Role.AGENT },
+        ),
+      ).rejects.toThrow(BadRequestException);
+      await expect(
+        service.update('t1', { description: '<p>x</p>' }, actingUser),
+      ).rejects.toThrow(BadRequestException);
+
+      expect(mockTx.ticket.create).not.toHaveBeenCalled();
+      expect(mockPrismaService.ticket.update).not.toHaveBeenCalled();
+      spy.mockRestore();
+    });
+
+    it('AC-13: sem acesso, o sanitizador não roda e nada é gravado', async () => {
+      const spy = jest.spyOn(sanitizer, 'sanitizeTicketDescription');
+      mockPrismaService.ticket.findUnique.mockResolvedValue(existing);
+      mockPrismaService.serviceDesk.findUnique.mockResolvedValue({
+        listedGroupsOnly: true,
+        agents: [],
+        agentGroups: [],
+      });
+
+      await expect(
+        service.update('t1', { description: MALICIOUS }, actingUser),
+      ).rejects.toThrow(ForbiddenException);
+      expect(spy).not.toHaveBeenCalled();
+      expect(mockPrismaService.ticket.update).not.toHaveBeenCalled();
+
+      mockPrismaService.serviceDesk.findUnique.mockResolvedValue(null);
+      await expect(
+        service.create(
+          { title: 't', description: MALICIOUS, serviceDeskId: 'desk-x' },
+          { id: 'requester-1', role: Role.AGENT },
+        ),
+      ).rejects.toThrow(BadRequestException);
+      expect(spy).not.toHaveBeenCalled();
+      expect(mockTx.ticket.create).not.toHaveBeenCalled();
+      spy.mockRestore();
     });
   });
 

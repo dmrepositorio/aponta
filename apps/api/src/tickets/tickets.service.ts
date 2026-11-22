@@ -19,6 +19,7 @@ import {
 } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { activeWorklogCount, TicketDeletionFacts, TicketDeletionReason, ticketDeletionReasons } from './ticket-deletion';
+import { ticketDescriptionFields } from './ticket-description-fields';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { UpdateTicketDto } from './dto/update-ticket.dto';
 import { TICKET_SORT_FIELDS, TicketQueryDto } from './dto/ticket-query.dto';
@@ -415,6 +416,8 @@ export class TicketsService {
       resourceGroup: dto.resourceGroup,
       attachmentCount: dto.attachmentCount ?? 0,
     });
+    // Depois das checagens de acesso e da mesa, antes de gravar (GH-368).
+    const descriptionFields = ticketDescriptionFields(dto.description);
     const slaEnabled = serviceDesk.slaControlEnabled !== false;
     const { responseDeadline, resolveDeadline } = slaEnabled
       ? calculateSla(
@@ -446,7 +449,7 @@ export class TicketsService {
             data: {
               protocol,
               title: dto.title,
-              description: dto.description,
+              ...descriptionFields,
               serviceDeskId: serviceDeskId,
               requesterId,
               commercialOrganizationId: requester?.organizationId ?? null,
@@ -889,7 +892,7 @@ export class TicketsService {
       data.title = dto.title;
     }
     if (dto.description !== undefined) {
-      data.description = dto.description;
+      Object.assign(data, ticketDescriptionFields(dto.description));
     }
     const priorityChanged =
       dto.priority !== undefined && dto.priority !== existing.priority;
