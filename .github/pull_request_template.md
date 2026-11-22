@@ -1,4 +1,7 @@
-Refs #REPLACE
+O título do PR começa com `DMTE-N` (o CD avisa o card do Multica por esse nome).
+
+Entrega: #REPLACE
+Refs #SPEC
 
 ## Resultado
 
@@ -16,4 +19,4 @@ Descreva o problema e o comportamento entregue.
 
 Cole aqui o link do comentário de revisão do QA (`/review`) no SHA final. Commit novo que muda código invalida a revisão.
 
-Não usar palavras de fechamento automático (`Closes`/`Fixes`): a issue de produto encerra depois da entrega verificada em produção.
+Não usar `Closes`/`Fixes`. A linha `Entrega:` lista os tickets que este PR entrega: eles fecham sozinhos depois do deploy em produção, e a SPEC pai fecha com a última sub-issue. `Refs` só referencia e nunca fecha. Apague a linha `Entrega:` se o PR não entrega nenhum ticket.

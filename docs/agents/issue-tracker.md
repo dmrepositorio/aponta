@@ -15,9 +15,9 @@ planning-and-task-breakdown publica UMA issue GitHub por ticket aprovado. Cada t
 
 ## Fechamento e PR
 
-Mantenha `Refs dmrepositorio/aponta#N` no PR e registre a issue principal e as subtarefas de implementação no pai Multica. Na etapa de entrega, confira o repositório, o PR, o SHA e os critérios de cada issue. Identifique no resumo quais números estão prontos para fechar, quais ficam abertos e por quê. Quando faltar aceite, peça ao usuário que responda no próprio card mencionando o agente de entrega e mantenha o card em `entrega`.
+O PR leva `Entrega: #N, #M` (tickets entregues, fecham sozinhos) e `Refs #SPEC` (referência, nunca fecha). Registre a issue principal e as subtarefas de implementação no pai Multica. Na etapa de entrega, confira o repositório, o PR, o SHA e os critérios de cada issue.
 
-Com a entrega comprovada e o aceite aplicável registrado, execute `gh issue close N -R dmrepositorio/aponta --reason completed` para cada item aceito. Uma retirada explícita de escopo usa `--reason "not planned"`. Confira cada resultado com `gh issue view N -R dmrepositorio/aponta --json state,stateReason`. Em retomadas, aproveite os fechamentos já confirmados. Se houver erro, motivo divergente ou requisito pendente, registre o número e a pendência. Conclua o pai depois de conferir o resultado de cada item; trabalho adiado deve ter destino registrado. Quando um pai já tiver sido encerrado manualmente, confira o autor e o escopo do aceite na timeline antes de reconciliar o GitHub.
+O fechamento é do CD: depois do deploy em produção com smoke verde, o job `close-issues` (`scripts/close_delivered_issues.py`) fecha cada issue da linha `Entrega:` dos PRs publicados, com comentário de PR, commit e run, e fecha a SPEC pai quando todas as sub-issues fecharam. Não use `Closes`/`Fixes` (fecham no merge, antes do deploy) e não feche à mão o que o CD fecha. Depois do deploy, confira com `gh issue view N -R dmrepositorio/aponta --json state,stateReason` e registre no card o que fechou. Se uma issue ficou aberta (PR sem a linha `Entrega:`, deploy que falhou ou issue de outro repositório), registre o número e o motivo. Retirada explícita de escopo continua manual: `gh issue close N -R dmrepositorio/aponta --reason "not planned"`, com a decisão registrada. Recusa de entrega: o usuário reabre a issue.
 
 ## Triage
 

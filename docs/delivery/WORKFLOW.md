@@ -47,7 +47,7 @@ Declare só o estado que a evidência prova.
 | **Integrado** | commit de merge na `main` e CI do push verde |
 | **Publicado em produção** | run `CD (Produção)` aprovado e concluído; `/api/version` e `/version.json` devolvem o commit |
 
-Aceite é um sexto fato, declarado só pelo usuário, depois de Publicado. Funcionalidade atrás de flag desligada está publicada, mas não exposta.
+Aceite é um sexto fato, declarado só pelo usuário, depois de Publicado: a issue fecha sozinha ao publicar, e ele a reabre se recusar a entrega. Funcionalidade atrás de flag desligada está publicada, mas não exposta.
 
 ### Quando a evidência perde a validade
 
@@ -58,7 +58,7 @@ Aceite é um sexto fato, declarado só pelo usuário, depois de Publicado. Funci
 
 ## Fechamento
 
-Use `Refs` no PR. No card em `entrega`, o agente registra o pedido, o que foi entregue, o PR, o SHA, como conferir e as issues abrangidas. Quando houver aceite humano pendente, peça uma resposta no card com menção ao agente de entrega. Depois do aceite, o agente fecha as issues abrangidas no GitHub, confere estado e motivo de cada uma e só então move o card para `done`. A sequência e os comandos estão em [Issue Tracker](../agents/issue-tracker.md#fechamento-e-pr).
+O PR leva a linha `Entrega: #N, #M` com os tickets que entrega e `Refs #SPEC` para a SPEC pai. Nenhum fecha no merge. Depois que o deploy em produção termina com o smoke verde, o job `close-issues` do CD fecha os tickets citados nos PRs publicados, com um comentário com o PR, o commit e o run, e fecha a SPEC pai quando todas as sub-issues dela estiverem fechadas. `Refs` nunca fecha, e `Closes`/`Fixes` não se usam (fechariam antes do deploy). Issue fechada quer dizer publicada em produção; se o usuário recusar a entrega, ele reabre a issue. No card em `entrega`, o agente registra o pedido, o que foi entregue, o PR, o SHA e como conferir, e depois do deploy confere que as issues fecharam. Não fecha à mão o que o CD fecha. A sequência está em [Issue Tracker](../agents/issue-tracker.md#fechamento-e-pr).
 
 ## Medição
 

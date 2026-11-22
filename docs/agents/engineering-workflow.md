@@ -24,7 +24,7 @@ Transversais: `using-agent-skills`, `context-engineering`, `source-driven-develo
 
 **`/review`** — O QA é independente: revisa o diff exato de todos os commits (`code-review-and-quality`, `security-and-hardening`), reproduz os testes, audita o TDD e confere contrato, tenant e DS. O parecer é um comentário no PR, com resultado inequívoco (aprovado, rejeitado ou bloqueado) e o SHA revisado. Rejeitado: volta a `desenvolvimento`; o QA nunca corrige o próprio achado. Commit novo que muda código, critérios ou SPEC invalida o parecer.
 
-**`/ship`** — O líder confere os checks do CI no head exato e o parecer do QA no mesmo SHA e declara só o estado que a evidência prova (Implementado, Revisado, Apto para integração, Integrado, Publicado em produção; ver `docs/delivery/WORKFLOW.md`). O usuário coloca o PR na merge queue, aprova o deploy no environment `production` e o aceite é só dele. Sem fechamento automático por merge: `Refs`, nunca `Closes`/`Fixes`.
+**`/ship`** — O líder confere os checks do CI no head exato e o parecer do QA no mesmo SHA e declara só o estado que a evidência prova (Implementado, Revisado, Apto para integração, Integrado, Publicado em produção; ver `docs/delivery/WORKFLOW.md`). O usuário coloca o PR na merge queue e aprova o deploy no environment `production`. O PR leva `Entrega: #N` (tickets) e `Refs #SPEC`; as issues fecham sozinhas depois do deploy em produção (job `close-issues` do CD), nunca por `Closes`/`Fixes` no merge. Depois do deploy, o líder confere o fechamento.
 
 ## Regras comuns
 
