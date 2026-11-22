@@ -1,6 +1,6 @@
 # Detalhe do ticket: descrição renderizada como conteúdo rico, sem tags HTML visíveis
 
-Identidade: DMTE-558, Tier 1 (recomendado), origem item 2 (P1) da auditoria DMTE-549, aprovado pelo Alfredo ("Vamos implementar"). Issue GitHub: a criar (ainda não existe). Base: `origin/main` @ 2070784. Status da SPEC: decisões D1 a D5 tomadas pelo Alfredo; pronta para /plan.
+Identidade: DMTE-558, Tier 1 (recomendado), origem item 2 (P1) da auditoria DMTE-549, aprovado pelo Alfredo ("Vamos implementar"). Issue GitHub: dmrepositorio/aponta#371. Base: `origin/main` @ 2070784. Status da SPEC: decisões D1 a D5 tomadas pelo Alfredo; pronta para /plan.
 
 ## Objetivo
 No detalhe do ticket, a descrição criada pelo formulário (editor rico) aparece com as tags escapadas, ex.: `<p>Erro no emissão da TOP 1100 </p>` literal. Passa a ser exibida como conteúdo formatado, igual a comentários e apontamentos. Usuário: qualquer perfil que abre o detalhe (cliente, atendente, admin). Sucesso: nenhuma tag HTML literal visível; descrição legada em texto puro continua legível com suas quebras de linha; nada executável entra na página.
