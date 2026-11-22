@@ -37,6 +37,15 @@ export const SlaCritico: Story = {
   },
 };
 
+export const NeutraPausada: Story = {
+  args: {
+    value: 40,
+    showLabel: true,
+    colorClass: 'bg-gray-400',
+    'aria-label': 'Progresso do SLA (pausado)',
+  },
+};
+
 export const ChecklistCompleto: Story = {
   args: {
     value: 100,

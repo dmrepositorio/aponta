@@ -274,6 +274,37 @@ describe('TicketDetailPage', () => {
     expect(screen.getAllByText(/vencido/i).length).toBeGreaterThan(0);
   });
 
+  it('AC-04: ticket em pausa (PENDING_SANKHYA) mostra selo "Dentro do prazo" e "Pausado · Aguardando Sankhya", sem "Vencido há"', async () => {
+    vi.mocked(api.get).mockImplementation((url: string) => {
+      if (url === '/tickets/t-1') {
+        return Promise.resolve({
+          data: {
+            ...ticket,
+            status: 'PENDING_SANKHYA',
+            resolveSlaStatus: 'ON_TRACK',
+            slaPausedAt: '2026-10-01T10:00:00.000Z',
+            slaAccumulatedPauseTime: 60,
+          },
+        });
+      }
+      if (url === '/tickets/t-1/comments') {
+        return Promise.resolve({ data: comments });
+      }
+      if (url === '/users/agents') {
+        return Promise.resolve({ data: mockAgents });
+      }
+      return Promise.resolve({ data: [] });
+    });
+
+    renderPage();
+
+    expect(await screen.findByText(/dentro do prazo/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Pausado · Aguardando Sankhya/),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/vencido há/i)).not.toBeInTheDocument();
+  });
+
   it('should render the comment timeline with an internal-note indicator only on internal comments', async () => {
     setRole('AGENT');
     renderPage();
