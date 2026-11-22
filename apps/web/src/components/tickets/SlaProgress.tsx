@@ -39,8 +39,9 @@ export function SlaProgress({ ticket }: { ticket: Ticket }) {
   const timeRemainingMs = effectiveDeadlineMs - now;
   const isBreached = timeRemainingMs < 0 && !isTerminal;
   
-  const hoursLeft = Math.abs(Math.floor(timeRemainingMs / 3600000));
-  const minsLeft = Math.abs(Math.floor((timeRemainingMs % 3600000) / 60000));
+  const absRemainingMs = Math.abs(timeRemainingMs);
+  const hoursLeft = Math.floor(absRemainingMs / 3600000);
+  const minsLeft = Math.floor((absRemainingMs % 3600000) / 60000);
   
   const labelText = isBreached 
     ? `Vencido há ${hoursLeft}h ${minsLeft}m`

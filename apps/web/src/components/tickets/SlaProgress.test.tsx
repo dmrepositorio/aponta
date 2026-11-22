@@ -103,6 +103,20 @@ describe('SlaProgress', () => {
       expect(container).not.toHaveTextContent(/Vencido há/);
     });
 
+    it('tempo negativo fora de múltiplo exato de hora: pausado há 8h30 com prazo vencido há 10h mostra "vencido há 1h 30m"', () => {
+      vi.useFakeTimers({ toFake: ['Date'], now: NOW });
+      renderBar({
+        ...pausedTicket,
+        createdAt: at(-20 * H),
+        resolveDeadline: at(-10 * H),
+        slaAccumulatedPauseTime: 0,
+        slaPausedAt: at(-8.5 * H),
+        resolveSlaStatus: 'BREACHED',
+      });
+
+      expect(screen.getByText('vencido há 1h 30m')).toBeInTheDocument();
+    });
+
     it('AC-03: o valor da barra fica congelado entre dois relógios durante a pausa', () => {
       vi.useFakeTimers({ toFake: ['Date'], now: NOW });
       const { unmount } = renderBar(pausedTicket);
@@ -154,6 +168,17 @@ describe('SlaProgress', () => {
 
       expect(screen.getByText('Vencido há 2h 0m')).toHaveClass('text-red-600');
       expect(fill()).toHaveClass('bg-red-500');
+    });
+
+    it('tempo negativo fora de múltiplo exato de hora: prazo vencido há 90 min mostra "Vencido há 1h 30m"', () => {
+      vi.useFakeTimers({ toFake: ['Date'], now: NOW });
+      renderBar({
+        ...baseTicket,
+        resolveDeadline: at(-1.5 * H),
+        resolveSlaStatus: 'BREACHED',
+      });
+
+      expect(screen.getByText('Vencido há 1h 30m')).toBeInTheDocument();
     });
 
     it('AC-05: selo AT_RISK deixa a barra amarela', () => {
