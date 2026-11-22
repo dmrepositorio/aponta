@@ -1,4 +1,5 @@
 import sanitizeHtml from 'sanitize-html';
+import { buildSanitizeOptions } from '../common/sanitize/sanitize-html-base';
 
 /**
  * Article content is authored through a rich-text editor (Tiptap) and
@@ -56,33 +57,19 @@ const STYLED_TAGS = [
   'th',
 ];
 
-const ALLOWED_ATTRIBUTES: sanitizeHtml.IOptions['allowedAttributes'] = {
+const ALLOWED_ATTRIBUTES: Record<string, string[]> = {
   a: ['href', 'target', 'rel'],
   img: ['src', 'alt'],
   th: ['colspan', 'rowspan'],
   td: ['colspan', 'rowspan'],
 };
 
-for (const tag of STYLED_TAGS) {
-  ALLOWED_ATTRIBUTES[tag] = [...(ALLOWED_ATTRIBUTES[tag] ?? []), 'style'];
-}
-
-const HEX_COLOR = /^#[0-9a-f]{3,8}$/i;
-const RGB_COLOR = /^rgb\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*\)$/i;
-const TEXT_ALIGN = /^(left|right|center|justify)$/i;
+const OPTIONS = buildSanitizeOptions({
+  allowedTags: ALLOWED_TAGS,
+  allowedAttributes: ALLOWED_ATTRIBUTES,
+  styledTags: STYLED_TAGS,
+});
 
 export function sanitizeArticleContent(html: string): string {
-  return sanitizeHtml(html, {
-    allowedTags: ALLOWED_TAGS,
-    allowedAttributes: ALLOWED_ATTRIBUTES,
-    allowedSchemes: ['http', 'https', 'mailto'],
-    disallowedTagsMode: 'discard',
-    allowedStyles: {
-      '*': {
-        color: [HEX_COLOR, RGB_COLOR],
-        'background-color': [HEX_COLOR, RGB_COLOR],
-        'text-align': [TEXT_ALIGN],
-      },
-    },
-  });
+  return sanitizeHtml(html, OPTIONS);
 }
