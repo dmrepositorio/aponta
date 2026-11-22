@@ -54,6 +54,8 @@ Em produção o smoke só lê; não faz login nem cria dado. O workflow publica 
 
 Terminado o deploy com o smoke verde, o job `close-issues` do mesmo workflow roda `scripts/close_delivered_issues.py` com o commit publicado: fecha as issues da linha `Entrega: #N` dos PRs integrados que estão no histórico desse commit (com comentário de PR, commit e run) e fecha a SPEC pai quando a última sub-issue fecha. Se o deploy falha ou é recusado, nada fecha. Rollback não reabre issue.
 
+Quando o CD termina, com sucesso ou falha, o job `notify` comenta no card do Multica de cada entrega do intervalo publicado (do commit em produção antes do run até a ponta), mencionando o `dm_lider`, com commit, PR, run e, no sucesso, o que `/api/version` e `/version.json` devolvem. A entrega é o `DMTE-N` do título do PR (ou do nome da branch), e o card é a issue do Multica com esse identificador. O aviso nunca muda o resultado do deploy.
+
 Sem staging, o **primeiro** deploy de cada mudança de risco acontece em produção. Por isso a aprovação do environment é obrigatória, o smoke confere o commit no ar, o rollback é rápido e a funcionalidade com efeito externo novo entra atrás de feature flag desligada.
 
 ## Recuperação

@@ -1,3 +1,5 @@
+O título do PR começa com `DMTE-N` (o CD avisa o card do Multica por esse nome).
+
 Entrega: #REPLACE
 Refs #SPEC
 
