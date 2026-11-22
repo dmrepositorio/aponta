@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional, IsString, MaxLength } from 'class-validator';
 import { TicketPriority } from '@prisma/client';
 
 /**
@@ -15,6 +15,7 @@ export class UpdateTicketDto {
   @IsOptional()
   @IsString()
   @IsNotEmpty()
+  @MaxLength(100000, { message: 'description is too long' })
   description?: string;
 
   @IsOptional()

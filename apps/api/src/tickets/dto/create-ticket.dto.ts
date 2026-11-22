@@ -1,4 +1,4 @@
-import { IsBoolean, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, IsUUID, Min } from 'class-validator';
+import { IsBoolean, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, IsUUID, MaxLength, Min } from 'class-validator';
 import { TicketPriority } from '@prisma/client';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -23,6 +23,7 @@ export class CreateTicketDto {
   @ApiProperty({ description: 'Detailed markdown or text body describing the ticket.', example: 'When I click the login button after typing my email...' })
   @IsString()
   @IsNotEmpty()
+  @MaxLength(100000, { message: 'description is too long' })
   description!: string;
 
   @ApiProperty({ description: 'The Service Desk UUID this ticket should be routed to.', example: '123e4567-e89b-12d3-a456-426614174001' })
