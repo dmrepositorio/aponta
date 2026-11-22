@@ -5,11 +5,11 @@ from pathlib import Path
 import re
 
 PRIMARY_METHODS = {
-    'dev_pipeline_triagem': 'spec-driven-development',
-    'dev_pipeline_arquiteto': 'planning-and-task-breakdown',
-    'dev_pipeline_executor': 'incremental-implementation',
-    'dev_pipeline_qa': 'code-review-and-quality',
-    'dev_pipeline_entrega': 'git-workflow-and-versioning',
+    'dm_triagem': 'spec-driven-development',
+    'dm_arquiteto': 'planning-and-task-breakdown',
+    'dm_developer': 'incremental-implementation',
+    'dm_qualidade': 'code-review-and-quality',
+    'dm_entrega': 'git-workflow-and-versioning',
 }
 
 

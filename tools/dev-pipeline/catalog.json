@@ -2,24 +2,24 @@
   "source": "addyosmani/agent-skills",
   "revision": "8c99fa36d90068c82d547f7c12a9d67a3e95f4ee",
   "roles": {
-    "dev_pipeline_triagem": [
+    "dm_triagem": [
       "spec-driven-development",
       "interview-me"
     ],
-    "dev_pipeline_arquiteto": [
+    "dm_arquiteto": [
       "spec-driven-development",
       "planning-and-task-breakdown"
     ],
-    "dev_pipeline_executor": [
+    "dm_developer": [
       "incremental-implementation",
       "test-driven-development",
       "debugging-and-error-recovery",
       "git-workflow-and-versioning"
     ],
-    "dev_pipeline_qa": [
+    "dm_qualidade": [
       "code-review-and-quality"
     ],
-    "dev_pipeline_entrega": [
+    "dm_entrega": [
       "git-workflow-and-versioning",
       "shipping-and-launch"
     ]

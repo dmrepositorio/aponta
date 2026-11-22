@@ -21,7 +21,7 @@ class WorkflowTest(unittest.TestCase):
     def test_missing_role(self):
         path = self.root / 'catalog.json'
         manifest = json.loads(path.read_text())
-        del manifest['roles']['dev_pipeline_qa']
+        del manifest['roles']['dm_qualidade']
         path.write_text(json.dumps(manifest))
         self.assertTrue(validate_workflow(self.root))
 
@@ -29,8 +29,8 @@ class WorkflowTest(unittest.TestCase):
         path = self.root / 'catalog.json'
         manifest = json.loads(path.read_text())
         roles = manifest['roles']
-        roles['dev_pipeline_qa'], roles['dev_pipeline_entrega'] = (
-            roles['dev_pipeline_entrega'], roles['dev_pipeline_qa']
+        roles['dm_qualidade'], roles['dm_entrega'] = (
+            roles['dm_entrega'], roles['dm_qualidade']
         )
         path.write_text(json.dumps(manifest))
         self.assertTrue(validate_workflow(self.root))
@@ -63,13 +63,13 @@ class WorkflowTest(unittest.TestCase):
     def test_skill_assigned_without_lock_entry(self):
         path = self.root / 'catalog.json'
         manifest = json.loads(path.read_text())
-        manifest['roles']['dev_pipeline_qa'] = ['nonexistent-skill']
+        manifest['roles']['dm_qualidade'] = ['nonexistent-skill']
         path.write_text(json.dumps(manifest))
         self.assertTrue(validate_workflow(self.root))
 
     def test_empty_role_skill_list(self):
         path = self.root / 'catalog.json'
         manifest = json.loads(path.read_text())
-        manifest['roles']['dev_pipeline_qa'] = []
+        manifest['roles']['dm_qualidade'] = []
         path.write_text(json.dumps(manifest))
         self.assertTrue(validate_workflow(self.root))
