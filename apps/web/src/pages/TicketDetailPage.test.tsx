@@ -824,3 +824,126 @@ describe('TicketDetailPage', () => {
     });
   });
 });
+
+describe('TicketDetailPage: descrição como conteúdo rico (DMTE-558)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    canDeleteTickets = false;
+    comments.length = 2;
+    preAppointments.length = 0;
+    mockApi();
+    setRole('CLIENT');
+  });
+
+  async function renderWithDescription(description: string) {
+    const base = vi.mocked(api.get).getMockImplementation()!;
+    vi.mocked(api.get).mockImplementation((url: string) =>
+      url === '/tickets/t-1'
+        ? Promise.resolve({ data: { ...ticket, description } })
+        : base(url),
+    );
+    const view = renderPage();
+    await screen.findByRole('heading', { name: 'Printer not working' });
+    return view;
+  }
+
+  it('AC-01: descrição <p>…</p> aparece como texto, sem tag literal', async () => {
+    await renderWithDescription('<p>Erro no emissão da TOP 1100 </p>');
+
+    expect(screen.getByText('Erro no emissão da TOP 1100')).toBeInTheDocument();
+    expect(screen.queryByText(/<\/?p>/)).not.toBeInTheDocument();
+  });
+
+  it('AC-02: parágrafos, negrito, itálico, lista e quebra viram elementos', async () => {
+    const { container } = await renderWithDescription(
+      '<p>Primeiro <strong>negrito</strong> e <em>itálico</em></p>' +
+        '<p>Segundo<br>quebra</p>' +
+        '<ul><li>item um</li><li>item dois</li></ul>',
+    );
+
+    expect(screen.getByText('negrito').tagName).toBe('STRONG');
+    expect(screen.getByText('itálico').tagName).toBe('EM');
+    const item = screen.getByText('item um');
+    expect(item.tagName).toBe('LI');
+    expect(item.parentElement?.tagName).toBe('UL');
+    expect(screen.getByText('item dois').tagName).toBe('LI');
+    expect(screen.getByText(/Segundo/).querySelector('br')).not.toBeNull();
+    expect(container.textContent).not.toMatch(/<\/?(p|strong|em|ul|li|br)\b/);
+  });
+
+  it('AC-03 (caracterização, regressão): texto puro com \n mantém as duas linhas em contêiner whitespace-pre-wrap', async () => {
+    await renderWithDescription('linha 1\nlinha 2');
+
+    const block = screen.getByText('linha 1\nlinha 2', {
+      normalizer: (text) => text,
+    });
+    expect(block.closest('.whitespace-pre-wrap')).not.toBeNull();
+  });
+
+  it('AC-04: conteúdo inseguro não vira script, handler, javascript: nem texto', async () => {
+    const { container } = await renderWithDescription(
+      '<p>Ok</p><script>alert(1)</script>' +
+        '<img src="javascript:alert(1)" alt="x">' +
+        '<img src="/uploads/a.png" onerror="alert(1)" alt="ok">' +
+        '<a href="javascript:alert(1)">link</a>',
+    );
+
+    expect(screen.queryByText(/alert/)).not.toBeInTheDocument();
+    expect(container.textContent).not.toMatch(/<\/?(p|script|img|a)\b/);
+    expect(container.querySelector('script')).toBeNull();
+    expect(container.querySelector('img[src^="javascript:"]')).toBeNull();
+    expect(screen.queryByAltText('x')).not.toBeInTheDocument();
+    for (const el of Array.from(container.querySelectorAll('*'))) {
+      const handlers = el
+        .getAttributeNames()
+        .filter((name) => name.toLowerCase().startsWith('on'));
+      expect(handlers).toEqual([]);
+    }
+    const link = screen.getByText('link');
+    expect(link.closest('a')).toBeNull();
+    expect(link).not.toHaveAttribute('href');
+    expect(screen.getByAltText('ok')).toBeInTheDocument();
+  });
+
+  it('AC-05: imagem relativa e https aparecem dentro de link para a mesma URL, sem estourar a largura', async () => {
+    await renderWithDescription(
+      '<p><img src="/uploads/a.png" alt="captura"></p>' +
+        '<p><img src="https://example.com/b.png" alt="externa"></p>',
+    );
+
+    for (const [alt, src] of [
+      ['captura', '/uploads/a.png'],
+      ['externa', 'https://example.com/b.png'],
+    ]) {
+      const img = screen.getByAltText(alt);
+      expect(img).toHaveAttribute('src', src);
+      expect(img).toHaveClass('max-w-full');
+      expect(img.closest('a')).toHaveAttribute('href', src);
+    }
+  });
+
+  it('AC-06: markdown legado de imagem mostra texto e imagem, sem a sintaxe ![', async () => {
+    const { container } = await renderWithDescription(
+      'Evidência anexada\n![evidencia.png](https://cdn.example.com/tela.png)',
+    );
+
+    expect(screen.getByText('Evidência anexada')).toBeInTheDocument();
+    expect(screen.getByAltText('evidencia.png')).toHaveAttribute(
+      'src',
+      'https://cdn.example.com/tela.png',
+    );
+    expect(container.textContent).not.toContain('![');
+  });
+
+  it('AC-07 (caracterização, regressão): o bloco da descrição mantém text-sm text-gray-900 e o cabeçalho não muda', async () => {
+    await renderWithDescription('Descrição simples do chamado.');
+
+    const wrapper = screen
+      .getByText('Descrição simples do chamado.')
+      .closest('.text-sm.text-gray-900');
+    expect(wrapper).not.toBeNull();
+    expect(screen.getByRole('heading', { name: 'Printer not working' })).toBeInTheDocument();
+    expect(screen.getByText('AP-000001')).toBeInTheDocument();
+    expect(screen.getByText(/prazo de resposta/i)).toBeInTheDocument();
+  });
+});

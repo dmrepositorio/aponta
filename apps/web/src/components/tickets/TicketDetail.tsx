@@ -8,6 +8,7 @@ import { SlaBadge } from './SlaBadge';
 import { SlaProgress } from './SlaProgress';
 import { TicketChecklist } from './TicketChecklist';
 import { TicketParentChild } from './TicketParent';
+import { RichContentView } from './RichContentView';
 import { EzAlert, EzSelect } from '../ds';
 
 /**
@@ -175,9 +176,9 @@ export function TicketDetail({ ticket }: TicketDetailProps) {
         </div>
       </div>
 
-      <p className="whitespace-pre-wrap text-sm text-gray-900">
-        {ticket.description}
-      </p>
+      <div className="text-sm text-gray-900">
+        <RichContentView content={ticket.description} />
+      </div>
 
       {statusErrorMessage && (
         <EzAlert variant="error" role="alert">
