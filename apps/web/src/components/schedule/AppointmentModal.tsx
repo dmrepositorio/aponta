@@ -6,6 +6,7 @@ import { Ticket } from '../../hooks/useTickets';
 import { useAuthStore } from '../../stores/authStore';
 import { useCanReleaseWorklogWithoutSchedule } from '../../hooks/usePermissions';
 import { TicketSearchModal } from './TicketSearchModal';
+import { richTextToPlainText } from '../tickets/richTextToPlainText';
 import { EzButton, EzCheck, EzModal, EzSelect, EzTextInput, EzBadge, EzSearch, EzDateInput, EzTimeInput } from '../ds';
 import { Search, Trash2, Unlink, User as UserIcon } from 'lucide-react';
 
@@ -127,7 +128,7 @@ export function AppointmentModal({
     // o título aqui de imediato para feedback visual antes de salvar.
     setTitle(ticket.title);
     if (!description.trim()) {
-      setDescription(ticket.description.length > 160 ? `${ticket.description.slice(0, 160).trim()}…` : ticket.description);
+      setDescription(richTextToPlainText(ticket.description));
     }
     setIsTicketSearchOpen(false);
   };

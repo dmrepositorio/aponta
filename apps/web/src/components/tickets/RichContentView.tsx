@@ -1,6 +1,6 @@
 import { createElement, type ReactNode } from 'react';
 
-const HTML_TAG_RE = /<\/?(p|div|span|br|strong|b|em|i|u|ul|ol|li|a|img|h[1-3]|blockquote)\b/i;
+export const HTML_TAG_RE = /<\/?(p|div|span|br|strong|b|em|i|u|ul|ol|li|a|img|h[1-3]|blockquote)\b/i;
 const MARKDOWN_IMAGE_RE = /!\[(.*?)\]\((.*?)\)/g;
 
 const ALLOWED_TAGS = new Set([
