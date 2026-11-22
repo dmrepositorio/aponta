@@ -295,7 +295,7 @@ describe('descrição copiada do ticket como texto puro (GH-369)', () => {
 
   async function vincularTicket(
     description: string,
-    opts: { onSave?: ReturnType<typeof vi.fn>; digitada?: string } = {},
+    opts: { onSave?: React.ComponentProps<typeof AppointmentModal>['onSave']; digitada?: string } = {},
   ) {
     vi.mocked(api.get).mockImplementation((url: string) => {
       if (url === '/organizations' || url === '/service-desks') return Promise.resolve({ data: [] });
