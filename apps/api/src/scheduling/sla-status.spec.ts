@@ -40,4 +40,20 @@ describe('getSlaStatus', () => {
       'BREACHED',
     );
   });
+
+  it('freezes the status while paused (slaPausedAt set), even long after the recorded deadline', () => {
+    const createdAt = new Date('2026-01-01T00:00:00.000Z');
+    const deadline = new Date('2026-01-01T10:00:00.000Z'); // 10h window
+    const pausedAt = new Date('2026-01-01T04:00:00.000Z'); // 40% elapsed when paused
+
+    const shortlyAfter = new Date('2026-01-01T05:00:00.000Z');
+    const longAfterDeadline = new Date('2026-01-03T00:00:00.000Z');
+
+    expect(
+      getSlaStatus(createdAt, deadline, shortlyAfter, 0, pausedAt),
+    ).toBe<SlaStatus>('ON_TRACK');
+    expect(
+      getSlaStatus(createdAt, deadline, longAfterDeadline, 0, pausedAt),
+    ).toBe<SlaStatus>('ON_TRACK');
+  });
 });
