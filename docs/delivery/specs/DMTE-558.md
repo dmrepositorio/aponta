@@ -1,6 +1,6 @@
 # Detalhe do ticket: descrição renderizada como conteúdo rico, sem tags HTML visíveis
 
-Identidade: DMTE-558, Tier 1 (recomendado), origem item 2 (P1) da auditoria DMTE-549, aprovado pelo Alfredo ("Vamos implementar"). Issue GitHub: a criar (ainda não existe). Base: `origin/main` @ 2070784. Status da SPEC: rascunho com decisões D1 a D5 abertas (recomendação em cada uma); nenhuma bloqueia o build.
+Identidade: DMTE-558, Tier 1 (recomendado), origem item 2 (P1) da auditoria DMTE-549, aprovado pelo Alfredo ("Vamos implementar"). Issue GitHub: a criar (ainda não existe). Base: `origin/main` @ 2070784. Status da SPEC: decisões D1 a D5 tomadas pelo Alfredo; pronta para /plan.
 
 ## Objetivo
 No detalhe do ticket, a descrição criada pelo formulário (editor rico) aparece com as tags escapadas, ex.: `<p>Erro no emissão da TOP 1100 </p>` literal. Passa a ser exibida como conteúdo formatado, igual a comentários e apontamentos. Usuário: qualquer perfil que abre o detalhe (cliente, atendente, admin). Sucesso: nenhuma tag HTML literal visível; descrição legada em texto puro continua legível com suas quebras de linha; nada executável entra na página.
@@ -17,7 +17,7 @@ No detalhe do ticket, a descrição criada pelo formulário (editor rico) aparec
 ## Escopo
 - `TicketDetail.tsx`: trocar o `<p>` por `<div className="text-sm text-gray-900"><RichContentView content={ticket.description} /></div>` (mesmo padrão dos comentários).
 - Testes (matriz abaixo), incluindo reforço do E2E existente para provar que não há `<p>` literal.
-- Sem mudança em `RichContentView`, salvo se D4 for decidida em contrário.
+- Sem mudança em `RichContentView` (D4 decidida: fora).
 
 ## Exclusões
 - Sem mudança de API, DTO, schema, migração de dados, e-mail, relatórios, Kanban ou lista.
@@ -57,7 +57,7 @@ Não se aplica: sem endpoint, query ou permissão novos. O detalhe já é autori
 | AC-08 | Playwright, `apps/web-e2e/src/tickets.spec.ts` (asserção adicional no caso de criação, linha ~47) | RED por asserção no código atual; confirmar no CI ou com `scripts/e2e_isolated.sh` | `E2E (Playwright, full stack)` verde no SHA final; nunca rodar contra produção |
 | AC-09 | Suítes existentes (Vitest web, Jest API), typecheck, build | Regressão | CI `Typecheck, unit tests, build` verde no SHA final |
 
-Comando do Vitest: via Nx para o projeto `web` (confirmar o comando exato na implementação). Aceite visual humano do detalhe fica com o Alfredo.
+Comando do Vitest: `pnpm exec nx run web:test --skip-nx-cache src/pages/TicketDetailPage.test.tsx` (target inferido por `@nx/vitest`; mesmo padrão da DMTE-557). Aceite visual humano do detalhe fica com o Alfredo.
 
 ## Riscos
 - XSS: a API guarda HTML sem sanitizar; a segurança depende só do renderizador. Mitigado pelo `RichContentView` (DOMParser inerte, allowlist de tags, só `href/src/alt`, `isSafeMediaUrl`). Uma tela futura que renderize `description` com `dangerouslySetInnerHTML` quebraria isso; D2 cobre defesa em profundidade.
@@ -66,12 +66,13 @@ Comando do Vitest: via Nx para o projeto `web` (confirmar o comando exato na imp
 - Descrição `<p></p>` (editor vazio) pode passar o `min(1)` do formulário e renderizar vazia; fora de escopo.
 - Sem dados reais em fixtures: usar textos sintéticos.
 
-## Decisões abertas (para o Alfredo)
-- D1 (descrição legada em texto puro e quebras de linha): recomendação, nenhuma migração e nenhuma conversão no cadastro. O `RichContentView` já preserva `\n` no ramo texto puro (`whitespace-pre-wrap`, linha 185), coberto por AC-03. Bloqueia: nada.
-- D2 (sanitizar na API ao gravar, como nos artigos): recomendação, entrega separada (issue própria, Tier 2, reaproveitando `sanitize-article-content.ts`, mais migração do legado). Aqui só o front. Bloqueia: nada nesta entrega; sem a D2 a defesa em profundidade fica pendente.
-- D3 (mesmo defeito em outros pontos): recomendação, abrir issues separadas para `AppointmentModal` (HTML cru copiado, truncado em 160) e para a busca por descrição (casa tags); lista, Kanban e cartões não mostram descrição, nada a fazer. Bloqueia: nada.
-- D4 (ampliar o `RichContentView` para tabela, tachado, destaque, `pre`/`code`): recomendação, fora desta entrega, issue separada porque muda um componente compartilhado com comentários e apontamentos. Bloqueia: nada.
-- D5 (tamanho de fonte e wrapper): recomendação, `text-sm text-gray-900` no wrapper como nos comentários, sem alterar o cabeçalho. Já assumida em AC-07; mudar só se o Alfredo preferir outra escala.
+## Decisões (Alfredo)
+- D1 decidida: descrição legada em texto puro fica como está, sem migração nem conversão no cadastro; o `RichContentView` já preserva `
+` no ramo texto puro (`whitespace-pre-wrap`, linha 185), provado pelo AC-03.
+- D2 decidida: sanitização na API ao gravar fica em entrega separada (Tier 2, reaproveitando `sanitize-article-content.ts`, mais migração do legado). Esta entrega é só front; Tier segue 1. Sem a D2, a defesa em profundidade fica pendente (risco registrado).
+- D3 decidida: o mesmo defeito em outros pontos vira issues separadas: `AppointmentModal.tsx:128-131` (copia o HTML cru, truncado em 160) e a busca em `tickets.service.ts:588` (casa nomes de tag). Fora desta entrega.
+- D4 decidida: não ampliar o `RichContentView` (compartilhado com comentários e apontamentos). Descrição só com tabela, tachado ou destaque cai no ramo texto puro e fica fora desta entrega (risco registrado).
+- D5 decidida: wrapper `text-sm text-gray-900` como nos comentários (AC-07).
 
 ## Tier
-Tier 1: troca de um elemento em um componente de front, sem API, schema, RBAC, flag ou DS novo; testes só de front mais uma asserção E2E. Subiria a Tier 2 se D2 entrar (sanitização na API e migração) ou se D4 entrar (mudança no componente compartilhado).
+Tier 1: troca de um elemento em um componente de front, sem API, schema, RBAC, flag ou DS novo; testes só de front mais uma asserção E2E. Subiria a Tier 2 se a sanitização na API e a migração (D2) ou a mudança no componente compartilhado (D4) entrassem; ambas ficaram fora.
