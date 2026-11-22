@@ -45,6 +45,10 @@ test.describe('ticket creation and detail view', () => {
 
     await expect(page.getByRole('heading', { name: uniqueTitle })).toBeVisible();
     await expect(page.getByText(description)).toBeVisible();
+    // DMTE-558: the editor stores HTML (<p>…</p>); the detail must render it
+    // instead of printing the tags (getByText(description) alone matches the
+    // escaped text too, so it cannot catch the defect).
+    await expect(page.getByText('<p>')).toHaveCount(0);
     await expect(page.getByText('Alta')).toBeVisible();
     // Server-assigned fields prove this came from the real API, not a mock:
     // protocol format AP-<year>-<seq> (see tickets.service.ts) and OPEN status.
