@@ -29,7 +29,7 @@ Fontes analisadas em 10/11/2026: os artigos "Falando um pouco sobre minhas skill
 | Só item aprovado, um por vez, com teste de regressão antes | github-resolution | `incremental-implementation`; `skills_executor` | Orientação; PR registra por AC o teste, o comando e o resultado antes e depois |
 | Slop é defeito: sem refatoração de carona nem teste enfraquecido | github-resolution | `incremental-implementation`, `code-review-and-quality` | Revisão independente do QA no diff exato |
 | Corrigir a classe, não a ocorrência | github-resolution, iss-audit | `docs/agents/triage-labels.md`, `incremental-implementation`, `code-review-and-quality` | Orientação; achado de revisão quando ignorado |
-| Fechar só com a correção integrada e verde no SHA | github-resolution | `shipping-and-launch` | PR usa `Refs`, nunca `Closes`/`Fixes` (template do PR e `/ship`) |
+| Fechar só com a correção integrada e verde no SHA | github-resolution | `shipping-and-launch` | Issue fecha só depois do deploy: `Entrega: #N` no PR e job `close-issues` do CD; `Closes`/`Fixes` não se usam |
 | Pendência listada uma a uma, nunca em contagem | github-resolution, iss-audit | `docs/agents/triage-labels.md`, `incremental-implementation` | Orientação |
 | Origem da dependência conferida antes de instalar | pr-bump | `deprecation-and-migration`  | Lockfile congelado no CI; revisão ALTA para os sinais de risco |
 | Agrupar atualizações com critério | pr-bump | `deprecation-and-migration` | Um PR por grupo, pela fila |

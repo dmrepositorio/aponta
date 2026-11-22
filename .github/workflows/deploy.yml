@@ -92,3 +92,25 @@ jobs:
             mkdir -p "$release"
             git archive "$DEPLOY_SHA" | tar -x -C "$release"
             python3 "$release/scripts/aponta_release.py" deploy --sha "$DEPLOY_SHA"
+
+  # Depois do deploy com smoke verde, as issues das linhas `Entrega: #N` dos PRs publicados fecham
+  # sozinhas, e a SPEC pai fecha com a última sub-issue. `Refs` nunca fecha. Ver docs/delivery/RELEASE.md.
+  close-issues:
+    name: Fechar issues entregues
+    needs: [resolve, production]
+    if: needs.resolve.outputs.sha != ''
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ needs.resolve.outputs.sha }}
+      - name: Close the issues delivered to production
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DEPLOY_SHA: ${{ needs.resolve.outputs.sha }}
+        run: |
+          python3 scripts/close_delivered_issues.py --sha "$DEPLOY_SHA" --run-url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"

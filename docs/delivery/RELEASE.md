@@ -52,6 +52,8 @@ Feature flag não é uma etapa: é um controle da funcionalidade, lido em tempo 
 
 Em produção o smoke só lê; não faz login nem cria dado. O workflow publica sempre a ponta da `main` com CI verde, e não o commit do CI que acabou de terminar; nenhum run em andamento é cancelado, para não interromper uma migração. Há trava no host (`~/deploy/aponta/locks/production.lock`): um deploy por vez.
 
+Terminado o deploy com o smoke verde, o job `close-issues` do mesmo workflow roda `scripts/close_delivered_issues.py` com o commit publicado: fecha as issues da linha `Entrega: #N` dos PRs integrados que estão no histórico desse commit (com comentário de PR, commit e run) e fecha a SPEC pai quando a última sub-issue fecha. Se o deploy falha ou é recusado, nada fecha. Rollback não reabre issue.
+
 Sem staging, o **primeiro** deploy de cada mudança de risco acontece em produção. Por isso a aprovação do environment é obrigatória, o smoke confere o commit no ar, o rollback é rápido e a funcionalidade com efeito externo novo entra atrás de feature flag desligada.
 
 ## Recuperação
