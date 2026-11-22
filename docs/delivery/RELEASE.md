@@ -8,13 +8,12 @@ Como uma mudança sai de um PR e chega a produção. As regras que decidem estã
 flowchart TD
   A[Agentes em checkouts isolados] -->|PR| B[CI do PR: typecheck, testes, build, E2E]
   B --> D[Revisão do QA no SHA exato]
-  D --> E[Fila de merge: main + PR, CI de novo]
+  D -->|dm_entrega enfileira| E[Fila de merge: main + PR, CI de novo]
   E -->|combinação falhou| A
   E -->|squash| F[main]
   F --> G[CI do push]
   G --> H[CD: ponta da main com CI verde]
-  H --> I[Aprovação do environment production]
-  I --> J[Build das imagens do commit, uma vez]
+  H --> J[Build das imagens do commit, uma vez]
   J --> K[Produção sobe as imagens]
   K --> L[Smoke: saúde e commit no ar]
   L -->|falhou| A
@@ -56,7 +55,7 @@ Terminado o deploy com o smoke verde, o job `close-issues` do mesmo workflow rod
 
 Quando o CD termina, com sucesso ou falha, o job `notify` comenta no card do Multica de cada entrega do intervalo publicado (do commit em produção antes do run até a ponta), mencionando o `dm_lider`, com commit, PR, run e, no sucesso, o que `/api/version` e `/version.json` devolvem. A entrega é o `DMTE-N` do título do PR (ou do nome da branch), e o card é a issue do Multica com esse identificador. O aviso nunca muda o resultado do deploy.
 
-Sem staging, o **primeiro** deploy de cada mudança de risco acontece em produção. Por isso a aprovação do environment é obrigatória, o smoke confere o commit no ar, o rollback é rápido e a funcionalidade com efeito externo novo entra atrás de feature flag desligada.
+Sem staging e sem aprovação manual, o **primeiro** deploy de cada mudança acontece em produção, sozinho, depois da fila. O que segura o risco: o QA no SHA exato, o CI e a fila validando a combinação, o smoke que confere o commit no ar, o rollback rápido (`deploy --rollback`) e a funcionalidade com efeito externo novo entrando atrás de feature flag desligada.
 
 ## Recuperação
 
@@ -82,6 +81,6 @@ Registro em `apps/api/src/feature-flags/feature-flags.ts`: chave, descrição, r
 
 ## Pendências
 
-1. **Aprovação humana antes de produção**: Settings → Environments → `production` → Required reviewers. Sem isso o deploy é automático quando o CI da `main` passa.
+1. **Sem aprovação manual antes de produção**: o environment `production` não tem revisores, e o deploy sobe sozinho quando o CI da `main` passa. Para voltar a exigir aprovação: Settings → Environments → `production` → Required reviewers.
 2. **Primeiro deploy pelo fluxo novo**: acompanhe o run.
 3. **Não coberto**: imagens fora do servidor (registro), deploy sem nenhuma indisponibilidade na troca e bot de atualização de dependências.
