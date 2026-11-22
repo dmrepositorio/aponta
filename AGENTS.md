@@ -30,4 +30,4 @@ Single-context: one `GLOSSARY.md` + `docs/adr/` at the repo root, created lazily
 
 ### Engineering methods and project profile
 
-The flow is `/spec` → `/plan` → `/build` + `/test` → `/review` → `/ship`, from `addyosmani/agent-skills` (pinned in `skills-lock.json`). Read `docs/agents/engineering-workflow.md` for the command → skill → agent map, role boundaries, visual validation and context transfer. Profiles aponta-sdd/aponta-tdd add project requirements/evidence. Preserve human decisions; an unresolved choice blocks its dependent action.
+The flow is `/spec` → `/plan` → `/build` + `/test` → `/review` → `/ship`, from `addyosmani/agent-skills` (pinned in `skills-lock.json`). Read `docs/agents/engineering-workflow.md` for the command → skill → agent map, role boundaries, visual validation and context transfer. The Aponta SPEC and TDD criteria are in the "Critérios do Aponta" section of that file. Preserve human decisions; an unresolved choice blocks its dependent action.
