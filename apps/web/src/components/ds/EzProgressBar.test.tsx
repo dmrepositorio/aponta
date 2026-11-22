@@ -33,4 +33,34 @@ describe('EzProgressBar', () => {
     expect(container.firstChild).toBeInTheDocument();
     // DOM validation could be tricky depending on the inner DOM structure for progress.
   });
+
+  describe('AC-07: semântica ARIA', () => {
+    it('expõe role progressbar com valuemin 0, valuemax 100 e valuenow', () => {
+      render(<EzProgressBar value={42} />);
+      const bar = screen.getByRole('progressbar');
+      expect(bar).toHaveAttribute('aria-valuemin', '0');
+      expect(bar).toHaveAttribute('aria-valuemax', '100');
+      expect(bar).toHaveAttribute('aria-valuenow', '42');
+    });
+
+    it('limita aria-valuenow a 100 quando o valor passa de 100', () => {
+      render(<EzProgressBar value={150} />);
+      expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '100');
+    });
+
+    it('limita aria-valuenow a 0 quando o valor é negativo', () => {
+      render(<EzProgressBar value={-10} />);
+      expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '0');
+    });
+
+    it('arredonda aria-valuenow', () => {
+      render(<EzProgressBar value={33.6} />);
+      expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '34');
+    });
+
+    it('aceita aria-label do chamador como nome acessível', () => {
+      render(<EzProgressBar value={50} aria-label="Progresso do SLA" />);
+      expect(screen.getByRole('progressbar', { name: 'Progresso do SLA' })).toBeInTheDocument();
+    });
+  });
 });

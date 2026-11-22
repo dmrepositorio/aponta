@@ -30,7 +30,15 @@ export const EzProgressBar = forwardRef<HTMLDivElement, EzProgressBarProps>(
     const clampedValue = Math.min(100, Math.max(0, value));
 
     return (
-      <div ref={ref} className={cn('flex flex-col gap-1 w-full', className)} {...props}>
+      <div
+        ref={ref}
+        role="progressbar"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={Math.round(clampedValue)}
+        className={cn('flex flex-col gap-1 w-full', className)}
+        {...props}
+      >
         {showLabel && (
           <div className="flex justify-end text-xs font-semibold text-gray-700">
             {Math.round(clampedValue)}%
