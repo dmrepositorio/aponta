@@ -1,6 +1,6 @@
 # Detalhe do ticket: SLA de resolução coerente entre selo, texto e barra (pausa)
 
-Identidade: DMTE-557, Tier 1 (recomendado), origem item 1 (P1) da auditoria DMTE-549, aprovado pelo Alfredo ("Vamos implementar"). Issue GitHub: a criar (ainda não existe). Base: `origin/main` @ 26dd770. Status da SPEC: decisões D1 a D5 tomadas pelo Alfredo; pronta para /plan.
+Identidade: DMTE-557, Tier 1 (recomendado), origem item 1 (P1) da auditoria DMTE-549, aprovado pelo Alfredo ("Vamos implementar"). Issue GitHub: dmrepositorio/aponta#361. Base: `origin/main` @ 26dd770. Status da SPEC: decisões D1 a D5 tomadas pelo Alfredo; pronta para /plan.
 
 ## Objetivo
 No detalhe do ticket em pausa de SLA (ex.: AP-2026-0001, "Aguardando Sankhya"), selo, texto e barra hoje se contradizem: selo "Dentro do prazo" (verde), texto "Vencido há 6h 22m" (vermelho), barra 100% verde. Passam a seguir um único critério de pausa, o mesmo da API. Usuário: atendente/admin que abre o ticket. Sucesso: nenhuma combinação contraditória em nenhum status de pausa.
