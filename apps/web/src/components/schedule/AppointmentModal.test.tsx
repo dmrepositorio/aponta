@@ -284,3 +284,83 @@ describe('compromisso que ignora a regra de apontamento (DMTE-462 T2)', () => {
     expect(screen.queryByLabelText('Ignora a regra de apontamento')).not.toBeInTheDocument();
   });
 });
+
+describe('descrição copiada do ticket como texto puro (GH-369)', () => {
+  const originalGet = vi.mocked(api.get).getMockImplementation()!;
+  afterEach(() => {
+    vi.mocked(api.get).mockImplementation(originalGet);
+  });
+
+  const descricaoPlaceholder = 'Detalhes ou pauta do compromisso...';
+
+  async function vincularTicket(
+    description: string,
+    opts: { onSave?: ReturnType<typeof vi.fn>; digitada?: string } = {},
+  ) {
+    vi.mocked(api.get).mockImplementation((url: string) => {
+      if (url === '/organizations' || url === '/service-desks') return Promise.resolve({ data: [] });
+      return Promise.resolve({
+        data: {
+          data: [{ id: 'tick-9', protocol: 'T-9', title: 'Chamado sintético', description, status: 'OPEN' }],
+          meta: { total: 1, page: 1, limit: 20, totalPages: 1 },
+        },
+      });
+    });
+    renderModal(
+      <AppointmentModal isOpen={true} onClose={vi.fn()} onSave={opts.onSave ?? vi.fn()} initialDate="2026-10-15" />,
+    );
+    if (opts.digitada !== undefined) {
+      fireEvent.change(screen.getByPlaceholderText(descricaoPlaceholder), { target: { value: opts.digitada } });
+    }
+    fireEvent.click(screen.getByRole('button', { name: /buscar chamado por protocolo/i }));
+    fireEvent.change(screen.getByPlaceholderText(/buscar por protocolo, título ou descrição/i), {
+      target: { value: 'sintético' },
+    });
+    fireEvent.click(await screen.findByText('Chamado sintético', undefined, { timeout: 2000 }));
+    return screen.getByPlaceholderText(descricaoPlaceholder) as HTMLTextAreaElement;
+  }
+
+  it('AC-01: descrição HTML do ticket entra como texto sem tag', async () => {
+    const campo = await vincularTicket('<p>Erro no emissão da TOP 1100 </p>');
+    expect(campo).toHaveValue('Erro no emissão da TOP 1100');
+  });
+
+  it('AC-03: HTML de 500 caracteres entra inteiro, sem reticências', async () => {
+    const texto = 'g'.repeat(500);
+    const campo = await vincularTicket(`<p>${texto}</p>`);
+    expect(campo).toHaveValue(texto);
+  });
+
+  it('AC-05: texto puro curto é copiado integralmente (caracterização)', async () => {
+    const campo = await vincularTicket('Detalhe do chamado de teste');
+    expect(campo).toHaveValue('Detalhe do chamado de teste');
+  });
+
+  it('AC-05: texto puro de 200 caracteres entra inteiro, sem o corte de 160', async () => {
+    const texto = 'h'.repeat(200);
+    const campo = await vincularTicket(texto);
+    expect(campo).toHaveValue(texto);
+  });
+
+  it('AC-06: script e img com javascript: não vazam para o campo', async () => {
+    const campo = await vincularTicket(
+      '<p>Ok</p><script>alert(1)</script><img src="javascript:alert(1)" onerror="alert(1)">',
+    );
+    expect(campo).toHaveValue('Ok');
+  });
+
+  it('AC-07: descrição já digitada não é sobrescrita e o título é preenchido (caracterização)', async () => {
+    const campo = await vincularTicket('<p>Texto do ticket</p>', { digitada: 'Minha pauta' });
+    expect(campo).toHaveValue('Minha pauta');
+    expect(screen.getByDisplayValue('Chamado sintético')).toBeInTheDocument();
+  });
+
+  it('AC-08: o payload salvo usa o texto puro, nunca HTML', async () => {
+    const onSave = vi.fn().mockResolvedValue(undefined);
+    await vincularTicket('<p>Erro no emissão da TOP 1100 </p>', { onSave });
+    fireEvent.click(screen.getByRole('button', { name: /^Salvar$/i }));
+    await waitFor(() =>
+      expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ description: 'Erro no emissão da TOP 1100' })),
+    );
+  });
+});
