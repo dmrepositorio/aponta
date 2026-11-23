@@ -33,6 +33,7 @@ test('search matches descriptionText, falls back for rows without it and keeps t
     agentX: randomUUID(),
     clientA: randomUUID(),
     clientB: randomUUID(),
+    clientLit: randomUUID(),
     tickets: {
       erro: randomUUID(),
       rd: randomUUID(),
@@ -60,14 +61,31 @@ test('search matches descriptionText, falls back for rows without it and keeps t
   const clientB = as(id.clientB, Role.CLIENT);
   const mine = new Set<string>(Object.values(id.tickets));
 
-  /** Ids das minhas fixtures devolvidos pela busca; confere que a coluna não vaza. */
-  async function search(headers: Record<string, string>, term: string): Promise<string[]> {
-    const response = await request.get(`/api/tickets?limit=100&search=${encodeURIComponent(term)}`, { headers });
-    expect(response.status(), `search=${term}`).toBe(200);
+  /**
+   * Ids das minhas fixtures devolvidos pelo filtro `param`; confere que a coluna não vaza.
+   * `deskId` escopa a busca à mesa do fixture: o admin enxerga o banco inteiro e o
+   * `limit=100` podia deixar as minhas linhas fora da página.
+   */
+  async function filter(
+    headers: Record<string, string>,
+    param: string,
+    term: string,
+    deskId?: string,
+  ): Promise<string[]> {
+    const scope = deskId ? `&serviceDeskId=${deskId}` : '';
+    const response = await request.get(`/api/tickets?limit=100${scope}&${param}=${encodeURIComponent(term)}`, {
+      headers,
+    });
+    expect(response.status(), `${param}=${term}`).toBe(200);
     const body = await response.json();
     for (const row of body.data) expect(row).not.toHaveProperty('descriptionText');
     return body.data.map((row: { id: string }) => row.id).filter((ticketId: string) => mine.has(ticketId));
   }
+
+  const search = (headers: Record<string, string>, term: string, deskId?: string) =>
+    filter(headers, 'search', term, deskId);
+  /** Busca global do admin, sempre escopada à mesa X do fixture. */
+  const adminSearch = (term: string) => search(admin, term, id.deskX);
 
   try {
     await db.organization.createMany({
@@ -82,9 +100,10 @@ test('search matches descriptionText, falls back for rows without it and keeps t
         { id: id.agentX, role: Role.AGENT },
         { id: id.clientA, role: Role.CLIENT, organizationId: id.orgA },
         { id: id.clientB, role: Role.CLIENT, organizationId: id.orgB },
+        { id: id.clientLit, role: Role.CLIENT, organizationId: id.orgA },
       ].map((user) => ({
         ...user,
-        name: `Busca ${user.role}`,
+        name: user.id === id.clientLit ? `Lit 100% ok_agora C:${String.fromCharCode(92)}dir` : `Busca ${user.role}`,
         email: `${user.id}@e2e.invalid`,
         password: 'unused-jwt-fixture',
       })),
@@ -94,6 +113,7 @@ test('search matches descriptionText, falls back for rows without it and keeps t
       [id.agentX, Role.AGENT],
       [id.clientA, Role.CLIENT],
       [id.clientB, Role.CLIENT],
+      [id.clientLit, Role.CLIENT],
     ] as const) {
       await linkFixtureUserToDefaultPermissionGroup(db, userId, role);
     }
@@ -116,11 +136,12 @@ test('search matches descriptionText, falls back for rows without it and keeps t
       title: string,
       description: string,
       descriptionText: string | null,
+      protocol = `E2E-${id.tickets[key]}`,
     ) =>
       db.ticket.create({
         data: {
           id: id.tickets[key],
-          protocol: `E2E-${id.tickets[key]}`,
+          protocol,
           title,
           description,
           descriptionText,
@@ -138,13 +159,15 @@ test('search matches descriptionText, falls back for rows without it and keeps t
       '<div>R&amp;D <a href="https://exemplo.test/x">link</a></div>',
       'R&D link',
     );
+    // Curingas literais no texto, no título, no protocolo e no nome do solicitante.
     await ticket(
       'literais',
-      id.clientA,
+      id.clientLit,
       id.deskX,
-      'Chamado gama',
+      `Chamado gama 100% ok_agora C:${backslash}dir`,
       `<p>100% ok_agora C:${backslash}dir</p>`,
       `100% ok_agora C:${backslash}dir`,
+      `E2E-%_${backslash}-${id.tickets.literais}`,
     );
     // Linha antiga, sem texto derivado: cai na descrição crua.
     await ticket('legado', id.clientA, id.deskX, 'Chamado delta', '<p>legado ANTIGO</p>', null);
@@ -159,27 +182,38 @@ test('search matches descriptionText, falls back for rows without it and keeps t
     const t = id.tickets;
 
     // AC-09: texto real casa, caixa não importa, entidade decodificada.
-    expect(await search(admin, 'Erro')).toEqual([t.erro]);
-    expect(await search(admin, 'erro')).toEqual([t.erro]);
-    expect(await search(admin, 'ERRO')).toEqual([t.erro]);
-    expect(await search(admin, 'R&D')).toEqual([t.rd]);
+    expect(await adminSearch('Erro')).toEqual([t.erro]);
+    expect(await adminSearch('erro')).toEqual([t.erro]);
+    expect(await adminSearch('ERRO')).toEqual([t.erro]);
+    expect(await adminSearch('R&D')).toEqual([t.rd]);
     // AC-09: nome de tag e de atributo não casam.
     for (const term of ['strong', 'div', 'href']) {
-      expect(await search(admin, term), term).toEqual([]);
+      expect(await adminSearch(term), term).toEqual([]);
     }
-    const byP = await search(admin, 'p');
+    const byP = await adminSearch('p');
     expect(byP).not.toContain(t.erro);
     expect(byP).not.toContain(t.rd);
     // Título e protocolo como antes.
-    expect(await search(admin, 'Chamado alfa')).toEqual([t.erro]);
-    expect(await search(admin, `E2E-${t.rd}`)).toEqual([t.rd]);
+    expect(await adminSearch('Chamado alfa')).toEqual([t.erro]);
+    expect(await adminSearch(`E2E-${t.rd}`)).toEqual([t.rd]);
     // AC-08: linha sem texto derivado continua achável pela descrição crua.
-    expect(await search(admin, 'legado')).toEqual([t.legado]);
+    expect(await adminSearch('legado')).toEqual([t.legado]);
     // AC-10: %, _ e barra invertida são literais; injeção não quebra nem traz tudo.
-    expect(await search(admin, '%')).toEqual([t.literais]);
-    expect(await search(admin, '_')).toEqual([t.literais]);
-    expect(await search(admin, backslash)).toEqual([t.literais]);
-    expect(await search(admin, "' OR 1=1 --")).toEqual([]);
+    expect(await adminSearch('%')).toEqual([t.literais]);
+    expect(await adminSearch('_')).toEqual([t.literais]);
+    expect(await adminSearch(backslash)).toEqual([t.literais]);
+    expect(await adminSearch("' OR 1=1 --")).toEqual([]);
+
+    // GH-386: number, titleContains e requesterQuery também tratam %, _ e barra invertida como literais.
+    for (const param of ['number', 'titleContains', 'requesterQuery']) {
+      for (const term of ['%', '_', backslash]) {
+        expect(await filter(admin, param, term, id.deskX), `${param}=${term}`).toEqual([t.literais]);
+      }
+      expect(await filter(admin, param, "' OR 1=1 --", id.deskX), `${param} injeção`).toEqual([]);
+      expect(await filter(admin, param, '100% OK_AGORA', id.deskX), `${param} caixa`).toEqual(
+        param === 'number' ? [] : [t.literais],
+      );
+    }
 
     // AC-11: cliente A não acha termo do cliente B; o dono acha; o atendente de outra mesa não.
     expect(await search(clientA, 'segredo-do-cliente-b')).toEqual([]);
@@ -197,9 +231,9 @@ test('search matches descriptionText, falls back for rows without it and keeps t
     await db.ticket.deleteMany({ where: { id: { in: [...mine] } } });
     await db.serviceDesk.deleteMany({ where: { id: { in: [id.deskX, id.deskY] } } });
     await db.permissionGroupUser.deleteMany({
-      where: { userId: { in: [id.admin, id.agentX, id.clientA, id.clientB] } },
+      where: { userId: { in: [id.admin, id.agentX, id.clientA, id.clientB, id.clientLit] } },
     });
-    await db.user.deleteMany({ where: { id: { in: [id.admin, id.agentX, id.clientA, id.clientB] } } });
+    await db.user.deleteMany({ where: { id: { in: [id.admin, id.agentX, id.clientA, id.clientB, id.clientLit] } } });
     await db.organization.deleteMany({ where: { id: { in: [id.orgA, id.orgB] } } });
     await db.$disconnect();
   }
