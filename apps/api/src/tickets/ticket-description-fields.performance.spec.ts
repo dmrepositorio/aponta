@@ -7,11 +7,12 @@ import { ticketDescriptionFields } from './ticket-description-fields';
  * buscável) em tempo linear. `withoutVoidSlash` usava `\s*\/>` sem âncora,
  * quadrática em corridas de espaço (centenas de ms a segundos por requisição).
  *
- * O limite de 200 ms é folgado para CI; o valor medido localmente fica na casa
- * de poucos milissegundos depois da correção.
+ * O orçamento de 500 ms dá margem para runner compartilhado e lento (o pior
+ * caso legítimo mede 20 a 75 ms), e uma regressão quadrática continua pega: o
+ * defeito antigo levava 8 a 12 s neste mesmo limite de 100000 caracteres.
  */
 const DTO_LIMIT = 100000;
-const BUDGET_MS = 200;
+const BUDGET_MS = 500;
 
 const fill = (unit: string, prefix = '', suffix = '') =>
   (prefix + unit.repeat(DTO_LIMIT) + suffix).slice(0, DTO_LIMIT);
@@ -51,7 +52,7 @@ describe('ticketDescriptionFields: entrada hostil no limite do DTO (GH-390 item 
     return Number(process.hrtime.bigint() - start) / 1e6;
   };
 
-  it.each(HOSTILE)('%s: menos de 200 ms', (_nome, input) => {
+  it.each(HOSTILE)('%s: menos de 500 ms', (_nome, input) => {
     expect(input.length).toBeLessThanOrEqual(DTO_LIMIT);
     measure(input); // aquecimento do JIT
     const ms = measure(input);
