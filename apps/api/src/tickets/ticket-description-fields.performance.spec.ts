@@ -31,6 +31,10 @@ const HOSTILE: Array<[string, string]> = [
   ['title com ">" repetido', fill('<x title=">" ')],
   ['href desconhecido repetido', fill('<x href=a ')],
   ['onclick repetido', fill('<x onclick=a ')],
+  // GH-390 item 3: referências numéricas sem ";" passam por um regex a mais.
+  ['"&#" + dígitos longos', '<x href="&#' + '1'.repeat(DTO_LIMIT - 20) + ';">'],
+  ['"&#1" repetido', fill('<x href="&#1&#1&#x1&#x', '')],
+  ['"&#x" + hexa longo', '<x href="&#x' + 'a'.repeat(DTO_LIMIT - 20) + ';">'],
 ];
 
 describe('ticketDescriptionFields: entrada hostil no limite do DTO (GH-390 item 1)', () => {

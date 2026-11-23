@@ -123,6 +123,20 @@ const OPTIONS: sanitizeHtml.IOptions = {
   },
 };
 
+// GH-390 item 3: o navegador decodifica `&#106avascript:` e `&#x6A&#x61vascript:`
+// (referência numérica sem `;`) em valor de atributo; o htmlparser2 8.0.2 não.
+// Só a cópia que vai ao parser ganha o `;` que falta (o texto gravado não é
+// tocado). Hexadecimal é guloso como no navegador (`&#x6Aa` lê `6Aa`).
+const UNTERMINATED_NUMERIC_REF_RE =
+  /&#(?:(\d+)(?![\d;])|([xX][0-9a-fA-F]+)(?![0-9a-fA-F;]))/g;
+
+function withTerminatedNumericRefs(input: string): string {
+  return input.replace(
+    UNTERMINATED_NUMERIC_REF_RE,
+    (_m, dec?: string, hex?: string) => `&#${dec ?? hex};`,
+  );
+}
+
 function hasDangerousAttributeByParser(input: string): boolean {
   if (!TAG_START_RE.test(input)) return false;
   let found = false;
@@ -143,7 +157,7 @@ function hasDangerousAttributeByParser(input: string): boolean {
     },
     { decodeEntities: true },
   );
-  parser.write(input);
+  parser.write(withTerminatedNumericRefs(input));
   parser.end();
   return found;
 }
