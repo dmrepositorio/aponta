@@ -203,6 +203,32 @@ describe('ReportsService', () => {
       expect(res.ticketSummary?.paused).toBe(2);
     });
 
+    it('does not count PENDING_APPROVAL tickets in the paused KPI, but keeps them in byStatus (#366)', async () => {
+      const now = new Date();
+      const base = {
+        createdAt: now,
+        updatedAt: now,
+        responseDeadline: null,
+        resolveDeadline: null,
+        slaAccumulatedPauseTime: 0,
+        slaPausedAt: null,
+      };
+      mockPrisma.ticket.findMany.mockResolvedValue([
+        { ...base, status: 'PENDING_APPROVAL' },
+        { ...base, status: 'PENDING_CUSTOMER' },
+        { ...base, status: 'IN_PROGRESS' },
+      ]);
+
+      const res = await service.getSummary({ id: 'admin', role: Role.ADMIN });
+
+      expect(res.ticketSummary?.paused).toBe(1);
+      expect(res.byStatus).toEqual({
+        PENDING_APPROVAL: 1,
+        PENDING_CUSTOMER: 1,
+        IN_PROGRESS: 1,
+      });
+    });
+
     it('flags an open ticket as SLA-breached once its deadline has passed', async () => {
       const now = new Date();
       mockPrisma.ticket.findMany.mockResolvedValue([

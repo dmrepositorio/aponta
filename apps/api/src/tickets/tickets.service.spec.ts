@@ -795,7 +795,7 @@ describe('TicketsService', () => {
       });
     });
 
-    it('filters to ON_HOLD/PENDING_CUSTOMER/PENDING_APPROVAL/PENDING_SANKHYA when paused=true (dashboard "Pausados" KPI, DMTE-490 AC-03)', async () => {
+    it('filters to ON_HOLD/PENDING_CUSTOMER/PENDING_SANKHYA (never PENDING_APPROVAL) when paused=true (dashboard "Pausados" KPI, DMTE-490 AC-03, #366)', async () => {
       mockPrismaService.ticket.findMany.mockResolvedValue([]);
 
       await service.findAll(
@@ -809,7 +809,6 @@ describe('TicketsService', () => {
             in: [
               TicketStatus.ON_HOLD,
               TicketStatus.PENDING_CUSTOMER,
-              TicketStatus.PENDING_APPROVAL,
               PENDING_SANKHYA,
             ],
           },

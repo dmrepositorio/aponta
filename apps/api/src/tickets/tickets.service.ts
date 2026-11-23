@@ -49,13 +49,6 @@ const CLOSED_STATUSES: TicketStatus[] = [
   TicketStatus.CLOSED,
 ];
 
-const PAUSED_STATUSES: TicketStatus[] = [
-  TicketStatus.ON_HOLD,
-  TicketStatus.PENDING_CUSTOMER,
-  TicketStatus.PENDING_APPROVAL,
-  TicketStatus.PENDING_SANKHYA,
-];
-
 /**
  * SLA offsets in hours, per priority, as specified in the task brief.
  */
@@ -662,7 +655,7 @@ export class TicketsService {
       }
     }
     if (wantsPaused) {
-      where.status = { in: PAUSED_STATUSES };
+      where.status = { in: SLA_PAUSE_STATUSES };
     }
     // Busca avançada "Fechados" shortcut (D4): an explicit `status` still
     // wins, same precedence as every other aggregate flag above.

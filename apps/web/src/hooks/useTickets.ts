@@ -111,7 +111,7 @@ export interface TicketFiltersInput {
   mine?: boolean;
   /** "Não atendidos" KPI: open tickets with no agent assigned. */
   unassigned?: boolean;
-  /** "Pausados" KPI: ON_HOLD / PENDING_CUSTOMER / PENDING_APPROVAL / PENDING_SANKHYA. */
+  /** "Pausados" KPI: ON_HOLD / PENDING_CUSTOMER / PENDING_SANKHYA (status que pausam o SLA). */
   paused?: boolean;
   /** "Vencidos" KPI: SLA response or resolve deadline breached. */
   overdue?: boolean;

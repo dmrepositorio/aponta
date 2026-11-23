@@ -4,6 +4,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CurrentUserPayload } from '../tickets/decorators/current-user.decorator';
 import { TenantHelper } from '../core/security/tenant.helper';
 import { Role, TicketStatus } from '@prisma/client';
+import { SLA_PAUSE_STATUSES } from '../service-desks/desk-policy';
 import { WorkloadReportItemDto, BillingReportItemDto, DashboardSummaryDto, ResponseTimeComparisonDto } from './dto/report.dto';
 import { getSlaStatus } from '../scheduling/sla-status';
 import { PermissionsService } from '../permissions/permissions.service';
@@ -337,12 +338,7 @@ export class ReportsService {
           ticketSummary.inProgress += 1;
         }
 
-        if (
-          ticket.status === TicketStatus.ON_HOLD ||
-          ticket.status === TicketStatus.PENDING_CUSTOMER ||
-          ticket.status === TicketStatus.PENDING_APPROVAL ||
-          ticket.status === TicketStatus.PENDING_SANKHYA
-        ) {
+        if (SLA_PAUSE_STATUSES.includes(ticket.status)) {
           ticketSummary.paused += 1;
         }
 
