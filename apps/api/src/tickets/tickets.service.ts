@@ -25,6 +25,7 @@ import { UpdateTicketDto } from './dto/update-ticket.dto';
 import { TICKET_SORT_FIELDS, TicketQueryDto } from './dto/ticket-query.dto';
 import { CurrentUserPayload } from './decorators/current-user.decorator';
 import { TenantHelper } from '../core/security/tenant.helper';
+import { escapeLikePattern } from '../common/escape-like-pattern';
 import { addBusinessHours } from '../scheduling/business-hours';
 import { getSlaStatus } from '../scheduling/sla-status';
 import {
@@ -581,7 +582,7 @@ export class TicketsService {
       // O `contains` do Prisma não escapa os curingas do LIKE: sem isto `%` e `_`
       // casariam tudo e a barra invertida nunca casaria. Escapa com a barra
       // invertida, o escape padrão do Postgres, em todos os ramos.
-      const term = query.search.replace(/[\\%_]/g, '\\$&');
+      const term = escapeLikePattern(query.search);
       where.OR = [
         { title: { contains: term, mode: 'insensitive' } },
         { protocol: { contains: term, mode: 'insensitive' } },
@@ -597,16 +598,17 @@ export class TicketsService {
       ];
     }
     if (query.number) {
-      where.protocol = { contains: query.number, mode: 'insensitive' };
+      where.protocol = { contains: escapeLikePattern(query.number), mode: 'insensitive' };
     }
     if (query.titleContains) {
-      where.title = { contains: query.titleContains, mode: 'insensitive' };
+      where.title = { contains: escapeLikePattern(query.titleContains), mode: 'insensitive' };
     }
     if (query.requesterQuery) {
+      const requesterTerm = escapeLikePattern(query.requesterQuery);
       requesterConditions.push({
         OR: [
-          { name: { contains: query.requesterQuery, mode: 'insensitive' } },
-          { email: { contains: query.requesterQuery, mode: 'insensitive' } },
+          { name: { contains: requesterTerm, mode: 'insensitive' } },
+          { email: { contains: requesterTerm, mode: 'insensitive' } },
         ],
       });
     }
