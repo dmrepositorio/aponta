@@ -1,3 +1,4 @@
+import { Parser } from 'htmlparser2';
 import sanitizeHtml from 'sanitize-html';
 import { buildSanitizeOptions } from '../common/sanitize/sanitize-html-base';
 
@@ -51,6 +52,17 @@ const KNOWN_TAG_RE = new RegExp(`<\/?(${[...KNOWN_HTML_TAGS].join('|')})(?![a-z0
 // Atributo on* dentro de uma tag, com espaço, quebra de linha, tab, `/` ou
 // aspas antes do nome.
 const EVENT_HANDLER_IN_TAG_RE = /<[a-z][^<>]*[\s/"'`]on[a-z]+\s*=/i;
+
+// GH-379: tag desconhecida (fora de KNOWN_HTML_TAGS, inclusive custom element
+// com hífen) com esquema perigoso em atributo de URL também vai ao
+// sanitizador. O portão é barato e linear (`[^<>]*` não atravessa `<`, então
+// cada início de tag varre só a própria corrida); só se ele passar o
+// htmlparser2 lê os atributos, já com as entidades decodificadas.
+const URL_ATTR_IN_TAG_RE = /<[a-z][^<>]*(?:href|src|action)\s*=/i;
+const URL_ATTRIBUTES: ReadonlySet<string> = new Set([
+  'href', 'src', 'action', 'formaction', 'xlink:href',
+]);
+const DANGEROUS_SCHEME_RE = /^(?:javascript|vbscript|data):/i;
 
 const NUMERIC_SIZE_RE = /^\d{1,5}$/;
 const SAFE_ABSOLUTE_URL_RE = /^(https?:\/\/|mailto:)/i;
@@ -107,8 +119,34 @@ const OPTIONS: sanitizeHtml.IOptions = {
   },
 };
 
+function hasDangerousSchemeInUnknownTag(input: string): boolean {
+  if (!URL_ATTR_IN_TAG_RE.test(input)) return false;
+  let found = false;
+  const parser = new Parser(
+    {
+      onopentag(name, attribs) {
+        if (found || KNOWN_HTML_TAGS.has(name)) return;
+        for (const [attr, value] of Object.entries(attribs)) {
+          if (!URL_ATTRIBUTES.has(attr)) continue;
+          // Mesma normalização de isSafeUrl (controles e espaços removidos).
+          const url = value.replace(/[\u0000- \u007f-\u009f]+/g, '');
+          if (DANGEROUS_SCHEME_RE.test(url)) found = true;
+        }
+      },
+    },
+    { decodeEntities: true },
+  );
+  parser.write(input);
+  parser.end();
+  return found;
+}
+
 export function hasHtmlMarkup(input: string): boolean {
-  return KNOWN_TAG_RE.test(input) || EVENT_HANDLER_IN_TAG_RE.test(input);
+  return (
+    KNOWN_TAG_RE.test(input) ||
+    EVENT_HANDLER_IN_TAG_RE.test(input) ||
+    hasDangerousSchemeInUnknownTag(input)
+  );
 }
 
 export function sanitizeTicketDescription(input: string): string {
