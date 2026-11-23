@@ -168,6 +168,11 @@ jobs:
       - name: Seed database
         run: pnpm exec nx run api:prisma-seed
 
+      - name: Backfill de descriptionText contra o banco real (GH-370 T2)
+        run: |
+          pnpm exec nx run api:build --skip-nx-cache
+          node scripts/backfill_description_text_check.mjs
+
       - name: Run E2E suite
         run: pnpm exec nx run web-e2e:e2e
 

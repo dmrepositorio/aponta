@@ -116,7 +116,13 @@ describe('varredura de escritores de Ticket.description (AC-07)', () => {
       ...listTsFiles(join(REPO_ROOT, 'apps/api/src')),
       join(REPO_ROOT, 'apps/api/prisma/seed.ts'),
       ...listTsFiles(join(REPO_ROOT, 'scripts')),
-    ].filter((f) => !f.endsWith('ticket-description-fields.ts'));
+    ].filter(
+      (f) =>
+        !f.endsWith('ticket-description-fields.ts') &&
+        // GH-370 T2: o backfill é o único escritor de descriptionText fora do
+        // helper, liberado por nome (não amplia o detector: isso é a #379).
+        !/[\\/]backfill-ticket-description-text(\.cli)?\.ts$/.test(f),
+    );
 
     const offenders = files.flatMap((file) =>
       findRawDescriptionWrites(readFileSync(file, 'utf8')).map((o) => `${file}: ${o}`),
