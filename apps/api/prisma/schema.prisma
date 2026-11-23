@@ -449,7 +449,7 @@ model Ticket {
   description             String
   // GH-370: texto visível derivado de `description` (nulável até o backfill).
   descriptionText         String?
-  slaPausedAt            DateTime?
+  slaPausedAt             DateTime?
   slaAccumulatedPauseTime Int            @default(0)
   source                  TicketSource   @default(WEB)
   status                  TicketStatus   @default(OPEN)

@@ -73,5 +73,13 @@ export function ticketDescriptionFields(description: string): {
     });
   }
 
-  return { description: sanitized, descriptionText: htmlToSearchText(sanitized) };
+  let descriptionText: string;
+  try {
+    descriptionText = htmlToSearchText(sanitized);
+  } catch {
+    // Mesmo contrato do sanitizador: 400 genérico, sem eco do conteúdo, nunca 500.
+    throw new BadRequestException('Descrição inválida');
+  }
+
+  return { description: sanitized, descriptionText };
 }

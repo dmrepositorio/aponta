@@ -63,6 +63,15 @@ Sem staging e sem aprovação manual, o **primeiro** deploy de cada mudança aco
 - **Banco**: rollback de código não desfaz migração. Migrações seguem expandir e contrair: a versão anterior do código precisa funcionar com o schema novo. Para desfazer dado, o caminho é o backup (`scripts/backup.sh`, dump diário com sete dias de retenção), decidido pelo usuário.
 - **Efeitos externos**: e-mail enviado não volta.
 
+## Migração que falha
+
+Uma migração que falha no `prisma migrate deploy` (por exemplo, `lock_timeout` estourado em `ALTER TABLE "Ticket"`) fica marcada como falha em `_prisma_migrations`. O deploy seguinte recusa com P3009 até alguém resolver; o CD não faz isso e repetir o CD sozinho não adianta. A API anterior continua no ar (o serviço `migrate` roda antes do `api`), então não há queda, mas as entregas seguintes ficam travadas.
+
+1. **Reconhecer**: o `CD (Produção)` falha no serviço `migrate`; o log mostra o erro da migração (ex.: `canceling statement due to lock timeout`) ou, nos deploys seguintes, P3009.
+2. **Confirmar o estado** (usuário, no servidor): em `_prisma_migrations`, a linha da migração tem `finished_at` nulo e `rolled_back_at` nulo; e a coluna/objeto da migração NÃO existe (ex.: `d "Ticket"` sem `descriptionText`). Se a coluna existe, a migração aplicou parcialmente: pare e decida com o usuário antes de qualquer comando.
+3. **Marcar como revertida** (usuário, no servidor; agentes não executam): `prisma migrate resolve --rolled-back <nome-da-migração>`, por exemplo `20261122120000_ticket_description_text`, pelo serviço `migrate` ou pelo comando equivalente do `docker-compose.yml`.
+4. **Reentregar**: re-rodar o `CD (Produção)` para o mesmo SHA (novo deploy). A migração roda de novo; se o `lock_timeout` voltar a estourar, repetir fora do pico ou depois de a transação longa terminar.
+
 ## Feature flags
 
 Registro em `apps/api/src/feature-flags/feature-flags.ts`: chave, descrição, responsável, valor padrão e data de remoção. O valor por ambiente vem de `FEATURE_<CHAVE>` no arquivo de ambiente; `GET /api/feature-flags` devolve os valores e `useFeatureFlag` os lê no front, desligado por padrão em caso de dúvida. O teste do registro falha no CI quando uma flag passa da data de remoção.
