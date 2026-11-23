@@ -27,7 +27,7 @@ Não há manifest, atestado de status nem etapa de staging.
 
 ## Regras
 
-- WIP 1 entrega; até dois tickets liberados da mesma entrega podem andar em paralelo, cada um em worktree novo, exclusivo e limpo. Branch curta e PR; retome a branch existente; nunca force push na `main`, nunca reset/stash/limpeza de trabalho alheio.
+- WIP 1 entrega. Trabalhe na pasta do projeto, com uma branch por entrega, reaproveitando `node_modules`: sem worktree e sem reinstalar pacotes; os tickets da mesma entrega rodam em sequência (worktree só se o humano pedir). Depois do deploy, o `dm_entrega` deixa o checkout em `main` limpo e apaga a branch da entrega (o repositório também a apaga ao integrar). Branch curta e PR; retome a branch existente; nunca force push na `main`, nunca reset/stash/limpeza de trabalho alheio.
 - Prática de TDD (`test-driven-development`): o teste que descreve o comportamento falha por asserção antes da implementação, e passa depois. Erro de import/setup não é RED: crie um stub importável e neutro primeiro. Registre no PR qual teste falhou e qual comando o provou. Nunca enfraqueça, pule ou apague teste para ficar verde.
 - Mudança de comportamento com efeito externo entra atrás de feature flag registrada (`apps/api/src/feature-flags`) com dono, padrão e data de remoção.
 - Reuse o DS (`apps/web/src/components/ds`) e os tokens; componente reutilizável novo ou alterado ganha story. Não introduza Carbon nem Next.js.
