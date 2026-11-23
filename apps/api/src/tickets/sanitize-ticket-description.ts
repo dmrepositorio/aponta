@@ -64,7 +64,7 @@ const EVENT_HANDLER_IN_TAG_RE = /<[a-z][^<>]*[\s/"'`]on[a-z]+\s*=/i;
 const TAG_START_RE = /<[a-z]/i;
 const EVENT_ATTR_NAME_RE = /^on[a-z]+$/i;
 const URL_ATTRIBUTES: ReadonlySet<string> = new Set([
-  'href', 'src', 'action', 'formaction', 'xlink:href',
+  'href', 'src', 'action', 'formaction', 'xlink:href', 'poster', 'data',
 ]);
 const DANGEROUS_SCHEME_RE = /^(?:javascript|vbscript|data):/i;
 
