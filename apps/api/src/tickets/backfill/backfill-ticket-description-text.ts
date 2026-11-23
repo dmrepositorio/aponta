@@ -84,6 +84,15 @@ export function parseBackfillArgs(argv: string[]): BackfillOptions {
   return options;
 }
 
+/** Falha de conversão aponta o id do ticket, nunca o conteúdo da descrição. */
+function convert(row: PendingRow): string {
+  try {
+    return htmlToSearchText(row.description);
+  } catch (error) {
+    throw new Error(`falha ao converter a descrição do ticket ${row.id}`, { cause: error });
+  }
+}
+
 export async function runBackfill(
   store: BackfillStore,
   options: BackfillOptions,
@@ -116,7 +125,7 @@ export async function runBackfill(
 
     if (!options.dryRun) {
       const written = await store.writeBatch(
-        rows.map((row) => ({ ...row, descriptionText: htmlToSearchText(row.description) })),
+        rows.map((row) => ({ ...row, descriptionText: convert(row) })),
         options.all,
       );
       processed += written;

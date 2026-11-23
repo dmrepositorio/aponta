@@ -1,3 +1,4 @@
+import * as converter from '../html-to-search-text';
 import {
   parseBackfillArgs,
   runBackfill,
@@ -215,5 +216,37 @@ describe('runBackfill', () => {
 
     expect(store.rows[0].descriptionText).toBe('editada');
     expect(report.skipped).toBe(1);
+  });
+
+  it('falha de conversão numa linha aponta o id do ticket, sem o conteúdo, e deixa o que já foi gravado (retomável)', async () => {
+    const secret = 'conteudo-sensivel-789';
+    const store = new FakeStore([
+      legacy(1, '<p>a</p>'),
+      legacy(2, secret),
+      legacy(3, '<p>c</p>'),
+    ]);
+    const real = converter.htmlToSearchText;
+    jest.spyOn(converter, 'htmlToSearchText').mockImplementation((html) => {
+      if (html === secret) throw new Error(`parser falhou com ${secret}`);
+      return real(html);
+    });
+
+    let caught: unknown;
+    try {
+      await runBackfill(store, opts({ batchSize: 1 }));
+    } catch (error) {
+      caught = error;
+    } finally {
+      jest.restoreAllMocks();
+    }
+
+    expect(caught).toBeInstanceOf(Error);
+    const message = (caught as Error).message;
+    expect(message).toContain(id(2));
+    expect(message).not.toContain(secret);
+    expect(store.rows.map((r) => r.descriptionText)).toEqual(['a', null, null]);
+    // reexecutar (agora sem falha) termina o trabalho
+    const second = await runBackfill(store, opts({ batchSize: 1 }));
+    expect(second.remaining).toBe(0);
   });
 });

@@ -15,7 +15,32 @@ import pg from 'pg';
 const ARTIFACT = resolve('dist/apps/api/backfill-ticket-description-text.js');
 const PREFIX = 'bf370-';
 
-if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL não definida');
+// Este script INSERE e APAGA linhas de Ticket. Antes de qualquer conexão ou escrita,
+// recusa banco que não seja local/descartável: 127.0.0.1, localhost ou ::1 (o Postgres
+// do job E2E do CI e do scripts/e2e_isolated.sh). Outro host só com o opt-in nomeado
+// abaixo, que NUNCA entra no CI nem no e2e_isolated. Nunca imprime a URL nem credencial.
+const LOCAL_HOSTS = new Set(['127.0.0.1', 'localhost', '[::1]', '::1']);
+const OPT_IN = 'BACKFILL_CHECK_ALLOW_DESTRUCTIVE';
+function refuse(reason) {
+  console.error(
+    `recusado: ${reason}. Este check insere e apaga linhas de Ticket; rode só contra banco local/descartável ` +
+      `(127.0.0.1 ou localhost). Para forçar contra outro host, defina ${OPT_IN}=1 por sua conta e risco.`,
+  );
+  process.exit(1);
+}
+if (!process.env.DATABASE_URL) {
+  console.error('DATABASE_URL não definida');
+  process.exit(1);
+}
+if (process.env[OPT_IN] !== '1') {
+  let host;
+  try {
+    host = new URL(process.env.DATABASE_URL).hostname;
+  } catch {
+    refuse('DATABASE_URL não é uma URL válida');
+  }
+  if (!LOCAL_HOSTS.has(host)) refuse(`o host "${host}" não é local`);
+}
 if (!existsSync(ARTIFACT)) throw new Error(`artefato ausente: ${ARTIFACT} (rode api:build)`);
 
 const connectionString = process.env.DATABASE_URL.replace(/\?.*$/, '');

@@ -70,6 +70,7 @@ jobs:
           python3 -m unittest discover -s scripts -p test_aponta_release.py -v
           python3 -m unittest discover -s scripts -p test_close_delivered_issues.py -v
           python3 -m unittest discover -s scripts -p test_avisar_card.py -v
+          python3 -m unittest discover -s scripts -p test_backfill_check_guard.py -v
           python3 -m unittest discover -s scripts -p test_engineering_skills.py -v
           python3 scripts/check_engineering_skills.py
           python3 -m unittest discover -s scripts -p test_agent_skills.py -v
