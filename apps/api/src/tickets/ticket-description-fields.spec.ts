@@ -1,4 +1,5 @@
 import { BadRequestException, Logger } from '@nestjs/common';
+import * as converter from './html-to-search-text';
 import * as sanitizer from './sanitize-ticket-description';
 import { ticketDescriptionFields } from './ticket-description-fields';
 
@@ -71,6 +72,28 @@ describe('ticketDescriptionFields', () => {
         'conteudo-sensivel-123',
       );
       expect((caught as BadRequestException).message).toBe('Descrição inválida');
+    });
+  });
+
+  describe('GH-370: falha da conversão para texto buscável', () => {
+    it('lança 400 genérico sem eco do conteúdo, nunca 500', () => {
+      const secret = '<p>conteudo-sensivel-456</p>';
+      jest.spyOn(converter, 'htmlToSearchText').mockImplementation(() => {
+        throw new Error(`falha interna com ${secret}`);
+      });
+
+      let caught: unknown;
+      try {
+        ticketDescriptionFields(secret);
+      } catch (error) {
+        caught = error;
+      }
+
+      expect(caught).toBeInstanceOf(BadRequestException);
+      expect((caught as BadRequestException).message).toBe('Descrição inválida');
+      expect(JSON.stringify((caught as BadRequestException).getResponse())).not.toContain(
+        'conteudo-sensivel-456',
+      );
     });
   });
 
