@@ -549,7 +549,9 @@ describe('TicketsService', () => {
       });
     });
 
-    it('applies a case-insensitive search filter across title/protocol/description', async () => {
+    // GH-370 T3: a busca de descrição passa a casar `descriptionText` (texto visível);
+    // só a linha ainda sem texto derivado cai na descrição crua.
+    it('applies a case-insensitive search filter across title/protocol/descriptionText, falling back to description for rows without text', async () => {
       mockPrismaService.ticket.findMany.mockResolvedValue([]);
 
       await service.findAll(
@@ -562,13 +564,102 @@ describe('TicketsService', () => {
           OR: [
             { title: { contains: 'printer', mode: 'insensitive' } },
             { protocol: { contains: 'printer', mode: 'insensitive' } },
-            { description: { contains: 'printer', mode: 'insensitive' } },
+            { descriptionText: { contains: 'printer', mode: 'insensitive' } },
+            {
+              AND: [
+                { descriptionText: null },
+                { description: { contains: 'printer', mode: 'insensitive' } },
+              ],
+            },
           ],
         },
         skip: 0,
         take: 20,
         orderBy: { createdAt: 'desc' },
         include: expect.any(Object),
+      });
+    });
+
+    describe('GH-370 T3: busca sobre descriptionText', () => {
+      const searchOr = (term: string) => [
+        { title: { contains: term, mode: 'insensitive' } },
+        { protocol: { contains: term, mode: 'insensitive' } },
+        { descriptionText: { contains: term, mode: 'insensitive' } },
+        {
+          AND: [
+            { descriptionText: null },
+            { description: { contains: term, mode: 'insensitive' } },
+          ],
+        },
+      ];
+      const whereOf = () => mockPrismaService.ticket.findMany.mock.calls[0][0].where;
+
+      beforeEach(() => {
+        mockPrismaService.ticket.findMany.mockResolvedValue([]);
+        mockPrismaService.ticket.count.mockResolvedValue(0);
+      });
+
+      it('AC-09: nome de tag e de atributo não são o alvo da busca (a coluna da descrição é o texto derivado)', async () => {
+        for (const term of ['strong', 'div', 'p', 'href']) {
+          mockPrismaService.ticket.findMany.mockClear();
+          await service.findAll({ search: term }, { id: 'admin-1', role: Role.ADMIN });
+          const or = whereOf().OR;
+          // nenhum ramo compara o HTML cru da descrição, exceto o fallback de linha sem texto
+          expect(or).toContainEqual({ descriptionText: { contains: term, mode: 'insensitive' } });
+          expect(or).not.toContainEqual({ description: { contains: term, mode: 'insensitive' } });
+        }
+      });
+
+      it('AC-10: %, _, barra invertida e tentativa de injeção seguem como valor literal do contains (Prisma parametriza e escapa)', async () => {
+        for (const term of ['%', '_', String.fromCharCode(92), "' OR 1=1 --"]) {
+          mockPrismaService.ticket.findMany.mockClear();
+          await service.findAll({ search: term }, { id: 'admin-1', role: Role.ADMIN });
+          expect(whereOf()).toEqual({ OR: searchOr(term) });
+        }
+      });
+
+      it.each([
+        ['CLIENT', { id: 'client-a', role: Role.CLIENT }, { requesterId: 'client-a' }],
+        [
+          'CLIENT_MASTER',
+          { id: 'master-a', role: Role.CLIENT_MASTER, organizationId: 'org-a' },
+          { requester: { organizationId: 'org-a' } },
+        ],
+      ])('AC-11: %s buscando mantém o escopo de tenant junto da busca', async (_name, user, scope) => {
+        await service.findAll({ search: 'segredo' }, user as any);
+        expect(whereOf()).toEqual({ ...scope, OR: searchOr('segredo') });
+      });
+
+      it('AC-11: atendente buscando mantém o escopo de mesas (não o substitui pelo OR da busca)', async () => {
+        await service.findAll({ search: 'segredo' }, { id: 'agent-1', role: Role.AGENT });
+        const where = whereOf();
+        expect(where.serviceDesk).toEqual({
+          OR: [
+            { agents: { some: { id: 'agent-1' } } },
+            { agentGroups: { some: { members: { some: { id: 'agent-1' } } } } },
+            { allowCrossDeskInteraction: true },
+          ],
+        });
+        expect(where.OR).toEqual(searchOr('segredo'));
+      });
+
+      it('AC-13: filtros combinados continuam ao lado da busca', async () => {
+        await service.findAll(
+          { search: 'erro', status: TicketStatus.OPEN, serviceDeskId: 'desk-1', page: '2', limit: '5' },
+          { id: 'admin-1', role: Role.ADMIN },
+        );
+        expect(mockPrismaService.ticket.findMany).toHaveBeenCalledWith({
+          where: { status: TicketStatus.OPEN, serviceDeskId: 'desk-1', OR: searchOr('erro') },
+          skip: 5,
+          take: 5,
+          orderBy: { createdAt: 'desc' },
+          include: expect.any(Object),
+        });
+      });
+
+      it('sem search não há OR de descrição', async () => {
+        await service.findAll({}, { id: 'admin-1', role: Role.ADMIN });
+        expect(whereOf()).toEqual({});
       });
     });
 
