@@ -53,12 +53,16 @@ const KNOWN_TAG_RE = new RegExp(`<\/?(${[...KNOWN_HTML_TAGS].join('|')})(?![a-z0
 // aspas antes do nome.
 const EVENT_HANDLER_IN_TAG_RE = /<[a-z][^<>]*[\s/"'`]on[a-z]+\s*=/i;
 
-// GH-379: tag desconhecida (fora de KNOWN_HTML_TAGS, inclusive custom element
-// com hífen) com esquema perigoso em atributo de URL também vai ao
-// sanitizador. O portão é barato e linear (`[^<>]*` não atravessa `<`, então
-// cada início de tag varre só a própria corrida); só se ele passar o
-// htmlparser2 lê os atributos, já com as entidades decodificadas.
-const URL_ATTR_IN_TAG_RE = /<[a-z][^<>]*(?:href|src|action)\s*=/i;
+// GH-379 / GH-390: tag desconhecida (fora de KNOWN_HTML_TAGS, inclusive custom
+// element com hífen) com esquema perigoso em atributo de URL, ou qualquer tag
+// com atributo on* com valor, também vai ao sanitizador. Quem decide é o
+// htmlparser2 (linear, já com as entidades decodificadas e ciente de aspas: um
+// `>` dentro de `title=">"` não encerra a tag). Os regex por trás de
+// `[^<>]*` não conheciam aspas (GH-390 item 2); aqui eles só sobram como
+// atalho barato para o que já era tratado como HTML. O prefiltro `<[a-z]` evita
+// o parser quando não há início de tag.
+const TAG_START_RE = /<[a-z]/i;
+const EVENT_ATTR_NAME_RE = /^on[a-z]+$/i;
 const URL_ATTRIBUTES: ReadonlySet<string> = new Set([
   'href', 'src', 'action', 'formaction', 'xlink:href',
 ]);
@@ -119,15 +123,18 @@ const OPTIONS: sanitizeHtml.IOptions = {
   },
 };
 
-function hasDangerousSchemeInUnknownTag(input: string): boolean {
-  if (!URL_ATTR_IN_TAG_RE.test(input)) return false;
+function hasDangerousAttributeByParser(input: string): boolean {
+  if (!TAG_START_RE.test(input)) return false;
   let found = false;
   const parser = new Parser(
     {
       onopentag(name, attribs) {
-        if (found || KNOWN_HTML_TAGS.has(name)) return;
+        if (found) return;
+        const known = KNOWN_HTML_TAGS.has(name);
         for (const [attr, value] of Object.entries(attribs)) {
-          if (!URL_ATTRIBUTES.has(attr)) continue;
+          // `on*` vazio (`<foo onclick>`) é inerte; com valor, é manipulador.
+          if (value !== '' && EVENT_ATTR_NAME_RE.test(attr)) found = true;
+          if (known || !URL_ATTRIBUTES.has(attr)) continue;
           // Mesma normalização de isSafeUrl (controles e espaços removidos).
           const url = value.replace(/[\u0000- \u007f-\u009f]+/g, '');
           if (DANGEROUS_SCHEME_RE.test(url)) found = true;
@@ -145,7 +152,7 @@ export function hasHtmlMarkup(input: string): boolean {
   return (
     KNOWN_TAG_RE.test(input) ||
     EVENT_HANDLER_IN_TAG_RE.test(input) ||
-    hasDangerousSchemeInUnknownTag(input)
+    hasDangerousAttributeByParser(input)
   );
 }
 

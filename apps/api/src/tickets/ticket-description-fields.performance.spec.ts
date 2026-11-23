@@ -26,6 +26,11 @@ const HOSTILE: Array<[string, string]> = [
   ['atributos sem fechar', fill('a=b ', '<foo ')],
   ['quebras de linha', '\n'.repeat(DTO_LIMIT)],
   ['"< " repetido', '< '.repeat(DTO_LIMIT / 2)],
+  // GH-390 item 2: o parser agora decide os portões de atributo.
+  ['aspa sem fechar', '<foo title="' + 'a>'.repeat(DTO_LIMIT / 2 - 6)],
+  ['title com ">" repetido', fill('<x title=">" ')],
+  ['href desconhecido repetido', fill('<x href=a ')],
+  ['onclick repetido', fill('<x onclick=a ')],
 ];
 
 describe('ticketDescriptionFields: entrada hostil no limite do DTO (GH-390 item 1)', () => {
