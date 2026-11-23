@@ -29,15 +29,18 @@ test('search matches descriptionText, falls back for rows without it and keeps t
     orgB: randomUUID(),
     deskX: randomUUID(),
     deskY: randomUUID(),
+    deskZ: randomUUID(),
     admin: randomUUID(),
     agentX: randomUUID(),
     clientA: randomUUID(),
     clientB: randomUUID(),
     clientLit: randomUUID(),
+    clientPuro: randomUUID(),
     tickets: {
       erro: randomUUID(),
       rd: randomUUID(),
       literais: randomUUID(),
+      puro: randomUUID(),
       legado: randomUUID(),
       outroCliente: randomUUID(),
     },
@@ -101,9 +104,15 @@ test('search matches descriptionText, falls back for rows without it and keeps t
         { id: id.clientA, role: Role.CLIENT, organizationId: id.orgA },
         { id: id.clientB, role: Role.CLIENT, organizationId: id.orgB },
         { id: id.clientLit, role: Role.CLIENT, organizationId: id.orgA },
+        { id: id.clientPuro, role: Role.CLIENT, organizationId: id.orgA },
       ].map((user) => ({
         ...user,
-        name: user.id === id.clientLit ? `Lit 100% ok_agora C:${String.fromCharCode(92)}dir` : `Busca ${user.role}`,
+        name:
+          user.id === id.clientLit
+            ? `Lit 100% ok_agora C:${String.fromCharCode(92)}dir`
+            : user.id === id.clientPuro
+              ? 'Puro 100% ok'
+              : `Busca ${user.role}`,
         email: `${user.id}@e2e.invalid`,
         password: 'unused-jwt-fixture',
       })),
@@ -114,6 +123,7 @@ test('search matches descriptionText, falls back for rows without it and keeps t
       [id.clientA, Role.CLIENT],
       [id.clientB, Role.CLIENT],
       [id.clientLit, Role.CLIENT],
+      [id.clientPuro, Role.CLIENT],
     ] as const) {
       await linkFixtureUserToDefaultPermissionGroup(db, userId, role);
     }
@@ -127,6 +137,10 @@ test('search matches descriptionText, falls back for rows without it and keeps t
     });
     await db.serviceDesk.create({
       data: { id: id.deskY, name: `Busca Y ${id.deskY}`, organizations: { connect: { id: id.orgB } } },
+    });
+    // Mesa só do ticket com `%` e sem barra invertida (GH-386): fica fora das buscas da mesa X.
+    await db.serviceDesk.create({
+      data: { id: id.deskZ, name: `Busca Z ${id.deskZ}`, organizations: { connect: { id: id.orgA } } },
     });
 
     const ticket = (
@@ -169,6 +183,16 @@ test('search matches descriptionText, falls back for rows without it and keeps t
       `100% ok_agora C:${backslash}dir`,
       `E2E-%_${backslash}-${id.tickets.literais}`,
     );
+    // `%` em título, protocolo e solicitante, mas SEM barra invertida.
+    await ticket(
+      'puro',
+      id.clientPuro,
+      id.deskZ,
+      '100% puro',
+      '<p>100% puro</p>',
+      '100% puro',
+      `E2E-%-${id.tickets.puro}`,
+    );
     // Linha antiga, sem texto derivado: cai na descrição crua.
     await ticket('legado', id.clientA, id.deskX, 'Chamado delta', '<p>legado ANTIGO</p>', null);
     await ticket(
@@ -209,6 +233,10 @@ test('search matches descriptionText, falls back for rows without it and keeps t
       for (const term of ['%', '_', backslash]) {
         expect(await filter(admin, param, term, id.deskX), `${param}=${term}`).toEqual([t.literais]);
       }
+      // Barra invertida literal: o ticket com `%` e sem barra invertida não pode aparecer. Sem escape
+      // o padrão `%\%` viraria "contém %" e traria o `puro` (e a barra passaria sem ser provada).
+      expect(await filter(admin, param, '%', id.deskZ), `${param}=% (fixture puro)`).toEqual([t.puro]);
+      expect(await filter(admin, param, backslash, id.deskZ), `${param}=barra sem puro`).toEqual([]);
       expect(await filter(admin, param, "' OR 1=1 --", id.deskX), `${param} injeção`).toEqual([]);
       expect(await filter(admin, param, '100% OK_AGORA', id.deskX), `${param} caixa`).toEqual(
         param === 'number' ? [] : [t.literais],
@@ -229,11 +257,11 @@ test('search matches descriptionText, falls back for rows without it and keeps t
     expect(await detail.json()).not.toHaveProperty('descriptionText');
   } finally {
     await db.ticket.deleteMany({ where: { id: { in: [...mine] } } });
-    await db.serviceDesk.deleteMany({ where: { id: { in: [id.deskX, id.deskY] } } });
+    await db.serviceDesk.deleteMany({ where: { id: { in: [id.deskX, id.deskY, id.deskZ] } } });
     await db.permissionGroupUser.deleteMany({
-      where: { userId: { in: [id.admin, id.agentX, id.clientA, id.clientB, id.clientLit] } },
+      where: { userId: { in: [id.admin, id.agentX, id.clientA, id.clientB, id.clientLit, id.clientPuro] } },
     });
-    await db.user.deleteMany({ where: { id: { in: [id.admin, id.agentX, id.clientA, id.clientB, id.clientLit] } } });
+    await db.user.deleteMany({ where: { id: { in: [id.admin, id.agentX, id.clientA, id.clientB, id.clientLit, id.clientPuro] } } });
     await db.organization.deleteMany({ where: { id: { in: [id.orgA, id.orgB] } } });
     await db.$disconnect();
   }
