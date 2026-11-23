@@ -54,6 +54,7 @@ const withoutVoidSlash = (html: string) => html.replace(/\s*\/>/g, '>');
  */
 export function ticketDescriptionFields(description: string): {
   description: string;
+  descriptionText: string;
 } {
   let sanitized: string;
   try {
@@ -70,5 +71,6 @@ export function ticketDescriptionFields(description: string): {
     });
   }
 
-  return { description: sanitized };
+  // Stub neutro do RED (GH-370 T1): o texto derivado entra no commit GREEN.
+  return { description: sanitized, descriptionText: sanitized };
 }

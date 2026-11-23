@@ -16,19 +16,40 @@ describe('ticketDescriptionFields', () => {
   it('devolve a descrição sanitizada, nunca undefined', () => {
     expect(ticketDescriptionFields('<p>ok</p><script>x</script>')).toEqual({
       description: '<p>ok</p>',
+      descriptionText: 'ok',
     });
-    expect(ticketDescriptionFields('<script>x</script>')).toEqual({ description: '' });
+    expect(ticketDescriptionFields('<script>x</script>')).toEqual({
+      description: '',
+      descriptionText: '',
+    });
   });
 
   it('devolve texto puro idêntico', () => {
     expect(ticketDescriptionFields('a < b & c\nlinha 2')).toEqual({
       description: 'a < b & c\nlinha 2',
+      descriptionText: 'a < b & c linha 2',
     });
   });
 
   it('é idempotente: o valor devolvido já é o gravável', () => {
     const once = ticketDescriptionFields('<p onclick="x">ok</p><br>').description;
     expect(ticketDescriptionFields(once).description).toBe(once);
+  });
+
+  describe('GH-370 AC-01: descriptionText derivado do HTML já sanitizado', () => {
+    it('deriva o texto visível e grava description como veio sanitizada', () => {
+      expect(ticketDescriptionFields('<p><strong>Erro</strong> na nota</p>')).toEqual({
+        description: '<p><strong>Erro</strong> na nota</p>',
+        descriptionText: 'Erro na nota',
+      });
+    });
+
+    it('não leva conteúdo removido pelo sanitizador para o texto buscável', () => {
+      const { descriptionText } = ticketDescriptionFields(
+        '<p>ok</p><script>segredo-321</script><img src="/a.png" onerror="roubar-555">',
+      );
+      expect(descriptionText).toBe('ok');
+    });
   });
 
   describe('AC-12: falha do sanitizador', () => {

@@ -81,6 +81,26 @@ describe('varredura de escritores de Ticket.description (AC-07)', () => {
       ).toHaveLength(0);
     });
 
+    it('GH-370 AC-04: pega descriptionText gravado fora do helper', () => {
+      expect(
+        findRawDescriptionWrites('await tx.ticket.create({ data: { title: t, descriptionText: x } })'),
+      ).toHaveLength(1);
+      expect(
+        findRawDescriptionWrites(
+          'this.prisma.ticket.update({ where: { id }, data: { descriptionText: texto } })',
+        ),
+      ).toHaveLength(1);
+      expect(findRawDescriptionWrites('data.descriptionText = texto;')).toHaveLength(1);
+    });
+
+    it('GH-370 AC-04: o spread do helper continua aceito', () => {
+      expect(
+        findRawDescriptionWrites(
+          'await tx.ticket.update({ where: { id }, data: { ...ticketDescriptionFields(d) } })',
+        ),
+      ).toHaveLength(0);
+    });
+
     it('ignora escritas sem description (SLA, CSAT)', () => {
       expect(
         findRawDescriptionWrites(

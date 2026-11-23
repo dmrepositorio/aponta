@@ -1,0 +1,31 @@
+[
+  { "nome": "parágrafo com inline", "html": "<p><strong>Erro</strong> na nota</p>", "expected": "Erro na nota" },
+  { "nome": "blocos viram espaço", "html": "<p>Erro</p><p>nota</p>", "expected": "Erro nota" },
+  { "nome": "inline some sem espaço", "html": "<strong>Er</strong>ro", "expected": "Erro" },
+  { "nome": "br vira espaço", "html": "<p>a<br>b</p>", "expected": "a b" },
+  { "nome": "div vira espaço", "html": "<div>x</div><div>y</div>", "expected": "x y" },
+  { "nome": "títulos e citação", "html": "<h1>T</h1><h2>S</h2><blockquote>q</blockquote>", "expected": "T S q" },
+  { "nome": "inline variados", "html": "<em>a</em> <i>b</i> <u>c</u> <span>d</span>", "expected": "a b c d" },
+  {
+    "nome": "entidades",
+    "html": "<p>R&amp;D &lt;x&gt; &quot;q&quot; &#39;s&#39;&nbsp;fim</p>",
+    "expected": "R&D <x> \"q\" 's' fim"
+  },
+  { "nome": "atributo de link descartado", "html": "<a href=\"https://exemplo.test/x\">link</a>", "expected": "link" },
+  { "nome": "img e atributos descartados", "html": "<img src=\"/a.png\" alt=\"foto\">texto", "expected": "texto" },
+  { "nome": "script descartado", "html": "<p>a</p><script>alert(1)</script><p>b</p>", "expected": "a b" },
+  { "nome": "style descartado", "html": "<style>p{color:red}</style><p>x</p>", "expected": "x" },
+  { "nome": "texto puro com menor e e comercial", "html": "a < b & c", "expected": "a < b & c" },
+  { "nome": "texto puro com imagem markdown", "html": "![x](u)", "expected": "![x](u)" },
+  { "nome": "texto puro com quebra de linha", "html": "linha 1\nlinha 2", "expected": "linha 1 linha 2" },
+  { "nome": "vazio", "html": "", "expected": "" },
+  { "nome": "code só-servidor", "html": "<p>Rode <code>npm test</code></p>", "expected": "Rode npm test", "somenteServidor": true },
+  {
+    "nome": "tabela só-servidor",
+    "html": "<table><tbody><tr><td>a</td><td>b</td></tr></tbody></table>",
+    "expected": "a b",
+    "somenteServidor": true
+  },
+  { "nome": "legado cru com tag colada (caracterização)", "html": "a<b && c>d", "expected": "ad", "somenteServidor": true },
+  { "nome": "lista só-servidor", "html": "<ul><li>um</li><li>dois</li></ul>", "expected": "um dois", "somenteServidor": true }
+]

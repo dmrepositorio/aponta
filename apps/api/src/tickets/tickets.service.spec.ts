@@ -1433,6 +1433,54 @@ describe('TicketsService', () => {
     });
   });
 
+  describe('GH-370 T1: descriptionText gravado junto com a descrição', () => {
+    const HTML = '<p><strong>Erro</strong> na nota</p>';
+    const existing = {
+      id: 't1',
+      title: 'old',
+      description: 'old-desc',
+      priority: TicketPriority.MEDIUM,
+      createdAt: new Date('2026-01-01T00:00:00.000Z'),
+      serviceDeskId: 'desk-1',
+    };
+
+    it('AC-01: create grava descriptionText com o texto visível e description como veio', async () => {
+      mockTx.ticket.findFirst.mockResolvedValue(null);
+      mockTx.ticket.create.mockImplementation(({ data }) => ({ id: 'ticket-1', ...data }));
+
+      await service.create(
+        { title: 't', description: HTML, serviceDeskId: 'desk-1' },
+        { id: 'requester-1', role: Role.AGENT },
+      );
+
+      const { data } = mockTx.ticket.create.mock.calls[0][0];
+      expect(data.description).toBe(HTML);
+      expect(data.descriptionText).toBe('Erro na nota');
+    });
+
+    it('AC-02: update de description recalcula descriptionText na mesma gravação', async () => {
+      mockPrismaService.ticket.findUnique.mockResolvedValue(existing);
+      mockPrismaService.ticket.update.mockResolvedValue({});
+
+      await service.update('t1', { description: HTML }, actingUser);
+
+      const { data } = mockPrismaService.ticket.update.mock.calls[0][0];
+      expect(data.description).toBe(HTML);
+      expect(data.descriptionText).toBe('Erro na nota');
+    });
+
+    it('AC-02: atualizar só o título não envia descriptionText', async () => {
+      mockPrismaService.ticket.findUnique.mockResolvedValue(existing);
+      mockPrismaService.ticket.update.mockResolvedValue({});
+
+      await service.update('t1', { title: 'novo título' }, actingUser);
+
+      const { data } = mockPrismaService.ticket.update.mock.calls[0][0];
+      expect(data).not.toHaveProperty('descriptionText');
+      expect(data).not.toHaveProperty('description');
+    });
+  });
+
   describe('assign', () => {
     it('assigns an agent to a ticket', async () => {
       mockPrismaService.ticket.findUnique.mockResolvedValue({ id: 't1' });
