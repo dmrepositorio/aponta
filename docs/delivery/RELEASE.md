@@ -70,7 +70,7 @@ Uma migração que falha no `prisma migrate deploy` (por exemplo, `lock_timeout`
 1. **Reconhecer**: o `CD (Produção)` falha no serviço `migrate`; o log mostra o erro da migração (ex.: `canceling statement due to lock timeout`) ou, nos deploys seguintes, P3009.
 2. **Confirmar o estado** (usuário, no servidor): em `_prisma_migrations`, a linha da migração tem `finished_at` nulo e `rolled_back_at` nulo; e a coluna/objeto da migração NÃO existe (ex.: `d "Ticket"` sem `descriptionText`). Se a coluna existe, a migração aplicou parcialmente: pare e decida com o usuário antes de qualquer comando.
 3. **Marcar como revertida** (usuário, no servidor; agentes não executam): `prisma migrate resolve --rolled-back <nome-da-migração>`, por exemplo `20261122120000_ticket_description_text`, pelo serviço `migrate` ou pelo comando equivalente do `docker-compose.yml`.
-4. **Reentregar**: re-rodar o `CD (Produção)` para o mesmo SHA (novo deploy). A migração roda de novo; se o `lock_timeout` voltar a estourar, repetir fora do pico ou depois de a transação longa terminar.
+4. **Reentregar**: depois do `resolve`, re-executar o run falho do `CD (Produção)` ou aguardar o próximo deploy da `main`. Um push novo na `main` antes do `resolve` também falha com P3009. A migração roda de novo; se o `lock_timeout` voltar a estourar, repetir fora do pico ou depois de a transação longa terminar.
 
 ## Feature flags
 
