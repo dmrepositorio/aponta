@@ -10,7 +10,7 @@ import { join, resolve } from 'path';
  */
 const REPO_ROOT = resolve(__dirname, '../../../..');
 const WRITE_CALL_RE = /ticket\s*\.\s*(create|update|upsert|createMany|updateMany)\s*\(/g;
-const DIRECT_ASSIGN_RE = /\bdata\s*\.\s*description\s*=/g;
+const DIRECT_ASSIGN_RE = /\bdata\s*\.\s*description(Text)?\s*=/g;
 const HELPER_SPREAD_RE = /\.\.\.\s*ticketDescriptionFields\s*\([^)]*\)/g;
 
 function extractBlock(source: string, openIndex: number): string {
@@ -33,7 +33,8 @@ export function findRawDescriptionWrites(source: string): string[] {
     const callStart = (match.index ?? 0) + match[0].length;
     const args = extractBlock(source, source.indexOf('{', callStart));
     const withoutHelper = args.replace(HELPER_SPREAD_RE, '');
-    if (/\bdescription\s*[:,}]/.test(withoutHelper)) {
+    // GH-370: `descriptionText` também só sai do helper (o spread já o traz).
+    if (/\bdescription(Text)?\s*[:,}]/.test(withoutHelper)) {
       offenders.push(`${match[0]} ${args.slice(0, 80)}`);
     }
   }
@@ -77,6 +78,26 @@ describe('varredura de escritores de Ticket.description (AC-07)', () => {
       expect(
         findRawDescriptionWrites(
           'await tx.ticket.create({ data: { title: t, ...ticketDescriptionFields(dto.description) } })',
+        ),
+      ).toHaveLength(0);
+    });
+
+    it('GH-370 AC-04: pega descriptionText gravado fora do helper', () => {
+      expect(
+        findRawDescriptionWrites('await tx.ticket.create({ data: { title: t, descriptionText: x } })'),
+      ).toHaveLength(1);
+      expect(
+        findRawDescriptionWrites(
+          'this.prisma.ticket.update({ where: { id }, data: { descriptionText: texto } })',
+        ),
+      ).toHaveLength(1);
+      expect(findRawDescriptionWrites('data.descriptionText = texto;')).toHaveLength(1);
+    });
+
+    it('GH-370 AC-04: o spread do helper continua aceito', () => {
+      expect(
+        findRawDescriptionWrites(
+          'await tx.ticket.update({ where: { id }, data: { ...ticketDescriptionFields(d) } })',
         ),
       ).toHaveLength(0);
     });

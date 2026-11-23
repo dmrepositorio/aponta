@@ -85,6 +85,43 @@ test.describe('ticket creation and detail view', () => {
     expect(page.url()).toBe(detailUrl);
   });
 
+  test('GH-370 AC-12: GET /api/tickets/:id and GET /api/tickets do not expose descriptionText', async ({
+    page,
+  }) => {
+    await loginAsSeededAgent(page);
+
+    const uniqueTitle = `E2E descriptionText ${Date.now()}`;
+    await page.goto('/tickets/new');
+    await page.fill('#ticket-title', uniqueTitle);
+    await page
+      .locator('[data-testid="ticket-description"] [contenteditable="true"]')
+      .fill('Texto buscavel derivado.');
+    await page.locator('#ticket-service-desk').selectOption({ label: 'General Support' });
+    await page.getByRole('button', { name: 'Abrir Ticket' }).click();
+    await expect(page).toHaveURL(/\/tickets\/[0-9a-f-]{36}$/, { timeout: 10000 });
+    const ticketId = page.url().split('/').pop() as string;
+
+    const detailResponse = page.waitForResponse(
+      (r) =>
+        r.request().method() === 'GET' &&
+        new URL(r.url()).pathname === `/api/tickets/${ticketId}`,
+    );
+    await page.reload();
+    const detail = await (await detailResponse).json();
+    expect(detail.description).toContain('Texto buscavel derivado.');
+    expect(detail).not.toHaveProperty('descriptionText');
+
+    const listResponse = page.waitForResponse(
+      (r) =>
+        r.request().method() === 'GET' && new URL(r.url()).pathname === '/api/tickets',
+    );
+    await page.goto('/tickets');
+    const list = await (await listResponse).json();
+    const rows: unknown[] = Array.isArray(list) ? list : (list.data ?? list.items ?? []);
+    expect(rows.length).toBeGreaterThan(0);
+    for (const row of rows) expect(row).not.toHaveProperty('descriptionText');
+  });
+
   test('an agent can assign a ticket', async ({ page }) => {
     await loginAsSeededAgent(page);
 
