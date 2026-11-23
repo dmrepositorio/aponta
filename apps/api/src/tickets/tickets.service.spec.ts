@@ -674,6 +674,63 @@ describe('TicketsService', () => {
       });
     });
 
+    describe('GH-386: curingas escapados em number, titleContains e requesterQuery', () => {
+      const bs = String.fromCharCode(92);
+      const cases: Array<[string, string]> = [
+        ['%', bs + '%'],
+        ['_', bs + '_'],
+        [bs, bs + bs],
+        ['100%_ok' + bs + 'x', '100' + bs + '%' + bs + '_ok' + bs + bs + 'x'],
+        ["' OR 1=1 --", "' OR 1=1 --"],
+      ];
+      const whereOf = () => mockPrismaService.ticket.findMany.mock.calls[0][0].where;
+
+      beforeEach(() => {
+        mockPrismaService.ticket.findMany.mockResolvedValue([]);
+        mockPrismaService.ticket.count.mockResolvedValue(0);
+      });
+
+      it.each(cases)('number %s casa literalmente no protocolo', async (term, escaped) => {
+        await service.findAll({ number: term }, { id: 'admin-1', role: Role.ADMIN });
+        expect(whereOf()).toEqual({ protocol: { contains: escaped, mode: 'insensitive' } });
+      });
+
+      it.each(cases)('titleContains %s casa literalmente no título', async (term, escaped) => {
+        await service.findAll({ titleContains: term }, { id: 'admin-1', role: Role.ADMIN });
+        expect(whereOf()).toEqual({ title: { contains: escaped, mode: 'insensitive' } });
+      });
+
+      it.each(cases)('requesterQuery %s casa literalmente no nome e no e-mail', async (term, escaped) => {
+        await service.findAll({ requesterQuery: term }, { id: 'admin-1', role: Role.ADMIN });
+        expect(whereOf()).toEqual({
+          requester: {
+            OR: [
+              { name: { contains: escaped, mode: 'insensitive' } },
+              { email: { contains: escaped, mode: 'insensitive' } },
+            ],
+          },
+        });
+      });
+
+      it('requesterQuery escapado continua combinado por AND com o escopo do CLIENT_MASTER', async () => {
+        await service.findAll(
+          { requesterQuery: '%' },
+          { id: 'master-a', role: Role.CLIENT_MASTER, organizationId: 'org-a' },
+        );
+        expect(whereOf().requester).toEqual({
+          AND: [
+            { organizationId: 'org-a' },
+            {
+              OR: [
+                { name: { contains: bs + '%', mode: 'insensitive' } },
+                { email: { contains: bs + '%', mode: 'insensitive' } },
+              ],
+            },
+          ],
+        });
+      });
+    });
+
     it('paginates using page/limit and returns meta', async () => {
       mockPrismaService.ticket.findMany.mockResolvedValue([{ id: 't-1' }]);
       mockPrismaService.ticket.count.mockResolvedValue(45);
