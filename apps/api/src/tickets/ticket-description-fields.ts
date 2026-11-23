@@ -44,8 +44,34 @@ function removedTagCounts(before: string, after: string): Record<string, number>
   return removed;
 }
 
-// `<br>` vira `<br />` na serialização; isso não é remoção e não deve poluir o log.
-const withoutVoidSlash = (html: string) => html.replace(/\s*\/>/g, '>');
+const WHITESPACE_RE = /\s/;
+
+/**
+ * `<br>` vira `<br />` na serialização; isso não é remoção e não deve poluir o
+ * log. Equivale a `html.replace(/\s*\/>/g, '>')`, em uma varredura linear: a
+ * regex sem âncora relia cada corrida de espaços a partir de cada posição
+ * (quadrática, GH-390). Cada corrida de espaços seguida de `/>` perde a corrida
+ * e a barra; qualquer outro `/>` perde só a barra.
+ */
+export function withoutVoidSlash(html: string): string {
+  const parts: string[] = [];
+  const n = html.length;
+  let i = 0;
+  let copyFrom = 0;
+  while (i < n) {
+    let j = i;
+    while (j < n && WHITESPACE_RE.test(html[j])) j++;
+    if (html[j] === '/' && html[j + 1] === '>') {
+      parts.push(html.slice(copyFrom, i), '>');
+      i = j + 2;
+      copyFrom = i;
+    } else {
+      i = j > i ? j : i + 1;
+    }
+  }
+  parts.push(html.slice(copyFrom));
+  return parts.join('');
+}
 
 /**
  * Único ponto que produz os campos de `Ticket.description` e do texto buscável
