@@ -16,7 +16,10 @@ export class PrismaService
     const adapter = new PrismaPg({
       connectionString: process.env['DATABASE_URL'],
     });
-    super({ adapter });
+    // GH-370: `descriptionText` é coluna interna (derivada de `description`).
+    // O omit global a tira de toda leitura, então nenhuma resposta a expõe;
+    // `where` e `data` continuam podendo usá-la.
+    super({ adapter, omit: { ticket: { descriptionText: true } } });
   }
 
   async onModuleInit() {

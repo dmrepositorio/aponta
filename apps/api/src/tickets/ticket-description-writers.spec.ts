@@ -10,7 +10,7 @@ import { join, resolve } from 'path';
  */
 const REPO_ROOT = resolve(__dirname, '../../../..');
 const WRITE_CALL_RE = /ticket\s*\.\s*(create|update|upsert|createMany|updateMany)\s*\(/g;
-const DIRECT_ASSIGN_RE = /\bdata\s*\.\s*description\s*=/g;
+const DIRECT_ASSIGN_RE = /\bdata\s*\.\s*description(Text)?\s*=/g;
 const HELPER_SPREAD_RE = /\.\.\.\s*ticketDescriptionFields\s*\([^)]*\)/g;
 
 function extractBlock(source: string, openIndex: number): string {
@@ -33,7 +33,8 @@ export function findRawDescriptionWrites(source: string): string[] {
     const callStart = (match.index ?? 0) + match[0].length;
     const args = extractBlock(source, source.indexOf('{', callStart));
     const withoutHelper = args.replace(HELPER_SPREAD_RE, '');
-    if (/\bdescription\s*[:,}]/.test(withoutHelper)) {
+    // GH-370: `descriptionText` também só sai do helper (o spread já o traz).
+    if (/\bdescription(Text)?\s*[:,}]/.test(withoutHelper)) {
       offenders.push(`${match[0]} ${args.slice(0, 80)}`);
     }
   }

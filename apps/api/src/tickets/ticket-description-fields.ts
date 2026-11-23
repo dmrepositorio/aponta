@@ -1,4 +1,5 @@
 import { BadRequestException, Logger } from '@nestjs/common';
+import { htmlToSearchText } from './html-to-search-text';
 import {
   KNOWN_HTML_TAGS,
   sanitizeTicketDescription,
@@ -47,9 +48,10 @@ function removedTagCounts(before: string, after: string): Record<string, number>
 const withoutVoidSlash = (html: string) => html.replace(/\s*\/>/g, '>');
 
 /**
- * Único ponto que produz os campos de `Ticket.description` a gravar. Recebe a
- * descrição crua do DTO e devolve o objeto de dados a espalhar em
- * `ticket.create`/`ticket.update`. Pura e idempotente (fora o log), nunca
+ * Único ponto que produz os campos de `Ticket.description` e do texto buscável
+ * derivado `Ticket.descriptionText` a gravar. Recebe a descrição crua do DTO e
+ * devolve o objeto de dados a espalhar em `ticket.create`/`ticket.update`; o
+ * texto é derivado da descrição já sanitizada. Pura e idempotente (fora o log), nunca
  * devolve `undefined`; falha do sanitizador vira 400 genérico, nunca o valor cru.
  */
 export function ticketDescriptionFields(description: string): {
@@ -71,6 +73,5 @@ export function ticketDescriptionFields(description: string): {
     });
   }
 
-  // Stub neutro do RED (GH-370 T1): o texto derivado entra no commit GREEN.
-  return { description: sanitized, descriptionText: sanitized };
+  return { description: sanitized, descriptionText: htmlToSearchText(sanitized) };
 }
