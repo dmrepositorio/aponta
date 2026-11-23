@@ -585,16 +585,20 @@ export class TicketsService {
       where.status = { notIn: CLOSED_STATUSES };
     }
     if (query.search) {
+      // O `contains` do Prisma não escapa os curingas do LIKE: sem isto `%` e `_`
+      // casariam tudo e a barra invertida nunca casaria. Escapa com a barra
+      // invertida, o escape padrão do Postgres, em todos os ramos.
+      const term = query.search.replace(/[\\%_]/g, '\\$&');
       where.OR = [
-        { title: { contains: query.search, mode: 'insensitive' } },
-        { protocol: { contains: query.search, mode: 'insensitive' } },
+        { title: { contains: term, mode: 'insensitive' } },
+        { protocol: { contains: term, mode: 'insensitive' } },
         // GH-370: casa o texto visível derivado (sem nome de tag nem atributo);
         // só a linha ainda sem `descriptionText` cai na descrição crua.
-        { descriptionText: { contains: query.search, mode: 'insensitive' } },
+        { descriptionText: { contains: term, mode: 'insensitive' } },
         {
           AND: [
             { descriptionText: null },
-            { description: { contains: query.search, mode: 'insensitive' } },
+            { description: { contains: term, mode: 'insensitive' } },
           ],
         },
       ];
