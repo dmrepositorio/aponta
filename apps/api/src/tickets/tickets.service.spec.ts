@@ -610,11 +610,22 @@ describe('TicketsService', () => {
         }
       });
 
-      it('AC-10: %, _, barra invertida e tentativa de injeção seguem como valor literal do contains (Prisma parametriza e escapa)', async () => {
-        for (const term of ['%', '_', String.fromCharCode(92), "' OR 1=1 --"]) {
+      // Descoberto contra Postgres real: o Prisma NÃO escapa `%`, `_` nem `` no `contains`
+      // (`%` e `_` casavam tudo e a barra invertida nunca casava). O serviço escapa o termo
+      // com a barra invertida, o escape padrão do LIKE, em todos os ramos da busca.
+      it('AC-10: %, _ e barra invertida são escapados para casar como literais; injeção segue como valor', async () => {
+        const bs = String.fromCharCode(92);
+        const cases: Array<[string, string]> = [
+          ['%', bs + '%'],
+          ['_', bs + '_'],
+          [bs, bs + bs],
+          ['100%_ok' + bs + 'x', '100' + bs + '%' + bs + '_ok' + bs + bs + 'x'],
+          ["' OR 1=1 --", "' OR 1=1 --"],
+        ];
+        for (const [term, escaped] of cases) {
           mockPrismaService.ticket.findMany.mockClear();
           await service.findAll({ search: term }, { id: 'admin-1', role: Role.ADMIN });
-          expect(whereOf()).toEqual({ OR: searchOr(term) });
+          expect(whereOf()).toEqual({ OR: searchOr(escaped) });
         }
       });
 
