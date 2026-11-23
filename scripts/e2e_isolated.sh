@@ -54,4 +54,7 @@ echo "E2E isolado $RUN_ID: banco 127.0.0.1:$DB_PORT, API $E2E_API_PORT, web $E2E
 pnpm exec nx run api:prisma-generate
 pnpm exec nx run api:prisma-migrate-deploy
 pnpm exec nx run api:prisma-seed
+# GH-370 T2: backfill empacotado contra este banco descartável, com fixtures legadas.
+pnpm exec nx run api:build --skip-nx-cache
+node scripts/backfill_description_text_check.mjs
 pnpm exec nx run web-e2e:e2e --skip-nx-cache "$@"
