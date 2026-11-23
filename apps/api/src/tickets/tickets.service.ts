@@ -588,7 +588,15 @@ export class TicketsService {
       where.OR = [
         { title: { contains: query.search, mode: 'insensitive' } },
         { protocol: { contains: query.search, mode: 'insensitive' } },
-        { description: { contains: query.search, mode: 'insensitive' } },
+        // GH-370: casa o texto visível derivado (sem nome de tag nem atributo);
+        // só a linha ainda sem `descriptionText` cai na descrição crua.
+        { descriptionText: { contains: query.search, mode: 'insensitive' } },
+        {
+          AND: [
+            { descriptionText: null },
+            { description: { contains: query.search, mode: 'insensitive' } },
+          ],
+        },
       ];
     }
     if (query.number) {
