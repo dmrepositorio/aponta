@@ -12,6 +12,7 @@ import { UpdateArticleDto } from './dto/update-article.dto';
 import { ArticleQueryDto, ArticleSort } from './dto/article-query.dto';
 import { CurrentUserPayload } from '../tickets/decorators/current-user.decorator';
 import { sanitizeArticleContent } from './sanitize-article-content';
+import { escapeLikePattern } from '../common/escape-like-pattern';
 
 /**
  * Knowledge Base (FAQ) articles.
@@ -43,8 +44,8 @@ export class ArticlesService {
     if (query?.search) {
       andClauses.push({
         OR: [
-          { title: { contains: query.search, mode: 'insensitive' } },
-          { content: { contains: query.search, mode: 'insensitive' } },
+          { title: { contains: escapeLikePattern(query.search), mode: 'insensitive' } },
+          { content: { contains: escapeLikePattern(query.search), mode: 'insensitive' } },
         ],
       });
     }

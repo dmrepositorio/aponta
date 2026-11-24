@@ -5,6 +5,7 @@ import { UpdateContractDto } from './dto/update-contract.dto';
 import { CurrentUserPayload } from '../tickets/decorators/current-user.decorator';
 import { TenantHelper } from '../core/security/tenant.helper';
 import { Contract, ContractType, Prisma, Role } from '@prisma/client';
+import { escapeLikePattern } from '../common/escape-like-pattern';
 
 const conditions = ['type', 'includedMinutes', 'hourlyRateCents', 'excessHourlyRateCents', 'monthlyFeeCents', 'fixedPriceCents', 'estimatedMinutes', 'scope'] as const;
 const finances = ['monthlyValue', 'lastAmendmentValue', 'adjustmentDate', 'excessHourlyRateCents', 'hourlyRateCents', 'monthlyFeeCents', 'fixedPriceCents'] as const;
@@ -35,8 +36,8 @@ export class ContractsService {
     const where = this.readableWhere(user);
     if (search?.trim()) {
       where.OR = [
-        { name: { contains: search.trim(), mode: 'insensitive' } },
-        { organization: { name: { contains: search.trim(), mode: 'insensitive' } } },
+        { name: { contains: escapeLikePattern(search.trim()), mode: 'insensitive' } },
+        { organization: { name: { contains: escapeLikePattern(search.trim()), mode: 'insensitive' } } },
       ];
     }
 

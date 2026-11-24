@@ -22,6 +22,7 @@ import {
 } from '../permission-groups/default-permission-groups';
 import { TenantHelper } from '../core/security/tenant.helper';
 import { CurrentUserPayload } from '../tickets/decorators/current-user.decorator';
+import { escapeLikePattern } from '../common/escape-like-pattern';
 
 const SALT_ROUNDS = 10;
 const UNIQUE_CONSTRAINT_VIOLATION = 'P2002';
@@ -303,8 +304,8 @@ export class UsersService {
     const where: Prisma.UserWhereInput = {};
     if (query.q) {
       where.OR = [
-        { name: { contains: query.q, mode: 'insensitive' } },
-        { email: { contains: query.q, mode: 'insensitive' } },
+        { name: { contains: escapeLikePattern(query.q), mode: 'insensitive' } },
+        { email: { contains: escapeLikePattern(query.q), mode: 'insensitive' } },
       ];
     }
     if (query.technicalGroupId) {

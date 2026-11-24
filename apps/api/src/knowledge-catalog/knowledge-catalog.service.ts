@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateKnowledgeCatalogItemDto } from './dto/create-knowledge-catalog-item.dto';
 import { UpdateKnowledgeCatalogItemDto } from './dto/update-knowledge-catalog-item.dto';
 import { KnowledgeCatalogQueryDto } from './dto/knowledge-catalog-query.dto';
+import { escapeLikePattern } from '../common/escape-like-pattern';
 
 export interface KnowledgeCatalogItemRow {
   id: string;
@@ -40,10 +41,12 @@ export class KnowledgeCatalogService {
    */
   findAll(query?: KnowledgeCatalogQueryDto) {
     if (query?.search) {
+      // Escape do ILIKE (\, % e _ viram literais); a similaridade usa o termo bruto.
+      const like = escapeLikePattern(query.search);
       return this.prisma.$queryRaw<KnowledgeCatalogItemRow[]>`
         SELECT * FROM "KnowledgeCatalogItem"
-        WHERE name ILIKE '%' || ${query.search} || '%'
-           OR COALESCE(description, '') ILIKE '%' || ${query.search} || '%'
+        WHERE name ILIKE '%' || ${like} || '%'
+           OR COALESCE(description, '') ILIKE '%' || ${like} || '%'
            OR similarity(name, ${query.search}) > 0.3
            OR similarity(COALESCE(description, ''), ${query.search}) > 0.3
         ORDER BY GREATEST(similarity(name, ${query.search}), similarity(COALESCE(description, ''), ${query.search})) DESC, name ASC
