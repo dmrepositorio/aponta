@@ -35,6 +35,9 @@ export interface EzTextInputProps
 /**
  * Aponta DS Text Input (inspired by @sankhyalabs/ezui)
  * React native implementation with Tailwind CSS.
+ *
+ * Acessibilidade: sem a prop `id` o campo gera um (useId) e o rótulo se associa a ele; o
+ * asterisco de obrigatório fica `aria-hidden` e o controle recebe `aria-required`.
  */
 export const EzTextInput = forwardRef<HTMLInputElement, EzTextInputProps>(
   (
@@ -49,13 +52,15 @@ export const EzTextInput = forwardRef<HTMLInputElement, EzTextInputProps>(
       disabled,
       type = 'text',
       required,
-      id,
+      id: idProp,
       'aria-describedby': describedByProp,
       ...props
     },
     ref
   ) => {
-    const messageId = useId();
+    const generatedId = useId();
+    const id = idProp ?? generatedId;
+    const messageId = `${id}-message`;
     const describedBy = [describedByProp, hasError && message ? messageId : undefined].filter(Boolean).join(' ') || undefined;
     const isPassword = type === 'password';
     const [passwordVisible, setPasswordVisible] = useState(false);
@@ -89,7 +94,11 @@ export const EzTextInput = forwardRef<HTMLInputElement, EzTextInputProps>(
             )}
           >
             {label}
-            {required && <span className="ml-1 text-red-600">*</span>}
+            {required && (
+              <span aria-hidden="true" className="ml-1 text-red-600">
+                *
+              </span>
+            )}
           </label>
         )}
 
@@ -111,6 +120,7 @@ export const EzTextInput = forwardRef<HTMLInputElement, EzTextInputProps>(
             type={actualType}
             disabled={disabled}
             required={required}
+            aria-required={required || undefined}
             aria-invalid={hasError || undefined}
             aria-describedby={describedBy}
             className={cn(

@@ -10,10 +10,15 @@ export interface EzTextAreaProps extends TextareaHTMLAttributes<HTMLTextAreaElem
 
 /**
  * Aponta DS Text Area
+ *
+ * Acessibilidade: sem a prop `id` o campo gera um (useId) e o rótulo se associa a ele; o
+ * asterisco de obrigatório fica `aria-hidden` e o controle recebe `aria-required`.
  */
 export const EzTextArea = forwardRef<HTMLTextAreaElement, EzTextAreaProps>(
-  ({ label, message, hasError, className, disabled, id, required, 'aria-describedby': describedByProp, ...props }, ref) => {
-    const messageId = useId();
+  ({ label, message, hasError, className, disabled, id: idProp, required, 'aria-describedby': describedByProp, ...props }, ref) => {
+    const generatedId = useId();
+    const id = idProp ?? generatedId;
+    const messageId = `${id}-message`;
     const describedBy = [describedByProp, hasError && message ? messageId : undefined].filter(Boolean).join(' ') || undefined;
     const wrapperClasses = cn(
       'relative flex w-full overflow-hidden transition-colors border',
@@ -35,7 +40,11 @@ export const EzTextArea = forwardRef<HTMLTextAreaElement, EzTextAreaProps>(
             )}
           >
             {label}
-            {required && <span className="ml-1 text-red-600">*</span>}
+            {required && (
+              <span aria-hidden="true" className="ml-1 text-red-600">
+                *
+              </span>
+            )}
           </label>
         )}
 
@@ -45,6 +54,7 @@ export const EzTextArea = forwardRef<HTMLTextAreaElement, EzTextAreaProps>(
             id={id}
             disabled={disabled}
             required={required}
+            aria-required={required || undefined}
             aria-invalid={hasError || undefined}
             aria-describedby={describedBy}
             className={cn(

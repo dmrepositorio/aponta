@@ -11,11 +11,16 @@ export interface EzDateInputProps extends Omit<InputHTMLAttributes<HTMLInputElem
 /**
  * Aponta DS Date Input
  * Wraps the native browser date picker with the DS styling.
+ *
+ * Acessibilidade: sem a prop `id` o campo gera um (useId) e o rótulo se associa a ele; o
+ * asterisco de obrigatório fica `aria-hidden` e o controle recebe `aria-required`.
  */
 export const EzDateInput = forwardRef<HTMLInputElement, EzDateInputProps>(
-  ({ label, message, hasError = false, className, disabled, id, required, 'aria-describedby': describedByProp, ...props }, ref) => {
+  ({ label, message, hasError = false, className, disabled, id: idProp, required, 'aria-describedby': describedByProp, ...props }, ref) => {
     // We use a ref to programmatically open the date picker when clicking the icon
-    const messageId = useId();
+    const generatedId = useId();
+    const id = idProp ?? generatedId;
+    const messageId = `${id}-message`;
     const describedBy = [describedByProp, hasError && message ? messageId : undefined].filter(Boolean).join(' ') || undefined;
     const fallbackRef = useRef<HTMLInputElement>(null);
     const inputRef = (ref as React.RefObject<HTMLInputElement>) || fallbackRef;
@@ -40,7 +45,11 @@ export const EzDateInput = forwardRef<HTMLInputElement, EzDateInputProps>(
             )}
           >
             {label}
-            {required && <span className="ml-1 text-red-600">*</span>}
+            {required && (
+              <span aria-hidden="true" className="ml-1 text-red-600">
+                *
+              </span>
+            )}
           </label>
         )}
 
@@ -67,6 +76,7 @@ export const EzDateInput = forwardRef<HTMLInputElement, EzDateInputProps>(
             type="date"
             disabled={disabled}
             required={required}
+            aria-required={required || undefined}
             aria-invalid={hasError || undefined}
             aria-describedby={describedBy}
             className={cn(
