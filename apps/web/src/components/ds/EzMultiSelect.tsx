@@ -1,4 +1,4 @@
-import { InputHTMLAttributes, forwardRef, useEffect, useRef, useState } from 'react';
+import { InputHTMLAttributes, forwardRef, useEffect, useId, useRef, useState } from 'react';
 import { cn } from './utils';
 import { AlertCircle, Check, ChevronDown, X } from 'lucide-react';
 import { EzTag } from './EzTag';
@@ -22,6 +22,9 @@ export interface EzMultiSelectProps extends Omit<InputHTMLAttributes<HTMLInputEl
 /**
  * Aponta DS Multi Select
  * Allows selecting multiple options from a dropdown, displaying them as tags.
+ *
+ * Acessibilidade: sem a prop `id` o campo gera um (useId) e o rótulo se associa a ele; o
+ * asterisco de obrigatório fica `aria-hidden` e o controle recebe `aria-required`.
  */
 export const EzMultiSelect = forwardRef<HTMLInputElement, EzMultiSelectProps>(
   (
@@ -36,12 +39,14 @@ export const EzMultiSelect = forwardRef<HTMLInputElement, EzMultiSelectProps>(
       disabled,
       className,
       placeholder = 'Selecione as opções...',
-      id,
+      id: idProp,
       required,
       ...props
     },
     ref
   ) => {
+    const generatedId = useId();
+    const id = idProp ?? generatedId;
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const containerRef = useRef<HTMLDivElement>(null);
@@ -116,7 +121,11 @@ export const EzMultiSelect = forwardRef<HTMLInputElement, EzMultiSelectProps>(
             )}
           >
             {label}
-            {required && <span className="ml-1 text-red-600">*</span>}
+            {required && (
+              <span aria-hidden="true" className="ml-1 text-red-600">
+                *
+              </span>
+            )}
           </label>
         )}
 
@@ -148,6 +157,7 @@ export const EzMultiSelect = forwardRef<HTMLInputElement, EzMultiSelectProps>(
               ref={ref}
               id={id}
               type="text"
+              aria-required={required || undefined}
               disabled={disabled}
               value={searchTerm}
               onChange={handleInputChange}

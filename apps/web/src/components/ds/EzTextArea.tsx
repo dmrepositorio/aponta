@@ -1,4 +1,4 @@
-import { TextareaHTMLAttributes, forwardRef } from 'react';
+import { TextareaHTMLAttributes, forwardRef, useId } from 'react';
 import { cn } from './utils';
 import { AlertCircle } from 'lucide-react';
 
@@ -10,14 +10,23 @@ export interface EzTextAreaProps extends TextareaHTMLAttributes<HTMLTextAreaElem
 
 /**
  * Aponta DS Text Area
+ *
+ * Acessibilidade: sem a prop `id` o campo gera um (useId) e o rótulo se associa a ele; o
+ * asterisco de obrigatório fica `aria-hidden` e o controle recebe `aria-required`.
  */
 export const EzTextArea = forwardRef<HTMLTextAreaElement, EzTextAreaProps>(
-  ({ label, message, hasError, className, disabled, id, required, ...props }, ref) => {
+  ({ label, message, hasError, className, disabled, id: idProp, required, 'aria-describedby': describedByProp, ...props }, ref) => {
+    const generatedId = useId();
+    const id = idProp ?? generatedId;
+    const messageId = `${id}-message`;
+    const describedBy = [describedByProp, hasError && message ? messageId : undefined].filter(Boolean).join(' ') || undefined;
     const wrapperClasses = cn(
       'relative flex w-full overflow-hidden transition-colors border',
       'rounded-[12px] bg-white group',
-      'focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600',
-      hasError ? 'border-red-600 ring-red-600' : 'border-gray-200 hover:border-gray-300',
+      'ez-focus-within',
+      hasError
+        ? 'border-red-600 [--color-focus:var(--color-red-600)]'
+        : 'border-gray-200 hover:border-gray-300 focus-within:border-brand-600',
       disabled && 'bg-gray-80 border-gray-100 cursor-not-allowed'
     );
 
@@ -33,7 +42,11 @@ export const EzTextArea = forwardRef<HTMLTextAreaElement, EzTextAreaProps>(
             )}
           >
             {label}
-            {required && <span className="ml-1 text-red-600">*</span>}
+            {required && (
+              <span aria-hidden="true" className="ml-1 text-red-600">
+                *
+              </span>
+            )}
           </label>
         )}
 
@@ -43,6 +56,9 @@ export const EzTextArea = forwardRef<HTMLTextAreaElement, EzTextAreaProps>(
             id={id}
             disabled={disabled}
             required={required}
+            aria-required={required || undefined}
+            aria-invalid={hasError || undefined}
+            aria-describedby={describedBy}
             className={cn(
               'flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400',
               'min-h-[80px] p-3 resize-y',
@@ -54,6 +70,8 @@ export const EzTextArea = forwardRef<HTMLTextAreaElement, EzTextAreaProps>(
 
         {message && (
           <div
+            id={messageId}
+            role={hasError ? 'alert' : undefined}
             className={cn(
               'flex items-center gap-1.5 text-[12px] font-medium leading-none mt-0.5',
               hasError ? 'text-red-700' : 'text-gray-500',

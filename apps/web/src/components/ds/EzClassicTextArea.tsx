@@ -1,4 +1,4 @@
-import { TextareaHTMLAttributes, forwardRef } from 'react';
+import { TextareaHTMLAttributes, forwardRef, useId } from 'react';
 import { cn } from './utils';
 import { AlertCircle } from 'lucide-react';
 
@@ -13,12 +13,16 @@ export interface EzClassicTextAreaProps extends TextareaHTMLAttributes<HTMLTextA
  * Dense, square-cornered textarea matching the "classic" Sankhya visual.
  */
 export const EzClassicTextArea = forwardRef<HTMLTextAreaElement, EzClassicTextAreaProps>(
-  ({ label, message, hasError, className, disabled, id, required, ...props }, ref) => {
+  ({ label, message, hasError, className, disabled, id, required, 'aria-describedby': describedByProp, ...props }, ref) => {
+    const messageId = useId();
+    const describedBy = [describedByProp, hasError && message ? messageId : undefined].filter(Boolean).join(' ') || undefined;
     const wrapperClasses = cn(
       'relative flex w-full overflow-hidden transition-colors border',
       'rounded-none bg-white group',
-      'focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600',
-      hasError ? 'border-red-600 ring-red-600' : 'border-gray-300 hover:border-gray-400',
+      'ez-focus-within',
+      hasError
+        ? 'border-red-600 [--color-focus:var(--color-red-600)]'
+        : 'border-gray-300 hover:border-gray-400 focus-within:border-brand-600',
       disabled && 'bg-gray-80 border-gray-200 cursor-not-allowed'
     );
 
@@ -44,6 +48,8 @@ export const EzClassicTextArea = forwardRef<HTMLTextAreaElement, EzClassicTextAr
             id={id}
             disabled={disabled}
             required={required}
+            aria-invalid={hasError || undefined}
+            aria-describedby={describedBy}
             className={cn(
               'flex-1 w-full bg-transparent border-none outline-none text-[13px] text-gray-900 placeholder:text-gray-400',
               'min-h-[68px] p-2 resize-y',
@@ -55,6 +61,8 @@ export const EzClassicTextArea = forwardRef<HTMLTextAreaElement, EzClassicTextAr
 
         {message && (
           <div
+            id={messageId}
+            role={hasError ? 'alert' : undefined}
             className={cn(
               'flex items-center gap-1.5 text-[11px] font-medium leading-none mt-0.5',
               hasError ? 'text-red-700' : 'text-gray-500',

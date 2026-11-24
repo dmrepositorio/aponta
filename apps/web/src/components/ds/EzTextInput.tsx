@@ -1,4 +1,4 @@
-import { forwardRef, InputHTMLAttributes, ReactNode, useState } from 'react';
+import { forwardRef, InputHTMLAttributes, ReactNode, useState, useId } from 'react';
 import { cn } from './utils';
 import { AlertCircle, Eye, EyeOff } from 'lucide-react';
 
@@ -35,6 +35,9 @@ export interface EzTextInputProps
 /**
  * Aponta DS Text Input (inspired by @sankhyalabs/ezui)
  * React native implementation with Tailwind CSS.
+ *
+ * Acessibilidade: sem a prop `id` o campo gera um (useId) e o rótulo se associa a ele; o
+ * asterisco de obrigatório fica `aria-hidden` e o controle recebe `aria-required`.
  */
 export const EzTextInput = forwardRef<HTMLInputElement, EzTextInputProps>(
   (
@@ -49,11 +52,16 @@ export const EzTextInput = forwardRef<HTMLInputElement, EzTextInputProps>(
       disabled,
       type = 'text',
       required,
-      id,
+      id: idProp,
+      'aria-describedby': describedByProp,
       ...props
     },
     ref
   ) => {
+    const generatedId = useId();
+    const id = idProp ?? generatedId;
+    const messageId = `${id}-message`;
+    const describedBy = [describedByProp, hasError && message ? messageId : undefined].filter(Boolean).join(' ') || undefined;
     const isPassword = type === 'password';
     const [passwordVisible, setPasswordVisible] = useState(false);
 
@@ -65,9 +73,11 @@ export const EzTextInput = forwardRef<HTMLInputElement, EzTextInputProps>(
       'relative flex items-center w-full overflow-hidden transition-colors border',
       'rounded-[12px] bg-white group',
       // Focus within handles the active border outline
-      'focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600',
+      'ez-focus-within',
       // Base vs Error border
-      hasError ? 'border-red-600 ring-red-600' : 'border-gray-200 hover:border-gray-300',
+      hasError
+        ? 'border-red-600 [--color-focus:var(--color-red-600)]'
+        : 'border-gray-200 hover:border-gray-300 focus-within:border-brand-600',
       // Disabled state
       disabled && 'bg-gray-80 border-gray-100 cursor-not-allowed',
       // Sizing
@@ -86,7 +96,11 @@ export const EzTextInput = forwardRef<HTMLInputElement, EzTextInputProps>(
             )}
           >
             {label}
-            {required && <span className="ml-1 text-red-600">*</span>}
+            {required && (
+              <span aria-hidden="true" className="ml-1 text-red-600">
+                *
+              </span>
+            )}
           </label>
         )}
 
@@ -108,6 +122,9 @@ export const EzTextInput = forwardRef<HTMLInputElement, EzTextInputProps>(
             type={actualType}
             disabled={disabled}
             required={required}
+            aria-required={required || undefined}
+            aria-invalid={hasError || undefined}
+            aria-describedby={describedBy}
             className={cn(
               'flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full',
               // Padding adjustments based on icons presence
@@ -128,10 +145,9 @@ export const EzTextInput = forwardRef<HTMLInputElement, EzTextInputProps>(
               {isPassword ? (
                 <button
                   type="button"
-                  tabIndex={-1}
                   disabled={disabled}
                   onClick={() => setPasswordVisible(!passwordVisible)}
-                  className="p-0.5 rounded hover:text-gray-700 transition-colors ez-focus"
+                  className="inline-flex items-center justify-center min-h-8 min-w-8 -mr-1.5 rounded hover:text-gray-700 transition-colors ez-focus"
                   aria-label={passwordVisible ? 'Ocultar senha' : 'Mostrar senha'}
                 >
                   {passwordVisible ? (
@@ -149,6 +165,8 @@ export const EzTextInput = forwardRef<HTMLInputElement, EzTextInputProps>(
 
         {message && (
           <div
+            id={messageId}
+            role={hasError ? 'alert' : undefined}
             className={cn(
               'flex items-center gap-1.5 text-[12px] font-medium leading-none mt-0.5',
               hasError ? 'text-red-700' : 'text-gray-500',

@@ -7,6 +7,9 @@ import { EzDateInput } from './EzDateInput';
  * estilização do DS, ícone de calendário clicável (abre o seletor nativo
  * via `showPicker`) e estados de erro/desabilitado. Usado para datas de
  * abertura de chamado, vigência de contrato e prazos de SLA.
+ *
+ * O ícone de calendário é um botão focável (`aria-label="Abrir calendário"`) e o campo
+ * aceita `ref` de objeto e de função (ex.: `register` do react-hook-form).
  */
 const meta: Meta<typeof EzDateInput> = {
   title: 'DS/EzDateInput',
@@ -33,6 +36,14 @@ export const ComValor: Story = {
 };
 
 export const ComErro: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Com `hasError` o controle recebe `aria-invalid="true"` e `aria-describedby` apontando para a mensagem, que tem `role="alert"`. O foco usa o contorno único de 2px do DS (`ez-focus-within`), em vermelho no estado de erro.',
+      },
+    },
+  },
   args: {
     id: 'date-erro',
     label: 'Prazo final do SLA',
