@@ -95,3 +95,21 @@ describe('EzMultiSelect', () => {
     expect(screen.getByText('Fruits')).toHaveClass('text-red-700');
   });
 });
+
+describe('EzMultiSelect rótulo e obrigatório (DS-09)', () => {
+  it('associa o rótulo ao campo mesmo sem a prop id', () => {
+    render(<EzMultiSelect label="Nome" options={[]} />);
+    expect(screen.getByLabelText('Nome')).toBeInTheDocument();
+  });
+
+  it('esconde o asterisco de obrigatório dos leitores de tela e marca aria-required', () => {
+    render(<EzMultiSelect id="nome" label="Nome" required options={[]} />);
+    expect(screen.getByText('*')).toHaveAttribute('aria-hidden', 'true');
+    expect(screen.getByLabelText(/^Nome/)).toHaveAttribute('aria-required', 'true');
+  });
+
+  it('mantém o id informado pelo consumidor', () => {
+    render(<EzMultiSelect label="Nome" id="nome-fixo" options={[]} />);
+    expect(screen.getByLabelText('Nome')).toHaveAttribute('id', 'nome-fixo');
+  });
+});

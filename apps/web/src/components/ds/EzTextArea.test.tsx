@@ -73,3 +73,21 @@ describe('EzTextArea aria de erro (DS-08)', () => {
     expect(screen.getByLabelText('Campo')).toHaveAccessibleDescription('Ajuda externa Valor inválido');
   });
 });
+
+describe('EzTextArea rótulo e obrigatório (DS-09)', () => {
+  it('associa o rótulo ao campo mesmo sem a prop id', () => {
+    render(<EzTextArea label="Nome" />);
+    expect(screen.getByLabelText('Nome')).toBeInTheDocument();
+  });
+
+  it('esconde o asterisco de obrigatório dos leitores de tela e marca aria-required', () => {
+    render(<EzTextArea id="nome" label="Nome" required />);
+    expect(screen.getByText('*')).toHaveAttribute('aria-hidden', 'true');
+    expect(screen.getByLabelText(/^Nome/)).toHaveAttribute('aria-required', 'true');
+  });
+
+  it('mantém o id informado pelo consumidor', () => {
+    render(<EzTextArea label="Nome" id="nome-fixo" />);
+    expect(screen.getByLabelText('Nome')).toHaveAttribute('id', 'nome-fixo');
+  });
+});
