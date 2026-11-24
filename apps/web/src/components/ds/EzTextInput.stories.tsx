@@ -33,6 +33,14 @@ export const ComIcones: Story = {
 };
 
 export const ComErro: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Com `hasError` o controle recebe `aria-invalid="true"` e `aria-describedby` apontando para a mensagem, que tem `role="alert"`.',
+      },
+    },
+  },
   args: {
     label: 'E-mail do cliente',
     leftIcon: <Mail size={16} />,

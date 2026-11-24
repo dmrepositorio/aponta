@@ -1,4 +1,4 @@
-import { InputHTMLAttributes, forwardRef, useRef } from 'react';
+import { InputHTMLAttributes, forwardRef, useRef, useId } from 'react';
 import { cn } from './utils';
 import { AlertCircle, Calendar } from 'lucide-react';
 
@@ -13,8 +13,10 @@ export interface EzDateInputProps extends Omit<InputHTMLAttributes<HTMLInputElem
  * Wraps the native browser date picker with the DS styling.
  */
 export const EzDateInput = forwardRef<HTMLInputElement, EzDateInputProps>(
-  ({ label, message, hasError = false, className, disabled, id, required, ...props }, ref) => {
+  ({ label, message, hasError = false, className, disabled, id, required, 'aria-describedby': describedByProp, ...props }, ref) => {
     // We use a ref to programmatically open the date picker when clicking the icon
+    const messageId = useId();
+    const describedBy = [describedByProp, hasError && message ? messageId : undefined].filter(Boolean).join(' ') || undefined;
     const fallbackRef = useRef<HTMLInputElement>(null);
     const inputRef = (ref as React.RefObject<HTMLInputElement>) || fallbackRef;
 
@@ -65,6 +67,8 @@ export const EzDateInput = forwardRef<HTMLInputElement, EzDateInputProps>(
             type="date"
             disabled={disabled}
             required={required}
+            aria-invalid={hasError || undefined}
+            aria-describedby={describedBy}
             className={cn(
               'flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full',
               'pr-3',
@@ -78,6 +82,8 @@ export const EzDateInput = forwardRef<HTMLInputElement, EzDateInputProps>(
 
         {message && (
           <div
+            id={messageId}
+            role={hasError ? 'alert' : undefined}
             className={cn(
               'flex items-center gap-1.5 text-[12px] font-medium leading-none mt-0.5',
               hasError ? 'text-red-700' : 'text-gray-500',

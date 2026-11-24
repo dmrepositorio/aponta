@@ -1,4 +1,4 @@
-import { forwardRef, InputHTMLAttributes, ReactNode, useState } from 'react';
+import { forwardRef, InputHTMLAttributes, ReactNode, useState, useId } from 'react';
 import { cn } from './utils';
 import { AlertCircle, Eye, EyeOff } from 'lucide-react';
 
@@ -50,10 +50,13 @@ export const EzTextInput = forwardRef<HTMLInputElement, EzTextInputProps>(
       type = 'text',
       required,
       id,
+      'aria-describedby': describedByProp,
       ...props
     },
     ref
   ) => {
+    const messageId = useId();
+    const describedBy = [describedByProp, hasError && message ? messageId : undefined].filter(Boolean).join(' ') || undefined;
     const isPassword = type === 'password';
     const [passwordVisible, setPasswordVisible] = useState(false);
 
@@ -108,6 +111,8 @@ export const EzTextInput = forwardRef<HTMLInputElement, EzTextInputProps>(
             type={actualType}
             disabled={disabled}
             required={required}
+            aria-invalid={hasError || undefined}
+            aria-describedby={describedBy}
             className={cn(
               'flex-1 w-full bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 h-full',
               // Padding adjustments based on icons presence
@@ -149,6 +154,8 @@ export const EzTextInput = forwardRef<HTMLInputElement, EzTextInputProps>(
 
         {message && (
           <div
+            id={messageId}
+            role={hasError ? 'alert' : undefined}
             className={cn(
               'flex items-center gap-1.5 text-[12px] font-medium leading-none mt-0.5',
               hasError ? 'text-red-700' : 'text-gray-500',

@@ -1,4 +1,4 @@
-import { forwardRef, InputHTMLAttributes, ReactNode } from 'react';
+import { forwardRef, InputHTMLAttributes, ReactNode, useId } from 'react';
 import { cn } from './utils';
 import { AlertCircle } from 'lucide-react';
 
@@ -32,9 +32,11 @@ export interface EzClassicInputProps
  */
 export const EzClassicInput = forwardRef<HTMLInputElement, EzClassicInputProps>(
   (
-    { label, message, hasError = false, leftIcon, rightIcon, className, disabled, type = 'text', required, id, ...props },
+    { label, message, hasError = false, leftIcon, rightIcon, className, disabled, type = 'text', required, id, 'aria-describedby': describedByProp, ...props },
     ref
   ) => {
+    const messageId = useId();
+    const describedBy = [describedByProp, hasError && message ? messageId : undefined].filter(Boolean).join(' ') || undefined;
     const wrapperClasses = cn(
       'relative flex items-center w-full overflow-hidden transition-colors border',
       'rounded-none bg-white group h-[32px]',
@@ -77,6 +79,8 @@ export const EzClassicInput = forwardRef<HTMLInputElement, EzClassicInputProps>(
             type={type}
             disabled={disabled}
             required={required}
+            aria-invalid={hasError || undefined}
+            aria-describedby={describedBy}
             className={cn(
               'flex-1 w-full bg-transparent border-none outline-none text-[13px] text-gray-900 placeholder:text-gray-400 h-full',
               !leftIcon && 'pl-2',
@@ -100,6 +104,8 @@ export const EzClassicInput = forwardRef<HTMLInputElement, EzClassicInputProps>(
 
         {message && (
           <div
+            id={messageId}
+            role={hasError ? 'alert' : undefined}
             className={cn(
               'flex items-center gap-1.5 text-[11px] font-medium leading-none mt-0.5',
               hasError ? 'text-red-700' : 'text-gray-500',
