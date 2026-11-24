@@ -77,3 +77,21 @@ describe('EzTextInput rótulo e obrigatório (DS-09)', () => {
     expect(screen.getByLabelText('Nome')).toHaveAttribute('id', 'nome-fixo');
   });
 });
+
+describe('EzTextInput foco do campo (DS-10)', () => {
+  it('usa o contorno único de 2px do DS no wrapper e não o ring-1 brand-600', () => {
+    render(<EzTextInput id="campo" label="Campo" />);
+    const wrapper = screen.getByLabelText('Campo').parentElement;
+    expect(wrapper).toHaveClass('ez-focus-within');
+    expect(wrapper).not.toHaveClass('focus-within:ring-1');
+    expect(wrapper).not.toHaveClass('focus-within:ring-brand-600');
+  });
+
+  it('em erro mantém a cor de erro no contorno de foco', () => {
+    render(<EzTextInput id="campo" label="Campo" hasError message="Valor inválido" />);
+    const wrapper = screen.getByLabelText('Campo').parentElement;
+    expect(wrapper).toHaveClass('border-red-600');
+    expect(wrapper).toHaveClass('[--color-focus:var(--color-red-600)]');
+    expect(wrapper).not.toHaveClass('focus-within:border-brand-600');
+  });
+});
