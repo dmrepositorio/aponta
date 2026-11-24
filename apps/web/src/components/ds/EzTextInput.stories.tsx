@@ -50,6 +50,13 @@ export const ComErro: Story = {
 };
 
 export const Senha: Story = {
+  parameters: {
+    docs: {
+      description: {
+        story: 'O botão de mostrar/ocultar senha entra na ordem de Tab (logo após o campo) e tem alvo mínimo de 32px.',
+      },
+    },
+  },
   args: {
     label: 'Senha de acesso ao portal',
     type: 'password',
