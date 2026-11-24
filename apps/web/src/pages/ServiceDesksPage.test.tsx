@@ -175,7 +175,7 @@ describe('ServiceDesksPage', () => {
 
     await user.click(screen.getByTestId('ez-toolbar-insert-button'));
 
-    const nameInput = await screen.findByRole('textbox', { name: /^nome \*$/i });
+    const nameInput = await screen.findByRole('textbox', { name: /^nome$/i });
     await user.type(nameInput, 'Financeiro');
     await user.click(screen.getByRole('button', { name: /criar/i }));
 
