@@ -32,6 +32,7 @@ Transversais: `using-agent-skills`, `context-engineering`, `source-driven-develo
 - Devolução a `desenvolvimento` (rejeição do QA ou falha do candidato na fila): no máximo 1 vez por entrega. A segunda não volta ao agente: o `dm_qualidade` ou o `dm_entrega` registra o diagnóstico, move para `blocked` e pede a decisão do humano no card, para não gastar tokens em ciclos repetidos. Dois erros iguais de ambiente continuam indo ao `dm_lider`.
 - Nunca Docker, CD ou `aponta_release.py` contra produção; nunca merge fora da fila; nunca credenciais em logs ou fixtures.
 - Perda de contexto entre sessões é declarada, nunca tratada como continuidade comprovada.
+- A seção "Working with Worktrees" da skill `git-workflow-and-versioning` é do pacote upstream e não vale neste projeto; vale o `AGENTS.md` (pasta única, sem worktree, salvo pedido do humano).
 
 ## UI, memória e passagem
 
