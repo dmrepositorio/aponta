@@ -111,6 +111,11 @@ describe('sanitizeTicketDescription: tag desconhecida com esquema perigoso (GH-3
   });
 
   describe('desempenho com entrada hostil', () => {
+    // GH-396: 30 ms era instável no CI (43,9 ms medido numa execução sem
+    // mudança de código). 500 ms segue a #390 e fica ~10x acima do pior caso
+    // honesto (~17 ms local) e abaixo de uma varredura quadrática (>= 700 ms
+    // nestes seis tamanhos, medida com um scan sintético O(n²)).
+    const BUDGET_MS = 500;
     const measure = (input: string) => {
       const start = process.hrtime.bigint();
       sanitize(input);
@@ -124,9 +129,9 @@ describe('sanitizeTicketDescription: tag desconhecida com esquema perigoso (GH-3
       ['espaços longos', '<foo href=' + ' '.repeat(50000) + 'x>'],
       ['aspas sem fechar', '<foo href="' + 'java script '.repeat(5000)],
       ['muitos "<" e ">"', '<>'.repeat(20000)],
-    ])('%s: menos de 30 ms', (_nome, input) => {
+    ])('%s: menos de 500 ms', (_nome, input) => {
       measure(input); // aquecimento do JIT
-      expect(measure(input)).toBeLessThan(30);
+      expect(measure(input)).toBeLessThan(BUDGET_MS);
     });
   });
 });
