@@ -71,7 +71,7 @@ Decisões (confirmadas pelo Alfredo nas rodadas, salvo marca de proposta):
 
 Riscos:
 
-- R1: a Dashboard é um arquivo só; os tickets tocam as mesmas linhas. Mitigação: ordem e bloqueios entre tickets, e trabalho em worktrees exclusivos coordenado por um único integrador.
+- R1: a Dashboard é um arquivo só; os tickets tocam as mesmas linhas. Mitigação: ordem e bloqueios entre tickets, e tickets executados em sequência na pasta do projeto, com uma branch por entrega.
 - R2: jsdom não calcula layout nem toque. Overflow, quebra de linha, sobreposição de rótulos e tooltip por toque são conferidos em Chromium (Playwright) nas quatro larguras, com toque sintetizado; é evidência técnica, não aceite visual.
 - R3: distinguir 6 categorias só com tokens do DS pode não bastar; a legenda com número e percentual evita depender só da cor, e o aceite visual confirma.
 - R4: testes existentes de `DashboardPage.test.tsx` conferem textos e classes que mudam (altura responsiva do gráfico, "Modo TV", posição de cards); precisam ser atualizados junto com cada comportamento, sem enfraquecer a asserção.
