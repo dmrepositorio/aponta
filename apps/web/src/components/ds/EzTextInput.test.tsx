@@ -1,3 +1,4 @@
+import userEvent from '@testing-library/user-event';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { EzTextInput } from './EzTextInput';
@@ -93,5 +94,30 @@ describe('EzTextInput foco do campo (DS-10)', () => {
     expect(wrapper).toHaveClass('border-red-600');
     expect(wrapper).toHaveClass('[--color-focus:var(--color-red-600)]');
     expect(wrapper).not.toHaveClass('focus-within:border-brand-600');
+  });
+});
+
+describe('EzTextInput botão de mostrar senha (DS-11)', () => {
+  it('é alcançável por Tab, sem tabindex negativo', () => {
+    render(<EzTextInput type="password" label="Senha" />);
+    expect(screen.getByRole('button', { name: 'Mostrar senha' })).not.toHaveAttribute('tabindex', '-1');
+  });
+
+  it('entra na ordem de Tab logo depois do campo', async () => {
+    const user = userEvent.setup();
+    render(<EzTextInput type="password" label="Senha" />);
+    await user.tab();
+    expect(screen.getByLabelText(/^Senha/)).toHaveFocus();
+    await user.tab();
+    expect(screen.getByRole('button', { name: 'Mostrar senha' })).toHaveFocus();
+  });
+
+  it('tem alvo mínimo de 32px (size-8) e mantém o aria-label alternado', async () => {
+    const user = userEvent.setup();
+    render(<EzTextInput type="password" label="Senha" />);
+    const button = screen.getByRole('button', { name: 'Mostrar senha' });
+    expect(button).toHaveClass('min-h-8', 'min-w-8');
+    await user.click(button);
+    expect(screen.getByRole('button', { name: 'Ocultar senha' })).toBeInTheDocument();
   });
 });
