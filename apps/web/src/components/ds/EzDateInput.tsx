@@ -1,4 +1,4 @@
-import { InputHTMLAttributes, forwardRef, useRef, useId } from 'react';
+import { InputHTMLAttributes, forwardRef, useCallback, useRef, useId } from 'react';
 import { cn } from './utils';
 import { AlertCircle, Calendar } from 'lucide-react';
 
@@ -17,13 +17,20 @@ export interface EzDateInputProps extends Omit<InputHTMLAttributes<HTMLInputElem
  */
 export const EzDateInput = forwardRef<HTMLInputElement, EzDateInputProps>(
   ({ label, message, hasError = false, className, disabled, id: idProp, required, 'aria-describedby': describedByProp, ...props }, ref) => {
-    // We use a ref to programmatically open the date picker when clicking the icon
     const generatedId = useId();
     const id = idProp ?? generatedId;
     const messageId = `${id}-message`;
     const describedBy = [describedByProp, hasError && message ? messageId : undefined].filter(Boolean).join(' ') || undefined;
-    const fallbackRef = useRef<HTMLInputElement>(null);
-    const inputRef = (ref as React.RefObject<HTMLInputElement>) || fallbackRef;
+    // Referência interna para abrir o seletor; o ref do consumidor (objeto ou função) recebe o mesmo nó.
+    const inputRef = useRef<HTMLInputElement | null>(null);
+    const setRefs = useCallback(
+      (node: HTMLInputElement | null) => {
+        inputRef.current = node;
+        if (typeof ref === 'function') ref(node);
+        else if (ref) ref.current = node;
+      },
+      [ref]
+    );
 
     const wrapperClasses = cn(
       'relative flex items-center w-full overflow-hidden transition-colors border',
@@ -69,11 +76,18 @@ export const EzDateInput = forwardRef<HTMLInputElement, EzDateInputProps>(
           }}
         >
           <div className="flex items-center justify-center shrink-0 pl-3 pr-2 text-gray-500">
-            <Calendar className="w-4 h-4 cursor-pointer" />
+            <button
+              type="button"
+              disabled={disabled}
+              aria-label="Abrir calendário"
+              className="inline-flex items-center justify-center rounded cursor-pointer disabled:cursor-not-allowed ez-focus"
+            >
+              <Calendar className="w-4 h-4" aria-hidden="true" />
+            </button>
           </div>
 
           <input
-            ref={inputRef}
+            ref={setRefs}
             id={id}
             type="date"
             disabled={disabled}
