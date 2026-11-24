@@ -10,6 +10,7 @@ import { AuditQueryDto } from './dto/audit-query.dto';
 import { RevealCredentialDto } from './dto/reveal-credential.dto';
 import { CurrentUserPayload } from '../tickets/decorators/current-user.decorator';
 import { TenantHelper } from '../core/security/tenant.helper';
+import { escapeLikePattern } from '../common/escape-like-pattern';
 
 const DENIED_SENTINEL = '00000000-0000-0000-0000-000000000000';
 
@@ -183,7 +184,7 @@ export class VaultService {
       where.folderId = query.folderId;
     }
     if (query.search) {
-      where.name = { contains: query.search, mode: 'insensitive' };
+      where.name = { contains: escapeLikePattern(query.search), mode: 'insensitive' };
     }
 
     const [total, credentials] = await Promise.all([
@@ -349,7 +350,7 @@ export class VaultService {
     const where: Record<string, unknown> = {};
     if (query.actorId) where.actorId = query.actorId;
     if (query.action) where.action = query.action;
-    if (query.query) where.targetName = { contains: query.query, mode: 'insensitive' };
+    if (query.query) where.targetName = { contains: escapeLikePattern(query.query), mode: 'insensitive' };
     if (query.from || query.to) {
       where.createdAt = {
         ...(query.from ? { gte: new Date(query.from) } : {}),
