@@ -158,6 +158,15 @@
   }
 }
 
+@utility ez-focus-within {
+  /* DS-10: campo com caixa própria (wrapper do input). Mesmo contorno de 2px do ez-focus,
+     disparado pelo foco visível do controle interno. Em erro o wrapper redefine --color-focus. */
+  &:has(:focus-visible) {
+    outline: var(--focus-ring-width) solid var(--color-focus);
+    outline-offset: var(--focus-ring-offset);
+  }
+}
+
 @utility ez-focus-inset {
   &:focus-visible {
     outline: var(--focus-ring-width) solid var(--color-focus);

@@ -35,7 +35,7 @@ export const ComErro: Story = {
     docs: {
       description: {
         story:
-          'Com `hasError` o controle recebe `aria-invalid="true"` e `aria-describedby` apontando para a mensagem, que tem `role="alert"`.',
+          'Com `hasError` o controle recebe `aria-invalid="true"` e `aria-describedby` apontando para a mensagem, que tem `role="alert"`. O foco usa o contorno único de 2px do DS (`ez-focus-within`), em vermelho no estado de erro.',
       },
     },
   },

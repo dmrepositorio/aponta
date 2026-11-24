@@ -23,8 +23,10 @@ export const EzTextArea = forwardRef<HTMLTextAreaElement, EzTextAreaProps>(
     const wrapperClasses = cn(
       'relative flex w-full overflow-hidden transition-colors border',
       'rounded-[12px] bg-white group',
-      'focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600',
-      hasError ? 'border-red-600 ring-red-600' : 'border-gray-200 hover:border-gray-300',
+      'ez-focus-within',
+      hasError
+        ? 'border-red-600 [--color-focus:var(--color-red-600)]'
+        : 'border-gray-200 hover:border-gray-300 focus-within:border-brand-600',
       disabled && 'bg-gray-80 border-gray-100 cursor-not-allowed'
     );
 

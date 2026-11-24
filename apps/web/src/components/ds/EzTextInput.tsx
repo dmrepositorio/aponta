@@ -73,9 +73,11 @@ export const EzTextInput = forwardRef<HTMLInputElement, EzTextInputProps>(
       'relative flex items-center w-full overflow-hidden transition-colors border',
       'rounded-[12px] bg-white group',
       // Focus within handles the active border outline
-      'focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600',
+      'ez-focus-within',
       // Base vs Error border
-      hasError ? 'border-red-600 ring-red-600' : 'border-gray-200 hover:border-gray-300',
+      hasError
+        ? 'border-red-600 [--color-focus:var(--color-red-600)]'
+        : 'border-gray-200 hover:border-gray-300 focus-within:border-brand-600',
       // Disabled state
       disabled && 'bg-gray-80 border-gray-100 cursor-not-allowed',
       // Sizing
