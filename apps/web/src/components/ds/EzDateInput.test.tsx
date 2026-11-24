@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
+import { createRef } from 'react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { EzDateInput } from './EzDateInput';
 
 describe('EzDateInput', () => {
@@ -132,5 +133,63 @@ describe('EzDateInput foco do campo (DS-10)', () => {
     expect(wrapper).toHaveClass('border-red-600');
     expect(wrapper).toHaveClass('[--color-focus:var(--color-red-600)]');
     expect(wrapper).not.toHaveClass('focus-within:border-brand-600');
+  });
+});
+
+describe('EzDateInput ref e ícone de calendário (DS-12)', () => {
+  const original = (HTMLInputElement.prototype as any).showPicker;
+  afterEach(() => {
+    if (original) (HTMLInputElement.prototype as any).showPicker = original;
+    else delete (HTMLInputElement.prototype as any).showPicker;
+  });
+
+  it('com ref de função, entrega o input ao consumidor e o ícone abre o seletor', async () => {
+    const showPicker = vi.fn();
+    (HTMLInputElement.prototype as any).showPicker = showPicker;
+    const refFn = vi.fn();
+    render(<EzDateInput id="dt" label="Data" ref={refFn} />);
+    expect(refFn).toHaveBeenCalledWith(screen.getByLabelText('Data'));
+    await userEvent.click(screen.getByRole('button', { name: 'Abrir calendário' }));
+    expect(showPicker).toHaveBeenCalledTimes(1);
+  });
+
+  it('com ref de função, clicar na caixa do campo abre o seletor (referência interna preservada)', async () => {
+    const showPicker = vi.fn();
+    (HTMLInputElement.prototype as any).showPicker = showPicker;
+    render(<EzDateInput id="dt" label="Data" ref={() => undefined} />);
+    await userEvent.click(screen.getByLabelText('Data').parentElement as HTMLElement);
+    expect(showPicker).toHaveBeenCalledTimes(1);
+  });
+
+  it('com ref de objeto, preserva a referência e o ícone abre o seletor', async () => {
+    const showPicker = vi.fn();
+    (HTMLInputElement.prototype as any).showPicker = showPicker;
+    const refObj = createRef<HTMLInputElement>();
+    render(<EzDateInput id="dt" label="Data" ref={refObj} />);
+    expect(refObj.current).toBe(screen.getByLabelText('Data'));
+    await userEvent.click(screen.getByRole('button', { name: 'Abrir calendário' }));
+    expect(showPicker).toHaveBeenCalledTimes(1);
+  });
+
+  it('o ícone é um botão focável por teclado que abre o seletor com Enter', async () => {
+    const showPicker = vi.fn();
+    (HTMLInputElement.prototype as any).showPicker = showPicker;
+    const user = userEvent.setup();
+    render(<EzDateInput id="dt" label="Data" />);
+    const button = screen.getByRole('button', { name: 'Abrir calendário' });
+    expect(button).not.toHaveAttribute('tabindex', '-1');
+    button.focus();
+    await user.keyboard('{Enter}');
+    expect(showPicker).toHaveBeenCalledTimes(1);
+  });
+
+  it('desabilitado, o botão do ícone fica desabilitado e não abre o seletor', async () => {
+    const showPicker = vi.fn();
+    (HTMLInputElement.prototype as any).showPicker = showPicker;
+    render(<EzDateInput id="dt" label="Data" disabled />);
+    const button = screen.getByRole('button', { name: 'Abrir calendário' });
+    expect(button).toBeDisabled();
+    await userEvent.click(button);
+    expect(showPicker).not.toHaveBeenCalled();
   });
 });
