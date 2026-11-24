@@ -72,3 +72,29 @@ describe('EzDateInput', () => {
     delete (HTMLInputElement.prototype as any).showPicker;
   });
 });
+describe('EzDateInput aria de erro (DS-08)', () => {
+  it('com hasError marca aria-invalid e associa a mensagem como descrição acessível', () => {
+    render(<EzDateInput id="campo" label="Campo" hasError message="Valor inválido" />);
+    const control = screen.getByLabelText('Campo');
+    expect(control).toHaveAttribute('aria-invalid', 'true');
+    expect(control).toHaveAccessibleDescription('Valor inválido');
+    expect(screen.getByRole('alert')).toHaveTextContent('Valor inválido');
+  });
+
+  it('sem erro não marca aria-invalid nem anuncia a mensagem como alerta', () => {
+    render(<EzDateInput id="campo" label="Campo" message="Dica" />);
+    const control = screen.getByLabelText('Campo');
+    expect(control).not.toHaveAttribute('aria-invalid');
+    expect(screen.queryByRole('alert')).toBeNull();
+  });
+
+  it('preserva o aria-describedby do consumidor junto ao da mensagem de erro', () => {
+    render(
+      <>
+        <p id="ajuda-externa">Ajuda externa</p>
+        <EzDateInput id="campo" label="Campo" hasError message="Valor inválido" aria-describedby="ajuda-externa" />
+      </>,
+    );
+    expect(screen.getByLabelText('Campo')).toHaveAccessibleDescription('Ajuda externa Valor inválido');
+  });
+});
