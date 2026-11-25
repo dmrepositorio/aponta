@@ -76,7 +76,7 @@ export const Interactive: Story = {
       return (
         <div className="flex flex-col gap-2">
           <span className="text-[12px] text-gray-500">
-            Clique em uma categoria para selecionar o chamado.
+            Clique, ou use Tab para entrar na árvore, setas para navegar, Direita/Esquerda para expandir e recolher, Home/End e Enter ou Espaço para selecionar.
           </span>
           <EzTree
             nodes={categoriasChamado}
