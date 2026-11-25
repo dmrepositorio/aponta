@@ -84,6 +84,11 @@ export function SchedulePage() {
   const actionsRef = useRef<HTMLDivElement>(null);
   const gridBodyRef = useRef<HTMLDivElement>(null);
 
+  // Roving tabindex das células de hora (Semana/Dia): só uma célula entra na ordem de Tab
+  // (evita 168 paradas na Semana); as setas movem o foco dentro do grid.
+  const [activeSlot, setActiveSlot] = useState<{ dateStr: string; hour: number } | null>(null);
+  const slotRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
+
   // Modals state
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
@@ -371,8 +376,33 @@ export function SchedulePage() {
     setCurrentDate(new Date());
   };
 
+  // Célula de hora que concentra o Tab: a última focada, se ainda visível; senão 08:00 do 1º dia.
+  const visibleDateKeys = visibleDays.map(formatDateKey);
+  const tabStopSlot =
+    activeSlot && visibleDateKeys.includes(activeSlot.dateStr)
+      ? activeSlot
+      : { dateStr: visibleDateKeys[0], hour: 8 };
+
+  const handleSlotKeyDown = (e: React.KeyboardEvent, dateStr: string, hour: number) => {
+    const dayIdx = visibleDateKeys.indexOf(dateStr);
+    let nextDay = dayIdx;
+    let nextHour = hour;
+    switch (e.key) {
+      case 'ArrowUp': nextHour = hour - 1; break;
+      case 'ArrowDown': nextHour = hour + 1; break;
+      case 'ArrowLeft': nextDay = dayIdx - 1; break;
+      case 'ArrowRight': nextDay = dayIdx + 1; break;
+      case 'Home': nextHour = HOURS[0]; break;
+      case 'End': nextHour = HOURS[HOURS.length - 1]; break;
+      default: return;
+    }
+    e.preventDefault();
+    const target = slotRefs.current.get(`${visibleDateKeys[nextDay]}|${nextHour}`);
+    if (target) target.focus();
+  };
+
   // Open creation modal
-  const handleOpenCreate = (dateStr?: string, hour?: number, type: AppointmentType = 'AGENDA') => {
+  const handleOpenCreate =(dateStr?: string, hour?: number, type: AppointmentType = 'AGENDA') => {
     setSelectedAppointment(null);
     setModalInitialDate(dateStr || null);
     setModalInitialType(type);
@@ -851,14 +881,31 @@ export function SchedulePage() {
                         }`}
                       >
                         {/* Hour slots background rows */}
-                        {HOURS.map((hour) => (
-                          <div
-                            key={hour}
-                            onClick={() => canCreate && handleOpenCreate(dateStr, hour)}
-                            className="h-[56px] border-b border-gray-100 hover:bg-teal-50/20 cursor-pointer transition-colors"
-                            title={`Adicionar compromisso às ${String(hour).padStart(2, '0')}:00`}
-                          />
-                        ))}
+                        {HOURS.map((hour) => {
+                          const hourLabel = `${String(hour).padStart(2, '0')}:00`;
+                          if (!canCreate) {
+                            return <div key={hour} className="h-[56px] border-b border-gray-100" />;
+                          }
+                          const isTabStop = tabStopSlot.dateStr === dateStr && tabStopSlot.hour === hour;
+                          const slotKey = `${dateStr}|${hour}`;
+                          return (
+                            <button
+                              key={hour}
+                              type="button"
+                              ref={(el) => {
+                                if (el) slotRefs.current.set(slotKey, el);
+                                else slotRefs.current.delete(slotKey);
+                              }}
+                              tabIndex={isTabStop ? 0 : -1}
+                              onFocus={() => setActiveSlot({ dateStr, hour })}
+                              onKeyDown={(e) => handleSlotKeyDown(e, dateStr, hour)}
+                              onClick={() => handleOpenCreate(dateStr, hour)}
+                              className="block w-full h-[56px] border-b border-gray-100 hover:bg-teal-50/20 cursor-pointer transition-colors ez-focus-inset"
+                              aria-label={`Adicionar compromisso às ${hourLabel}, ${day.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}`}
+                              title={`Adicionar compromisso às ${hourLabel}`}
+                            />
+                          );
+                        })}
 
                         {/* Red Current Time Line */}
                         {isToday && currentTimeTop >= 0 && currentTimeTop <= HOURS.length * 56 && (
@@ -888,9 +935,19 @@ export function SchedulePage() {
                           return (
                             <div
                               key={app.id}
+                              role="button"
+                              tabIndex={0}
+                              aria-label={`${app.ticket?.protocol ? `#${app.ticket.protocol} - ` : ''}${app.title}, ${startHM} às ${endHM}`}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleOpenDetail(app);
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.target !== e.currentTarget) return;
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                  e.preventDefault();
+                                  handleOpenDetail(app);
+                                }
                               }}
                               style={{
                                 top: `${top}px`,
@@ -899,7 +956,7 @@ export function SchedulePage() {
                                 width: `calc(${widthPct}% - 4px)`,
                                 backgroundColor: color,
                               }}
-                              className="absolute mx-0.5 rounded-[6px] p-2 text-white shadow-xs cursor-pointer hover:brightness-105 transition-all overflow-hidden flex flex-col z-10"
+                              className="absolute mx-0.5 rounded-[6px] p-2 text-white shadow-xs cursor-pointer hover:brightness-105 transition-all overflow-hidden flex flex-col z-10 ez-focus"
                             >
                               {/* Time Pill Badge & Type */}
                               <div className="flex items-center justify-between gap-1">
@@ -1033,13 +1090,21 @@ function MonthView({ monthWeeks, currentDate, todayDateStr, appointments, onSele
                 isCurrentMonth ? 'bg-white' : 'bg-gray-50/50'
               }`}
             >
-              <span
-                className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-semibold ${
+              {/* O botão do número é o ponto de teclado da célula (evita button dentro de button);
+                  o clique do mouse continua valendo na célula inteira. */}
+              <button
+                type="button"
+                aria-label={`Abrir dia ${day.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long' })}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSelectDay(day);
+                }}
+                className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-semibold ez-focus ${
                   isToday ? 'bg-[#00a884] text-white' : isCurrentMonth ? 'text-gray-800' : 'text-gray-400'
                 }`}
               >
                 {day.getDate()}
-              </span>
+              </button>
               <div className="mt-1 space-y-0.5">
                 {visible.map((app) => (
                   <button

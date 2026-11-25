@@ -201,4 +201,103 @@ describe('SchedulePage', () => {
 
     expect(api.get).toHaveBeenCalled();
   });
+
+  describe('operação por teclado (SCH-01)', () => {
+    async function tabUntilFocused(user: ReturnType<typeof userEvent.setup>, el: HTMLElement) {
+      for (let i = 0; i < 60 && document.activeElement !== el; i += 1) {
+        await user.tab();
+      }
+      expect(el).toHaveFocus();
+    }
+
+    it('abre o detalhe pelo teclado no cartão de compromisso da vista Semana', async () => {
+      const user = userEvent.setup();
+      vi.mocked(api.get).mockResolvedValue({ data: mockAppointments });
+      loginAs('AGENT');
+      renderPage();
+
+      const card = await screen.findByRole('button', { name: /alinhamento semanal/i });
+      await tabUntilFocused(user, card);
+      await user.keyboard('{Enter}');
+
+      expect(await screen.findByRole('button', { name: 'Editar' })).toBeInTheDocument();
+    });
+
+    it('abre o detalhe com Espaço no cartão da vista Dia', async () => {
+      const user = userEvent.setup();
+      vi.mocked(api.get).mockResolvedValue({ data: mockAppointments });
+      loginAs('AGENT');
+      renderPage();
+
+      await user.click(screen.getByRole('button', { name: 'Dia' }));
+      const card = await screen.findByRole('button', { name: /alinhamento semanal/i });
+      await tabUntilFocused(user, card);
+      await user.keyboard(' ');
+
+      expect(await screen.findByRole('button', { name: 'Editar' })).toBeInTheDocument();
+    });
+
+    it('cria compromisso pela célula de hora com Enter', async () => {
+      const user = userEvent.setup();
+      vi.mocked(api.get).mockResolvedValue({ data: [] });
+      loginAs('AGENT');
+      renderPage();
+
+      const slots = await screen.findAllByRole('button', { name: /adicionar compromisso às/i });
+      await tabUntilFocused(user, slots.find((s) => s.tabIndex === 0) as HTMLElement);
+      await user.keyboard('{ArrowDown}');
+      expect(document.activeElement).toHaveAccessibleName(/adicionar compromisso às 09:00/i);
+      await user.keyboard('{Enter}');
+
+      expect(await screen.findByPlaceholderText(/ex: reunião com cliente/i)).toBeInTheDocument();
+    });
+
+    it('mantém um único ponto de Tab entre as células de hora e navega com setas', async () => {
+      const user = userEvent.setup();
+      vi.mocked(api.get).mockResolvedValue({ data: [] });
+      loginAs('AGENT');
+      renderPage();
+
+      const slots = await screen.findAllByRole('button', { name: /adicionar compromisso às/i });
+      expect(slots.length).toBe(7 * 24);
+      const tabStops = slots.filter((s) => s.tabIndex === 0);
+      expect(tabStops).toHaveLength(1);
+
+      await tabUntilFocused(user, tabStops[0]);
+      const before = tabStops[0].getAttribute('aria-label');
+      await user.keyboard('{ArrowDown}');
+
+      const after = document.activeElement as HTMLElement;
+      expect(after).not.toBe(tabStops[0]);
+      expect(after.getAttribute('aria-label')).not.toBe(before);
+      expect(after.tabIndex).toBe(0);
+      expect(tabStops[0].tabIndex).toBe(-1);
+    });
+
+    it('não oferece células de hora operáveis para perfil sem permissão de criar', async () => {
+      // aguarda a grade renderizar antes de afirmar a ausência
+      vi.mocked(api.get).mockResolvedValue({ data: [] });
+      loginAs('CLIENT');
+      renderPage();
+
+      expect(screen.queryAllByRole('button', { name: /adicionar compromisso às/i })).toHaveLength(0);
+    });
+
+    it('abre o dia pelo teclado no botão do número do dia da vista Mês', async () => {
+      const user = userEvent.setup();
+      vi.mocked(api.get).mockResolvedValue({ data: mockAppointments });
+      loginAs('AGENT');
+      renderPage();
+
+      await user.click(screen.getByRole('button', { name: 'Mês' }));
+      const todayLabel = new Date().toLocaleDateString('pt-BR', { day: 'numeric', month: 'long' });
+      const dayButton = await screen.findByRole('button', { name: new RegExp(`abrir dia ${todayLabel}`, 'i') });
+      await tabUntilFocused(user, dayButton);
+      await user.keyboard('{Enter}');
+
+      expect(
+        await screen.findAllByRole('button', { name: /adicionar compromisso às 09:00/i }),
+      ).toHaveLength(1);
+    });
+  });
 });
