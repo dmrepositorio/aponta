@@ -252,6 +252,27 @@ describe('VaultPage', () => {
     expect(await screen.findByText('Tela de auditoria')).toBeInTheDocument();
   });
 
+  it('troca de pasta só com o teclado na árvore (VLT-01)', async () => {
+    mockDefaultGets();
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    renderPage();
+
+    await waitFor(() => {
+      expect(screen.getByText('Servidor FTP')).toBeInTheDocument();
+    });
+
+    screen.getByTestId('tree-node-root').focus();
+    await user.keyboard('{ArrowDown}');
+    expect(screen.getByTestId('tree-node-f1')).toHaveFocus();
+    await user.keyboard('{Enter}');
+
+    await waitFor(() => {
+      expect(screen.getByText('Pasta:')).toBeInTheDocument();
+    });
+    expect(screen.getByTestId('tree-node-f1')).toHaveAttribute('aria-selected', 'true');
+  });
+
   it('selecting a non-root folder shows its header actions and resets page/revealed state', async () => {
     mockDefaultGets();
     vi.mocked(api.post).mockImplementation(async (_url: string, body: any) => {
