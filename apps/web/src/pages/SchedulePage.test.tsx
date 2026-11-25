@@ -243,9 +243,10 @@ describe('SchedulePage', () => {
       loginAs('AGENT');
       renderPage();
 
-      const slots = screen.getAllByRole('button', { name: /adicionar compromisso às 09:00/i });
-      const slot = slots.find((s) => s.tabIndex === 0) ?? slots[0];
-      await tabUntilFocused(user, slot);
+      const slots = await screen.findAllByRole('button', { name: /adicionar compromisso às/i });
+      await tabUntilFocused(user, slots.find((s) => s.tabIndex === 0) as HTMLElement);
+      await user.keyboard('{ArrowDown}');
+      expect(document.activeElement).toHaveAccessibleName(/adicionar compromisso às 09:00/i);
       await user.keyboard('{Enter}');
 
       expect(await screen.findByPlaceholderText(/ex: reunião com cliente/i)).toBeInTheDocument();
@@ -257,7 +258,7 @@ describe('SchedulePage', () => {
       loginAs('AGENT');
       renderPage();
 
-      const slots = screen.getAllByRole('button', { name: /adicionar compromisso às/i });
+      const slots = await screen.findAllByRole('button', { name: /adicionar compromisso às/i });
       expect(slots.length).toBe(7 * 24);
       const tabStops = slots.filter((s) => s.tabIndex === 0);
       expect(tabStops).toHaveLength(1);
@@ -274,6 +275,7 @@ describe('SchedulePage', () => {
     });
 
     it('não oferece células de hora operáveis para perfil sem permissão de criar', async () => {
+      // aguarda a grade renderizar antes de afirmar a ausência
       vi.mocked(api.get).mockResolvedValue({ data: [] });
       loginAs('CLIENT');
       renderPage();
