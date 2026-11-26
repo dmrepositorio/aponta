@@ -88,7 +88,11 @@ export function useDeleteTechnicalGroup() {
     mutationFn: async (id: string) => {
       await api.delete(`/technical-groups/${id}`);
     },
-    onSuccess: () => void queryClient.invalidateQueries({ queryKey: LIST_KEY }),
+    onSuccess: (_data, id) => {
+      // O detalhe do grupo removido sai do cache: invalidar refaria o GET e devolveria 404.
+      queryClient.removeQueries({ queryKey: [...LIST_KEY, id] });
+      void queryClient.invalidateQueries({ queryKey: LIST_KEY, exact: true });
+    },
   });
 }
 
