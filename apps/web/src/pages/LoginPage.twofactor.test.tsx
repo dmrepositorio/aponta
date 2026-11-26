@@ -43,6 +43,32 @@ describe('LoginPage: segundo fator', () => {
     expect(navigate).not.toHaveBeenCalled();
   });
 
+  it('LOG-06: o campo do código tem ajuda de formato ligada por aria-describedby e teclado adequado', async () => {
+    const user = userEvent.setup();
+    vi.mocked(api.post).mockResolvedValueOnce({ data: { twoFactorRequired: true, challengeToken: 'desafio' } });
+
+    await signIn(user);
+    const field = await codeField();
+
+    const help = screen.getByText(/6 dígitos/i);
+    expect(help).toHaveAttribute('id');
+    expect(field.getAttribute('aria-describedby') ?? '').toContain(help.getAttribute('id'));
+    expect(field).toHaveAttribute('inputmode', 'text');
+    expect(field).toHaveAttribute('autocapitalize', 'off');
+  });
+
+  it('LOG-06: orienta quem perdeu o aplicativo a usar o código de recuperação', async () => {
+    const user = userEvent.setup();
+    vi.mocked(api.post).mockResolvedValueOnce({ data: { twoFactorRequired: true, challengeToken: 'desafio' } });
+
+    await signIn(user);
+    const field = await codeField();
+
+    const lost = screen.getByText(/perdi o aplicativo/i);
+    expect(lost).toHaveTextContent(/código de recuperação/i);
+    expect(field.getAttribute('aria-describedby') ?? '').toContain(lost.getAttribute('id'));
+  });
+
   it('AC-16: o código válido troca o desafio pelo JWT e entra no sistema', async () => {
     const user = userEvent.setup();
     vi.mocked(api.post)
