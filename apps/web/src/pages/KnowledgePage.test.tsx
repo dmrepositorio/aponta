@@ -531,7 +531,7 @@ describe('KnowledgePage', () => {
       expect(api.delete).toHaveBeenCalledWith('/articles/article-1');
     });
     expect(window.confirm).not.toHaveBeenCalled();
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
   });
 
   it('renders article content as real HTML, not escaped text', async () => {
@@ -1480,6 +1480,24 @@ describe('KnowledgePage F3-29', () => {
       expect(await screen.findByText('Artigo 11')).toBeInTheDocument();
       expect(screen.getByText('Página 2 de 2')).toBeInTheDocument();
       expect(screen.queryByText('Artigo 0')).not.toBeInTheDocument();
+    });
+
+    it('shows the last page when the page in the URL is past the end', async () => {
+      mockArticleList(
+        Array.from({ length: 12 }, (_, i) => ({
+          id: `extra-${i}`,
+          title: `Artigo ${i}`,
+          content: 'Conteúdo',
+          visibility: 'PUBLIC',
+          tags: [],
+          updatedAt: '2026-01-01T00:00:00.000Z',
+        })),
+      );
+      loginAs('CLIENT');
+      renderAt('/knowledge?folder=folder-1&page=9');
+
+      expect(await screen.findByText('Página 2 de 2')).toBeInTheDocument();
+      expect(screen.getByText('Artigo 11')).toBeInTheDocument();
     });
 
     it('falls back to the folders grid when the folder in the URL does not exist', async () => {

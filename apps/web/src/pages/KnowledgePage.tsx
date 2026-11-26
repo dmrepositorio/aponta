@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { keepPreviousData, useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { LayoutGrid, List as ListIcon } from 'lucide-react';
 import { api } from '../lib/api';
 import { useAuthStore } from '../stores/authStore';
@@ -18,6 +19,7 @@ import {
   EzSpinner,
   EzTag,
   EzTextInput,
+  EzToast,
 } from '../components/ds';
 import { cn } from '../components/ds/utils';
 import { KnowledgeFolder, KnowledgeFoldersGrid } from '../components/knowledge/KnowledgeFoldersGrid';
@@ -26,6 +28,7 @@ import {
   type KnowledgeAttachment,
 } from '../components/knowledge/KnowledgeArticleAttachments';
 import { KnowledgeArticleCard } from '../components/knowledge/KnowledgeArticleCard';
+import { knowledgeApiError } from '../components/knowledge/knowledgeApiError';
 import { FOCUS_RING, KNOWLEDGE_PRIMARY } from '../components/knowledge/knowledgeStyles';
 
 type ArticleVisibility = 'PUBLIC' | 'PRIVATE';
@@ -67,6 +70,20 @@ type ArticleSort = 'updated_desc' | 'title_asc' | 'title_desc';
 type ViewMode = 'list' | 'grid';
 
 const PAGE_SIZE = 10;
+const SEARCH_DEBOUNCE_MS = 300;
+const NOTICE_MS = 5000;
+
+const SORT_VALUES: ArticleSort[] = ['updated_desc', 'title_asc', 'title_desc'];
+
+/** "1 grupo, 2 clientes": resumo do compartilhamento escolhido (vazio quando nada foi escolhido). */
+function sharingSummary(groupCount: number, organizationCount: number): string {
+  const parts: string[] = [];
+  if (groupCount > 0) parts.push(`${groupCount} ${groupCount === 1 ? 'grupo' : 'grupos'}`);
+  if (organizationCount > 0) {
+    parts.push(`${organizationCount} ${organizationCount === 1 ? 'cliente' : 'clientes'}`);
+  }
+  return parts.join(', ');
+}
 
 export function KnowledgePage() {
   const user = useAuthStore((state) => state.user);
@@ -78,27 +95,74 @@ export function KnowledgePage() {
   const canDelete = user?.role === 'ADMIN';
 
   const queryClient = useQueryClient();
-  // Tela inicial do painel de Conhecimento agora é a grade de pastas
-  // (DMTE-87, Stage 1); null = grade de pastas, string = dentro de uma pasta.
-  const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
-  const [search, setSearch] = useState('');
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [sort, setSort] = useState<ArticleSort>('updated_desc');
-  const [viewMode, setViewMode] = useState<ViewMode>('list');
-  const [page, setPage] = useState(1);
+  // KNW-03: pasta aberta, busca, tags, ordenação, modo e página moram na URL
+  // (?folder, q, tags, sort, view, page): recarregar ou voltar restaura o estado
+  // e pasta/busca viram link compartilhável. Valores padrão ficam fora da URL.
+  // Sem ?folder = grade de pastas (DMTE-87, Stage 1).
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedFolderId = searchParams.get('folder') || null;
+  const search = searchParams.get('q') ?? '';
+  const tagsParam = searchParams.get('tags') ?? '';
+  const selectedTags = useMemo(() => tagsParam.split(',').filter(Boolean), [tagsParam]);
+  const sortParam = searchParams.get('sort');
+  const sort: ArticleSort = SORT_VALUES.includes(sortParam as ArticleSort)
+    ? (sortParam as ArticleSort)
+    : 'updated_desc';
+  const viewMode: ViewMode = searchParams.get('view') === 'grid' ? 'grid' : 'list';
+  const pageParam = Number.parseInt(searchParams.get('page') ?? '', 10);
+  const page = Number.isFinite(pageParam) && pageParam >= 1 ? pageParam : 1;
+
+  /** Aplica as mudanças à URL; null/'' remove a chave. `push` abre uma entrada no histórico (pasta). */
+  const updateParams = useCallback(
+    (patch: Record<string, string | null>, push = false) => {
+      setSearchParams(
+        (prev) => {
+          const next = new URLSearchParams(prev);
+          for (const [key, value] of Object.entries(patch)) {
+            if (value === null || value === '') next.delete(key);
+            else next.set(key, value);
+          }
+          return next;
+        },
+        { replace: !push },
+      );
+    },
+    [setSearchParams],
+  );
+
+  const CLEAR_VIEW_STATE = { q: null, tags: null, sort: null, view: null, page: null };
+  const openFolder = (id: string) => updateParams({ folder: id, ...CLEAR_VIEW_STATE }, true);
+  const closeFolder = () => updateParams({ folder: null, ...CLEAR_VIEW_STATE }, true);
+
+  // KNW-04: o campo é local (digitação sem atraso) e a busca só vai à URL, e
+  // portanto à API, 300 ms depois da última tecla.
+  const [searchText, setSearchText] = useState(search);
+  useEffect(() => {
+    setSearchText(search);
+  }, [search]);
+  useEffect(() => {
+    if (searchText === search) return undefined;
+    const timer = setTimeout(
+      () => updateParams({ q: searchText, page: null }),
+      SEARCH_DEBOUNCE_MS,
+    );
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchText]);
+
+  const setSort = (value: ArticleSort) =>
+    updateParams({ sort: value === 'updated_desc' ? null : value, page: null });
+  const setViewMode = (value: ViewMode) => updateParams({ view: value === 'grid' ? 'grid' : null });
+  const setPage = (value: number) => updateParams({ page: value > 1 ? String(value) : null });
+
   const searchRef = useRef<HTMLInputElement>(null);
   const titleRef = useRef<HTMLInputElement>(null);
   const [articleToDelete, setArticleToDelete] = useState<Article | null>(null);
 
-  // Tiflux-parity: ordenação e filtro por múltiplas tags reiniciam a paginação.
-  useEffect(() => {
-    setPage(1);
-  }, [search, selectedTags, sort]);
-
   // Reutiliza a mesma queryKey da KnowledgeFoldersGrid para ler o nome da
   // pasta selecionada (breadcrumb) a partir do cache já populado por ela,
   // sem disparar uma segunda requisição.
-  const { data: folders } = useQuery<KnowledgeFolder[]>({
+  const { data: folders, isFetching: foldersFetching } = useQuery<KnowledgeFolder[]>({
     queryKey: ['knowledge-folders'],
     queryFn: async () => {
       const res = await api.get('/knowledge-folders');
@@ -108,7 +172,16 @@ export function KnowledgePage() {
   });
   const selectedFolder = folders?.find((f) => f.id === selectedFolderId);
 
-  const { data: articles, isLoading, isError, refetch } = useQuery<Article[]>({
+  // Pasta inexistente ou sem acesso na URL: cai na grade (a lista de pastas já
+  // vem filtrada pelo que o usuário pode ver).
+  useEffect(() => {
+    if (selectedFolderId && folders && !foldersFetching && !selectedFolder) {
+      updateParams({ folder: null, ...CLEAR_VIEW_STATE });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedFolderId, folders, foldersFetching, selectedFolder]);
+
+  const { data: articles, isLoading, isError, isPlaceholderData, refetch } = useQuery<Article[]>({
     queryKey: ['articles', { search, tags: selectedTags, sort, folderId: selectedFolderId }],
     queryFn: async () => {
       const params = new URLSearchParams();
@@ -122,6 +195,12 @@ export function KnowledgePage() {
       return res.data;
     },
     enabled: selectedFolderId !== null,
+    // KNW-04: a lista anterior fica na tela enquanto a nova carrega, mas só a da
+    // mesma pasta (outra pasta mostraria artigos que não são dela).
+    placeholderData: (previous, previousQuery) => {
+      const previousFolder = (previousQuery?.queryKey[1] as { folderId?: string | null } | undefined)?.folderId;
+      return previousFolder === selectedFolderId ? keepPreviousData(previous) : undefined;
+    },
   });
 
   // Fontes para o diálogo de compartilhamento e para o multi-select de
@@ -167,20 +246,24 @@ export function KnowledgePage() {
 
   const hasCachedList = !!articles?.length;
   const totalPages = Math.max(1, Math.ceil((articles?.length ?? 0) / PAGE_SIZE));
+  // Uma página além do fim (link antigo, artigo excluído) mostra a última.
+  const currentPage = Math.min(page, totalPages);
   const pagedArticles = useMemo(
-    () => (articles ?? []).slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE),
-    [articles, page]
+    () => (articles ?? []).slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE),
+    [articles, currentPage]
   );
 
   const hasFilters = search !== '' || selectedTags.length > 0;
   const clearFilters = () => {
-    setSearch('');
-    setSelectedTags([]);
+    setSearchText('');
+    updateParams({ q: null, tags: null, page: null });
     searchRef.current?.focus();
   };
 
+  // Tiflux-parity: filtro por múltiplas tags reinicia a paginação.
   const toggleTag = (t: string) => {
-    setSelectedTags((prev) => (prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]));
+    const next = selectedTags.includes(t) ? selectedTags.filter((x) => x !== t) : [...selectedTags, t];
+    updateParams({ tags: next.join(','), page: null });
   };
 
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -221,7 +304,19 @@ export function KnowledgePage() {
     },
   });
 
+  // Título e conteúdo de quando o formulário abriu: base do "Cancelar" com confirmação.
+  const initialForm = useRef({ title: '', content: '' });
+  const [isDiscardOpen, setIsDiscardOpen] = useState(false);
+  const [savedNotice, setSavedNotice] = useState<string | null>(null);
+  useEffect(() => {
+    if (!savedNotice) return undefined;
+    const timer = setTimeout(() => setSavedNotice(null), NOTICE_MS);
+    return () => clearTimeout(timer);
+  }, [savedNotice]);
+
   const openNewForm = () => {
+    initialForm.current = { title: '', content: '' };
+    saveMutation.reset();
     setEditingId(null);
     setTitle('');
     setContent('');
@@ -235,6 +330,8 @@ export function KnowledgePage() {
   };
 
   const openEditForm = (art: Article) => {
+    initialForm.current = { title: art.title, content: art.content };
+    saveMutation.reset();
     setEditingId(art.id);
     setTitle(art.title);
     setContent(art.content);
@@ -270,9 +367,10 @@ export function KnowledgePage() {
         content,
         visibility,
         tags: tagsInput.split(',').map((t) => t.trim()).filter(Boolean),
-        agentGroupIds,
-        organizationIds,
-        autoShareWithNewOrganizations,
+        // KNW-06: só Privado compartilha; Público não carrega listas antigas.
+        agentGroupIds: visibility === 'PRIVATE' ? agentGroupIds : [],
+        organizationIds: visibility === 'PRIVATE' ? organizationIds : [],
+        autoShareWithNewOrganizations: visibility === 'PRIVATE' ? autoShareWithNewOrganizations : false,
         serviceCatalogItemIds,
       };
 
@@ -288,23 +386,30 @@ export function KnowledgePage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['articles'] });
+      setSavedNotice(editingId ? 'Artigo atualizado.' : 'Artigo salvo.');
       setIsFormOpen(false);
     },
   });
 
+  const isFormDirty = title !== initialForm.current.title || content !== initialForm.current.content;
+  const cancelForm = () => {
+    if (isFormDirty) {
+      setIsDiscardOpen(true);
+      return;
+    }
+    setIsFormOpen(false);
+  };
+
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       await api.delete(`/articles/${id}`);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['articles'] });
     },
   });
 
   if (selectedFolderId === null) {
     return (
       <div className="p-8 flex-1 overflow-y-auto">
-        <KnowledgeFoldersGrid onOpenFolder={setSelectedFolderId} canAuthor={canAuthor} />
+        <KnowledgeFoldersGrid onOpenFolder={openFolder} canAuthor={canAuthor} />
       </div>
     );
   }
@@ -314,7 +419,7 @@ export function KnowledgePage() {
       <EzBreadcrumb
         className="mb-4"
         items={[
-          { label: 'Pastas', onClick: () => setSelectedFolderId(null) },
+          { label: 'Pastas', onClick: closeFolder },
           { label: selectedFolder?.name ?? '...' },
         ]}
       />
@@ -330,8 +435,8 @@ export function KnowledgePage() {
             ref={searchRef}
             type="search"
             placeholder="Buscar palavra-chave..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
             title="busca por palavra-chave"
             className="w-full md:w-[280px]"
           />
@@ -426,13 +531,22 @@ export function KnowledgePage() {
                 </EzComboBox>
               </div>
               {visibility === 'PRIVATE' && (
-                <EzButton
-                  type="button"
-                  variant="secondary"
-                  onClick={() => setIsShareModalOpen(true)}
-                >
-                  Compartilhar
-                </EzButton>
+                <>
+                  <EzButton
+                    type="button"
+                    variant="secondary"
+                    onClick={() => setIsShareModalOpen(true)}
+                  >
+                    Compartilhar
+                  </EzButton>
+                  {sharingSummary(agentGroupIds.length, organizationIds.length) && (
+                    <EzTag
+                      variant="gray"
+                      label={sharingSummary(agentGroupIds.length, organizationIds.length)}
+                      className="mb-2"
+                    />
+                  )}
+                </>
               )}
             </div>
 
@@ -494,13 +608,17 @@ export function KnowledgePage() {
             {saveMutation.isError && (
               <EzAlert variant="error">
                 Falha ao {editingId ? 'atualizar' : 'salvar'} o artigo.
+                {(() => {
+                  const reason = knowledgeApiError(saveMutation.error, '');
+                  return reason ? ` ${reason}` : null;
+                })()}
               </EzAlert>
             )}
             <div className="flex gap-2 pt-2">
               <EzButton type="submit" className={KNOWLEDGE_PRIMARY} disabled={saveMutation.isPending}>
                 {editingId ? 'Atualizar' : 'Salvar'}
               </EzButton>
-              <EzButton type="button" variant="secondary" onClick={() => setIsFormOpen(false)}>
+              <EzButton type="button" variant="secondary" onClick={cancelForm}>
                 Cancelar
               </EzButton>
             </div>
@@ -612,6 +730,7 @@ export function KnowledgePage() {
       <div
         data-testid="knowledge-articles"
         data-view-mode={viewMode}
+        aria-busy={isPlaceholderData || undefined}
         className={
           viewMode === 'grid'
             ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'
@@ -627,7 +746,10 @@ export function KnowledgePage() {
             canAuthor={canAuthor}
             canDelete={canDelete}
             onEdit={() => openEditForm(art)}
-            onDelete={() => setArticleToDelete(art)}
+            onDelete={() => {
+              deleteMutation.reset();
+              setArticleToDelete(art);
+            }}
           />
         ))}
       </div>
@@ -670,12 +792,50 @@ export function KnowledgePage() {
         variant="danger"
         title="Excluir artigo"
         message={`Excluir o artigo "${articleToDelete?.title ?? ''}"?`}
-        onCancel={() => setArticleToDelete(null)}
-        onConfirm={() => {
-          if (articleToDelete) deleteMutation.mutate(articleToDelete.id);
+        confirmLoading={deleteMutation.isPending}
+        onCancel={() => {
           setArticleToDelete(null);
+          deleteMutation.reset();
+        }}
+        onConfirm={() => {
+          if (!articleToDelete || deleteMutation.isPending) return;
+          // KNW-01: o diálogo fecha só no sucesso; a recusa da API aparece nele.
+          deleteMutation.mutate(articleToDelete.id, {
+            onSuccess: () => {
+              queryClient.invalidateQueries({ queryKey: ['articles'] });
+              setArticleToDelete(null);
+            },
+          });
+        }}
+      >
+        {deleteMutation.isError && (
+          <EzAlert variant="error" className="mt-3">
+            {knowledgeApiError(deleteMutation.error, 'Não foi possível excluir o artigo.')}
+          </EzAlert>
+        )}
+      </EzDialog>
+
+      <EzDialog
+        open={isDiscardOpen}
+        variant="warning"
+        title="Descartar alterações?"
+        message="O título e o conteúdo alterados serão perdidos."
+        confirmLabel="Descartar"
+        cancelLabel="Continuar editando"
+        onCancel={() => setIsDiscardOpen(false)}
+        onConfirm={() => {
+          setIsDiscardOpen(false);
+          setIsFormOpen(false);
         }}
       />
+
+      {savedNotice && (
+        <div className="pointer-events-none fixed right-4 top-4 z-40 w-[calc(100%-2rem)] max-w-sm">
+          <div>
+            <EzToast variant="success" title={savedNotice} onClose={() => setSavedNotice(null)} />
+          </div>
+        </div>
+      )}
 
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-2 mt-6">
@@ -683,20 +843,20 @@ export function KnowledgePage() {
             type="button"
             variant="tertiary"
             size="small"
-            disabled={page <= 1}
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={currentPage <= 1}
+            onClick={() => setPage(Math.max(1, currentPage - 1))}
           >
             Anterior
           </EzButton>
           <span className="text-sm text-gray-600">
-            Página {page} de {totalPages}
+            Página {currentPage} de {totalPages}
           </span>
           <EzButton
             type="button"
             variant="tertiary"
             size="small"
-            disabled={page >= totalPages}
-            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={currentPage >= totalPages}
+            onClick={() => setPage(Math.min(totalPages, currentPage + 1))}
           >
             Próxima
           </EzButton>
