@@ -208,3 +208,126 @@ describe('EzMoneyInput', () => {
     expect(field()).toBeDisabled();
   });
 });
+
+describe('EzMoneyInput editing the masked text (QA CTR-07)', () => {
+  const at = (position: number) => ({ initialSelectionStart: position, initialSelectionEnd: position });
+
+  it('keeps the value when deleting the last digit of a thousands amount', async () => {
+    const user = userEvent.setup();
+    render(<Harness />);
+    await user.type(field(), '1500');
+    expect(field()).toHaveValue('R$ 1.500');
+    await user.type(field(), '{Backspace}');
+    expect(field()).toHaveValue('R$ 150');
+    expect(cents()).toBe('15000');
+    await user.type(field(), '0');
+    expect(field()).toHaveValue('R$ 1.500');
+    expect(cents()).toBe('150000');
+  });
+
+  it.each([
+    ['1000', 'R$ 100', '10000'],
+    ['10000', 'R$ 1.000', '100000'],
+    ['123456', 'R$ 12.345', '1234500'],
+    ['1234567', 'R$ 123.456', '12345600'],
+  ])('Backspace after typing %s leaves %s', async (typed, shown, expected) => {
+    const user = userEvent.setup();
+    render(<Harness />);
+    await user.type(field(), typed);
+    await user.type(field(), '{Backspace}');
+    expect(field()).toHaveValue(shown);
+    expect(cents()).toBe(expected);
+  });
+
+  it('deletes digit by digit through the comma without changing the order of magnitude', async () => {
+    const user = userEvent.setup();
+    render(<Harness initial={150050} />);
+    expect(field()).toHaveValue('R$ 1.500,50');
+    await user.type(field(), '{Backspace}');
+    expect(field()).toHaveValue('R$ 1.500,5');
+    expect(cents()).toBe('150050');
+    await user.type(field(), '{Backspace}');
+    expect(field()).toHaveValue('R$ 1.500,');
+    expect(cents()).toBe('150000');
+    await user.type(field(), '{Backspace}');
+    expect(field()).toHaveValue('R$ 1.500');
+    expect(cents()).toBe('150000');
+    await user.type(field(), '{Backspace}');
+    expect(field()).toHaveValue('R$ 150');
+    expect(cents()).toBe('15000');
+  });
+
+  it('deletes everything down to an empty field, and reports null', async () => {
+    const user = userEvent.setup();
+    render(<Harness initial={150000} />);
+    await user.type(field(), '{Backspace}'.repeat(12));
+    expect(field()).toHaveValue('');
+    expect(cents()).toBe('null');
+  });
+
+  it('Delete in the middle removes the digit after the caret and regroups', async () => {
+    const user = userEvent.setup();
+    render(<Harness />);
+    await user.type(field(), '1500');
+    await user.type(field(), '{Delete}', at(3));
+    expect(field()).toHaveValue('R$ 500');
+    expect(cents()).toBe('50000');
+  });
+
+  it('Delete at the very start (on the R) never changes the value', async () => {
+    const user = userEvent.setup();
+    render(<Harness initial={150000} />);
+    await user.type(field(), '{Delete}', at(0));
+    expect(field()).toHaveValue('R$ 1.500,00');
+    expect(cents()).toBe('150000');
+  });
+
+  it('replaces everything when all the text is selected and a digit is typed', async () => {
+    const user = userEvent.setup();
+    render(<Harness initial={150000} />);
+    await user.type(field(), '7', { initialSelectionStart: 0, initialSelectionEnd: 11 });
+    expect(field()).toHaveValue('R$ 7');
+    expect(cents()).toBe('700');
+  });
+
+  it('a decimal point typed at the end becomes the decimal comma', async () => {
+    const user = userEvent.setup();
+    render(<Harness />);
+    await user.type(field(), '1500.50');
+    expect(field()).toHaveValue('R$ 1.500,50');
+    expect(cents()).toBe('150050');
+  });
+
+  it('pastes an amount with thousands: 1.500,50 is accepted and 1,234 is still refused', () => {
+    render(<Harness initial={100} />);
+    fireEvent.paste(field(), { clipboardData: { getData: () => '1.500,50' } });
+    expect(field()).toHaveValue('R$ 1.500,50');
+    expect(cents()).toBe('150050');
+    fireEvent.paste(field(), { clipboardData: { getData: () => '1,234' } });
+    expect(cents()).toBe('150050');
+  });
+
+  it('typing digit by digit up to the ceiling stops accepting digits past it', async () => {
+    const user = userEvent.setup();
+    render(<Harness max={2147483647} />);
+    await user.type(field(), '2147483647');
+    expect(field()).toHaveValue('R$ 21.474.836');
+    expect(cents()).toBe('2147483600');
+    await user.type(field(), ',47');
+    expect(field()).toHaveValue('R$ 21.474.836,47');
+    expect(cents()).toBe('2147483647');
+    await user.type(field(), '9');
+    expect(cents()).toBe('2147483647');
+    await user.type(field(), '{Backspace}{Backspace}');
+    expect(field()).toHaveValue('R$ 21.474.836,');
+    expect(cents()).toBe('2147483600');
+  });
+
+  it('survives an edit round trip: delete then retype keeps the original value', async () => {
+    const user = userEvent.setup();
+    render(<Harness initial={123456} />);
+    await user.type(field(), '{Backspace}6');
+    expect(field()).toHaveValue('R$ 1.234,56');
+    expect(cents()).toBe('123456');
+  });
+});

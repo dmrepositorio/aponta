@@ -110,3 +110,36 @@ describe('parseMoney when pasting', () => {
     expect(paste('0')?.text).toBe('R$ 0,00');
   });
 });
+
+describe('parseMoney deleting a digit from the masked text (QA CTR-07)', () => {
+  const del = (raw: string) => parseMoney(raw, 'typing', { deleting: true });
+  it('reads the mask thousands dot as a thousands separator, never as decimal', () => {
+    expect(del('R$ 1.50')).toEqual({ cents: 15000, text: 'R$ 150' });
+    expect(del('R$ 1.00')).toEqual({ cents: 10000, text: 'R$ 100' });
+    expect(del('R$ 10.00')).toEqual({ cents: 100000, text: 'R$ 1.000' });
+    expect(del('R$ 12.34')).toEqual({ cents: 123400, text: 'R$ 1.234' });
+  });
+  it('still reads a comma as the decimal separator while deleting', () => {
+    expect(del('R$ 1.500,5')).toEqual({ cents: 150050, text: 'R$ 1.500,5' });
+    expect(del('R$ 1.500,')).toEqual({ cents: 150000, text: 'R$ 1.500,' });
+  });
+  it('ignores stray R and $ characters, so deleting inside the prefix never corrupts the value', () => {
+    expect(del('$ 1.500')).toEqual({ cents: 150000, text: 'R$ 1.500' });
+    expect(del(' 1.500')).toEqual({ cents: 150000, text: 'R$ 1.500' });
+  });
+});
+
+describe('formatCents and parseMoney round trip', () => {
+  const values = [0, 1, 9, 10, 99, 100, 101, 999, 1000, 12345, 99999, 100000, 150000, 150050, 123456, 1000000, 100000000, 2147483647, 900719925474099];
+  it.each(values)('keeps %i cents through format, typing and paste', (cents) => {
+    const text = formatCents(cents);
+    expect(parseMoney(text, 'typing')?.cents).toBe(cents);
+    expect(parseMoney(text, 'paste')?.cents).toBe(cents);
+    expect(parseMoney(text, 'typing', { deleting: true })?.cents).toBe(cents);
+  });
+  it.each(values)('keeps the typed text of %i reais stable when re-read', (cents) => {
+    const typed = parseMoney(String(Math.floor(cents / 100)), 'typing');
+    expect(typed).not.toBeNull();
+    expect(parseMoney(typed!.text, 'typing')).toEqual(typed);
+  });
+});
