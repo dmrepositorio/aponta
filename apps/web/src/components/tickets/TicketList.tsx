@@ -282,7 +282,7 @@ export function TicketList({
       setIsColumnMenuOpen(false);
       columnButtonRef.current?.focus();
     },
-    isColumnMenuOpen,
+    isColumnMenuOpen && !isNarrow,
   );
 
   useEffect(() => {
@@ -303,6 +303,18 @@ export function TicketList({
     const nextDir: 'asc' | 'desc' = sort.field === field && sort.dir === 'asc' ? 'desc' : 'asc';
     setSort({ field, dir: nextDir });
     onSortChange?.(field, nextDir);
+  };
+
+  const sortableColumns = columns.filter((col) => col.sortField);
+  const handleSortFieldChange = (field: string) => {
+    if (!field) return;
+    setSort((prev) => ({ field, dir: prev.dir }));
+    onSortChange?.(field, sort.dir);
+  };
+  const handleSortDirChange = (dir: 'asc' | 'desc') => {
+    if (!sort.field) return;
+    setSort({ field: sort.field, dir });
+    onSortChange?.(sort.field, dir);
   };
 
   const toggleGroup = (key: string) => {
@@ -444,6 +456,8 @@ export function TicketList({
           </button>
         )}
 
+        {/* Nos cartões as colunas não existem: o menu de colunas não teria efeito. */}
+        {!isNarrow && (
         <div ref={columnMenuRef} className="relative">
           <button
             ref={columnButtonRef}
@@ -476,6 +490,40 @@ export function TicketList({
             </div>
           )}
         </div>
+        )}
+
+        {/* Sem cabeçalho de coluna nos cartões, a ordenação vem destes dois campos. */}
+        {isNarrow && tickets.length > 0 && (
+          <>
+            <EzSelect
+              aria-label="Ordenar por"
+              variant="compact"
+              className="w-auto"
+              value={sort.field ?? ''}
+              onChange={(e) => handleSortFieldChange(e.target.value)}
+            >
+              <option value="" disabled>
+                Ordenar por
+              </option>
+              {sortableColumns.map((col) => (
+                <option key={col.id} value={col.sortField}>
+                  {col.label}
+                </option>
+              ))}
+            </EzSelect>
+            <EzSelect
+              aria-label="Direção da ordenação"
+              variant="compact"
+              className="w-auto"
+              value={sort.dir}
+              disabled={!sort.field}
+              onChange={(e) => handleSortDirChange(e.target.value as 'asc' | 'desc')}
+            >
+              <option value="asc">Crescente</option>
+              <option value="desc">Decrescente</option>
+            </EzSelect>
+          </>
+        )}
 
         {isGrouped && tickets.length > 0 && totalPages && totalPages > 1 && (
           <span className="text-[12px] text-gray-500">

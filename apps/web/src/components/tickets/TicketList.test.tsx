@@ -792,14 +792,14 @@ describe('F3-11: menu de colunas, grupos e cartões da Lista', () => {
     mockViewport(true);
     await renderList({ sortBy: 'title', sortDir: 'desc' });
 
-    const field = screen.getByRole('combobox', { name: 'Ordenar por' });
+    const field = screen.getByLabelText('Ordenar por', { selector: 'select' });
     expect(field).toHaveValue('title');
-    const labels = within(field).getAllByRole('option').map((o) => o.textContent);
+    const labels = Array.from(field.querySelectorAll('option')).map((o) => o.textContent);
     for (const label of ['Número', 'Título', 'Prioridade', 'Status', 'Responsável', 'Criado em', 'Atualizado em']) {
       expect(labels).toContain(label);
     }
     expect(labels).not.toContain('Cliente');
-    expect(screen.getByRole('combobox', { name: 'Direção da ordenação' })).toHaveValue('desc');
+    expect(screen.getByLabelText('Direção da ordenação', { selector: 'select' })).toHaveValue('desc');
   });
 
   it('TKT-14: nos cartões escolher o campo e a direção chama onSortChange', async () => {
@@ -808,10 +808,10 @@ describe('F3-11: menu de colunas, grupos e cartões da Lista', () => {
     const user = userEvent.setup();
     await renderList({ onSortChange, sortBy: 'title', sortDir: 'asc' });
 
-    await user.selectOptions(screen.getByRole('combobox', { name: 'Ordenar por' }), 'status');
+    await user.selectOptions(screen.getByLabelText('Ordenar por', { selector: 'select' }), 'status');
     expect(onSortChange).toHaveBeenLastCalledWith('status', 'asc');
 
-    await user.selectOptions(screen.getByRole('combobox', { name: 'Direção da ordenação' }), 'desc');
+    await user.selectOptions(screen.getByLabelText('Direção da ordenação', { selector: 'select' }), 'desc');
     expect(onSortChange).toHaveBeenLastCalledWith('status', 'desc');
   });
 
