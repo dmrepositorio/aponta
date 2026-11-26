@@ -347,7 +347,7 @@ describe('ContractsPage', () => {
     expect(within(dialog).getByText('Contrato 1 · Empresa 1')).toBeInTheDocument();
     expect(api.delete).not.toHaveBeenCalled();
 
-    await user.click(within(dialog).getByRole('button', { name: 'Confirmar' }));
+    await user.click(within(dialog).getByRole('button', { name: 'Excluir' }));
     await waitFor(() => {
       expect(api.delete).toHaveBeenCalledWith('/contracts/c1');
     });
@@ -400,7 +400,7 @@ describe('ContractsPage', () => {
 
     await screen.findByText('Empresa 1');
     const dialog = await openDeleteDialog(user, 'all');
-    await user.click(within(dialog).getByRole('button', { name: 'Confirmar' }));
+    await user.click(within(dialog).getByRole('button', { name: 'Excluir 3 contratos' }));
 
     const failures = await within(dialog).findAllByRole('listitem');
     expect(failures).toHaveLength(2);
@@ -427,7 +427,7 @@ describe('ContractsPage', () => {
 
     await screen.findByText('Empresa 1');
     const dialog = await openDeleteDialog(user, 'all');
-    await user.click(within(dialog).getByRole('button', { name: 'Confirmar' }));
+    await user.click(within(dialog).getByRole('button', { name: 'Excluir 3 contratos' }));
     await within(dialog).findAllByRole('listitem');
     expect(api.delete).toHaveBeenCalledTimes(3);
 
@@ -445,7 +445,7 @@ describe('ContractsPage', () => {
     });
   });
 
-  it('disables Confirmar while the deletion is running', async () => {
+  it('disables Excluir while the deletion is running', async () => {
     vi.mocked(api.get).mockResolvedValue({ data: namedContracts(2) });
     let finish: (value: unknown) => void = () => undefined;
     vi.mocked(api.delete).mockImplementation(
@@ -457,10 +457,10 @@ describe('ContractsPage', () => {
 
     await screen.findByText('Empresa 1');
     const dialog = await openDeleteDialog(user, 1);
-    await user.click(within(dialog).getByRole('button', { name: 'Confirmar' }));
+    await user.click(within(dialog).getByRole('button', { name: 'Excluir' }));
 
     await waitFor(() => {
-      expect(within(dialog).getByRole('button', { name: 'Confirmar' })).toBeDisabled();
+      expect(within(dialog).getByRole('button', { name: 'Excluir' })).toBeDisabled();
     });
     expect(api.delete).toHaveBeenCalledTimes(1);
 
@@ -1097,6 +1097,57 @@ describe('ContractsPage F3-34', () => {
         expect(screen.getByTestId('ez-toolbar-record-count')).toHaveTextContent('2 de 2'),
       );
       expect(screen.getByText('Empresa 2')).toBeInTheDocument();
+    });
+  });
+
+  describe('CTR-04 rótulo do botão de exclusão', () => {
+    const openDialog = async (user: ReturnType<typeof userEvent.setup>, rows: number) => {
+      const boxes = screen.getAllByRole('checkbox');
+      for (let i = 1; i <= rows; i += 1) await user.click(boxes[i]);
+      await user.click(screen.getByTestId('ez-toolbar-delete-button'));
+      return screen.findByRole('dialog');
+    };
+
+    it('names the confirm button "Excluir" for one contract', async () => {
+      mockList(named(2));
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      renderPage();
+      await screen.findByText('Empresa 1');
+      const dialog = await openDialog(user, 1);
+      expect(within(dialog).getByRole('button', { name: 'Excluir' })).toBeInTheDocument();
+      expect(within(dialog).queryByRole('button', { name: 'Confirmar' })).not.toBeInTheDocument();
+    });
+
+    it('names the confirm button with the count for several contracts, including the ones hidden by "e mais N"', async () => {
+      mockList(named(7));
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      renderPage();
+      await screen.findByText('Empresa 1');
+      const dialog = await openDialog(user, 3);
+      expect(within(dialog).getByRole('button', { name: 'Excluir 3 contratos' })).toBeInTheDocument();
+      await user.click(within(dialog).getByRole('button', { name: 'Cancelar' }));
+      const boxes = screen.getAllByRole('checkbox');
+      for (let i = 4; i <= 7; i += 1) await user.click(boxes[i]);
+      await user.click(screen.getByTestId('ez-toolbar-delete-button'));
+      const again = await screen.findByRole('dialog');
+      expect(within(again).getByRole('button', { name: 'Excluir 7 contratos' })).toBeInTheDocument();
+      expect(within(again).getByText('e mais 2')).toBeInTheDocument();
+    });
+
+    it('goes back to "Tentar novamente" after a failure and does not call the API before the click', async () => {
+      mockList(named(2));
+      vi.mocked(api.delete).mockRejectedValue({ response: { data: { message: 'Falhou' } } });
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      renderPage();
+      await screen.findByText('Empresa 1');
+      const dialog = await openDialog(user, 1);
+      expect(api.delete).not.toHaveBeenCalled();
+      await user.click(within(dialog).getByRole('button', { name: 'Excluir' }));
+      expect(await within(dialog).findByRole('button', { name: 'Tentar novamente' })).toBeInTheDocument();
+      expect(api.delete).toHaveBeenCalledTimes(1);
     });
   });
 });
