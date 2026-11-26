@@ -1,11 +1,13 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { api } from '../../lib/api';
 import { useAuthStore } from '../../stores/authStore';
 import type { TicketComment } from './TicketComments';
 import { commentsQueryKey } from './TicketComments';
+import { cn } from '../ds/utils';
 import { EzAlert, EzButton, EzCheck, EzTextArea } from '../ds';
 
 const commentSchema = z.object({
@@ -14,6 +16,26 @@ const commentSchema = z.object({
 });
 
 type CommentFormValues = z.infer<typeof commentSchema>;
+
+// GH-448 DET-14: rascunho por ticket em sessionStorage (por viewer, some ao fechar a aba).
+const draftKey = (ticketId: string) => `aponta:comment-draft:${ticketId}`;
+
+function readDraft(ticketId: string): string {
+  try {
+    return window.sessionStorage.getItem(draftKey(ticketId)) ?? '';
+  } catch {
+    return '';
+  }
+}
+
+function writeDraft(ticketId: string, content: string) {
+  try {
+    if (content) window.sessionStorage.setItem(draftKey(ticketId), content);
+    else window.sessionStorage.removeItem(draftKey(ticketId));
+  } catch {
+    // storage indisponível (modo privado/bloqueado): o rascunho só não é preservado.
+  }
+}
 
 interface CommentFormProps {
   ticketId: string;
@@ -40,10 +62,16 @@ export function CommentForm({ ticketId }: CommentFormProps) {
     formState: { errors },
   } = useForm<CommentFormValues>({
     resolver: zodResolver(commentSchema),
-    defaultValues: { content: '', isInternal: false },
+    defaultValues: { content: readDraft(ticketId), isInternal: false },
   });
 
   const isInternal = watch('isInternal');
+  const content = watch('content');
+  const showInternal = canMarkInternal && isInternal;
+
+  useEffect(() => {
+    writeDraft(ticketId, content);
+  }, [ticketId, content]);
 
   const mutation = useMutation({
     mutationFn: async (values: CommentFormValues) => {
@@ -58,6 +86,7 @@ export function CommentForm({ ticketId }: CommentFormProps) {
     },
     onSuccess: () => {
       reset();
+      writeDraft(ticketId, '');
       void queryClient.invalidateQueries({
         queryKey: commentsQueryKey(ticketId),
       });
@@ -72,7 +101,11 @@ export function CommentForm({ ticketId }: CommentFormProps) {
     <form
       onSubmit={handleSubmit(onSubmit)}
       noValidate
-      className="space-y-3 rounded-lg border border-gray-200 bg-white p-4"
+      data-internal={showInternal ? 'true' : undefined}
+      className={cn(
+        'space-y-3 rounded-lg border p-4',
+        showInternal ? 'border-yellow-300 bg-yellow-100' : 'border-gray-200 bg-white',
+      )}
     >
       <EzTextArea
         id="comment-content"
@@ -80,8 +113,20 @@ export function CommentForm({ ticketId }: CommentFormProps) {
         rows={3}
         hasError={!!errors.content}
         message={errors.content?.message}
+        aria-describedby={showInternal ? 'comment-internal-hint' : undefined}
+        onKeyDown={(e) => {
+          if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+            e.preventDefault();
+            if (!mutation.isPending) void handleSubmit(onSubmit)();
+          }
+        }}
         {...register('content')}
       />
+      {showInternal && (
+        <p id="comment-internal-hint" className="text-[12px] font-medium text-yellow-800">
+          Nota interna: o cliente não vê este comentário.
+        </p>
+      )}
 
       {canMarkInternal && (
         <EzCheck

@@ -334,7 +334,7 @@ export function TicketDetailPage() {
                 <h3 className="text-[15px] font-semibold text-gray-900">
                   Enviar resposta para o cliente
                 </h3>
-                <CommentForm ticketId={ticket.id} />
+                <CommentForm key={ticket.id} ticketId={ticket.id} />
               </div>
               <div className="space-y-4 pt-4 border-t border-gray-100">
                 <h3 className="text-[15px] font-semibold text-gray-900">
