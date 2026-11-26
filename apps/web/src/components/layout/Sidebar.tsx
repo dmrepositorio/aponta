@@ -123,6 +123,7 @@ export function Sidebar({ inDrawer = false, onNavigate }: SidebarProps = {}) {
           leftIcon={Plus}
           onClick={() => go('/tickets/new')}
           label={collapsed ? undefined : 'Novo Ticket'}
+          aria-label="Novo Ticket"
           title="Novo Ticket"
         />
       </div>

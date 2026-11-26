@@ -13,6 +13,13 @@ const meta: Meta<typeof EzButton> = {
   argTypes: {
     variant: { control: 'select', options: ['primary', 'secondary', 'tertiary'] },
     size: { control: 'select', options: ['x-small', 'small', 'medium', 'large'] },
+    loading: { control: 'boolean' },
+    disabledReason: { control: 'text' },
+    type: {
+      control: 'select',
+      options: ['button', 'submit', 'reset'],
+      description: 'Padrão "button": só envia formulário com type="submit" explícito.',
+    },
   },
 };
 export default meta;
@@ -44,4 +51,52 @@ export const Sizes: Story = {
 
 export const Disabled: Story = {
   args: { label: 'Indisponível', disabled: true },
+};
+
+export const Loading: Story = {
+  args: { label: 'Salvar', loading: true },
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'Ação assíncrona em andamento: aria-busy, spinner e clique bloqueado (onClick não dispara).',
+      },
+    },
+  },
+};
+
+export const LoadingVariants: Story = {
+  render: () => (
+    <div className="flex items-center gap-3">
+      <EzButton label="Primário" loading />
+      <EzButton label="Secundário" variant="secondary" loading />
+      <EzButton label="Terciário" variant="tertiary" loading />
+    </div>
+  ),
+};
+
+export const DisabledWithReason: Story = {
+  render: () => (
+    <div className="flex items-center gap-3">
+      <EzButton label="Aprovar" disabled disabledReason="Preencha o cliente para aprovar" />
+      <EzButton
+        label="Buscar CNPJ"
+        variant="secondary"
+        disabled
+        disabledReason="Informe o CNPJ antes de buscar"
+      />
+    </div>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          'O motivo fica em aria-describedby (texto oculto) e title; funciona mesmo onde title não aparece em botão desabilitado.',
+      },
+    },
+  },
+};
+
+export const IconOnly: Story = {
+  args: { leftIcon: Trash2, variant: 'tertiary', 'aria-label': 'Remover item' },
 };

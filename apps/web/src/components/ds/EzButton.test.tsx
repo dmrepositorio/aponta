@@ -31,10 +31,18 @@ describe('EzButton', () => {
   });
 
   it('renders as icon-only when label is omitted but icon is passed', () => {
-    const { container } = render(<EzButton leftIcon={Ticket} />);
+    const { container } = render(<EzButton leftIcon={Ticket} aria-label="Abrir ticket" />);
     expect(container.querySelector('svg')).toBeInTheDocument();
     // No label rendered
     expect(container.textContent).toBe('');
+    expect(screen.getByRole('button', { name: 'Abrir ticket' })).toBeInTheDocument();
+  });
+
+  it('requires an accessible name when there is no label nor children (type-level, checked by tsc)', () => {
+    // @ts-expect-error icon-only without aria-label/aria-labelledby must not compile
+    const unnamed = <EzButton leftIcon={Ticket} />;
+    expect(unnamed).toBeTruthy();
+    expect(<EzButton leftIcon={Ticket} aria-labelledby="x" />).toBeTruthy();
   });
 
   it('uses the shared focus token instead of the brand-200 ring', () => {
