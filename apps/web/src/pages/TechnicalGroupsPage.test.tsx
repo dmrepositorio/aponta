@@ -397,3 +397,86 @@ describe('TechnicalGroupsPage: rascunho da aba Informações (TG-04, TG-05)', ()
     expect(screen.getByLabelText('Nome')).toHaveValue('Suporte N1 B');
   });
 });
+
+describe('TechnicalGroupsPage: modal de criação (TG-06)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(api.get).mockImplementation((url: string) =>
+      url === '/technical-groups' ? Promise.resolve({ data: GROUP_LIST }) : Promise.reject(new Error(`Unexpected GET ${url}`)),
+    );
+    vi.mocked(api.post).mockResolvedValue({ data: {} });
+  });
+
+  async function openCreate() {
+    renderPage();
+    await userEvent.click(await screen.findByRole('button', { name: 'Novo grupo' }));
+    return expectDialog('Novo grupo de atendentes');
+  }
+
+  it('o campo Nome recebe o foco ao abrir', async () => {
+    const dialog = await openCreate();
+
+    await waitFor(() => expect(within(dialog).getByLabelText('Nome')).toHaveFocus());
+  });
+
+  it('Criar com nome vazio mostra "Informe o nome" no campo e não chama a API', async () => {
+    const dialog = await openCreate();
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Criar' }));
+
+    await waitFor(() => expect(within(dialog).queryByText('Informe o nome')).toBeInTheDocument());
+    expect(within(dialog).getByLabelText('Nome')).toBeInvalid();
+    expect(api.post).not.toHaveBeenCalled();
+  });
+
+  it('nome só com espaços também mostra "Informe o nome"', async () => {
+    const dialog = await openCreate();
+    await userEvent.type(within(dialog).getByLabelText('Nome'), '   {Enter}');
+
+    await waitFor(() => expect(within(dialog).queryByText('Informe o nome')).toBeInTheDocument());
+    expect(api.post).not.toHaveBeenCalled();
+  });
+
+  it('Enter no campo Nome envia o formulário', async () => {
+    const dialog = await openCreate();
+    await userEvent.type(within(dialog).getByLabelText('Nome'), 'Suporte N2{Enter}');
+
+    await waitFor(() =>
+      expect(api.post).toHaveBeenCalledWith('/technical-groups', { name: 'Suporte N2', description: undefined }),
+    );
+  });
+
+  it('o erro some quando o usuário volta a digitar o nome', async () => {
+    const dialog = await openCreate();
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Criar' }));
+    await waitFor(() => expect(within(dialog).queryByText('Informe o nome')).toBeInTheDocument());
+    await userEvent.type(within(dialog).getByLabelText('Nome'), 'A');
+
+    expect(within(dialog).queryByText('Informe o nome')).not.toBeInTheDocument();
+  });
+
+  it('erro da API (duplicidade) aparece no modal e o modal continua aberto', async () => {
+    vi.mocked(api.post).mockRejectedValue(apiError('Já existe um grupo com esse nome'));
+    const dialog = await openCreate();
+    await userEvent.type(within(dialog).getByLabelText('Nome'), 'Suporte N1{Enter}');
+
+    await waitFor(() => expect(within(dialog).queryByText('Já existe um grupo com esse nome')).toBeInTheDocument());
+    expect(screen.getByRole('dialog', { name: 'Novo grupo de atendentes' })).toBeInTheDocument();
+  });
+
+  it('criação com sucesso fecha o modal e mostra "Grupo criado"', async () => {
+    const dialog = await openCreate();
+    await userEvent.type(within(dialog).getByLabelText('Nome'), 'Suporte N2{Enter}');
+
+    await expectText('Grupo criado');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('Cancelar não é submit: fecha sem chamar a API', async () => {
+    const dialog = await openCreate();
+    await userEvent.type(within(dialog).getByLabelText('Nome'), 'Suporte N2');
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Cancelar' }));
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(api.post).not.toHaveBeenCalled();
+  });
+});
