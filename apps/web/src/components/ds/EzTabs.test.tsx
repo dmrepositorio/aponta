@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { useState } from 'react';
@@ -26,10 +26,10 @@ describe('EzTabs', () => {
     // Active pill gets bg-brand-100
     expect(screen.getByText('Settings')).toHaveClass('bg-brand-100');
     
-    // Disabled tab has opacity and disabled attribute
+    // Disabled tab keeps the disabled attribute (no opacity, see DS-26)
     const disabledTab = screen.getByText('Danger Zone');
     expect(disabledTab).toBeDisabled();
-    expect(disabledTab).toHaveClass('opacity-50');
+    expect(disabledTab.className).not.toContain('opacity-50');
   });
 
   it('fires onChange when a non-disabled tab is clicked', async () => {
@@ -201,6 +201,68 @@ describe('EzTabs', () => {
       expect(ezTabId('x', 'a')).toBe('x-tab-a');
       expect(ezTabPanelId('x', 'a')).toBe('x-panel-a');
       expect(screen.getByRole('tab', { name: 'D' })).toHaveAttribute('aria-controls', 'x-panel-d');
+    });
+  });
+
+
+  describe('overflow e aba desabilitada (DS-26)', () => {
+    const many = Array.from({ length: 8 }, (_, i) => ({ id: `t${i}`, label: `Aba ${i}` }));
+
+    function mockOverflow(el: HTMLElement, scrollWidth: number, clientWidth: number, scrollLeft = 0) {
+      Object.defineProperty(el, 'scrollWidth', { configurable: true, value: scrollWidth });
+      Object.defineProperty(el, 'clientWidth', { configurable: true, value: clientWidth });
+      Object.defineProperty(el, 'scrollLeft', { configurable: true, writable: true, value: scrollLeft });
+    }
+
+    it('shows no overflow indicator when the tabs fit', () => {
+      render(<EzTabs tabs={many} activeTab="t0" onChange={vi.fn()} />);
+      expect(screen.queryByTestId('ez-tabs-overflow-end')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('ez-tabs-overflow-start')).not.toBeInTheDocument();
+    });
+
+    it('shows the end indicator when the list overflows and the start one after scrolling', () => {
+      render(<EzTabs tabs={many} activeTab="t0" onChange={vi.fn()} />);
+      const list = screen.getByRole('tablist');
+      mockOverflow(list, 900, 390, 0);
+      fireEvent.scroll(list);
+      expect(screen.getByTestId('ez-tabs-overflow-end')).toBeInTheDocument();
+      expect(screen.queryByTestId('ez-tabs-overflow-start')).not.toBeInTheDocument();
+
+      list.scrollLeft = 200;
+      fireEvent.scroll(list);
+      expect(screen.getByTestId('ez-tabs-overflow-start')).toBeInTheDocument();
+      expect(screen.getByTestId('ez-tabs-overflow-end')).toBeInTheDocument();
+
+      list.scrollLeft = 510;
+      fireEvent.scroll(list);
+      expect(screen.queryByTestId('ez-tabs-overflow-end')).not.toBeInTheDocument();
+    });
+
+    it('scrolls the active tab into view on mount and when it changes', () => {
+      const scrollIntoView = vi.fn();
+      Element.prototype.scrollIntoView = scrollIntoView;
+      try {
+        const { rerender } = render(<EzTabs tabs={many} activeTab="t0" onChange={vi.fn()} />);
+        expect(scrollIntoView).toHaveBeenCalledWith({ block: 'nearest', inline: 'nearest' });
+        scrollIntoView.mockClear();
+        rerender(<EzTabs tabs={many} activeTab="t5" onChange={vi.fn()} />);
+        expect(scrollIntoView).toHaveBeenCalledTimes(1);
+        expect(scrollIntoView.mock.contexts[0]).toBe(screen.getByRole('tab', { name: 'Aba 5' }));
+      } finally {
+        delete (Element.prototype as { scrollIntoView?: unknown }).scrollIntoView;
+      }
+    });
+
+    it('styles disabled tabs with a gray text token instead of opacity-50 in both variants', () => {
+      for (const variant of ['line', 'pills'] as const) {
+        const { unmount } = render(<EzTabs tabs={dummyTabs} activeTab="1" onChange={vi.fn()} variant={variant} />);
+        const disabled = screen.getByRole('tab', { name: 'Danger Zone' });
+        expect(disabled).toBeDisabled();
+        expect(disabled.className).not.toContain('opacity-50');
+        expect(disabled).toHaveClass('text-gray-400');
+        expect(disabled).toHaveClass('cursor-not-allowed');
+        unmount();
+      }
     });
   });
 });
