@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { apiErrorMessage } from '../hooks/useUsers';
+import { apiErrorMessage, apiErrorStatus } from '../hooks/useUsers';
 import {
   Copy,
   Eye,
@@ -74,6 +74,13 @@ const SECRET_FIELDS: Record<
     hidden: 'Senha ocultada',
   },
 };
+
+// A 403 is a permission problem, anything else is treated as a failed request; the server text is never shown.
+function loadErrorMessage(error: unknown, what: 'pastas' | 'senhas') {
+  return apiErrorStatus(error) === 403
+    ? `Acesso negado: você não tem permissão para ver as ${what} deste cofre.`
+    : `Não foi possível carregar as ${what}. Verifique sua conexão e tente novamente.`;
+}
 
 function CopyButton({
   copied,
@@ -582,32 +589,12 @@ export function VaultPage() {
     );
   };
 
-  // Only the queries that failed are fetched again.
-  const retryLoad = () => {
-    if (foldersQuery.isError) void foldersQuery.refetch();
-    if (credentialsQuery.isError) void credentialsQuery.refetch();
-  };
-
-  if (foldersQuery.isLoading || credentialsQuery.isLoading)
-    return (
-      <EzPageLayout header={<EzPageHeader title="Cofre de Senhas" />}>
-        <div className="flex justify-center p-8">
-          <EzSpinner label="Carregando cofre..." />
-        </div>
-      </EzPageLayout>
-    );
-  if (foldersQuery.isError || credentialsQuery.isError)
-    return (
-      <EzPageLayout header={<EzPageHeader title="Cofre de Senhas" />}>
-        <div className="space-y-3 p-8">
-          <EzAlert variant="error">Erro ao carregar o cofre de senhas.</EzAlert>
-          <EzButton variant="secondary" label="Tentar de novo" onClick={retryLoad} />
-        </div>
-      </EzPageLayout>
-    );
-
+  // Each region (tree, list) loads, fails and retries on its own; the header, tree and search stay on screen.
   const credentials = credentialsQuery.data?.data ?? [];
-  const meta = credentialsQuery.data?.meta;
+  const meta = credentialsQuery.isError ? undefined : credentialsQuery.data?.meta;
+  const retryButton = (refetch: () => unknown) => (
+    <EzButton variant="secondary" size="small" label="Tentar de novo" onClick={() => void refetch()} />
+  );
 
   return (
     <EzPageLayout
@@ -636,6 +623,16 @@ export function VaultPage() {
             onSelect={handleSelectFolder}
             defaultExpandedIds={[]}
           />
+          {foldersQuery.isLoading && (
+            <div className="flex justify-center p-4">
+              <EzSpinner label="Carregando pastas..." />
+            </div>
+          )}
+          {foldersQuery.isError && (
+            <EzAlert variant="error" className="mt-3" action={retryButton(foldersQuery.refetch)}>
+              {loadErrorMessage(foldersQuery.error, 'pastas')}
+            </EzAlert>
+          )}
         </EzCardItem>
 
         <EzCardItem flat className="overflow-hidden">
@@ -697,8 +694,32 @@ export function VaultPage() {
             </EzAlert>
           )}
 
-          {!credentials.length ? (
-            <EzEmptyCard title="Nenhuma credencial liberada para esta operação." />
+          {credentialsQuery.isError ? (
+            <div className="p-4">
+              <EzAlert variant="error" action={retryButton(credentialsQuery.refetch)}>
+                {loadErrorMessage(credentialsQuery.error, 'senhas')}
+              </EzAlert>
+            </div>
+          ) : credentialsQuery.isLoading ? (
+            <div className="flex justify-center p-8">
+              <EzSpinner label="Carregando cofre..." />
+            </div>
+          ) : !credentials.length ? (
+            search ? (
+              <EzEmptyCard
+                title={`Nenhuma senha encontrada para "${search}"`}
+                action={<EzButton variant="secondary" label="Limpar busca" onClick={() => handleSearch('')} />}
+              />
+            ) : (
+              <EzEmptyCard
+                title="Esta pasta ainda não tem senhas"
+                action={
+                  canEdit ? (
+                    <EzButton variant="primary" label="Nova senha" leftIcon={KeyRound} onClick={() => openCredentialModal({})} />
+                  ) : undefined
+                }
+              />
+            )
           ) : (
           <div className="overflow-x-auto">
           <table className="w-full text-left text-[14px]">

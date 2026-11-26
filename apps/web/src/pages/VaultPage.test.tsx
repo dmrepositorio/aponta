@@ -1856,7 +1856,7 @@ describe('VaultPage — estados vazios e erro de carga por região (VLT-09, VLT-
       await user.click(screen.getByTestId('tree-node-f1'));
       await user.click(await screen.findByRole('button', { name: 'Nova senha' }));
       const dialog = screen.getByRole('dialog', { name: 'Nova senha' });
-      expect((fieldFor(dialog, 'Pasta') as HTMLSelectElement).value).toBe('f1');
+      expect((dialog.querySelector('select') as HTMLSelectElement).value).toBe('f1');
     });
 
     it('does not offer "Nova senha" in the empty folder to a non-ADMIN role', async () => {
