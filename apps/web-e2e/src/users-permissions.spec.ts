@@ -81,6 +81,8 @@ test.describe('grupo de permissões concede MANAGE_USERS e a mudança reflete nu
         (r) => r.url().includes('/permission-groups/') && r.url().endsWith('/permissions') && r.request().method() === 'PATCH',
       );
       await page.getByRole('button', { name: 'Salvar permissões' }).click();
+      // F3-28 PG-01: o PATCH só sai depois de confirmar o resumo da alteração.
+      await page.getByRole('dialog').getByRole('button', { name: 'Confirmar' }).click();
       expect((await savedPermissions).status()).toBe(200);
 
       await page.getByRole('tab', { name: 'Vínculos' }).click();

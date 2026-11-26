@@ -1,10 +1,11 @@
-import { useMemo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, Plus } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { useQuery, type UseMutationResult } from '@tanstack/react-query';
+import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
 import {
   EzButton,
   EzCardItem,
   EzCheck,
+  EzDialog,
   EzDoubleList,
   EzEmptyCard,
   EzListItem,
@@ -15,8 +16,10 @@ import {
   EzTabs,
   EzTextArea,
   EzTextInput,
+  EzToast,
 } from '../components/ds';
 import { api } from '../lib/api';
+import { apiErrorMessage } from '../hooks/useUsers';
 import {
   usePermissionGroups,
   usePermissionGroup,
@@ -24,11 +27,29 @@ import {
   useCreatePermissionGroup,
   useUpdatePermissionGroup,
   useUpdatePermissionGroupPermissions,
+  useDeletePermissionGroup,
   usePermissionGroupUserMutations,
   usePermissionGroupTechnicalGroupMutations,
 } from '../hooks/usePermissionGroups';
 
 type DetailTab = 'info' | 'permissions' | 'links';
+
+type Notice = { variant: 'success' | 'error'; title: string };
+type Notify = (variant: Notice['variant'], title: string) => void;
+
+interface PendingRemoval {
+  kind: 'user' | 'technical';
+  id: string;
+  name: string;
+}
+
+const TOAST_MS = 4000;
+const ACTION_ERROR_FALLBACK = 'Não foi possível concluir a ação. Tente novamente.';
+const plural = (count: number, one: string, many: string) => `${count} ${count === 1 ? one : many}`;
+
+function sameSet(a: Set<string>, b: Set<string>) {
+  return a.size === b.size && [...a].every((key) => b.has(key));
+}
 
 const CATEGORY_LABELS: Record<string, string> = {
   ADMINISTRATIVE: 'Permissões administrativas',
@@ -105,20 +126,62 @@ function CreateGroupModal({ onClose }: { onClose: () => void }) {
   );
 }
 
-function GroupDetail({ groupId, onBack }: { groupId: string; onBack: () => void }) {
+function GroupDetail({
+  groupId,
+  onBack,
+  onNotify,
+  onDeleted,
+  onDirtyChange,
+}: {
+  groupId: string;
+  onBack: () => void;
+  onNotify: Notify;
+  onDeleted: () => void;
+  onDirtyChange: (dirty: boolean) => void;
+}) {
   const { data: group, isLoading } = usePermissionGroup(groupId);
   const { data: catalog } = usePermissionCatalog();
   const [tab, setTab] = useState<DetailTab>('info');
+  const [pendingTab, setPendingTab] = useState<DetailTab | null>(null);
   const updateMutation = useUpdatePermissionGroup(groupId);
   const updatePermissionsMutation = useUpdatePermissionGroupPermissions(groupId);
+  const deleteMutation = useDeletePermissionGroup();
   const { addUser, removeUser } = usePermissionGroupUserMutations(groupId);
   const { addTechnicalGroup, removeTechnicalGroup } = usePermissionGroupTechnicalGroupMutations(groupId);
 
   const { data: allUsers } = useAllUsers();
   const { data: allTechnicalGroups } = useAllTechnicalGroups();
 
-  const [infoDraft, setInfoDraft] = useState<{ name: string; description: string } | null>(null);
-  const [selectedKeys, setSelectedKeys] = useState<Set<string> | null>(null);
+  const [confirmingSave, setConfirmingSave] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [pendingRemoval, setPendingRemoval] = useState<PendingRemoval | null>(null);
+
+  // Rascunhos: só existem depois da primeira edição e voltam ao valor do servidor sempre que ele
+  // muda (ex.: depois de Salvar ou de uma edição externa), em vez de nascerem no primeiro render.
+  const [infoEdits, setInfoEdits] = useState<{ name: string; description: string } | null>(null);
+  const [permissionEdits, setPermissionEdits] = useState<Set<string> | null>(null);
+
+  const serverKeys = useMemo(() => new Set(group?.permissions ?? []), [group?.permissions]);
+  const serverKeysSignature = [...serverKeys].sort().join('|');
+  const infoDraft = infoEdits ?? (group ? { name: group.name, description: group.description ?? '' } : null);
+  const selectedKeys = permissionEdits ?? serverKeys;
+  const infoDirty =
+    !!infoEdits && !!group && (infoEdits.name !== group.name || infoEdits.description !== (group.description ?? ''));
+  const permissionsDirty = !!permissionEdits && !sameSet(permissionEdits, serverKeys);
+  const dirty = infoDirty || permissionsDirty;
+
+  useEffect(() => {
+    setPermissionEdits(null);
+  }, [groupId, serverKeysSignature]);
+
+  useEffect(() => {
+    setInfoEdits(null);
+  }, [groupId, group?.name, group?.description]);
+
+  useEffect(() => {
+    onDirtyChange(dirty);
+    return () => onDirtyChange(false);
+  }, [dirty, onDirtyChange]);
 
   const categories = useMemo(() => {
     const byCategory = new Map<string, { key: string; label: string }[]>();
@@ -130,7 +193,14 @@ function GroupDetail({ groupId, onBack }: { groupId: string; onBack: () => void 
     return Array.from(byCategory.entries());
   }, [catalog]);
 
-  if (isLoading || !group) {
+  // Roda a mutação e avisa o resultado por toast; cada chamada resolve a sua própria promessa.
+  const run = <V,>(mutation: UseMutationResult<unknown, unknown, V>, variables: V, success: string) =>
+    mutation.mutateAsync(variables).then(
+      () => onNotify('success', success),
+      (error: unknown) => onNotify('error', apiErrorMessage(error, ACTION_ERROR_FALLBACK)),
+    );
+
+  if (isLoading || !group || !infoDraft) {
     return (
       <div className="p-8">
         <EzSpinner label="Carregando grupo…" />
@@ -138,16 +208,9 @@ function GroupDetail({ groupId, onBack }: { groupId: string; onBack: () => void 
     );
   }
 
-  if (infoDraft === null) {
-    setInfoDraft({ name: group.name, description: group.description ?? '' });
-  }
-  if (selectedKeys === null) {
-    setSelectedKeys(new Set(group.permissions));
-  }
-
   const toggleKey = (key: string, checked: boolean) => {
-    setSelectedKeys((prev) => {
-      const next = new Set(prev ?? []);
+    setPermissionEdits(() => {
+      const next = new Set(selectedKeys);
       if (checked) next.add(key);
       else next.delete(key);
       return next;
@@ -155,8 +218,8 @@ function GroupDetail({ groupId, onBack }: { groupId: string; onBack: () => void 
   };
 
   const toggleCategory = (keys: string[], checked: boolean) => {
-    setSelectedKeys((prev) => {
-      const next = new Set(prev ?? []);
+    setPermissionEdits(() => {
+      const next = new Set(selectedKeys);
       for (const key of keys) {
         if (checked) next.add(key);
         else next.delete(key);
@@ -165,10 +228,59 @@ function GroupDetail({ groupId, onBack }: { groupId: string; onBack: () => void 
     });
   };
 
-  const linkedUserIds = new Set(group.userMembers.map((m) => m.user.id));
+  const tabDirty = tab === 'info' ? infoDirty : tab === 'permissions' ? permissionsDirty : false;
+  const changeTab = (next: DetailTab) => {
+    if (next === tab) return;
+    if (tabDirty) setPendingTab(next);
+    else setTab(next);
+  };
+  const confirmTabChange = () => {
+    if (!pendingTab) return;
+    setInfoEdits(null);
+    setPermissionEdits(null);
+    setTab(pendingTab);
+    setPendingTab(null);
+  };
+
+  const labelOf = (key: string) => (catalog ?? []).find((entry) => entry.key === key)?.label ?? key;
+  const addedKeys = [...selectedKeys].filter((key) => !serverKeys.has(key));
+  const removedKeys = [...serverKeys].filter((key) => !selectedKeys.has(key));
+
+  // O detalhe em cache pode ser parcial (a API do PATCH devolve só a linha do grupo).
+  const userMembers = group.userMembers ?? [];
+  const technicalGroupLinks = group.technicalGroupLinks ?? [];
+  const userCount = userMembers.length;
+  const technicalGroupCount = technicalGroupLinks.length;
+  const affectedText =
+    `${plural(userCount, 'usuário vinculado diretamente', 'usuários vinculados diretamente')} e ` +
+    `${plural(technicalGroupCount, 'grupo de atendentes vinculado', 'grupos de atendentes vinculados')}`;
+
+  const confirmSave = () => {
+    void run(updatePermissionsMutation, Array.from(selectedKeys), 'Permissões salvas').finally(() =>
+      setConfirmingSave(false),
+    );
+  };
+
+  const confirmRemoval = () => {
+    if (!pendingRemoval) return;
+    const { kind, id } = pendingRemoval;
+    const done = () => setPendingRemoval(null);
+    if (kind === 'user') void run(removeUser, id, 'Usuário desvinculado').finally(done);
+    else void run(removeTechnicalGroup, id, 'Grupo de atendentes desvinculado').finally(done);
+  };
+  const removalPending = removeUser.isPending || removeTechnicalGroup.isPending;
+
+  const confirmDelete = () => {
+    deleteMutation.mutateAsync(groupId).then(onDeleted, (error: unknown) => {
+      setConfirmingDelete(false);
+      onNotify('error', apiErrorMessage(error, ACTION_ERROR_FALLBACK));
+    });
+  };
+
+  const linkedUserIds = new Set(userMembers.map((m) => m.user.id));
   const availableUsers = (allUsers ?? []).filter((u) => !linkedUserIds.has(u.id));
 
-  const linkedTechnicalGroupIds = new Set(group.technicalGroupLinks.map((l) => l.technicalGroup.id));
+  const linkedTechnicalGroupIds = new Set(technicalGroupLinks.map((l) => l.technicalGroup.id));
   const availableTechnicalGroups = (allTechnicalGroups ?? []).filter(
     (g) => !linkedTechnicalGroupIds.has(g.id),
   );
@@ -184,24 +296,25 @@ function GroupDetail({ groupId, onBack }: { groupId: string; onBack: () => void 
           { id: 'links', label: 'Vínculos' },
         ]}
         activeTab={tab}
-        onChange={(id) => setTab(id as DetailTab)}
+        onChange={(id) => changeTab(id as DetailTab)}
       />
 
-      {tab === 'info' && infoDraft && (
+      {tab === 'info' && (
         <div className="space-y-4">
           <EzTextInput
             id="pg-detail-name"
             label="Nome"
             value={infoDraft.name}
-            onChange={(e) => setInfoDraft({ ...infoDraft, name: e.target.value })}
+            onChange={(e) => setInfoEdits({ ...infoDraft, name: e.target.value })}
           />
           <EzTextArea
             id="pg-detail-description"
             label="Descrição"
             value={infoDraft.description}
-            onChange={(e) => setInfoDraft({ ...infoDraft, description: e.target.value })}
+            onChange={(e) => setInfoEdits({ ...infoDraft, description: e.target.value })}
           />
-          <div className="flex justify-end">
+          <div className="flex items-center justify-end gap-3">
+            {infoDirty && <span className="text-[12px] font-medium text-gray-600">Alterações não salvas</span>}
             <EzButton
               size="small"
               disabled={updateMutation.isPending}
@@ -213,7 +326,7 @@ function GroupDetail({ groupId, onBack }: { groupId: string; onBack: () => void 
         </div>
       )}
 
-      {tab === 'permissions' && selectedKeys && (
+      {tab === 'permissions' && (
         <div className="space-y-6">
           {categories.map(([category, entries]) => {
             const categoryKeys = entries.map((e) => e.key);
@@ -246,11 +359,11 @@ function GroupDetail({ groupId, onBack }: { groupId: string; onBack: () => void 
             );
           })}
 
-          <div className="flex justify-end">
-            <EzButton
-              disabled={updatePermissionsMutation.isPending}
-              onClick={() => updatePermissionsMutation.mutate(Array.from(selectedKeys))}
-            >
+          <div className="flex items-center justify-end gap-3">
+            {permissionsDirty && (
+              <span className="text-[12px] font-medium text-gray-600">Alterações não salvas</span>
+            )}
+            <EzButton disabled={!permissionsDirty} onClick={() => setConfirmingSave(true)}>
               Salvar permissões
             </EzButton>
           </div>
@@ -265,13 +378,15 @@ function GroupDetail({ groupId, onBack }: { groupId: string; onBack: () => void 
               availableLabel="Usuários disponíveis"
               selectedLabel="Vinculados"
               available={availableUsers.map((u) => ({ id: u.id, label: u.name, description: u.email }))}
-              selected={group.userMembers.map((m) => ({
+              selected={userMembers.map((m) => ({
                 id: m.user.id,
                 label: m.user.name,
                 description: m.user.email,
               }))}
-              onAdd={(item) => addUser.mutate(String(item.id))}
-              onRemove={(item) => removeUser.mutate(String(item.id))}
+              onAdd={(item) => void run(addUser, String(item.id), 'Usuário vinculado')}
+              onRemove={(item) =>
+                setPendingRemoval({ kind: 'user', id: String(item.id), name: String(item.label) })
+              }
             />
           </div>
           <div className="space-y-2">
@@ -280,18 +395,24 @@ function GroupDetail({ groupId, onBack }: { groupId: string; onBack: () => void 
               availableLabel="Grupos disponíveis"
               selectedLabel="Vinculados"
               available={availableTechnicalGroups.map((g) => ({ id: g.id, label: g.name }))}
-              selected={group.technicalGroupLinks.map((l) => ({
+              selected={technicalGroupLinks.map((l) => ({
                 id: l.technicalGroup.id,
                 label: l.technicalGroup.name,
               }))}
-              onAdd={(item) => addTechnicalGroup.mutate(String(item.id))}
-              onRemove={(item) => removeTechnicalGroup.mutate(String(item.id))}
+              onAdd={(item) => void run(addTechnicalGroup, String(item.id), 'Grupo de atendentes vinculado')}
+              onRemove={(item) =>
+                setPendingRemoval({
+                  kind: 'technical',
+                  id: String(item.id),
+                  name: String(item.label),
+                })
+              }
             />
           </div>
         </div>
       )}
 
-      <div>
+      <div className="flex items-center justify-between gap-3">
         <button
           type="button"
           onClick={onBack}
@@ -299,7 +420,97 @@ function GroupDetail({ groupId, onBack }: { groupId: string; onBack: () => void 
         >
           <ArrowLeft className="h-3.5 w-3.5" /> Voltar para a lista
         </button>
+        <EzButton variant="danger" size="small" leftIcon={Trash2} onClick={() => setConfirmingDelete(true)}>
+          Excluir grupo
+        </EzButton>
       </div>
+
+      <EzDialog
+        open={confirmingSave}
+        variant="warning"
+        title="Salvar permissões"
+        message={`A nova seleção passa a valer para todos os membros do grupo "${group.name}".`}
+        confirmLoading={updatePermissionsMutation.isPending}
+        onConfirm={confirmSave}
+        onCancel={() => {
+          if (!updatePermissionsMutation.isPending) setConfirmingSave(false);
+        }}
+      >
+        <div className="mt-3 space-y-2">
+          <p className="font-semibold text-gray-900">
+            +{addedKeys.length} / -{removedKeys.length} permissões
+          </p>
+          {addedKeys.length > 0 && (
+            <div>
+              <p className="text-[12px] font-semibold text-gray-600">Adicionadas</p>
+              <ul className="list-disc pl-5">
+                {addedKeys.map((key) => (
+                  <li key={key}>{labelOf(key)}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {removedKeys.length > 0 && (
+            <div>
+              <p className="text-[12px] font-semibold text-gray-600">Removidas</p>
+              <ul className="list-disc pl-5">
+                {removedKeys.map((key) => (
+                  <li key={key}>{labelOf(key)}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          <p>Afeta {affectedText}.</p>
+          {technicalGroupCount > 0 && (
+            <p className="text-[12px] text-gray-600">
+              Os membros dos grupos de atendentes vinculados também são afetados e não entram na contagem de
+              usuários.
+            </p>
+          )}
+        </div>
+      </EzDialog>
+
+      <EzDialog
+        open={pendingRemoval !== null}
+        variant="danger"
+        title={pendingRemoval?.kind === 'user' ? 'Remover usuário do grupo' : 'Remover grupo de atendentes'}
+        message={
+          pendingRemoval
+            ? `Remover "${pendingRemoval.name}" do grupo "${group.name}"? ` +
+              (pendingRemoval.kind === 'user'
+                ? 'O usuário perde as permissões concedidas por este grupo, a menos que as receba por outro vínculo.'
+                : 'Os membros desse grupo de atendentes perdem as permissões concedidas por este grupo, a menos que as recebam por outro vínculo.')
+            : ''
+        }
+        confirmLabel="Remover"
+        confirmLoading={removalPending}
+        onConfirm={confirmRemoval}
+        onCancel={() => {
+          if (!removalPending) setPendingRemoval(null);
+        }}
+      />
+
+      <EzDialog
+        open={confirmingDelete}
+        variant="danger"
+        title="Excluir grupo"
+        message={`O grupo "${group.name}" tem ${affectedText}. Todos perdem as permissões concedidas por ele. Esta ação não pode ser desfeita.`}
+        confirmLabel="Excluir"
+        confirmLoading={deleteMutation.isPending}
+        onConfirm={confirmDelete}
+        onCancel={() => {
+          if (!deleteMutation.isPending) setConfirmingDelete(false);
+        }}
+      />
+
+      <EzDialog
+        open={pendingTab !== null}
+        variant="warning"
+        title="Descartar alterações?"
+        message="As alterações não salvas desta aba serão perdidas."
+        onCancel={() => setPendingTab(null)}
+        onConfirm={confirmTabChange}
+      />
     </div>
   );
 }
@@ -308,6 +519,24 @@ export function PermissionGroupsPage() {
   const { data: groups, isLoading } = usePermissionGroups();
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [notice, setNotice] = useState<Notice | null>(null);
+  const [detailDirty, setDetailDirty] = useState(false);
+  const [discardOpen, setDiscardOpen] = useState(false);
+
+  const notify: Notify = (variant, title) => setNotice({ variant, title });
+  const leaveDetail = () => {
+    setDiscardOpen(false);
+    setDetailDirty(false);
+    setSelectedGroupId(null);
+  };
+  const requestBack = () => (detailDirty ? setDiscardOpen(true) : leaveDetail());
+
+  // Sucesso some sozinho; erro fica até ser fechado.
+  useEffect(() => {
+    if (notice?.variant !== 'success') return;
+    const timer = setTimeout(() => setNotice(null), TOAST_MS);
+    return () => clearTimeout(timer);
+  }, [notice]);
 
   return (
     <EzPageLayout
@@ -315,13 +544,22 @@ export function PermissionGroupsPage() {
         <EzPageHeader
           title="Grupos de permissões"
           showBackButton={!!selectedGroupId}
-          onBack={() => setSelectedGroupId(null)}
+          onBack={requestBack}
         />
       }
     >
       {selectedGroupId ? (
         <EzCardItem flat className="p-0">
-          <GroupDetail groupId={selectedGroupId} onBack={() => setSelectedGroupId(null)} />
+          <GroupDetail
+            groupId={selectedGroupId}
+            onBack={requestBack}
+            onNotify={notify}
+            onDeleted={() => {
+              notify('success', 'Grupo excluído');
+              leaveDetail();
+            }}
+            onDirtyChange={setDetailDirty}
+          />
         </EzCardItem>
       ) : (
         <EzCardItem flat className="overflow-hidden p-0">
@@ -356,7 +594,22 @@ export function PermissionGroupsPage() {
         </EzCardItem>
       )}
 
+      <EzDialog
+        open={discardOpen}
+        variant="warning"
+        title="Descartar alterações?"
+        message="As alterações não salvas deste grupo serão perdidas."
+        onCancel={() => setDiscardOpen(false)}
+        onConfirm={leaveDetail}
+      />
+
       {isCreateOpen && <CreateGroupModal onClose={() => setIsCreateOpen(false)} />}
+
+      {notice && (
+        <div className="pointer-events-none fixed right-4 top-4 z-40 w-[calc(100%-2rem)] max-w-sm">
+          <EzToast variant={notice.variant} title={notice.title} onClose={() => setNotice(null)} />
+        </div>
+      )}
     </EzPageLayout>
   );
 }

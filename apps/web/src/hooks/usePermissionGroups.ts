@@ -73,7 +73,7 @@ export function useUpdatePermissionGroup(id: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (dto: Partial<{ name: string; description: string }>) => {
-      const { data } = await api.patch<PermissionGroupDetail>(`/permission-groups/${id}`, dto);
+      const { data } = await api.patch<PermissionGroupListItem>(`/permission-groups/${id}`, dto);
       return data;
     },
     onSuccess: () => invalidateGroup(queryClient, id),
@@ -84,13 +84,21 @@ export function useUpdatePermissionGroupPermissions(id: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (permissions: string[]) => {
-      const { data } = await api.patch<PermissionGroupDetail>(
+      const { data } = await api.patch<PermissionGroupListItem>(
         `/permission-groups/${id}/permissions`,
         { permissions },
       );
       return data;
     },
-    onSuccess: () => invalidateGroup(queryClient, id),
+    onSuccess: (data) => {
+      // O PATCH devolve só a linha do grupo (sem userMembers/technicalGroupLinks): mescla as
+      // permissões no detalhe em cache, preservando o resto, para a baseline mudar na hora (sem
+      // esperar o refetch) e o indicador de alterações não salvas sumir assim que o PATCH conclui.
+      queryClient.setQueryData<PermissionGroupDetail>([...LIST_KEY, id], (cached) =>
+        cached ? { ...cached, permissions: data.permissions } : cached,
+      );
+      invalidateGroup(queryClient, id);
+    },
   });
 }
 
@@ -100,7 +108,12 @@ export function useDeletePermissionGroup() {
     mutationFn: async (id: string) => {
       await api.delete(`/permission-groups/${id}`);
     },
-    onSuccess: () => void queryClient.invalidateQueries({ queryKey: LIST_KEY }),
+    onSuccess: (_data, id) => {
+      // Tira do cache o detalhe do grupo excluído (e só o dele) antes de invalidar a lista,
+      // para o detalhe não ser refeito com um GET que viraria 404.
+      queryClient.removeQueries({ queryKey: [...LIST_KEY, id] });
+      void queryClient.invalidateQueries({ queryKey: LIST_KEY });
+    },
   });
 }
 
