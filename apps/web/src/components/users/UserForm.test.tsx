@@ -68,4 +68,43 @@ describe('UserForm', () => {
       expect(screen.getByRole('button', { name: 'Inativar' })).toBeDisabled();
     });
   });
+
+  describe('F3-26 USR-09: obrigatórios e Salvar desabilitado explicados', () => {
+    it('USR-09: the Tipo combobox is aria-required and its asterisk has the accessible text (obrigatório)', () => {
+      renderForm(USER);
+
+      const tipo = screen.getByRole('combobox', { name: 'Tipo' });
+      expect(tipo).toHaveAttribute('aria-required', 'true');
+      const label = document.querySelector('label[for="user-role"]') as HTMLElement;
+      expect(label).toHaveTextContent('(obrigatório)');
+    });
+
+    it('USR-09: the required text inputs keep aria-required', () => {
+      renderForm(USER);
+
+      expect(screen.getByRole('textbox', { name: 'Nome' })).toHaveAttribute('aria-required', 'true');
+      expect(screen.getByRole('textbox', { name: 'E-mail' })).toHaveAttribute('aria-required', 'true');
+    });
+
+    it('USR-09: Salvar disabled with no changes is described by "Sem alterações", and enabled once the form changes', async () => {
+      const user = userEvent.setup();
+      renderForm(USER);
+
+      const save = screen.getByRole('button', { name: 'Salvar' });
+      expect(save).toBeDisabled();
+      expect(save).toHaveAccessibleDescription('Sem alterações');
+
+      await user.type(screen.getByRole('textbox', { name: 'Nome' }), 'x');
+      expect(save).toBeEnabled();
+      expect(save).not.toHaveAccessibleDescription('Sem alterações');
+      expect(screen.queryByText('Sem alterações')).not.toBeInTheDocument();
+    });
+
+    it('USR-09: a new user form has Salvar enabled, with no "Sem alterações" hint', () => {
+      renderForm();
+
+      expect(screen.getByRole('button', { name: 'Salvar' })).toBeEnabled();
+      expect(screen.queryByText('Sem alterações')).not.toBeInTheDocument();
+    });
+  });
 });
