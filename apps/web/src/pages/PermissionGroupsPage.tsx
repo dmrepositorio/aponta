@@ -246,8 +246,11 @@ function GroupDetail({
   const addedKeys = [...selectedKeys].filter((key) => !serverKeys.has(key));
   const removedKeys = [...serverKeys].filter((key) => !selectedKeys.has(key));
 
-  const userCount = group.userMembers.length;
-  const technicalGroupCount = group.technicalGroupLinks.length;
+  // O detalhe em cache pode ser parcial (a API do PATCH devolve só a linha do grupo).
+  const userMembers = group.userMembers ?? [];
+  const technicalGroupLinks = group.technicalGroupLinks ?? [];
+  const userCount = userMembers.length;
+  const technicalGroupCount = technicalGroupLinks.length;
   const affectedText =
     `${plural(userCount, 'usuário vinculado diretamente', 'usuários vinculados diretamente')} e ` +
     `${plural(technicalGroupCount, 'grupo de atendentes vinculado', 'grupos de atendentes vinculados')}`;
@@ -274,10 +277,10 @@ function GroupDetail({
     });
   };
 
-  const linkedUserIds = new Set(group.userMembers.map((m) => m.user.id));
+  const linkedUserIds = new Set(userMembers.map((m) => m.user.id));
   const availableUsers = (allUsers ?? []).filter((u) => !linkedUserIds.has(u.id));
 
-  const linkedTechnicalGroupIds = new Set(group.technicalGroupLinks.map((l) => l.technicalGroup.id));
+  const linkedTechnicalGroupIds = new Set(technicalGroupLinks.map((l) => l.technicalGroup.id));
   const availableTechnicalGroups = (allTechnicalGroups ?? []).filter(
     (g) => !linkedTechnicalGroupIds.has(g.id),
   );
@@ -375,7 +378,7 @@ function GroupDetail({
               availableLabel="Usuários disponíveis"
               selectedLabel="Vinculados"
               available={availableUsers.map((u) => ({ id: u.id, label: u.name, description: u.email }))}
-              selected={group.userMembers.map((m) => ({
+              selected={userMembers.map((m) => ({
                 id: m.user.id,
                 label: m.user.name,
                 description: m.user.email,
@@ -392,7 +395,7 @@ function GroupDetail({
               availableLabel="Grupos disponíveis"
               selectedLabel="Vinculados"
               available={availableTechnicalGroups.map((g) => ({ id: g.id, label: g.name }))}
-              selected={group.technicalGroupLinks.map((l) => ({
+              selected={technicalGroupLinks.map((l) => ({
                 id: l.technicalGroup.id,
                 label: l.technicalGroup.name,
               }))}
