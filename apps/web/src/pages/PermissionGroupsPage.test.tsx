@@ -30,6 +30,12 @@ const GROUP_DETAIL_WITH_TECH = {
   technicalGroupLinks: [{ technicalGroup: { id: 'tg-1', name: 'Suporte N1' } }],
 };
 
+// O PATCH real (prisma.update sem include) devolve só a linha do grupo, sem userMembers nem technicalGroupLinks.
+function bareRow<T extends { userMembers: unknown; technicalGroupLinks: unknown }>(detail: T) {
+  const { userMembers: _members, technicalGroupLinks: _links, ...row } = detail;
+  return row;
+}
+
 const TECH_GROUPS = [
   { id: 'tg-1', name: 'Suporte N1' },
   { id: 'tg-2', name: 'Suporte N2' },
@@ -93,7 +99,7 @@ describe('PermissionGroupsPage', () => {
     vi.resetAllMocks();
     mockGets();
     vi.mocked(api.post).mockResolvedValue({ data: {} });
-    vi.mocked(api.patch).mockResolvedValue({ data: GROUP_DETAIL });
+    vi.mocked(api.patch).mockResolvedValue({ data: bareRow(GROUP_DETAIL) });
     vi.mocked(api.delete).mockResolvedValue({ data: {} });
   });
 
@@ -313,7 +319,7 @@ describe('PermissionGroupsPage', () => {
       const saved = { ...GROUP_DETAIL, permissions: ['VIEW_AND_OPEN_TICKETS', 'EDIT_CLOSED_TICKETS'] };
       vi.mocked(api.patch).mockImplementation((async () => {
         mockGets(saved);
-        return { data: saved };
+        return { data: bareRow(saved) };
       }) as never);
       renderPage();
       await openPermissionsTab();
@@ -331,7 +337,7 @@ describe('PermissionGroupsPage', () => {
       vi.mocked(api.patch).mockImplementation((async () => {
         vi.mocked(api.get).mockImplementation(((url: string) =>
           url === '/permission-groups/pg-1' ? new Promise(() => undefined) : Promise.resolve({ data: [] })) as never);
-        return { data: saved };
+        return { data: bareRow(saved) };
       }) as never);
       renderPage();
       await openPermissionsTab();
@@ -345,11 +351,23 @@ describe('PermissionGroupsPage', () => {
       expect(await screen.findByText('Usuários vinculados diretamente')).toBeInTheDocument();
     });
 
+    it('tolera detalhe sem userMembers/technicalGroupLinks (parcial) sem derrubar a página', async () => {
+      const partial = { id: 'pg-1', name: 'Atendente Padrão', description: null, permissions: ['VIEW_AND_OPEN_TICKETS'] };
+      mockGets(partial);
+      renderPage();
+      await userEvent.click(await screen.findByText('Atendente Padrão'));
+      await userEvent.click(await screen.findByRole('tab', { name: /vínculos/i }));
+
+      expect(await screen.findByText('Usuários vinculados diretamente')).toBeInTheDocument();
+      await userEvent.click(screen.getByRole('button', { name: 'Excluir grupo' }));
+      expect(within(await screen.findByRole('dialog')).getByText(/0 usuários vinculados diretamente/)).toBeInTheDocument();
+    });
+
     it('uma mudança externa no servidor depois de salvar reaparece na seleção (a baseline é o servidor)', async () => {
       const saved = { ...GROUP_DETAIL, permissions: ['VIEW_AND_OPEN_TICKETS', 'EDIT_CLOSED_TICKETS'] };
       vi.mocked(api.patch).mockImplementation((async () => {
         mockGets(saved);
-        return { data: saved };
+        return { data: bareRow(saved) };
       }) as never);
       renderPage();
       await openPermissionsTab();
@@ -373,7 +391,7 @@ describe('PermissionGroupsPage', () => {
       const renamed = { ...GROUP_DETAIL, name: 'Atendente Padrão X' };
       vi.mocked(api.patch).mockImplementation((async () => {
         mockGets(renamed);
-        return { data: renamed };
+        return { data: bareRow(renamed) };
       }) as never);
       renderPage();
       await userEvent.click(await screen.findByText('Atendente Padrão'));

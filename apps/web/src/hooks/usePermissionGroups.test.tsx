@@ -22,10 +22,14 @@ describe('useUpdatePermissionGroupPermissions', () => {
     vi.resetAllMocks();
   });
 
-  it('grava a resposta do PATCH como detalhe do grupo sem esperar o refetch', async () => {
+  it('mescla as permissões devolvidas pelo PATCH no detalhe em cache, preservando membros e vínculos', async () => {
     const { queryClient, wrapper } = setup();
-    const updated = { id: 'pg-1', name: 'G', permissions: ['MANAGE_USERS'], userMembers: [], technicalGroupLinks: [] };
-    vi.mocked(api.patch).mockResolvedValue({ data: updated });
+    // Formato real da API: prisma.update sem include devolve só a linha do grupo.
+    const patched = { id: 'pg-1', name: 'G', description: null, permissions: ['MANAGE_USERS'] };
+    const members = [{ user: { id: 'u1', name: 'Ana', email: 'a@a.com' } }];
+    const links = [{ technicalGroup: { id: 'tg-1', name: 'N1' } }];
+    const updated = { ...patched, userMembers: members, technicalGroupLinks: links };
+    vi.mocked(api.patch).mockResolvedValue({ data: patched });
     vi.mocked(api.get).mockReturnValue(new Promise(() => undefined));
     queryClient.setQueryData(['permission-groups', 'pg-1'], { ...updated, permissions: [] });
     const { result } = renderHook(() => useUpdatePermissionGroupPermissions('pg-1'), { wrapper });
@@ -36,6 +40,19 @@ describe('useUpdatePermissionGroupPermissions', () => {
 
     expect(api.patch).toHaveBeenCalledWith('/permission-groups/pg-1/permissions', { permissions: ['MANAGE_USERS'] });
     expect(queryClient.getQueryData(['permission-groups', 'pg-1'])).toEqual(updated);
+  });
+
+  it('sem detalhe em cache não inventa um detalhe parcial', async () => {
+    const { queryClient, wrapper } = setup();
+    vi.mocked(api.patch).mockResolvedValue({ data: { id: 'pg-1', name: 'G', permissions: ['MANAGE_USERS'] } });
+    vi.mocked(api.get).mockReturnValue(new Promise(() => undefined));
+    const { result } = renderHook(() => useUpdatePermissionGroupPermissions('pg-1'), { wrapper });
+
+    await act(async () => {
+      await result.current.mutateAsync(['MANAGE_USERS']);
+    });
+
+    expect(queryClient.getQueryData(['permission-groups', 'pg-1'])).toBeUndefined();
   });
 });
 
