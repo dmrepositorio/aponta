@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { BarChart, Users, DollarSign, Clock } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
+import { Users, DollarSign, Clock } from 'lucide-react';
 import { useReportWorkload, useReportBilling } from '../hooks/useReports';
 import { useAuthStore } from '../stores/authStore';
 import { useCanViewTicketValues } from '../hooks/usePermissions';
@@ -7,19 +7,43 @@ import {
   EzComboBox,
   EzEmptyCard,
   EzGridWrapper,
+  EzPageHeader,
+  EzPageLayout,
   EzTextInput,
   EzSpinner,
   EzTabs,
+  ezTabId,
+  ezTabPanelId,
 } from '../components/ds';
 import { useContracts } from '../hooks/useContracts';
 import { billingMonthStartIso } from '../lib/billingTime';
 import { CommercialReport } from '../components/contracts/CommercialReport';
 
+type TabId = 'WORKLOAD' | 'BILLING' | 'COMMERCIAL';
+
+const TABS_ID_PREFIX = 'reports';
+const MONTH_PATTERN = /^\d{4}-(0[1-9]|1[0-2])$/;
+
 export function ReportsPage() {
   const user = useAuthStore((s) => s.user);
-  const [activeTab, setActiveTab] = useState<
-    'WORKLOAD' | 'BILLING' | 'COMMERCIAL'
-  >('WORKLOAD');
+  // REP-07: aba e filtros de faturamento vivem na query string (?aba=&contrato=&de=&ate=).
+  const [searchParams, setSearchParams] = useSearchParams();
+  const updateParams = (patch: Record<string, string>, replace = true) =>
+    setSearchParams(
+      (previous) => {
+        const next = new URLSearchParams(previous);
+        for (const [key, value] of Object.entries(patch)) {
+          if (value) next.set(key, value);
+          else next.delete(key);
+        }
+        return next;
+      },
+      { replace },
+    );
+  const monthParam = (key: string) => {
+    const value = searchParams.get(key) ?? '';
+    return MONTH_PATTERN.test(value) ? value : '';
+  };
 
   // DMTE-479: valor só com VIEW_TICKET_VALUES; o role continua como recorte.
   const canViewValues = useCanViewTicketValues();
@@ -27,9 +51,9 @@ export function ReportsPage() {
     canViewValues && user
       ? ['ADMIN', 'CLIENT_MASTER'].includes(user.role)
       : false;
-  const [contractId, setContractId] = useState('');
-  const [startMonth, setStartMonth] = useState('');
-  const [endMonth, setEndMonth] = useState('');
+  const contractId = searchParams.get('contrato') ?? '';
+  const startMonth = monthParam('de');
+  const endMonth = monthParam('ate');
   const contractsQ = useContracts();
 
   const workloadQ = useReportWorkload();
@@ -54,22 +78,25 @@ export function ReportsPage() {
       ? [{ id: 'COMMERCIAL' as const, label: 'Resultado gerencial' }]
       : []),
   ];
+  // A aba pedida na URL só vale se o usuário a enxerga; senão cai em Carga de Trabalho.
+  const activeTab: TabId =
+    tabs.find((tab) => tab.id === searchParams.get('aba'))?.id ?? 'WORKLOAD';
 
   return (
+    <EzPageLayout header={<EzPageHeader title="Relatórios" />}>
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-          <BarChart className="h-8 w-8" /> Relatórios
-        </h1>
-      </div>
-
       <EzTabs
         tabs={tabs}
+        idPrefix={TABS_ID_PREFIX}
         activeTab={activeTab}
-        onChange={(id) =>
-          setActiveTab(id as 'WORKLOAD' | 'BILLING' | 'COMMERCIAL')
-        }
+        onChange={(id) => updateParams({ aba: String(id) }, false)}
       />
+      <div
+        role="tabpanel"
+        id={ezTabPanelId(TABS_ID_PREFIX, activeTab)}
+        aria-labelledby={ezTabId(TABS_ID_PREFIX, activeTab)}
+        className="space-y-6"
+      >
       {activeTab === 'COMMERCIAL' &&
         canViewValues &&
         user?.role === 'ADMIN' && (
@@ -128,7 +155,7 @@ export function ReportsPage() {
               id="billing-contract"
               label="Contrato"
               value={contractId}
-              onChange={(event) => setContractId(event.target.value)}
+              onChange={(event) => updateParams({ contrato: event.target.value })}
             >
               <option value="">Todos os contratos</option>
               {contractsQ.data?.map((contract) => (
@@ -142,14 +169,14 @@ export function ReportsPage() {
               label="Ciclos desde"
               type="month"
               value={startMonth}
-              onChange={(event) => setStartMonth(event.target.value)}
+              onChange={(event) => updateParams({ de: event.target.value })}
             />
             <EzTextInput
               id="billing-end-month"
               label="Ciclos até (exclusivo)"
               type="month"
               value={endMonth}
-              onChange={(event) => setEndMonth(event.target.value)}
+              onChange={(event) => updateParams({ ate: event.target.value })}
             />
           </div>
           {billingQ.isError && (
@@ -231,6 +258,8 @@ export function ReportsPage() {
           )}
         </>
       )}
+      </div>
     </div>
+    </EzPageLayout>
   );
 }
