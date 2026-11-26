@@ -108,6 +108,67 @@ describe('ReleasesPage (DMTE-462 T5)', () => {
     expect(await within(dialog).findByRole('alert')).toHaveTextContent('Ninguém libera o próprio apontamento');
   });
 
+  it('REL-02: cada linha tem o botão Ver detalhes, que abre a decisão com o motivo sem duplo clique', async () => {
+    renderPage();
+    await screen.findByText('Ana Consultora');
+    const row = screen.getByText('Ana Consultora').closest('tr') as HTMLElement;
+    await userEvent.click(within(row).getByRole('button', { name: /^Ver detalhes/ }));
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByText(/A regra: o lançamento manual precisa começar dentro da janela/i)).toBeInTheDocument();
+    expect(screen.queryByText(/dê duplo clique/i)).not.toBeInTheDocument();
+  });
+
+  it('REL-04: depois de liberar, avisa "Liberação concedida"', async () => {
+    renderPage();
+    fireEvent.doubleClick(await screen.findByText('Ana Consultora'));
+    const dialog = await screen.findByRole('dialog');
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Liberar' }));
+    expect(await screen.findByText('Liberação concedida')).toBeInTheDocument();
+  });
+
+  it('REL-04: depois de negar, avisa "Liberação negada"', async () => {
+    renderPage();
+    fireEvent.doubleClick(await screen.findByText('Ana Consultora'));
+    const dialog = await screen.findByRole('dialog');
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Negar' }));
+    await userEvent.type(within(dialog).getByLabelText('Motivo da negação'), 'Não confere');
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Confirmar negação' }));
+    expect(await screen.findByText('Liberação negada')).toBeInTheDocument();
+  });
+
+  it('REL-05: ao abrir Negar o textarea recebe foco', async () => {
+    renderPage();
+    fireEvent.doubleClick(await screen.findByText('Ana Consultora'));
+    const dialog = await screen.findByRole('dialog');
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Negar' }));
+    await waitFor(() => expect(within(dialog).getByLabelText('Motivo da negação')).toHaveFocus());
+  });
+
+  it('REL-05: negar sem motivo marca o textarea como inválido, com a mensagem ligada ao campo e foco nele', async () => {
+    renderPage();
+    fireEvent.doubleClick(await screen.findByText('Ana Consultora'));
+    const dialog = await screen.findByRole('dialog');
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Negar' }));
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Confirmar negação' }));
+    const field = within(dialog).getByLabelText('Motivo da negação');
+    expect(field).toHaveAttribute('aria-invalid', 'true');
+    expect(field).toHaveAccessibleDescription('Informe o motivo da negação.');
+    expect(field).toHaveFocus();
+    expect(api.post).not.toHaveBeenCalled();
+  });
+
+  it('REL-06: a duração aparece como Xh Ym e o período em duas linhas, início e fim', async () => {
+    vi.mocked(api.get).mockResolvedValue({ data: [{ ...ROWS[0], minutes: 135 }] });
+    renderPage();
+    await screen.findByText('Ana Consultora');
+    expect(screen.getByRole('columnheader', { name: /Duração/ })).toBeInTheDocument();
+    expect(screen.queryByRole('columnheader', { name: /Minutos/ })).not.toBeInTheDocument();
+    const row = screen.getByText('Ana Consultora').closest('tr') as HTMLElement;
+    expect(within(row).getByText('2h 15m')).toBeInTheDocument();
+    expect(within(row).getByText('12/11/2026 08:10')).toBeInTheDocument();
+    expect(within(row).getByText('12/11/2026 09:10')).toBeInTheDocument();
+  });
+
   it('AC-30: lista vazia e falha de carga têm mensagens próprias', async () => {
     vi.mocked(api.get).mockResolvedValue({ data: [] });
     const vazia = renderPage();
