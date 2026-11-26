@@ -61,6 +61,7 @@ describe('TwoFactorSection', () => {
     expect(screen.getByText(/não serão mostrados de novo/i)).toBeInTheDocument();
 
     enabled = true;
+    await user.click(screen.getByRole('checkbox', { name: /guardei estes códigos/i }));
     await user.click(screen.getByRole('button', { name: /concluir/i }));
 
     expect(await screen.findByText(/ativado/i)).toBeInTheDocument();
@@ -94,6 +95,7 @@ describe('TwoFactorSection', () => {
     await user.type(screen.getByLabelText(/código/i), '123456');
     enabled = false;
     await user.click(screen.getByRole('button', { name: /desativar/i }));
+    await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: /desativar/i }));
 
     expect(api.post).toHaveBeenCalledWith('/auth/2fa/disable', { password: 'Senha#Antiga1', code: '123456' });
     await waitFor(() => expect(screen.queryByRole('button', { name: /desativar/i })).not.toBeInTheDocument());
@@ -108,8 +110,148 @@ describe('TwoFactorSection', () => {
     await user.type(await screen.findByLabelText(/senha atual/i), 'errada');
     await user.type(screen.getByLabelText(/código/i), '123456');
     await user.click(screen.getByRole('button', { name: /desativar/i }));
+    await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: /desativar/i }));
 
     expect(await screen.findByText(/senha ou código inválido/i)).toBeInTheDocument();
     expect(screen.getByText(/ativado/i)).toBeInTheDocument();
+  });
+
+  // ACC-04
+  it('ACC-04: desativar só chama /auth/2fa/disable depois de confirmar no diálogo com o aviso de segurança', async () => {
+    const user = userEvent.setup();
+    enabled = true;
+    vi.mocked(api.post).mockResolvedValue({ data: { ok: true } });
+    renderSection();
+
+    await user.type(await screen.findByLabelText(/senha atual/i), 'Senha#Antiga1');
+    await user.type(screen.getByLabelText(/código/i), '123456');
+    await user.click(screen.getByRole('button', { name: /desativar/i }));
+
+    const dialog = await screen.findByRole('dialog');
+    expect(api.post).not.toHaveBeenCalled();
+    expect(within(dialog).getByText(/reduz a segurança/i)).toBeInTheDocument();
+
+    await user.click(within(dialog).getByRole('button', { name: /cancelar/i }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(api.post).not.toHaveBeenCalled();
+  });
+
+  it('ACC-04: o estado ativo aparece em um selo visível', async () => {
+    enabled = true;
+    renderSection();
+
+    const badge = await screen.findByText('Ativado');
+    expect(badge.tagName).toBe('SPAN');
+    expect(badge.className).toMatch(/rounded-full/);
+  });
+
+  // ACC-05
+  const startSetup = async (user: ReturnType<typeof userEvent.setup>) => {
+    vi.mocked(api.post).mockImplementation((url: string) =>
+      url === '/auth/2fa/setup' ? Promise.resolve({ data: { secret: SECRET, otpauthUri: URI } }) : Promise.reject(new Error(url)),
+    );
+    renderSection();
+    await user.click(await screen.findByRole('button', { name: /ativar segundo fator/i }));
+    await screen.findByRole('img', { name: /qr code/i });
+  };
+
+  it('ACC-05: Cancelar descarta o setup e volta ao botão de ativar', async () => {
+    const user = userEvent.setup();
+    await startSetup(user);
+
+    await user.click(screen.getByRole('button', { name: /^cancelar$/i }));
+
+    expect(screen.queryByRole('img', { name: /qr code/i })).not.toBeInTheDocument();
+    expect(screen.queryByText(SECRET)).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /ativar segundo fator/i })).toBeInTheDocument();
+  });
+
+  it('ACC-05: copiar chave escreve o segredo no clipboard', async () => {
+    const user = userEvent.setup();
+    const write = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue(undefined);
+    await startSetup(user);
+
+    await user.click(screen.getByRole('button', { name: /copiar chave/i }));
+
+    expect(write).toHaveBeenCalledWith(SECRET);
+  });
+
+  it('ACC-05: falha ao copiar a chave pede para copiar manualmente', async () => {
+    const user = userEvent.setup();
+    vi.spyOn(navigator.clipboard, 'writeText').mockRejectedValue(new Error('denied'));
+    await startSetup(user);
+
+    await user.click(screen.getByRole('button', { name: /copiar chave/i }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(/copie manualmente/i);
+  });
+
+  it('ACC-05: o campo de código aceita 6 dígitos numéricos e o Confirmar mostra o carregamento', async () => {
+    const user = userEvent.setup();
+    await startSetup(user);
+    const input = screen.getByLabelText(/código do aplicativo/i);
+    expect(input).toHaveAttribute('maxlength', '6');
+    expect(input).toHaveAttribute('inputmode', 'numeric');
+
+    let release: (value: unknown) => void = () => undefined;
+    vi.mocked(api.post).mockImplementation(() => new Promise((resolve) => { release = resolve; }));
+    await user.type(input, '123456');
+    await user.click(screen.getByRole('button', { name: /^confirmar$/i }));
+
+    expect(await screen.findByRole('button', { name: /confirmando/i })).toHaveAttribute('aria-busy', 'true');
+    release({ data: { recoveryCodes: CODES } });
+    await screen.findByRole('list', { name: /códigos de recuperação/i });
+  });
+
+  // ACC-06
+  const reachRecoveryCodes = async (user: ReturnType<typeof userEvent.setup>) => {
+    vi.mocked(api.post).mockImplementation((url: string) => {
+      if (url === '/auth/2fa/setup') return Promise.resolve({ data: { secret: SECRET, otpauthUri: URI } });
+      if (url === '/auth/2fa/confirm') return Promise.resolve({ data: { recoveryCodes: CODES } });
+      return Promise.reject(new Error(url));
+    });
+    renderSection();
+    await user.click(await screen.findByRole('button', { name: /ativar segundo fator/i }));
+    await user.type(await screen.findByLabelText(/código do aplicativo/i), '123456');
+    await user.click(screen.getByRole('button', { name: /^confirmar$/i }));
+    await screen.findByRole('list', { name: /códigos de recuperação/i });
+  };
+
+  it('ACC-06: Concluir fica desabilitado até marcar "Guardei estes códigos"', async () => {
+    const user = userEvent.setup();
+    await reachRecoveryCodes(user);
+
+    expect(screen.getByRole('button', { name: /concluir/i })).toBeDisabled();
+    await user.click(screen.getByRole('checkbox', { name: /guardei estes códigos/i }));
+    expect(screen.getByRole('button', { name: /concluir/i })).toBeEnabled();
+  });
+
+  it('ACC-06: Copiar escreve os códigos no clipboard', async () => {
+    const user = userEvent.setup();
+    const write = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue(undefined);
+    await reachRecoveryCodes(user);
+
+    await user.click(screen.getByRole('button', { name: /copiar códigos/i }));
+
+    expect(write).toHaveBeenCalledWith(CODES.join('\n'));
+  });
+
+  it('ACC-06: Baixar gera um .txt com nome genérico e libera a URL do arquivo', async () => {
+    const user = userEvent.setup();
+    const createUrl = vi.fn(() => 'blob:codigos');
+    const revokeUrl = vi.fn();
+    Object.assign(URL, { createObjectURL: createUrl, revokeObjectURL: revokeUrl });
+    const names: string[] = [];
+    const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (this: HTMLAnchorElement) {
+      names.push(this.download);
+    });
+    await reachRecoveryCodes(user);
+
+    await user.click(screen.getByRole('button', { name: /baixar/i }));
+
+    expect(createUrl).toHaveBeenCalledTimes(1);
+    expect(names).toEqual(['codigos-de-recuperacao.txt']);
+    expect(revokeUrl).toHaveBeenCalledWith('blob:codigos');
+    click.mockRestore();
   });
 });

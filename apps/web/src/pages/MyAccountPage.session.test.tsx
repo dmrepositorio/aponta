@@ -37,7 +37,7 @@ describe('MyAccountPage: sessão depois da troca de senha (DMTE-551)', () => {
 
     await changePassword();
 
-    expect(await screen.findByText(/senha atualizada com sucesso/i)).toBeInTheDocument();
+    expect(await screen.findByRole('status')).toHaveTextContent(/outros aparelhos/i);
     expect(useAuthStore.getState().token).toBe(NEW_TOKEN);
     expect(useAuthStore.getState().user?.email).toBe('jane@example.com');
   });
