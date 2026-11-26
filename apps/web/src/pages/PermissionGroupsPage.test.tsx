@@ -326,6 +326,71 @@ describe('PermissionGroupsPage', () => {
       expect(screen.getByRole('button', { name: /salvar permissões/i })).toBeDisabled();
     });
 
+    it('logo depois do PATCH (refetch ainda pendente) trocar de aba não pede descarte', async () => {
+      const saved = { ...GROUP_DETAIL, permissions: ['VIEW_AND_OPEN_TICKETS', 'EDIT_CLOSED_TICKETS'] };
+      vi.mocked(api.patch).mockImplementation((async () => {
+        vi.mocked(api.get).mockImplementation(((url: string) =>
+          url === '/permission-groups/pg-1' ? new Promise(() => undefined) : Promise.resolve({ data: [] })) as never);
+        return { data: saved };
+      }) as never);
+      renderPage();
+      await openPermissionsTab();
+      await userEvent.click(screen.getByRole('checkbox', { name: /editar tickets fechados/i }));
+      await userEvent.click(screen.getByRole('button', { name: /salvar permissões/i }));
+      await confirmDialog();
+      await screen.findByText('Permissões salvas');
+
+      await userEvent.click(screen.getByRole('tab', { name: /vínculos/i }));
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      expect(await screen.findByText('Usuários vinculados diretamente')).toBeInTheDocument();
+    });
+
+    it('uma mudança externa no servidor depois de salvar reaparece na seleção (a baseline é o servidor)', async () => {
+      const saved = { ...GROUP_DETAIL, permissions: ['VIEW_AND_OPEN_TICKETS', 'EDIT_CLOSED_TICKETS'] };
+      vi.mocked(api.patch).mockImplementation((async () => {
+        mockGets(saved);
+        return { data: saved };
+      }) as never);
+      renderPage();
+      await openPermissionsTab();
+      await userEvent.click(screen.getByRole('checkbox', { name: /editar tickets fechados/i }));
+      await userEvent.click(screen.getByRole('button', { name: /salvar permissões/i }));
+      await confirmDialog();
+      await waitFor(() => expect(screen.queryByText('Alterações não salvas')).not.toBeInTheDocument());
+
+      // Outro administrador concede MANAGE_USERS; o próximo refetch (vínculo adicionado) traz isso.
+      mockGets({ ...saved, permissions: [...saved.permissions, 'MANAGE_USERS'] });
+      await userEvent.click(screen.getByRole('tab', { name: /vínculos/i }));
+      await userEvent.click(await screen.findByRole('button', { name: 'Adicionar Carlos Dias' }));
+      await screen.findByText('Usuário vinculado');
+      await userEvent.click(screen.getByRole('tab', { name: /permissões/i }));
+
+      await waitFor(() => expect(screen.getByRole('checkbox', { name: /gerenciar usuários/i })).toBeChecked());
+      expect(screen.queryByText('Alterações não salvas')).not.toBeInTheDocument();
+    });
+
+    it('depois de salvar a aba Informações o indicador some e uma mudança externa do nome reaparece', async () => {
+      const renamed = { ...GROUP_DETAIL, name: 'Atendente Padrão X' };
+      vi.mocked(api.patch).mockImplementation((async () => {
+        mockGets(renamed);
+        return { data: renamed };
+      }) as never);
+      renderPage();
+      await userEvent.click(await screen.findByText('Atendente Padrão'));
+      await userEvent.type(await screen.findByLabelText('Nome'), ' X');
+      await userEvent.click(screen.getByRole('button', { name: 'Salvar' }));
+      await waitFor(() => expect(screen.queryByText('Alterações não salvas')).not.toBeInTheDocument());
+
+      mockGets({ ...renamed, name: 'Nome externo' });
+      await userEvent.click(screen.getByRole('tab', { name: /vínculos/i }));
+      await userEvent.click(await screen.findByRole('button', { name: 'Adicionar Carlos Dias' }));
+      await screen.findByText('Usuário vinculado');
+      await userEvent.click(screen.getByRole('tab', { name: /informações/i }));
+
+      await waitFor(() => expect(screen.getByLabelText('Nome')).toHaveValue('Nome externo'));
+      expect(screen.queryByText('Alterações não salvas')).not.toBeInTheDocument();
+    });
+
     it('a aba Informações mostra "Alterações não salvas" ao editar e pede descarte ao voltar', async () => {
       renderPage();
       await userEvent.click(await screen.findByText('Atendente Padrão'));

@@ -90,7 +90,12 @@ export function useUpdatePermissionGroupPermissions(id: string) {
       );
       return data;
     },
-    onSuccess: () => invalidateGroup(queryClient, id),
+    onSuccess: (data) => {
+      // A resposta já é o grupo atualizado: vira a baseline na hora (sem esperar o refetch),
+      // para o indicador de alterações não salvas sumir assim que o PATCH conclui.
+      queryClient.setQueryData([...LIST_KEY, id], data);
+      invalidateGroup(queryClient, id);
+    },
   });
 }
 
@@ -100,7 +105,12 @@ export function useDeletePermissionGroup() {
     mutationFn: async (id: string) => {
       await api.delete(`/permission-groups/${id}`);
     },
-    onSuccess: () => void queryClient.invalidateQueries({ queryKey: LIST_KEY }),
+    onSuccess: (_data, id) => {
+      // Tira do cache o detalhe do grupo excluído (e só o dele) antes de invalidar a lista,
+      // para o detalhe não ser refeito com um GET que viraria 404.
+      queryClient.removeQueries({ queryKey: [...LIST_KEY, id] });
+      void queryClient.invalidateQueries({ queryKey: LIST_KEY });
+    },
   });
 }
 
