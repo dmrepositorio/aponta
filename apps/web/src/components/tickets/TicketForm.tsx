@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useForm, Controller } from 'react-hook-form';
 import { z } from 'zod';
 import { api } from '../../lib/api';
@@ -21,7 +21,7 @@ import {
   EzMultiSelect,
   EzFileItem
 } from '../ds';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { CalendarClock } from 'lucide-react';
 
 interface ServiceDesk {
@@ -68,9 +68,16 @@ interface TicketFormProps {
   catalogOverride?: CatalogItem | null;
   /** Cliente escolhido no catálogo: chega preenchido e travado. */
   lockedOrganizationId?: string;
+  /** Avisa a página quando o formulário passa a ter (ou deixa de ter) alterações não enviadas. */
+  onDirtyChange?: (dirty: boolean) => void;
 }
 
-export function TicketForm({ onSubmit, isSubmitting, submitError, catalogOverride, lockedOrganizationId }: TicketFormProps) {
+interface ParentTicketRow { id: string; protocol?: string; title: string }
+
+const PARENT_SEARCH_DEBOUNCE_MS = 300;
+const PARENT_SEARCH_LIMIT = '20';
+
+export function TicketForm({ onSubmit, isSubmitting, submitError, catalogOverride, lockedOrganizationId, onDirtyChange }: TicketFormProps) {
   const currentUser = useAuthStore((state) => state.user);
 
   // Queries (Mocking relations missing in Prisma for UI completion)
@@ -100,17 +107,33 @@ export function TicketForm({ onSubmit, isSubmitting, submitError, catalogOverrid
     },
   });
 
+  // Ticket Pai: busca remota por protocolo/título (GET /tickets?search=), em vez de carregar só a
+  // 1ª página da fila. O escopo de tenant/mesa continua no backend.
+  const [parentSearch, setParentSearch] = useState('');
+  const [debouncedParentSearch, setDebouncedParentSearch] = useState('');
+  const [selectedParent, setSelectedParent] = useState<{ label: string; value: string } | null>(null);
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedParentSearch(parentSearch.trim()), PARENT_SEARCH_DEBOUNCE_MS);
+    return () => clearTimeout(timer);
+  }, [parentSearch]);
+
   const { data: tickets = [] } = useQuery({
-    queryKey: ['tickets-list'],
+    queryKey: ['tickets-parent-options', debouncedParentSearch],
     queryFn: async () => {
-      const { data } = await api.get<any[]>('/tickets').catch(() => ({ data: [] }));
-      return data.map(t => ({ id: t.id, title: t.title }));
-    }
+      const { data } = await api
+        .get<{ data: ParentTicketRow[] } | ParentTicketRow[]>('/tickets', {
+          params: { limit: PARENT_SEARCH_LIMIT, ...(debouncedParentSearch ? { search: debouncedParentSearch } : {}) },
+        })
+        .catch(() => ({ data: [] as ParentTicketRow[] }));
+      const rows = Array.isArray(data) ? data : data?.data ?? [];
+      return rows.map((t) => ({ id: t.id, protocol: t.protocol, title: t.title }));
+    },
+    placeholderData: keepPreviousData,
   });
 
   const isClientBase = currentUser?.role === 'CLIENT' || currentUser?.role === 'CLIENT_MASTER';
 
-  const { register, handleSubmit, control, watch, formState: { errors } } = useForm<TicketFormValues>({
+  const { register, handleSubmit, control, watch, formState: { errors, isDirty } } = useForm<TicketFormValues>({
     resolver: zodResolver(ticketFormSchema),
     defaultValues: {
       title: catalogOverride?.title || '',
@@ -126,6 +149,12 @@ export function TicketForm({ onSubmit, isSubmitting, submitError, catalogOverrid
   const watchOrgId = watch('organizationId');
   const watchDeskId = watch('serviceDeskId');
   const [showSchedule, setShowSchedule] = useState(false);
+  const [attachmentsRequiredError, setAttachmentsRequiredError] = useState(false);
+  const uploadRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    onDirtyChange?.(isDirty);
+  }, [isDirty, onDirtyChange]);
 
   const availableDesks = serviceDesks.filter((desk) => {
     if (desk.active === false || desk.acceptingNewTickets === false) return false;
@@ -139,6 +168,9 @@ export function TicketForm({ onSubmit, isSubmitting, submitError, catalogOverrid
     ? selectedDesk.priorities.filter((priority) => priority.enabled)
     : priorities.map((p) => ({ ticketPriority: p, enabled: true, label: priorityLabels[p] })); 
 
+  const showAttachmentsError =
+    attachmentsRequiredError && !!selectedDesk?.requireAttachments && !(watch('attachments')?.length);
+
   const availableRequesters = users.filter(u => {
     if (currentUser?.role === 'CLIENT') return u.id === currentUser?.sub;
     if (watchOrgId) return u.organizationId === watchOrgId || u.id === currentUser?.sub;
@@ -147,15 +179,30 @@ export function TicketForm({ onSubmit, isSubmitting, submitError, catalogOverrid
 
   const orgOptions = orgs.map(o => ({ label: o.name, value: o.id }));
   const requesterOptions = availableRequesters.map(u => ({ label: u.name, value: u.id }));
-  const ticketOptions = tickets.map((t: any) => ({ label: `${t.id.split('-')[0]} - ${t.title}`, value: t.id }));
+  const fetchedParentOptions = tickets.map((t) => ({
+    label: t.protocol ? `#${t.protocol} - ${t.title}` : t.title,
+    value: t.id,
+  }));
+  // O pai escolhido continua nas opções mesmo que a busca seguinte não o devolva.
+  const ticketOptions =
+    selectedParent && !fetchedParentOptions.some((option) => option.value === selectedParent.value)
+      ? [selectedParent, ...fetchedParentOptions]
+      : fetchedParentOptions;
   const followerOptions = users.map(u => ({ label: u.name, value: u.id }));
+
+  // Mesa que exige anexo: sem arquivo não envia; o erro fica junto do upload e o foco vai para ele.
+  const submitValues = (data: TicketFormValues, saveAndNew?: boolean) => {
+    if (selectedDesk?.requireAttachments && !data.attachments?.length) {
+      setAttachmentsRequiredError(true);
+      uploadRef.current?.focus();
+      return;
+    }
+    onSubmit(saveAndNew ? { ...data, saveAndNew: true } : data);
+  };
 
   return (
     <form
-      onSubmit={handleSubmit((data) => {
-        if (selectedDesk?.requireAttachments && !(data.attachments?.length)) return;
-        onSubmit(data);
-      })}
+      onSubmit={handleSubmit((data) => submitValues(data))}
       noValidate
       className="w-full space-y-6 bg-white p-6 md:p-8 rounded-card border border-gray-100 shadow-card"
     >
@@ -271,11 +318,21 @@ export function TicketForm({ onSubmit, isSubmitting, submitError, catalogOverrid
           render={({ field }) => (
             <div className="space-y-2">
               <EzUpload
+                ref={uploadRef}
+                tabIndex={-1}
+                data-testid="ticket-attachments"
+                aria-describedby={showAttachmentsError ? 'ticket-attachments-error' : undefined}
+                hasError={showAttachmentsError}
                 label={selectedDesk?.requireAttachments ? 'Anexos (obrigatório nesta mesa)' : 'Anexar arquivos (Imagens, PDF, Docs)'}
                 accept="image/*,.pdf,.doc,.docx"
                 multiple
                 onChange={(files) => field.onChange([...(field.value || []), ...files])}
               />
+              {showAttachmentsError && (
+                <p id="ticket-attachments-error" role="alert" className="text-[12px] font-medium text-red-700">
+                  Anexe ao menos um arquivo: esta mesa exige anexo.
+                </p>
+              )}
               {field.value && field.value.length > 0 && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3">
                   {field.value.map((f, i) => (
@@ -302,11 +359,16 @@ export function TicketForm({ onSubmit, isSubmitting, submitError, catalogOverrid
           control={control}
           render={({ field }) => (
             <EzSearch
+              id="ticket-parent"
               label="Ticket Pai (Opcional)"
               placeholder="Buscar ticket existente..."
               options={ticketOptions}
               value={field.value}
-              onChange={field.onChange}
+              onSearchChange={setParentSearch}
+              onChange={(value) => {
+                field.onChange(value == null ? undefined : String(value));
+                setSelectedParent(ticketOptions.find((option) => String(option.value) === String(value)) ?? null);
+              }}
             />
           )}
         />
@@ -361,7 +423,7 @@ export function TicketForm({ onSubmit, isSubmitting, submitError, catalogOverrid
           <EzButton
             type="button"
             variant="secondary"
-            onClick={handleSubmit((data) => onSubmit({ ...data, saveAndNew: true }))}
+            onClick={handleSubmit((data) => submitValues(data, true))}
             disabled={isSubmitting}
             label="Salvar e criar novo"
             className="w-full sm:w-auto"

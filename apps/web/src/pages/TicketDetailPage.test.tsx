@@ -184,13 +184,13 @@ function setRole(role: 'CLIENT' | 'AGENT' | 'ADMIN') {
   });
 }
 
-function renderPage() {
+function renderPage(locationState?: unknown) {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
   return render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={['/tickets/t-1']}>
+      <MemoryRouter initialEntries={[{ pathname: '/tickets/t-1', state: locationState }]}>
         <Routes>
           <Route path="/" element={<p>Dashboard</p>} />
           <Route path="/tickets" element={<p>Lista de tickets</p>} />
@@ -209,6 +209,24 @@ describe('TicketDetailPage', () => {
     preAppointments.length = 0;
     mockApi();
     setRole('CLIENT');
+  });
+
+  it('GH-444 NEW-04: mostra os avisos de etapas que falharam na criação do chamado', async () => {
+    renderPage({ createWarnings: ['O anexo "evidencia.png" não foi enviado.', 'O chamado não foi vinculado ao ticket pai.'] });
+
+    await screen.findByText('Printer not working');
+    expect(screen.queryByText(/chamado criado, mas com pendências/i)).toBeInTheDocument();
+    const warning = screen.getByRole('alert');
+    expect(warning).toHaveTextContent(/chamado criado, mas com pendências/i);
+    expect(warning).toHaveTextContent('O anexo "evidencia.png" não foi enviado.');
+    expect(warning).toHaveTextContent('O chamado não foi vinculado ao ticket pai.');
+  });
+
+  it('GH-444 NEW-04: sem avisos na navegação não mostra alerta de pendências', async () => {
+    renderPage();
+
+    await screen.findByText('Printer not working');
+    expect(screen.queryByText(/chamado criado, mas com pendências/i)).not.toBeInTheDocument();
   });
 
   it('should render ticket details with status, priority and SLA deadlines', async () => {

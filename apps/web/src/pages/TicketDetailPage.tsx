@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, PlayCircle, Square } from 'lucide-react';
 import { CommentForm } from '../components/tickets/CommentForm';
 import { TicketComments } from '../components/tickets/TicketComments';
@@ -31,6 +31,11 @@ export function TicketDetailPage() {
   const navigate = useNavigate();
   useEscapeLayer(() => navigate('/'), true, 'page');
   const [searchParams] = useSearchParams();
+  // GH-444 NEW-04: a criação pode concluir o chamado e falhar no pai/anexos; a tela de criação
+  // navega para cá com a lista do que falhou.
+  const location = useLocation();
+  const createWarnings = (location.state as { createWarnings?: string[] } | null)?.createWarnings;
+  const [warningsDismissed, setWarningsDismissed] = useState(false);
   const { data: ticket, isLoading, isError } = useTicket(id);
   const user = useAuthStore((state) => state.user);
 
@@ -136,6 +141,15 @@ export function TicketDetailPage() {
   return (
     <div className="space-y-4">
       {timerError && <EzAlert variant="warning">{timerError}</EzAlert>}
+      {createWarnings && createWarnings.length > 0 && !warningsDismissed && (
+        <EzAlert variant="warning" title="Chamado criado, mas com pendências" onClose={() => setWarningsDismissed(true)}>
+          <ul className="list-disc pl-5">
+            {createWarnings.map((warning) => (
+              <li key={warning}>{warning}</li>
+            ))}
+          </ul>
+        </EzAlert>
+      )}
       <Link
         to="/"
         className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900"
