@@ -451,6 +451,67 @@ describe('EzEntityGrid rich pagination and horizontal scrollbar (Sankhya parity)
     expect(screen.getByText('Acesso ao sistema negado')).toBeInTheDocument();
   });
 
+  it('informa faixa e total filtrado ao consumidor via onPaginationInfoChange (MSA-13)', async () => {
+    const user = userEvent.setup();
+    const onPaginationInfoChange = vi.fn();
+    const rows: Ticket[] = Array.from({ length: 25 }, (_, i) => ({
+      id: String(i + 1),
+      title: `Chamado ${i + 1}`,
+      priority: 'Alta',
+      createdAt: '2024-01-01',
+      amount: i,
+    }));
+    render(
+      <EzEntityGrid
+        tableLabel="Grade de exemplo"
+        columns={columns}
+        data={rows}
+        pageSize={10}
+        onPaginationInfoChange={onPaginationInfoChange}
+      />
+    );
+
+    expect(onPaginationInfoChange).toHaveBeenLastCalledWith({ inicio: 1, fim: 10, total: 25 });
+
+    await user.click(screen.getByRole('button', { name: /próxima página/i }));
+    expect(onPaginationInfoChange).toHaveBeenLastCalledWith({ inicio: 11, fim: 20, total: 25 });
+
+    await user.click(screen.getByRole('button', { name: /próxima página/i }));
+    expect(onPaginationInfoChange).toHaveBeenLastCalledWith({ inicio: 21, fim: 25, total: 25 });
+    // O rodapé continua igual.
+    expect(screen.getByTestId('ez-entity-grid-pagination-count')).toHaveTextContent('21-25 de 25');
+  });
+
+  it('onPaginationInfoChange acompanha o total filtrado e não dispara de novo sem mudança', async () => {
+    const user = userEvent.setup();
+    const onPaginationInfoChange = vi.fn();
+    const { rerender } = render(
+      <EzEntityGrid
+        tableLabel="Grade de exemplo"
+        columns={columns}
+        data={data}
+        pageSize={2}
+        onPaginationInfoChange={onPaginationInfoChange}
+      />
+    );
+    expect(onPaginationInfoChange).toHaveBeenLastCalledWith({ inicio: 1, fim: 2, total: 3 });
+    const calls = onPaginationInfoChange.mock.calls.length;
+
+    rerender(
+      <EzEntityGrid
+        tableLabel="Grade de exemplo"
+        columns={columns}
+        data={data}
+        pageSize={2}
+        onPaginationInfoChange={onPaginationInfoChange}
+      />
+    );
+    expect(onPaginationInfoChange).toHaveBeenCalledTimes(calls);
+
+    await user.click(screen.getByRole('button', { name: /próxima página/i }));
+    expect(onPaginationInfoChange).toHaveBeenLastCalledWith({ inicio: 3, fim: 3, total: 3 });
+  });
+
   it('renders persistent horizontal scrollbar when alwaysShowHorizontalScrollbar is enabled', () => {
     render(
       <EzEntityGrid tableLabel="Grade de exemplo"
