@@ -352,7 +352,7 @@ const partners: Partner[] = [
  */
 export const CadastroDeParceirosSankhya: Story = {
   render: () => (
-    <EzEntityGrid
+    <EzEntityGrid tableLabel="Grade de exemplo"
       columns={partnerColumns as any}
       data={partners as any}
       showRowNumbers

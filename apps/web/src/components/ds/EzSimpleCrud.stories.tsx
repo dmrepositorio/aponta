@@ -81,7 +81,7 @@ function InMemoryDemo() {
   const [tickets, setTickets] = useState<Ticket[]>(initialTickets);
 
   return (
-    <EzSimpleCrud
+    <EzSimpleCrud tableLabel="Grade de exemplo"
       columns={columns}
       fields={fields}
       mode="IN_MEMORY"
@@ -114,7 +114,7 @@ function ServerDemo() {
     });
 
   return (
-    <EzSimpleCrud
+    <EzSimpleCrud tableLabel="Grade de exemplo"
       columns={columns}
       fields={fields}
       mode="SERVER"
@@ -135,7 +135,7 @@ function ComConfiguradorDemo() {
   const [tickets, setTickets] = useState<Ticket[]>(initialTickets);
 
   return (
-    <EzSimpleCrud
+    <EzSimpleCrud tableLabel="Grade de exemplo"
       columns={columns}
       fields={fields}
       mode="IN_MEMORY"

@@ -1110,6 +1110,7 @@ className="isolate flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll
                     </div>
                   ) : (
                     <EzEntityGrid
+                      tableLabel="Organizações"
                       key={gridKey}
                       columns={orgColumns}
                       data={filteredOrgs}

@@ -8,6 +8,11 @@ import { EzTag } from './EzTag';
  * uma `<ul>` de cards, que deveria sustentar o "Modo Lista" de telas
  * como `OrganizationsPage` (#57) para respeitar o padrão Sankhya de
  * grade (equivalente ao `DataGrid`/`ez-data-grid` do ERP).
+ *
+ * **Acessibilidade:** `tableLabel` é obrigatório e nomeia a `<table>` e a
+ * região rolável (focável por teclado). O id do container vem de `useId()`,
+ * então duas grades na mesma tela têm `aria-controls` próprios. Em 390px a
+ * tabela não força largura mínima (a partir de `sm`, 600px).
  */
 const meta: Meta<typeof EzGridWrapper> = {
   title: 'DS/EzGridWrapper',
@@ -31,7 +36,7 @@ const orgs = [
  */
 export const OrganizationsListReference: Story = {
   render: () => (
-    <EzGridWrapper>
+    <EzGridWrapper tableLabel="Grade de exemplo">
       <thead className="bg-gray-90">
         <tr>
           <th className="px-4 py-3 font-semibold text-gray-700">Nome Fantasia</th>
@@ -60,7 +65,7 @@ export const OrganizationsListReference: Story = {
 
 export const Empty: Story = {
   render: () => (
-    <EzGridWrapper>
+    <EzGridWrapper tableLabel="Grade de exemplo">
       <thead className="bg-gray-90">
         <tr>
           <th className="px-4 py-3 font-semibold text-gray-700">Nome Fantasia</th>
@@ -77,7 +82,7 @@ export const Empty: Story = {
 
 export const ComScrollbarHorizontal: Story = {
   render: () => (
-    <EzGridWrapper alwaysShowHorizontalScrollbar>
+    <EzGridWrapper tableLabel="Grade de exemplo" alwaysShowHorizontalScrollbar>
       <thead className="bg-gray-90">
         <tr>
           <th className="px-4 py-3 font-semibold text-gray-700 min-w-[200px]">Nome Fantasia</th>
@@ -117,7 +122,7 @@ export const ComScrollbarHorizontal: Story = {
 export const Mobile390: Story = {
   render: () => (
     <div style={{ width: 390 }}>
-      <EzGridWrapper alwaysShowHorizontalScrollbar>
+      <EzGridWrapper tableLabel="Grade de exemplo" alwaysShowHorizontalScrollbar>
         <thead className="bg-gray-90">
           <tr>
             <th className="px-4 py-3 font-semibold text-gray-700">Nome Fantasia</th>

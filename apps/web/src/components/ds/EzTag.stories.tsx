@@ -7,6 +7,10 @@ import { EzTag } from './EzTag';
  * Elemento em formato de pílula para status, categorias ou filtros. Usado em
  * listas de chamados (status, prioridade) e em cards de clientes/organizações
  * (plano, SLA, segmento).
+ *
+ * Renderiza um `span`; com `onClick` renderiza um `button type="button"`.
+ * As variantes `green`, `yellow` e `red` mostram um ícone de prefixo (check,
+ * alerta, X) além da cor, para o status não depender só dela (WCAG 1.4.1).
  */
 const meta: Meta<typeof EzTag> = {
   title: 'DS/EzTag',
@@ -35,6 +39,14 @@ export const Variantes: Story = {
       <EzTag label="Arquivado" variant="outline" />
     </div>
   ),
+};
+
+export const Clicavel: Story = {
+  args: {
+    label: 'Filtrar por abertos',
+    variant: 'ocean',
+    onClick: () => undefined,
+  },
 };
 
 export const ComIconeEsquerdo: Story = {

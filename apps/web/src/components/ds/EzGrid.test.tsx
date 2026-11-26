@@ -5,7 +5,7 @@ import { EzGridWrapper } from './EzGrid';
 describe('EzGridWrapper', () => {
   it('renders children correctly', () => {
     render(
-      <EzGridWrapper>
+      <EzGridWrapper tableLabel="Grade de exemplo">
         <tbody>
           <tr><td data-testid="grid-cell">Cell Data</td></tr>
         </tbody>
@@ -15,14 +15,14 @@ describe('EzGridWrapper', () => {
   });
 
   it('adds given custom className', () => {
-    const { container } = render(<EzGridWrapper className="my-custom-grid" />);
+    const { container } = render(<EzGridWrapper tableLabel="Grade de exemplo" className="my-custom-grid" />);
     expect(container.firstChild).toHaveClass('my-custom-grid');
     expect(container.firstChild).toHaveClass('overflow-hidden');
   });
 
   it('renders persistent horizontal scrollbar with thumb and accessibility attributes when alwaysShowHorizontalScrollbar is true', () => {
     render(
-      <EzGridWrapper alwaysShowHorizontalScrollbar>
+      <EzGridWrapper tableLabel="Grade de exemplo" alwaysShowHorizontalScrollbar>
         <tbody>
           <tr><td>Data</td></tr>
         </tbody>
@@ -41,7 +41,7 @@ describe('EzGridWrapper', () => {
 
   it('does not render horizontal scrollbar when showHorizontalScrollbar is false', () => {
     render(
-      <EzGridWrapper alwaysShowHorizontalScrollbar showHorizontalScrollbar={false}>
+      <EzGridWrapper tableLabel="Grade de exemplo" alwaysShowHorizontalScrollbar showHorizontalScrollbar={false}>
         <tbody>
           <tr><td>Data</td></tr>
         </tbody>
@@ -52,15 +52,15 @@ describe('EzGridWrapper', () => {
   });
 
   it('updates metrics on container scroll', () => {
-    const { container } = render(
-      <EzGridWrapper alwaysShowHorizontalScrollbar>
+    render(
+      <EzGridWrapper tableLabel="Grade de exemplo" alwaysShowHorizontalScrollbar>
         <tbody>
           <tr><td>Data</td></tr>
         </tbody>
       </EzGridWrapper>
     );
 
-    const scrollContainer = container.querySelector('#ez-grid-table-container') as HTMLDivElement;
+    const scrollContainer = screen.getByTestId('ez-grid-scroll-region');
     expect(scrollContainer).toBeInTheDocument();
 
     Object.defineProperty(scrollContainer, 'scrollWidth', { value: 800, configurable: true });
@@ -74,15 +74,15 @@ describe('EzGridWrapper', () => {
   });
 
   it('handles keyboard navigation (ArrowLeft and ArrowRight) on thumb', () => {
-    const { container } = render(
-      <EzGridWrapper alwaysShowHorizontalScrollbar>
+    render(
+      <EzGridWrapper tableLabel="Grade de exemplo" alwaysShowHorizontalScrollbar>
         <tbody>
           <tr><td>Data</td></tr>
         </tbody>
       </EzGridWrapper>
     );
 
-    const scrollContainer = container.querySelector('#ez-grid-table-container') as HTMLDivElement;
+    const scrollContainer = screen.getByTestId('ez-grid-scroll-region');
     expect(scrollContainer).toBeInTheDocument();
     scrollContainer.scrollLeft = 50;
 
@@ -100,15 +100,15 @@ describe('EzGridWrapper', () => {
   });
 
   it('handles mouse dragging on thumb', () => {
-    const { container } = render(
-      <EzGridWrapper alwaysShowHorizontalScrollbar>
+    render(
+      <EzGridWrapper tableLabel="Grade de exemplo" alwaysShowHorizontalScrollbar>
         <tbody>
           <tr><td>Data</td></tr>
         </tbody>
       </EzGridWrapper>
     );
 
-    const scrollContainer = container.querySelector('#ez-grid-table-container') as HTMLDivElement;
+    const scrollContainer = screen.getByTestId('ez-grid-scroll-region');
     Object.defineProperty(scrollContainer, 'scrollWidth', { value: 1000, configurable: true });
     Object.defineProperty(scrollContainer, 'clientWidth', { value: 500, configurable: true });
     scrollContainer.scrollLeft = 0;
@@ -126,15 +126,15 @@ describe('EzGridWrapper', () => {
   });
 
   it('handles clicking on scrollbar track', () => {
-    const { container } = render(
-      <EzGridWrapper alwaysShowHorizontalScrollbar>
+    render(
+      <EzGridWrapper tableLabel="Grade de exemplo" alwaysShowHorizontalScrollbar>
         <tbody>
           <tr><td>Data</td></tr>
         </tbody>
       </EzGridWrapper>
     );
 
-    const scrollContainer = container.querySelector('#ez-grid-table-container') as HTMLDivElement;
+    const scrollContainer = screen.getByTestId('ez-grid-scroll-region');
     Object.defineProperty(scrollContainer, 'scrollWidth', { value: 1000, configurable: true });
     Object.defineProperty(scrollContainer, 'clientWidth', { value: 500, configurable: true });
 
@@ -170,7 +170,7 @@ describe('EzGridWrapper', () => {
     } as unknown as typeof ResizeObserver;
 
     const { unmount } = render(
-      <EzGridWrapper>
+      <EzGridWrapper tableLabel="Grade de exemplo">
         <tbody>
           <tr><td>Data</td></tr>
         </tbody>

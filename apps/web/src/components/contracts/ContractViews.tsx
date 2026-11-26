@@ -192,6 +192,7 @@ export function ContractList({
     return <EzEmptyCard title="Nenhum contrato encontrado." />;
   return (
     <EzEntityGrid
+      tableLabel="Contratos"
       columns={columns}
       data={contracts}
       selectable={selectable}

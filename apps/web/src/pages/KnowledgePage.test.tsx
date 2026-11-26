@@ -882,7 +882,7 @@ describe('KnowledgePage', () => {
       const filters = screen.getByTestId('knowledge-active-filters');
       expect(filters).toContainElement(chip);
       expect(filters).toHaveClass('flex-wrap');
-      expect(chip.closest('div')).toHaveClass('whitespace-nowrap');
+      expect(chip.closest('[data-ez-tag]')).toHaveClass('whitespace-nowrap');
       expect(filters).not.toContainElement(screen.getByRole('searchbox'));
       expect(filters).not.toContainElement(screen.getByRole('button', { name: '+ Novo artigo' }));
     });
@@ -1140,7 +1140,7 @@ describe('KnowledgePage', () => {
 
       it('shows Interno as a classification (petroleum with a lock), not as a yellow alert', async () => {
         await openAs('ADMIN');
-        const tag = within(cardOf('Artigo com tags')).getByText('Interno').closest('div')!;
+        const tag = within(cardOf('Artigo com tags')).getByText('Interno').closest('[data-ez-tag]')!;
 
         expect(tag).toHaveClass('bg-petroleum-100');
         expect(tag.className).not.toMatch(/yellow/);

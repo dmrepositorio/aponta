@@ -18,28 +18,28 @@ const data: Row[] = [
 
 describe('EzGridWrapper no celular', () => {
   it('rola a tabela com o dedo sem arrastar a página (touch-pan-x + overscroll contido)', () => {
-    const { container } = render(
-      <EzGridWrapper alwaysShowHorizontalScrollbar>
+    render(
+      <EzGridWrapper tableLabel="Grade de exemplo" alwaysShowHorizontalScrollbar>
         <tbody>
           <tr><td>Data</td></tr>
         </tbody>
       </EzGridWrapper>
     );
-    const scroller = container.querySelector('#ez-grid-table-container') as HTMLDivElement;
+    const scroller = screen.getByTestId('ez-grid-scroll-region');
     expect(scroller).toHaveClass('touch-pan-x');
     expect(scroller).toHaveClass('touch-pan-y');
     expect(scroller).toHaveClass('overscroll-x-contain');
   });
 
   it('arrasta o thumb da barra horizontal por toque', () => {
-    const { container } = render(
-      <EzGridWrapper alwaysShowHorizontalScrollbar>
+    render(
+      <EzGridWrapper tableLabel="Grade de exemplo" alwaysShowHorizontalScrollbar>
         <tbody>
           <tr><td>Data</td></tr>
         </tbody>
       </EzGridWrapper>
     );
-    const scroller = container.querySelector('#ez-grid-table-container') as HTMLDivElement;
+    const scroller = screen.getByTestId('ez-grid-scroll-region');
     Object.defineProperty(scroller, 'scrollWidth', { value: 800, configurable: true });
     Object.defineProperty(scroller, 'clientWidth', { value: 400, configurable: true });
     scroller.scrollLeft = 0;
@@ -56,7 +56,7 @@ describe('EzGridWrapper no celular', () => {
 
   it('usa trilho e thumb maiores em ponteiro grosso (toque)', () => {
     render(
-      <EzGridWrapper alwaysShowHorizontalScrollbar>
+      <EzGridWrapper tableLabel="Grade de exemplo" alwaysShowHorizontalScrollbar>
         <tbody>
           <tr><td>Data</td></tr>
         </tbody>
@@ -71,7 +71,7 @@ describe('EzGridWrapper no celular', () => {
 
 describe('EzEntityGrid paginação no celular', () => {
   it('empilha a paginação e dá alvos de toque de 44px aos botões de página', () => {
-    render(<EzEntityGrid columns={columns} data={data} pageSize={2} pageSizeOptions={[2, 5]} />);
+    render(<EzEntityGrid tableLabel="Grade de exemplo" columns={columns} data={data} pageSize={2} pageSizeOptions={[2, 5]} />);
     const prev = screen.getByLabelText('Página anterior');
     const next = screen.getByLabelText('Próxima página');
     for (const button of [prev, next]) {
@@ -87,7 +87,7 @@ describe('EzEntityGrid paginação no celular', () => {
 
   it('aumenta o alvo do botão de opções da grade em ponteiro grosso', () => {
     render(
-      <EzEntityGrid columns={columns} data={data} pageSize={2} showGridCornerMenu />
+      <EzEntityGrid tableLabel="Grade de exemplo" columns={columns} data={data} pageSize={2} showGridCornerMenu />
     );
     expect(screen.getByTestId('ez-grid-corner-menu-button').className).toContain(
       '[@media(pointer:coarse)]:h-11'
@@ -104,7 +104,7 @@ describe('EzTaskbar e seletor de linhas no celular (revisão interna)', () => {
   });
 
   it('seletor de linhas por página tem 44px de altura abaixo de sm', () => {
-    render(<EzEntityGrid columns={columns} data={data} pageSize={2} pageSizeOptions={[2, 5]} />);
+    render(<EzEntityGrid tableLabel="Grade de exemplo" columns={columns} data={data} pageSize={2} pageSizeOptions={[2, 5]} />);
     expect(screen.getByRole('combobox', { name: 'Linhas por página:' }).parentElement).toHaveClass('h-11');
   });
 });

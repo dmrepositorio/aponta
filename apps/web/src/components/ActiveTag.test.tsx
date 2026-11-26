@@ -8,7 +8,7 @@ import { ActiveTag, activeTagTokenPairs } from './ActiveTag';
 /** Aparência = classes da pílula + forma do ícone, sem o texto. */
 function look(ui: ReactElement, text: string) {
   const { container, unmount } = render(ui);
-  const root = within(container).getByText(text).closest('div') as HTMLElement;
+  const root = within(container).getByText(text).closest('[data-ez-tag]') as HTMLElement;
   const icon = root.querySelector('[data-glyph]');
   const result = {
     className: root.className,
