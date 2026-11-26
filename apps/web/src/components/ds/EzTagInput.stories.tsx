@@ -5,7 +5,8 @@ import { EzTagInput } from './EzTagInput';
 /**
  * Aponta DS Tag Input — campo de texto que transforma o conteúdo digitado em
  * tags removíveis (Enter adiciona, X remove). Usado para marcadores de
- * chamado e listas de e-mails em cópia.
+ * chamado e listas de e-mails em cópia. Com `suggestions` oferece as tags já
+ * usadas enquanto se digita (sem diferenciar caixa) e nunca duplica uma tag.
  */
 const meta: Meta<typeof EzTagInput> = {
   title: 'DS/EzTagInput',
@@ -64,6 +65,26 @@ export const Interactive: Story = {
           tags={tags}
           onChange={setTags}
           placeholder="Adicionar marcador..."
+        />
+      );
+    }
+    return <Demo />;
+  },
+};
+
+export const ComSugestoes: Story = {
+  render: () => {
+    function Demo() {
+      const [tags, setTags] = useState<string[]>(['senha']);
+      return (
+        <EzTagInput
+          id="tag-input-suggestions"
+          label="Tags"
+          tags={tags}
+          onChange={setTags}
+          suggestions={['Senha', 'Servidor', 'acesso', 'rh']}
+          addOnBlur
+          placeholder="Digite 'se' para ver sugestões..."
         />
       );
     }

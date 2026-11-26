@@ -1,4 +1,4 @@
-import { InputHTMLAttributes, KeyboardEvent, forwardRef, useState } from 'react';
+import { InputHTMLAttributes, KeyboardEvent, forwardRef, useId, useMemo, useState } from 'react';
 import { cn } from './utils';
 import { X } from 'lucide-react';
 
@@ -21,7 +21,9 @@ export interface EzTagInputProps
    */
   label?: string;
   /**
-   * Existing tags offered while typing (matched ignoring case).
+   * Existing tags offered while typing (matched ignoring case). A tag already
+   * selected is never offered, and typed text that matches a suggestion is
+   * added with the suggestion's casing.
    */
   suggestions?: string[];
   /**
@@ -30,9 +32,13 @@ export interface EzTagInputProps
   addOnBlur?: boolean;
 }
 
+const sameTag = (a: string, b: string) => a.toLowerCase() === b.toLowerCase();
+
 /**
  * Aponta DS Tag Input (inspired by @sankhyalabs/ezui)
- * A text field that turns typed text into removable tags (Enter to add, X to remove).
+ * A text field that turns typed text into removable tags (Enter or comma to add,
+ * X to remove). With `suggestions` it behaves as a combobox: the arrow keys move
+ * through the matches and Enter picks the active one. Tags are unique ignoring case.
  */
 export const EzTagInput = forwardRef<HTMLInputElement, EzTagInputProps>(
   (
@@ -44,19 +50,45 @@ export const EzTagInput = forwardRef<HTMLInputElement, EzTagInputProps>(
       className,
       disabled,
       id,
+      suggestions,
+      addOnBlur = false,
+      onBlur,
       ...props
     },
     ref
   ) => {
     const [draft, setDraft] = useState('');
+    const [activeIndex, setActiveIndex] = useState(-1);
+    const [dismissed, setDismissed] = useState(false);
+    const listId = useId();
 
-    const addTag = () => {
-      const value = draft.trim();
-      if (!value) return;
-      if (!tags.includes(value)) {
-        onChange([...tags, value]);
+    const matches = useMemo(() => {
+      const text = draft.trim().toLowerCase();
+      if (!suggestions || !text) return [];
+      const seen: string[] = [];
+      for (const suggestion of suggestions) {
+        if (!suggestion.toLowerCase().includes(text)) continue;
+        if (tags.some((t) => sameTag(t, suggestion))) continue;
+        if (seen.some((s) => sameTag(s, suggestion))) continue;
+        seen.push(suggestion);
+      }
+      return seen;
+    }, [draft, suggestions, tags]);
+
+    const open = !dismissed && matches.length > 0;
+    const optionId = (index: number) => `${listId}-option-${index}`;
+
+    const addTag = (raw: string) => {
+      const typed = raw.trim();
+      if (typed) {
+        const value = suggestions?.find((s) => sameTag(s, typed)) ?? typed;
+        if (!tags.some((t) => sameTag(t, value))) {
+          onChange([...tags, value]);
+        }
       }
       setDraft('');
+      setActiveIndex(-1);
+      setDismissed(false);
     };
 
     const removeTag = (tag: string) => {
@@ -66,14 +98,30 @@ export const EzTagInput = forwardRef<HTMLInputElement, EzTagInputProps>(
     const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
       if (e.key === 'Enter') {
         e.preventDefault();
-        addTag();
+        addTag(open && activeIndex >= 0 ? matches[activeIndex] : draft);
+      } else if (e.key === ',') {
+        e.preventDefault();
+        addTag(draft);
+      } else if (e.key === 'ArrowDown' && matches.length > 0) {
+        e.preventDefault();
+        setDismissed(false);
+        setActiveIndex((i) => (i + 1) % matches.length);
+      } else if (e.key === 'ArrowUp' && matches.length > 0) {
+        e.preventDefault();
+        setDismissed(false);
+        setActiveIndex((i) => (i <= 0 ? matches.length - 1 : i - 1));
+      } else if (e.key === 'Escape' && open) {
+        e.preventDefault();
+        e.stopPropagation();
+        setDismissed(true);
+        setActiveIndex(-1);
       } else if (e.key === 'Backspace' && draft === '' && tags.length > 0) {
         removeTag(tags[tags.length - 1]);
       }
     };
 
     return (
-      <div className={cn('flex flex-col w-full gap-1.5', className)}>
+      <div className={cn('relative flex flex-col w-full gap-1.5', className)}>
         {label && (
           <label
             htmlFor={id}
@@ -119,13 +167,58 @@ export const EzTagInput = forwardRef<HTMLInputElement, EzTagInputProps>(
             type="text"
             disabled={disabled}
             value={draft}
-            onChange={(e) => setDraft(e.target.value)}
+            onChange={(e) => {
+              setDraft(e.target.value);
+              setActiveIndex(-1);
+              setDismissed(false);
+            }}
             onKeyDown={handleKeyDown}
+            onBlur={(e) => {
+              if (addOnBlur) addTag(draft);
+              onBlur?.(e);
+            }}
             placeholder={placeholder}
             className="flex-1 min-w-[120px] bg-transparent border-none outline-none text-[14px] text-gray-900 placeholder:text-gray-400 py-1"
+            {...(suggestions
+              ? {
+                  role: 'combobox',
+                  'aria-autocomplete': 'list' as const,
+                  'aria-expanded': open,
+                  'aria-controls': open ? listId : undefined,
+                  'aria-activedescendant': open && activeIndex >= 0 ? optionId(activeIndex) : undefined,
+                }
+              : {})}
             {...props}
           />
         </div>
+
+        {open && (
+          <ul
+            id={listId}
+            role="listbox"
+            className="absolute left-0 right-0 top-full z-20 mt-1 max-h-48 overflow-auto rounded-[12px] border border-gray-200 bg-white py-1 shadow-md"
+          >
+            {matches.map((suggestion, index) => (
+              <li
+                key={suggestion}
+                id={optionId(index)}
+                role="option"
+                aria-selected={index === activeIndex}
+                // mousedown keeps the focus in the field, so the blur commit does not fire first.
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  addTag(suggestion);
+                }}
+                className={cn(
+                  'cursor-pointer px-3 py-1.5 text-[14px] text-gray-900',
+                  index === activeIndex ? 'bg-brand-50' : 'hover:bg-gray-90'
+                )}
+              >
+                {suggestion}
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     );
   }
