@@ -1,26 +1,64 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ColumnDef } from '@tanstack/react-table';
-import { Navigate } from 'react-router-dom';
-import { EzAlert, EzButton, EzEmptyCard, EzModal, EzPageLayout, EzSpinner, EzTextArea } from '../components/ds';
+import { EzAlert, EzButton, EzEmptyCard, EzModal, EzPageHeader, EzPageLayout, EzSpinner, EzTextArea } from '../components/ds';
 import { EzEntityGrid } from '../components/ds/EzEntityGrid';
+import { formatWorklogMinutes } from '../components/tickets/TicketWorklogs';
 import { useEffectivePermissions } from '../hooks/usePermissions';
 import { APPROVAL_TYPE_LABELS, WorklogApproval, useDecideWorklogApproval, useWorklogApprovals } from '../hooks/useWorklogApprovals';
+import { formatDateTime } from '../lib/formatDateTime';
 
-const when = (iso: string) => new Date(iso).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', dateStyle: 'short', timeStyle: 'short' });
+const NOTE_REQUIRED = 'Informe o motivo da negação.';
 
 function errorMessage(error: unknown): string {
   const message = (error as { response?: { data?: { message?: string | string[] } } })?.response?.data?.message;
   return (Array.isArray(message) ? message.join(' ') : message) || 'Não foi possível concluir a decisão.';
 }
 
-const COLUMNS: ColumnDef<WorklogApproval>[] = [
-  { id: 'author', header: 'Consultor', accessorFn: (row) => row.author.name },
-  { id: 'ticket', header: 'Ticket', accessorFn: (row) => row.ticket.protocol },
-  { id: 'type', header: 'Tipo', accessorFn: (row) => APPROVAL_TYPE_LABELS[row.approvalType] },
-  { id: 'period', header: 'Período', accessorFn: (row) => `${when(row.startTime)} a ${when(row.endTime)}` },
-  { id: 'minutes', header: 'Minutos', accessorFn: (row) => row.minutes },
-  { id: 'reason', header: 'Motivo', accessorFn: (row) => row.approvalReason },
-];
+function buildColumns(onDetails: (row: WorklogApproval) => void): ColumnDef<WorklogApproval>[] {
+  return [
+    { id: 'author', header: 'Consultor', accessorFn: (row) => row.author.name },
+    { id: 'ticket', header: 'Ticket', accessorFn: (row) => row.ticket.protocol },
+    { id: 'type', header: 'Tipo', accessorFn: (row) => APPROVAL_TYPE_LABELS[row.approvalType] },
+    {
+      id: 'period',
+      header: 'Período',
+      // O valor da coluna é o início (ISO), para a ordenação ser cronológica.
+      accessorFn: (row) => row.startTime,
+      cell: ({ row }) => (
+        <div className="leading-snug">
+          <div>{formatDateTime(row.original.startTime)}</div>
+          <div className="text-gray-500">{formatDateTime(row.original.endTime)}</div>
+        </div>
+      ),
+    },
+    {
+      id: 'minutes',
+      header: 'Duração',
+      // Numérico: a ordenação é por duração; o texto "Xh Ym" só vive na célula.
+      accessorFn: (row) => row.minutes,
+      cell: ({ row }) => formatWorklogMinutes(row.original.minutes),
+      meta: { align: 'right' },
+    },
+    { id: 'reason', header: 'Motivo', accessorFn: (row) => row.approvalReason },
+    {
+      id: 'details',
+      header: 'Ações',
+      enableSorting: false,
+      cell: ({ row }) => (
+        <EzButton
+          size="small"
+          variant="secondary"
+          label="Ver detalhes"
+          aria-label={`Ver detalhes de ${row.original.author.name}, ticket ${row.original.ticket.protocol}`}
+          onClick={(event) => {
+            event.stopPropagation();
+            onDetails(row.original);
+          }}
+        />
+      ),
+    },
+  ];
+}
 
 /** DMTE-462 T5: liberações pendentes dos tipos que a pessoa decide; decide só o registro escolhido. */
 export function ReleasesPage() {
@@ -32,8 +70,11 @@ export function ReleasesPage() {
   const [note, setNote] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [pageError, setPageError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const noteRef = useRef<HTMLTextAreaElement>(null);
 
   const rows = useMemo(() => data ?? [], [data]);
+  const missingNote = rejecting && error === NOTE_REQUIRED;
   const only = selected.length === 1 ? selected[0] : null;
 
   const close = () => {
@@ -43,31 +84,55 @@ export function ReleasesPage() {
     setNote('');
     setError(null);
   };
-  const openDecision = (row: WorklogApproval, reject: boolean) => {
+  const openDecision = useCallback((row: WorklogApproval, reject: boolean) => {
     setOpen(row);
     setRejecting(reject);
     setNote('');
     setError(null);
-  };
+  }, []);
+  const columns = useMemo(() => buildColumns((row) => openDecision(row, false)), [openDecision]);
+
+  // Ao abrir "Negar" o foco vai para o campo do motivo.
+  useEffect(() => {
+    if (rejecting) noteRef.current?.focus();
+  }, [rejecting]);
   const approve = (row: WorklogApproval, fromDialog: boolean) => {
     setError(null);
     setPageError(null);
+    setNotice(null);
     decide.mutate({ id: row.id }, {
-      onSuccess: () => close(),
+      onSuccess: () => {
+        close();
+        setNotice('Liberação concedida');
+      },
       onError: (e) => (fromDialog ? setError(errorMessage(e)) : setPageError(errorMessage(e))),
     });
   };
   const confirmReject = (row: WorklogApproval) => {
     if (!note.trim()) {
-      setError('Informe o motivo da negação.');
+      setError(NOTE_REQUIRED);
+      noteRef.current?.focus();
       return;
     }
     setError(null);
-    decide.mutate({ id: row.id, note: note.trim() }, { onSuccess: () => close(), onError: (e) => setError(errorMessage(e)) });
+    setNotice(null);
+    decide.mutate(
+      { id: row.id, note: note.trim() },
+      {
+        onSuccess: () => {
+          close();
+          setNotice('Liberação negada');
+        },
+        onError: (e) => setError(errorMessage(e)),
+      },
+    );
   };
 
   return (
-    <EzPageLayout header={<h1 className="text-[18px] font-semibold text-gray-900">Liberações</h1>}>
+    <EzPageLayout header={<EzPageHeader title="Liberações" />}>
+      {notice && (
+        <EzAlert variant="success" role="status" className="mb-3" onClose={() => setNotice(null)}>{notice}</EzAlert>
+      )}
       {isLoading ? (
         <div className="p-8"><EzSpinner label="Carregando liberações…" /></div>
       ) : isError ? (
@@ -83,14 +148,14 @@ export function ReleasesPage() {
             <EzButton size="small" variant="secondary" disabled={!only || decide.isPending} onClick={() => only && openDecision(only, true)}>
               Negar selecionado
             </EzButton>
-            <span className="text-[12px] text-gray-500">Selecione um registro, ou dê duplo clique para ver o motivo e decidir.</span>
+            <span className="text-[12px] text-gray-500">Selecione um registro para decidir, ou use Ver detalhes na linha para ler o motivo e decidir.</span>
           </div>
           {pageError && <EzAlert variant="error">{pageError}</EzAlert>}
           <EzEntityGrid
             tableLabel="Liberações"
             key={rows.map((row) => row.id).join(',')}
             data={rows}
-            columns={COLUMNS}
+            columns={columns}
             selectable
             zebraStriping
             onSelectionChange={setSelected}
@@ -121,12 +186,21 @@ export function ReleasesPage() {
         >
           <div className="space-y-3 text-[13px] text-gray-800">
             <p><span className="font-semibold">{open.author.name}</span> no ticket {open.ticket.protocol} ({open.ticket.title})</p>
-            <p>{when(open.startTime)} a {when(open.endTime)} · {open.minutes} min</p>
+            <p>{formatDateTime(open.startTime)} a {formatDateTime(open.endTime)} · {formatWorklogMinutes(open.minutes)}</p>
             <p className="whitespace-pre-line rounded border border-gray-200 bg-gray-50 p-3">{open.approvalReason}</p>
             {rejecting && (
-              <EzTextArea id="release-reject-note" label="Motivo da negação" value={note} onChange={(e) => setNote(e.target.value)} rows={3} />
+              <EzTextArea
+                ref={noteRef}
+                id="release-reject-note"
+                label="Motivo da negação"
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                rows={3}
+                hasError={missingNote}
+                message={missingNote ? error ?? undefined : undefined}
+              />
             )}
-            {error && <EzAlert variant="error">{error}</EzAlert>}
+            {error && !missingNote && <EzAlert variant="error">{error}</EzAlert>}
           </div>
         </EzModal>
       )}
@@ -138,7 +212,13 @@ export function ReleasesPage() {
 export function ReleasesRoute() {
   const { data, isLoading } = useEffectivePermissions();
   if (isLoading) return <div className="p-8"><EzSpinner label="Carregando…" /></div>;
-  if (data?.canReleaseWorklogs !== true) return <Navigate to="/" replace />;
+  if (data?.canReleaseWorklogs !== true) {
+    return (
+      <EzPageLayout header={<EzPageHeader title="Liberações" />}>
+        <EzEmptyCard title="Sem permissão" description="Você não tem permissão para decidir liberações." />
+      </EzPageLayout>
+    );
+  }
   return <ReleasesPage />;
 }
 
