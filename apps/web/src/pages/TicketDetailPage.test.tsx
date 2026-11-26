@@ -3,6 +3,7 @@ import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { AxiosError } from 'axios';
 import { api } from '../lib/api';
 import { useAuthStore } from '../stores/authStore';
 import { TicketDetailPage } from './TicketDetailPage';
@@ -782,6 +783,69 @@ describe('TicketDetailPage', () => {
       expect(screen.queryByRole('tab', { name: /github/i })).not.toBeInTheDocument();
       expect(screen.queryByTestId('header-quick-worklog-button')).not.toBeInTheDocument();
       expect(screen.queryByTestId('ticket-header-play-btn')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('GH-448 DET-15: estado de erro do carregamento', () => {
+    function mockTicketFailure(error: unknown) {
+      const base = vi.mocked(api.get).getMockImplementation()!;
+      vi.mocked(api.get).mockImplementation((url: string) =>
+        url === '/tickets/t-1' ? Promise.reject(error) : base(url),
+      );
+    }
+    const notFound = () => new AxiosError('Request failed', 'ERR_BAD_REQUEST', undefined, undefined, { status: 404, data: {} } as never);
+    const forbidden = () => new AxiosError('Request failed', 'ERR_BAD_REQUEST', undefined, undefined, { status: 403, data: {} } as never);
+    const network = () => new AxiosError('Network Error', 'ERR_NETWORK');
+
+    it('mostra "Tentar novamente", que refaz a busca do chamado', async () => {
+      const user = userEvent.setup();
+      mockTicketFailure(notFound());
+      renderPage();
+
+      const retry = await screen.findByRole('button', { name: /tentar novamente/i });
+      const callsBefore = vi.mocked(api.get).mock.calls.filter(([url]) => url === '/tickets/t-1').length;
+      await user.click(retry);
+
+      await waitFor(() => {
+        const calls = vi.mocked(api.get).mock.calls.filter(([url]) => url === '/tickets/t-1').length;
+        expect(calls).toBeGreaterThan(callsBefore);
+      });
+    });
+
+    it('mostra o link "Voltar para Tickets" que leva à lista', async () => {
+      const user = userEvent.setup();
+      mockTicketFailure(notFound());
+      renderPage();
+
+      const back = await screen.findByRole('link', { name: /voltar para tickets/i });
+      await user.click(back);
+
+      expect(await screen.findByText('Lista de tickets')).toBeInTheDocument();
+    });
+
+    it('404 e 403 mantêm a mesma mensagem unificada (sem revelar a existência do chamado)', async () => {
+      mockTicketFailure(notFound());
+      const first = renderPage();
+      const msg404 = (await screen.findByRole('alert')).textContent;
+      first.unmount();
+
+      mockTicketFailure(forbidden());
+      renderPage();
+      const msg403 = (await screen.findByRole('alert')).textContent;
+
+      expect(msg404).toMatch(/pode não existir ou você pode não ter acesso/i);
+      expect(msg403).toBe(msg404);
+    });
+
+    it('erro de rede mostra mensagem própria de conexão, com as mesmas ações', async () => {
+      mockTicketFailure(network());
+      renderPage();
+
+      const alert = await screen.findByRole('alert');
+      expect(alert).toHaveTextContent(/conexão/i);
+      expect(alert).not.toHaveTextContent(/pode não existir/i);
+      expect(screen.getByRole('button', { name: /tentar novamente/i })).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: /voltar para tickets/i })).toBeInTheDocument();
     });
   });
 
