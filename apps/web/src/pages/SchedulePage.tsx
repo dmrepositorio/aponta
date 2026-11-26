@@ -1,9 +1,13 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { api } from '../lib/api';
 import { useAuthStore } from '../stores/authStore';
 import { Appointment, AppointmentType, useAppointments } from '../hooks/useAppointments';
 import { AppointmentModal } from '../components/schedule/AppointmentModal';
 import { CompromissoDetailModal } from '../components/schedule/CompromissoDetailModal';
 import {
+  EzActionsButton,
+  EzAlert,
   EzButton,
   EzPageLayout,
   EzSelect,
@@ -13,8 +17,6 @@ import {
   Plus,
   ChevronLeft,
   ChevronRight,
-  ChevronDown,
-  Pencil,
   Clock,
   User as UserIcon,
   Building,
@@ -36,16 +38,25 @@ const TYPE_LABELS: Record<AppointmentType, string> = {
 const GRID_START_HOUR = 0;
 const HOURS = Array.from({ length: 24 }, (_, i) => i + GRID_START_HOUR); // 00 to 23
 
+// Pontos de atendente na barra lateral: tokens do DS (o nome vem sempre ao lado, a cor não é o único canal).
 const ATTENDANT_COLORS = [
-  '#7ea119', // olive green
-  '#8e24aa', // purple
-  '#00a884', // teal
-  '#2563eb', // blue
-  '#d97706', // amber
-  '#e11d48', // rose
-  '#0891b2', // cyan
-  '#4f46e5', // indigo
+  'var(--color-brand-600)',
+  'var(--color-petroleum-500)',
+  'var(--color-green-700)',
+  'var(--color-yellow-800)',
+  'var(--color-red-600)',
+  'var(--color-petroleum-300)',
+  'var(--color-brand-800)',
+  'var(--color-gray-400)',
 ];
+
+// Cor por tipo (token do DS). Texto branco sobre estes fundos tem contraste >= 4,5:1:
+// petroleum-500 ~8,6:1, green-700 ~8,0:1, yellow-800 ~5,0:1.
+const TYPE_BG: Record<AppointmentType, string> = {
+  AGENDA: 'bg-petroleum-500',
+  VACATION: 'bg-green-700',
+  ABSENCE: 'bg-yellow-800',
+};
 
 interface PositionedAppointment {
   appointment: Appointment;
@@ -53,7 +64,6 @@ interface PositionedAppointment {
   height: number;
   colIndex: number;
   totalCols: number;
-  color: string;
 }
 
 export function SchedulePage() {
@@ -68,20 +78,13 @@ export function SchedulePage() {
   const [showFerias, setShowFerias] = useState(true);
   const [showAusencias, setShowAusencias] = useState(true);
 
-  // Fallback single filter for test selector compatibility
-  const [filterTypeSelect, setFilterTypeSelect] = useState<AppointmentType | 'ALL'>('ALL');
+  // Filtro de atendente do ADMIN (vai para a API; a autorização segue no backend)
   const [filterUserId, setFilterUserId] = useState<string>('');
 
   // Atendentes checkboxes (selected attendant IDs)
   const [selectedAttendantIds, setSelectedAttendantIds] = useState<Set<string>>(new Set());
   const [selectAllAttendants, setSelectAllAttendants] = useState(true);
 
-  // Agendas panel
-  const [agendaChecked, setAgendaChecked] = useState(true);
-
-  // Ações dropdown menu
-  const [isActionsOpen, setIsActionsOpen] = useState(false);
-  const actionsRef = useRef<HTMLDivElement>(null);
   const gridBodyRef = useRef<HTMLDivElement>(null);
 
   // Roving tabindex das células de hora (Semana/Dia): só uma célula entra na ordem de Tab
@@ -95,17 +98,6 @@ export function SchedulePage() {
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [modalInitialDate, setModalInitialDate] = useState<string | null>(null);
   const [modalInitialType, setModalInitialType] = useState<AppointmentType>('AGENDA');
-
-  // Close dropdown on click outside
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (actionsRef.current && !actionsRef.current.contains(event.target as Node)) {
-        setIsActionsOpen(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
 
   // On mount, scroll the time grid to business hours instead of midnight
   useEffect(() => {
@@ -214,18 +206,18 @@ export function SchedulePage() {
 
   // Query appointments for the currently visible range (day/week/month)
   const queryFilters = useMemo(() => {
-    const resolvedType = filterTypeSelect !== 'ALL' ? filterTypeSelect : undefined;
     return {
       startTime: visibleRange.startISO,
       endTime: visibleRange.endISO,
-      type: resolvedType,
       userId: filterUserId || undefined,
     };
-  }, [visibleRange, filterTypeSelect, filterUserId]);
+  }, [visibleRange, filterUserId]);
 
   const {
     appointments,
     isLoading,
+    isError,
+    refetch,
     createMutation,
     updateMutation,
     removeMutation,
@@ -253,7 +245,13 @@ export function SchedulePage() {
     return Array.from(map.values());
   }, [appointments, user]);
 
-
+  // Lista de atendentes para o filtro do ADMIN: GET /users/agents (autorização no backend).
+  const { data: agentOptions } = useQuery({
+    queryKey: ['agents', 'schedule-filter'],
+    queryFn: async () => (await api.get<{ id: string; name: string }[]>('/users/agents')).data,
+    enabled: user?.role === 'ADMIN',
+  });
+  const agentSelectOptions = Array.isArray(agentOptions) ? agentOptions : [];
 
   // Color map for attendants
   const attendantColorMap = useMemo(() => {
@@ -333,18 +331,12 @@ export function SchedulePage() {
           const duration = Math.max(endHour - startHour, 0.5);
           const height = Math.max(duration * 56 - 4, 32);
 
-          let color = attendantColorMap.get(app.userId) || '#7ea119';
-          if (app.type === 'AGENDA') color = '#8e24aa';
-          if (app.type === 'VACATION') color = '#7ea119';
-          if (app.type === 'ABSENCE') color = '#d97706';
-
           positioned.push({
             appointment: app,
             top,
             height,
             colIndex,
             totalCols,
-            color,
           });
         });
       });
@@ -353,7 +345,7 @@ export function SchedulePage() {
     });
 
     return map;
-  }, [filteredAppointments, visibleDays, attendantColorMap]);
+  }, [filteredAppointments, visibleDays]);
 
   // Navigation handlers: step size follows the active view (day/week/month)
   const handlePrevWeek = () => {
@@ -371,6 +363,13 @@ export function SchedulePage() {
     else next.setDate(currentDate.getDate() + 7);
     setCurrentDate(next);
   };
+
+  const navLabels =
+    viewMode === 'dia'
+      ? { prev: 'Dia anterior', next: 'Próximo dia' }
+      : viewMode === 'mes'
+        ? { prev: 'Mês anterior', next: 'Próximo mês' }
+        : { prev: 'Semana anterior', next: 'Próxima semana' };
 
   const handleToday = () => {
     setCurrentDate(new Date());
@@ -407,7 +406,6 @@ export function SchedulePage() {
     setModalInitialDate(dateStr || null);
     setModalInitialType(type);
     setIsCreateModalOpen(true);
-    setIsActionsOpen(false);
   };
 
   // Open detail modal (TiFlux card popover)
@@ -472,7 +470,6 @@ export function SchedulePage() {
             </div>
 
             <div className="flex items-center gap-2">
-              {/* Visible Novo Agendamento action button for test & direct access */}
               {canCreate && (
                 <EzButton
                   variant="primary"
@@ -480,65 +477,29 @@ export function SchedulePage() {
                   leftIcon={Plus}
                   onClick={() => handleOpenCreate()}
                   label="Novo Agendamento"
-                  className="bg-[#00a884] hover:bg-[#009272] border-none text-white font-medium"
                 />
               )}
 
-              {/* TiFlux "Ações ▾" Dropdown */}
-              <div className="relative" ref={actionsRef}>
-                <button
-                  type="button"
-                  onClick={() => setIsActionsOpen(!isActionsOpen)}
-                  className="h-[36px] px-3.5 bg-[#00a884] hover:bg-[#009272] text-white font-medium text-xs rounded-[8px] flex items-center gap-1.5 transition-colors shadow-xs"
-                >
-                  <ChevronDown className="w-3.5 h-3.5" />
-                  <span>Ações</span>
-                </button>
-
-                {isActionsOpen && (
-                  <div className="absolute right-0 mt-1.5 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50 animate-in fade-in zoom-in-95">
-                    <button
-                      type="button"
-                      onClick={() => handleOpenCreate(undefined, undefined, 'AGENDA')}
-                      className="w-full text-left px-4 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-                    >
-                      <Plus className="w-3.5 h-3.5 text-[#00a884]" />
-                      Nova Agenda
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleOpenCreate(undefined, undefined, 'VACATION')}
-                      className="w-full text-left px-4 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-                    >
-                      <Clock className="w-3.5 h-3.5 text-[#8e24aa]" />
-                      Novas Férias
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleOpenCreate(undefined, undefined, 'ABSENCE')}
-                      className="w-full text-left px-4 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-                    >
-                      <UserIcon className="w-3.5 h-3.5 text-[#d97706]" />
-                      Nova Ausência
-                    </button>
-                  </div>
-                )}
-              </div>
+              {canCreate && (
+                <EzActionsButton
+                  label="Ações"
+                  className="h-8 px-3 text-xs rounded-lg"
+                  actions={[
+                    {
+                      label: 'Novas Férias',
+                      icon: <Clock className="w-3.5 h-3.5" aria-hidden="true" />,
+                      onClick: () => handleOpenCreate(undefined, undefined, 'VACATION'),
+                    },
+                    {
+                      label: 'Nova Ausência',
+                      icon: <UserIcon className="w-3.5 h-3.5" aria-hidden="true" />,
+                      onClick: () => handleOpenCreate(undefined, undefined, 'ABSENCE'),
+                    },
+                  ]}
+                />
+              )}
             </div>
           </div>
-
-          {/* Hidden selector for test compatibility */}
-          <EzSelect
-            aria-label="Filtrar por tipo"
-            className="sr-only w-px"
-            value={filterTypeSelect}
-            onChange={(e) => setFilterTypeSelect(e.target.value as AppointmentType | 'ALL')}
-          >
-            <option value="ALL">Todos os Tipos</option>
-            <option value="AGENDA">Agenda</option>
-            <option value="VACATION">Férias</option>
-            <option value="ABSENCE">Ausências</option>
-          </EzSelect>
         </div>
       }
     >
@@ -547,46 +508,6 @@ export function SchedulePage() {
         {/* LEFT SIDEBAR: TiFlux Filter Panels */}
         {/* ============================================================== */}
         <aside className="w-[230px] shrink-0 space-y-3.5">
-          {/* Card 1: Agendas */}
-          <div className="bg-white border border-gray-200 rounded-[10px] p-3 shadow-2xs space-y-2">
-            <div className="flex items-center justify-between pb-2 border-b border-gray-100">
-              <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-gray-800 select-none">
-                <input
-                  type="checkbox"
-                  checked={agendaChecked}
-                  onChange={(e) => setAgendaChecked(e.target.checked)}
-                  className="w-3.5 h-3.5 rounded text-[#00a884] focus:ring-[#00a884]"
-                />
-                <span>Agendas</span>
-              </label>
-
-              {canCreate && (
-                <button
-                  type="button"
-                  onClick={() => handleOpenCreate()}
-                  className="w-5 h-5 rounded bg-[#00a884] text-white flex items-center justify-center hover:bg-[#009272] transition-colors"
-                  title="Nova Agenda / Agendamento"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                </button>
-              )}
-            </div>
-
-            <div className="flex items-center justify-between text-xs py-1 text-gray-700">
-              <label className="flex items-center gap-2 cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={agendaChecked}
-                  onChange={(e) => setAgendaChecked(e.target.checked)}
-                  className="w-3.5 h-3.5 rounded text-[#00a884] focus:ring-[#00a884]"
-                />
-                <span className="w-2 h-2 rounded-full bg-[#00a884] inline-block" />
-                <span className="font-medium text-xs">DM Tech</span>
-              </label>
-              <Pencil className="w-3 h-3 text-gray-400 hover:text-gray-700 cursor-pointer" />
-            </div>
-          </div>
-
           {/* Card 2: Filtrar */}
           <div className="bg-white border border-gray-200 rounded-[10px] p-3 shadow-2xs space-y-2.5">
             <div className="pb-2 border-b border-gray-100">
@@ -600,7 +521,7 @@ export function SchedulePage() {
                     setShowFerias(checked);
                     setShowAusencias(checked);
                   }}
-                  className="w-3.5 h-3.5 rounded text-[#00a884] focus:ring-[#00a884]"
+                  className="w-3.5 h-3.5 rounded accent-brand-600"
                 />
                 <span>Filtrar</span>
               </label>
@@ -612,9 +533,9 @@ export function SchedulePage() {
                   type="checkbox"
                   checked={showAgenda}
                   onChange={(e) => setShowAgenda(e.target.checked)}
-                  className="w-3.5 h-3.5 rounded text-[#8e24aa] focus:ring-[#8e24aa]"
+                  className="w-3.5 h-3.5 rounded accent-petroleum-500"
                 />
-                <span className="w-2 h-2 rounded-full bg-[#8e24aa] inline-block" />
+                <span className="w-2 h-2 rounded-full bg-petroleum-500 inline-block" />
                 <span>Agenda</span>
               </label>
 
@@ -623,9 +544,9 @@ export function SchedulePage() {
                   type="checkbox"
                   checked={showFerias}
                   onChange={(e) => setShowFerias(e.target.checked)}
-                  className="w-3.5 h-3.5 rounded text-[#7ea119] focus:ring-[#7ea119]"
+                  className="w-3.5 h-3.5 rounded accent-green-700"
                 />
-                <span className="w-2 h-2 rounded-full bg-[#7ea119] inline-block" />
+                <span className="w-2 h-2 rounded-full bg-green-700 inline-block" />
                 <span>Férias</span>
               </label>
 
@@ -634,9 +555,9 @@ export function SchedulePage() {
                   type="checkbox"
                   checked={showAusencias}
                   onChange={(e) => setShowAusencias(e.target.checked)}
-                  className="w-3.5 h-3.5 rounded text-[#d97706] focus:ring-[#d97706]"
+                  className="w-3.5 h-3.5 rounded accent-yellow-800"
                 />
-                <span className="w-2 h-2 rounded-full bg-[#d97706] inline-block" />
+                <span className="w-2 h-2 rounded-full bg-yellow-800 inline-block" />
                 <span>Ausências</span>
               </label>
             </div>
@@ -650,22 +571,28 @@ export function SchedulePage() {
                   type="checkbox"
                   checked={selectAllAttendants}
                   onChange={toggleAllAttendants}
-                  className="w-3.5 h-3.5 rounded text-[#00a884] focus:ring-[#00a884]"
+                  className="w-3.5 h-3.5 rounded accent-brand-600"
                 />
                 <span>Atendentes</span>
               </label>
             </div>
 
-            {/* Filter by ID for ADMIN (retaining test support) */}
+            {/* Filtro por atendente (só ADMIN): a API restringe a consulta ao atendente escolhido */}
             {isAdmin && (
               <div className="pt-1">
-                <input
-                  type="text"
-                  placeholder="Filtrar ID do técnico..."
+                <EzSelect
+                  variant="compact"
+                  label="Atendente"
                   value={filterUserId}
                   onChange={(e) => setFilterUserId(e.target.value)}
-                  className="w-full h-[30px] px-2 text-[11px] border border-gray-200 rounded-[6px] bg-gray-50 text-gray-700 focus:outline-none focus:ring-1 focus:ring-[#00a884]"
-                />
+                >
+                  <option value="">Todos</option>
+                  {agentSelectOptions.map((agent) => (
+                    <option key={agent.id} value={agent.id}>
+                      {agent.name}
+                    </option>
+                  ))}
+                </EzSelect>
               </div>
             )}
 
@@ -675,7 +602,7 @@ export function SchedulePage() {
               ) : (
                 attendantsList.map((att) => {
                   const isChecked = selectAllAttendants || selectedAttendantIds.has(att.id);
-                  const color = attendantColorMap.get(att.id) || '#00a884';
+                  const color = attendantColorMap.get(att.id) || 'var(--color-brand-600)';
 
                   return (
                     <div
@@ -687,7 +614,7 @@ export function SchedulePage() {
                           type="checkbox"
                           checked={isChecked}
                           onChange={() => toggleAttendant(att.id)}
-                          className="w-3.5 h-3.5 rounded text-[#00a884] focus:ring-[#00a884]"
+                          className="w-3.5 h-3.5 rounded accent-brand-600"
                         />
                         <span
                           className="w-2 h-2 rounded-full shrink-0"
@@ -695,7 +622,6 @@ export function SchedulePage() {
                         />
                         <span className="truncate text-xs font-medium">{att.name}</span>
                       </label>
-                      <Pencil className="w-3 h-3 text-gray-400 hover:text-gray-700 cursor-pointer shrink-0 ml-1" />
                     </div>
                   );
                 })
@@ -715,23 +641,25 @@ export function SchedulePage() {
               <button
                 type="button"
                 onClick={handlePrevWeek}
-                className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors"
-                title="Semana anterior"
+                className="w-11 h-11 sm:w-8 sm:h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors"
+                aria-label={navLabels.prev}
+                title={navLabels.prev}
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
               <button
                 type="button"
                 onClick={handleNextWeek}
-                className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors"
-                title="Próxima semana"
+                className="w-11 h-11 sm:w-8 sm:h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 transition-colors"
+                aria-label={navLabels.next}
+                title={navLabels.next}
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
               <button
                 type="button"
                 onClick={handleToday}
-                className="px-3 h-8 text-xs font-semibold rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors ml-1"
+                className="px-3 h-11 sm:h-8 text-xs font-semibold rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors ml-1"
               >
                 Hoje
               </button>
@@ -743,12 +671,13 @@ export function SchedulePage() {
             </div>
 
             {/* Right: View switcher (Mês | Semana | Dia | Lista) */}
-            <div className="inline-flex rounded-lg border border-gray-200 p-0.5 bg-gray-50 text-xs font-medium text-gray-600">
+            <div role="group" aria-label="Vista da agenda" className="inline-flex rounded-lg border border-gray-200 p-0.5 bg-gray-50 text-xs font-medium text-gray-600">
               <button
                 type="button"
                 onClick={() => setViewMode('mes')}
+                aria-pressed={viewMode === 'mes'}
                 className={`px-2.5 py-1 rounded-md transition-colors ${
-                  viewMode === 'mes' ? 'bg-white shadow-2xs text-[#00a884] font-semibold' : 'hover:text-gray-900'
+                  viewMode === 'mes' ? 'bg-white shadow-2xs text-brand-700 font-semibold' : 'hover:text-gray-900'
                 }`}
               >
                 Mês
@@ -756,9 +685,10 @@ export function SchedulePage() {
               <button
                 type="button"
                 onClick={() => setViewMode('semana')}
+                aria-pressed={viewMode === 'semana'}
                 className={`px-2.5 py-1 rounded-md transition-colors ${
                   viewMode === 'semana'
-                    ? 'bg-white border border-[#00a884] text-[#00a884] font-semibold shadow-2xs'
+                    ? 'bg-white border border-brand-600 text-brand-700 font-semibold shadow-2xs'
                     : 'hover:text-gray-900'
                 }`}
               >
@@ -767,8 +697,9 @@ export function SchedulePage() {
               <button
                 type="button"
                 onClick={() => setViewMode('dia')}
+                aria-pressed={viewMode === 'dia'}
                 className={`px-2.5 py-1 rounded-md transition-colors ${
-                  viewMode === 'dia' ? 'bg-white shadow-2xs text-[#00a884] font-semibold' : 'hover:text-gray-900'
+                  viewMode === 'dia' ? 'bg-white shadow-2xs text-brand-700 font-semibold' : 'hover:text-gray-900'
                 }`}
               >
                 Dia
@@ -776,8 +707,9 @@ export function SchedulePage() {
               <button
                 type="button"
                 onClick={() => setViewMode('lista')}
+                aria-pressed={viewMode === 'lista'}
                 className={`px-2.5 py-1 rounded-md transition-colors ${
-                  viewMode === 'lista' ? 'bg-white shadow-2xs text-[#00a884] font-semibold' : 'hover:text-gray-900'
+                  viewMode === 'lista' ? 'bg-white shadow-2xs text-brand-700 font-semibold' : 'hover:text-gray-900'
                 }`}
               >
                 Lista
@@ -788,7 +720,24 @@ export function SchedulePage() {
           {/* Time-Grid Content */}
           {isLoading ? (
             <div className="flex items-center justify-center h-96">
-              <EzSpinner size={32} />
+              <EzSpinner size={32} label="Carregando agenda" />
+            </div>
+          ) : isError ? (
+            <div className="p-4">
+              <EzAlert
+                variant="error"
+                title="Não foi possível carregar a agenda"
+                action={
+                  <EzButton
+                    variant="secondary"
+                    size="small"
+                    label="Tentar novamente"
+                    onClick={() => void refetch()}
+                  />
+                }
+              >
+                A consulta de compromissos falhou. Tente novamente em instantes.
+              </EzAlert>
             </div>
           ) : viewMode === 'mes' ? (
             <MonthView
@@ -830,7 +779,7 @@ export function SchedulePage() {
                       <div
                         key={dateStr}
                         className={`h-10 flex items-center justify-center gap-1 border-r border-gray-200 last:border-r-0 ${
-                          isToday ? 'bg-[#ecfdf5] text-teal-800 font-bold' : 'text-gray-700'
+                          isToday ? 'bg-brand-50 text-brand-800 font-bold' : 'text-gray-700'
                         }`}
                       >
                         <span className="uppercase text-[11px] font-bold">{dayName}.</span>
@@ -857,9 +806,9 @@ export function SchedulePage() {
                           className="h-[56px] border-b border-gray-100/60 relative flex items-start justify-end pt-1"
                         >
                           {isCurrentHour && (
-                            <span className="text-red-500 font-bold mr-1 text-[10px]">▶</span>
+                            <span className="text-petroleum-600 font-bold mr-1 text-[10px]" aria-hidden="true">▶</span>
                           )}
-                          <span className={isCurrentHour ? 'text-red-600 font-bold' : ''}>
+                          <span className={isCurrentHour ? 'text-petroleum-700 font-bold' : ''}>
                             {String(hour).padStart(2, '0')}
                           </span>
                         </div>
@@ -877,7 +826,7 @@ export function SchedulePage() {
                       <div
                         key={dateStr}
                         className={`border-r border-gray-200 last:border-r-0 relative ${
-                          isToday ? 'bg-[#f0fdf9]/60' : 'bg-white'
+                          isToday ? 'bg-brand-50/60' : 'bg-white'
                         }`}
                       >
                         {/* Hour slots background rows */}
@@ -900,7 +849,7 @@ export function SchedulePage() {
                               onFocus={() => setActiveSlot({ dateStr, hour })}
                               onKeyDown={(e) => handleSlotKeyDown(e, dateStr, hour)}
                               onClick={() => handleOpenCreate(dateStr, hour)}
-                              className="block w-full h-[56px] border-b border-gray-100 hover:bg-teal-50/20 cursor-pointer transition-colors ez-focus-inset"
+                              className="block w-full h-[56px] border-b border-gray-100 hover:bg-brand-50/40 cursor-pointer transition-colors ez-focus-inset"
                               aria-label={`Adicionar compromisso às ${hourLabel}, ${day.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}`}
                               title={`Adicionar compromisso às ${hourLabel}`}
                             />
@@ -913,13 +862,13 @@ export function SchedulePage() {
                             className="absolute left-0 right-0 z-20 pointer-events-none flex items-center"
                             style={{ top: `${currentTimeTop}px` }}
                           >
-                            <span className="w-2 h-2 rounded-full bg-red-500 -ml-1 shrink-0" />
-                            <div className="flex-1 border-t-2 border-red-500" />
+                            <span className="w-2 h-2 rounded-full bg-petroleum-500 -ml-1 shrink-0" />
+                            <div className="flex-1 border-t-2 border-petroleum-500" />
                           </div>
                         )}
 
                         {/* Positioned Appointment Cards */}
-                        {dayPositionedApps.map(({ appointment: app, top, height, colIndex, totalCols, color }) => {
+                        {dayPositionedApps.map(({ appointment: app, top, height, colIndex, totalCols }) => {
                           const leftPct = (colIndex / totalCols) * 100;
                           const widthPct = 100 / totalCols;
 
@@ -954,34 +903,33 @@ export function SchedulePage() {
                                 height: `${height}px`,
                                 left: `${leftPct}%`,
                                 width: `calc(${widthPct}% - 4px)`,
-                                backgroundColor: color,
                               }}
-                              className="absolute mx-0.5 rounded-[6px] p-2 text-white shadow-xs cursor-pointer hover:brightness-105 transition-all overflow-hidden flex flex-col z-10 ez-focus"
+                              className={`absolute mx-0.5 rounded-[6px] p-2 text-white ${TYPE_BG[app.type]} shadow-xs cursor-pointer hover:brightness-105 transition-all overflow-hidden flex flex-col z-10 ez-focus`}
                             >
                               {/* Time Pill Badge & Type */}
                               <div className="flex items-center justify-between gap-1">
-                                <span className="inline-block bg-black/25 text-white text-[10px] font-semibold px-1.5 py-0.5 rounded leading-none">
+                                <span className="inline-block bg-black/25 text-white text-xs font-semibold px-1.5 py-0.5 rounded leading-none">
                                   {startHM} - {endHM}
                                 </span>
-                                <span className="text-[10px] text-white/80 font-medium">
+                                <span className="text-xs text-white font-medium">
                                   {TYPE_LABELS[app.type]}
                                 </span>
                               </div>
 
                               {/* Title in bold uppercase */}
-                              <div className="text-white font-bold text-[11px] leading-tight line-clamp-2 mt-1 uppercase">
+                              <div className="text-white font-bold text-xs leading-tight line-clamp-2 mt-1 uppercase">
                                 {app.ticket?.protocol ? `#${app.ticket.protocol} - ${app.title}` : app.title}
                               </div>
 
                               {/* Attendant & Organization metadata */}
                               {app.user && (
-                                <div className="flex items-center gap-1 text-[10px] text-white/90 truncate mt-1">
+                                <div className="flex items-center gap-1 text-xs text-white truncate mt-1">
                                   <UserIcon className="w-2.5 h-2.5 shrink-0" />
                                   <span className="truncate">{app.user.name}</span>
                                 </div>
                               )}
                               {app.organization && (
-                                <div className="flex items-center gap-1 text-[10px] text-white/80 truncate">
+                                <div className="flex items-center gap-1 text-xs text-white truncate">
                                   <Building className="w-2.5 h-2.5 shrink-0" />
                                   <span className="truncate">{app.organization.name}</span>
                                 </div>
@@ -1034,11 +982,6 @@ export function SchedulePage() {
   );
 }
 
-const MONTH_TYPE_COLORS: Record<AppointmentType, string> = {
-  AGENDA: '#8e24aa',
-  VACATION: '#7ea119',
-  ABSENCE: '#d97706',
-};
 
 interface MonthViewProps {
   monthWeeks: Date[][];
@@ -1100,7 +1043,7 @@ function MonthView({ monthWeeks, currentDate, todayDateStr, appointments, onSele
                   onSelectDay(day);
                 }}
                 className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-semibold ez-focus ${
-                  isToday ? 'bg-[#00a884] text-white' : isCurrentMonth ? 'text-gray-800' : 'text-gray-400'
+                  isToday ? 'bg-brand-600 text-white' : isCurrentMonth ? 'text-gray-800' : 'text-gray-400'
                 }`}
               >
                 {day.getDate()}
@@ -1114,8 +1057,8 @@ function MonthView({ monthWeeks, currentDate, todayDateStr, appointments, onSele
                       e.stopPropagation();
                       onSelectAppointment(app);
                     }}
-                    className="w-full truncate text-left text-[10px] px-1 py-0.5 rounded text-white"
-                    style={{ backgroundColor: MONTH_TYPE_COLORS[app.type] }}
+                    className={`w-full truncate text-left text-xs px-1 py-0.5 rounded text-white ${TYPE_BG[app.type]}`}
+                    
                     title={app.title}
                   >
                     {app.title}
@@ -1164,7 +1107,7 @@ function ListView({ appointments, onSelectAppointment }: ListViewProps) {
             onClick={() => onSelectAppointment(app)}
             className="w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors"
           >
-            <div className="w-1.5 h-10 rounded-full shrink-0" style={{ backgroundColor: MONTH_TYPE_COLORS[app.type] }} />
+            <div className={`w-1.5 h-10 rounded-full shrink-0 ${TYPE_BG[app.type]}`} />
             <div className="min-w-[150px] text-xs text-gray-600">
               <div className="font-semibold text-gray-800">
                 {start.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
