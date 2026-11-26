@@ -501,7 +501,8 @@ describe('OrganizationsPage', { timeout: 15000 }, () => {
     expect(screen.getByLabelText(/faturamento quarteirizado/i)).toBeInTheDocument();
   });
 
-  it('shows the "Cliente ativo" toggle and inactivates the organization', async () => {
+  // ORG-01 (#463): inativar o cliente pede confirmação com o efeito descrito; o PATCH só sai no Confirmar.
+  it('shows the "Cliente ativo" toggle and inactivates the organization only after confirming the dialog', async () => {
     vi.mocked(api.patch).mockResolvedValue({ data: { ...orgDetail, active: false } });
     loginAs('ADMIN');
     const user = userEvent.setup();
@@ -509,11 +510,106 @@ describe('OrganizationsPage', { timeout: 15000 }, () => {
 
     await openDetail(user);
 
-    const toggle = screen.getByLabelText(/cliente ativo/i);
-    await user.click(toggle);
+    await user.click(screen.getByLabelText(/cliente ativo/i));
+    expect(api.patch).not.toHaveBeenCalled();
+
+    const dialog = await screen.findByRole('dialog', { name: /inativar cliente/i });
+    expect(dialog).toHaveTextContent(/usuários/i);
+    expect(dialog).toHaveTextContent(/mesas/i);
+    expect(dialog).toHaveTextContent(/tickets/i);
+    expect(api.patch).not.toHaveBeenCalled();
+
+    await user.click(within(dialog).getByRole('button', { name: 'Confirmar' }));
 
     await waitFor(() => {
       expect(api.patch).toHaveBeenCalledWith('/organizations/org-1', { active: false });
+    });
+    expect(api.patch).toHaveBeenCalledTimes(1);
+  });
+
+  it('ORG-01: Cancelar e Esc mantêm o cliente ativo e não enviam PATCH', async () => {
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    renderPage();
+
+    await openDetail(user);
+
+    await user.click(screen.getByLabelText(/cliente ativo/i));
+    expect(api.patch).not.toHaveBeenCalled();
+    const dialog = await screen.findByRole('dialog', { name: /inativar cliente/i });
+    await user.click(within(dialog).getByRole('button', { name: 'Cancelar' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(screen.getByLabelText(/cliente ativo/i)).toBeChecked();
+
+    await user.click(screen.getByLabelText(/cliente ativo/i));
+    await screen.findByRole('dialog', { name: /inativar cliente/i });
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(screen.getByLabelText(/cliente ativo/i)).toBeChecked();
+    expect(api.patch).not.toHaveBeenCalled();
+  });
+
+  it('ORG-01: reativar um cliente inativo segue direto, sem diálogo', async () => {
+    vi.mocked(api.get).mockImplementation((url: string) => {
+      if (url === '/organizations/org-1') return Promise.resolve({ data: { ...orgDetail, active: false } });
+      if (url === PREF_URL) return Promise.resolve({ data: {} });
+      if (url === '/organizations') return Promise.resolve({ data: orgs });
+      if (url === '/users') return Promise.resolve({ data: users });
+      if (url === '/service-desks') return Promise.resolve({ data: serviceDesks });
+      return Promise.reject(new Error(`Unexpected GET ${url}`));
+    });
+    vi.mocked(api.patch).mockResolvedValue({ data: orgDetail });
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    renderPage();
+
+    await openDetail(user);
+    await user.click(screen.getByLabelText(/cliente ativo/i));
+
+    await waitFor(() => expect(api.patch).toHaveBeenCalledWith('/organizations/org-1', { active: true }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  // ORG-03 (#463): lixeiras com nome acessível e confirmação antes do DELETE.
+  describe.each([
+    ['endereço', /remover endereço av paulista/i, '/organizations/org-1/addresses/addr-1', 'general', /remover endereço\?/i],
+    ['contato', /remover contato jane doe/i, '/organizations/org-1/contacts/contact-1', 'general', /remover contato\?/i],
+    ['grupo de atendentes', /remover grupo de atendentes grupo suporte/i, '/organizations/org-1/agent-groups/group-1', 'relationships', /remover grupo de atendentes\?/i],
+  ])('ORG-03: remover %s', (_label, buttonName, deleteUrl, tab, dialogName) => {
+    async function openTab(user: ReturnType<typeof userEvent.setup>) {
+      await openDetail(user);
+      if (tab === 'relationships') await user.click(screen.getByRole('tab', { name: /relacionamentos/i }));
+    }
+
+    it('exposes a named button and deletes only after confirming', async () => {
+      vi.mocked(api.delete).mockResolvedValue({ data: {} });
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      renderPage();
+
+      await openTab(user);
+      await user.click(await screen.findByRole('button', { name: buttonName }));
+
+      const dialog = await screen.findByRole('dialog', { name: dialogName });
+      expect(api.delete).not.toHaveBeenCalled();
+      await user.click(within(dialog).getByRole('button', { name: 'Confirmar' }));
+
+      await waitFor(() => expect(api.delete).toHaveBeenCalledWith(deleteUrl));
+      expect(api.delete).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not delete when the dialog is cancelled', async () => {
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      renderPage();
+
+      await openTab(user);
+      await user.click(await screen.findByRole('button', { name: buttonName }));
+      const dialog = await screen.findByRole('dialog', { name: dialogName });
+      await user.click(within(dialog).getByRole('button', { name: 'Cancelar' }));
+
+      await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+      expect(api.delete).not.toHaveBeenCalled();
     });
   });
 
