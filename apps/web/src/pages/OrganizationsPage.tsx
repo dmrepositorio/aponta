@@ -12,6 +12,7 @@ import {
   EzButton,
   EzCheck,
   EzComboBox,
+  EzDialog,
   EzDynamicFilter,
   EzEmptyCard,
   EzEntityGrid,
@@ -116,6 +117,18 @@ interface CnpjLookupResult {
     state: string | null;
     complement: string | null;
   };
+}
+
+interface GeneralDraft {
+  legalName: string;
+  name: string;
+}
+
+interface PendingConfirm {
+  title: string;
+  message: string;
+  variant: 'warning' | 'danger';
+  onConfirm: () => void;
 }
 
 /** Mensagem da API para o usuário: lista do ValidationPipe junta; 5xx (texto técnico em inglês) cai no fallback. */
@@ -226,6 +239,12 @@ export function OrganizationsPage() {
   const [detailOrgId, setDetailOrgId] = useState<string | null>(null);
   const [detailTab, setDetailTab] = useState<DetailTab>('general');
   const [cnpjLookupError, setCnpjLookupError] = useState<string | null>(null);
+  // ORG-01/ORG-03 (#463): confirmação compartilhada (inativar cliente e remover endereço, contato ou grupo).
+  const [pendingConfirm, setPendingConfirm] = useState<PendingConfirm | null>(null);
+  // ORG-04 (#463): Razão Social e Nome Fantasia editam um rascunho local; só o botão Salvar envia o PATCH.
+  const [generalDraft, setGeneralDraft] = useState<GeneralDraft | null>(null);
+  const [generalErrors, setGeneralErrors] = useState<Partial<Record<keyof GeneralDraft, string>>>({});
+  const [generalSaveError, setGeneralSaveError] = useState<string | null>(null);
   const [profileDraft, setProfileDraft] = useState<{ serviceType: string; healthStatus: string } | null>(null);
   const [billingDraft, setBillingDraft] = useState<{
     quarterlyBilling?: boolean;
@@ -420,6 +439,26 @@ export function OrganizationsPage() {
     onError: (err) => setInlineError(apiErrorMessage(err, 'Não foi possível salvar a alteração.')),
   });
 
+  // ORG-02 (#463): mutações do detalhe do cliente mostram a mensagem da API no alerta da página.
+  const showOperationError = (err: unknown) =>
+    setInlineError(apiErrorMessage(err, 'Não foi possível concluir a operação. Tente novamente.'));
+
+  const saveGeneralMutation = useMutation({
+    mutationFn: async (values: Partial<GeneralDraft>) => {
+      const { data } = await api.patch<Organization>(`/organizations/${detailOrgId}`, values);
+      return data;
+    },
+    onMutate: () => setGeneralSaveError(null),
+    onSuccess: (_data, values) => {
+      // O rascunho segue o que foi salvo (sem espaços nas pontas) e o cache já reflete o cadastro antes da releitura.
+      setGeneralDraft((prev) => (prev ? { ...prev, ...values } : prev));
+      queryClient.setQueryData<OrganizationDetail>(['organizations', detailOrgId], (old) => (old ? { ...old, ...values } : old));
+      void queryClient.invalidateQueries({ queryKey: ['organizations'] });
+      void queryClient.invalidateQueries({ queryKey: ['organizations', detailOrgId] });
+    },
+    onError: (err) => setGeneralSaveError(apiErrorMessage(err, 'Não foi possível salvar as alterações. Tente novamente.')),
+  });
+
   const attachUserMutation = useMutation({
     mutationFn: async ({ userId, orgId }: { userId: string; orgId: string | null }) => {
       await api.patch(`/users/${userId}`, { organizationId: orgId });
@@ -428,7 +467,8 @@ export function OrganizationsPage() {
       void queryClient.invalidateQueries({ queryKey: ['organizations'] });
       void queryClient.invalidateQueries({ queryKey: ['users'] });
       void queryClient.invalidateQueries({ queryKey: ['organizations', detailOrgId] });
-    }
+    },
+    onError: showOperationError,
   });
 
   const cnpjLookupMutation = useMutation({
@@ -532,6 +572,7 @@ export function OrganizationsPage() {
       void queryClient.invalidateQueries({ queryKey: ['organizations', detailOrgId] });
       resetAddressForm();
     },
+    onError: showOperationError,
   });
 
   const removeAddressMutation = useMutation({
@@ -541,6 +582,7 @@ export function OrganizationsPage() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['organizations', detailOrgId] });
     },
+    onError: showOperationError,
   });
 
   const addContactMutation = useMutation({
@@ -552,6 +594,7 @@ export function OrganizationsPage() {
       void queryClient.invalidateQueries({ queryKey: ['organizations', detailOrgId] });
       resetContactForm();
     },
+    onError: showOperationError,
   });
 
   const removeContactMutation = useMutation({
@@ -561,6 +604,7 @@ export function OrganizationsPage() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['organizations', detailOrgId] });
     },
+    onError: showOperationError,
   });
 
   // Tiflux-parity (#57): aba "Relacionamentos" — Mesa<->Cliente N:N.
@@ -572,6 +616,7 @@ export function OrganizationsPage() {
       void queryClient.invalidateQueries({ queryKey: ['organizations', detailOrgId] });
       setLinkDeskId('');
     },
+    onError: showOperationError,
   });
 
   const unlinkDeskMutation = useMutation({
@@ -581,6 +626,7 @@ export function OrganizationsPage() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['organizations', detailOrgId] });
     },
+    onError: showOperationError,
   });
 
   // Tiflux-parity (#57): Grupo de Atendentes — entidade por cliente.
@@ -597,6 +643,7 @@ export function OrganizationsPage() {
       resetAgentGroupForm();
       setNewGroupMemberIds([]);
     },
+    onError: showOperationError,
   });
 
   const removeAgentGroupMutation = useMutation({
@@ -606,6 +653,7 @@ export function OrganizationsPage() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['organizations', detailOrgId] });
     },
+    onError: showOperationError,
   });
 
   const openDetail = (orgId: string) => {
@@ -617,6 +665,10 @@ export function OrganizationsPage() {
     setDetailTab('general');
     setDetailOrgId(orgId);
     setProfileDraft(null);
+    setGeneralDraft(null);
+    setGeneralErrors({});
+    setGeneralSaveError(null);
+    saveGeneralMutation.reset();
     setBillingDraft(null);
     setMode('form');
   };
@@ -632,6 +684,36 @@ export function OrganizationsPage() {
       healthStatus: orgDetail.healthStatus ?? '',
     });
   }
+
+  if (orgDetail && generalDraft === null) {
+    setGeneralDraft({ legalName: orgDetail.legalName ?? '', name: orgDetail.name ?? '' });
+  }
+  const generalDirty =
+    !!orgDetail && !!generalDraft &&
+    (generalDraft.legalName !== (orgDetail.legalName ?? '') || generalDraft.name !== (orgDetail.name ?? ''));
+
+  const saveGeneral = () => {
+    if (!orgDetail || !generalDraft) return;
+    const changes: Partial<GeneralDraft> = {};
+    const errors: Partial<Record<keyof GeneralDraft, string>> = {};
+    const fields: [keyof GeneralDraft, string, string][] = [
+      ['legalName', orgDetail.legalName ?? '', 'Informe a Razão Social.'],
+      ['name', orgDetail.name ?? '', 'Informe o Nome Fantasia.'],
+    ];
+    for (const [field, saved, emptyMessage] of fields) {
+      if (generalDraft[field] === saved) continue;
+      const value = generalDraft[field].trim();
+      if (!value) errors[field] = emptyMessage;
+      else if (value !== saved) changes[field] = value;
+    }
+    setGeneralErrors(errors);
+    if (Object.keys(errors).length > 0) return;
+    if (Object.keys(changes).length === 0) {
+      setGeneralDraft({ legalName: orgDetail.legalName ?? '', name: orgDetail.name ?? '' });
+      return;
+    }
+    saveGeneralMutation.mutate(changes);
+  };
 
   const linkedDeskIds = new Set((orgDetail?.serviceDesks ?? []).map((d) => d.id));
   const availableDesksToLink = (serviceDesks ?? []).filter((d) => !linkedDeskIds.has(d.id));
@@ -1157,7 +1239,7 @@ className="isolate flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll
                   <div className="border-b border-gray-100 pb-2.5 flex items-center justify-between">
                     <div>
                       <h2 className="text-sm font-semibold text-gray-900">Nova Empresa</h2>
-                      <p className="text-xs text-gray-500">Preencha os campos cadastrais conforme padrão Sankhya ERP.</p>
+                      <p className="text-xs text-gray-500">Preencha os dados cadastrais do cliente.</p>
                     </div>
                   </div>
 
@@ -1300,7 +1382,18 @@ className="isolate flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll
                         label="Cliente ativo"
                         checked={orgDetail.active !== false}
                         disabled={updateOrgMutation.isPending}
-                        onChange={(e) => updateOrgMutation.mutate({ active: e.target.checked })}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            updateOrgMutation.mutate({ active: true });
+                            return;
+                          }
+                          setPendingConfirm({
+                            title: 'Inativar cliente?',
+                            message: `${orgDetail.name} deixará de constar como cliente ativo. Os usuários, as mesas e os tickets do cliente continuam cadastrados, mas revise-os antes de confirmar. Você pode reativar o cliente depois.`,
+                            variant: 'warning',
+                            onConfirm: () => updateOrgMutation.mutate({ active: false }),
+                          });
+                        }}
                       />
                     </div>
                   </div>
@@ -1310,7 +1403,7 @@ className="isolate flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll
                     <div className="border-b border-gray-100 pb-2.5 flex items-center justify-between">
                       <div>
                         <h3 className="text-sm font-semibold text-gray-900">Dados do Parceiro / Cliente</h3>
-                        <p className="text-xs text-gray-500">Campos cadastrais principais padronizados no padrão Sankhya ERP.</p>
+                        <p className="text-xs text-gray-500">Dados cadastrais principais do cliente.</p>
                       </div>
                       <div className="text-xs text-gray-400 font-mono">
                         ID: {orgDetail.id}
@@ -1394,12 +1487,61 @@ className="isolate flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll
 
               {detailTab === 'general' && (
                 <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-3">
-                    <EzTextInput id="org-legal-name-edit" label="Razão Social" defaultValue={orgDetail.legalName ?? ''}
-                      onBlur={(e) => { if (e.target.value !== (orgDetail.legalName ?? '')) updateOrgMutation.mutate({ legalName: e.target.value }); }} />
-                    <EzTextInput id="org-name-edit" label="Nome Fantasia" defaultValue={orgDetail.name ?? ''}
-                      onBlur={(e) => { if (e.target.value !== orgDetail.name) updateOrgMutation.mutate({ name: e.target.value }); }} />
-                  </div>
+                  <form
+                    aria-label="Dados cadastrais do cliente"
+                    noValidate
+                    onSubmit={(e) => { e.preventDefault(); saveGeneral(); }}
+                    className="space-y-3"
+                  >
+                    <div className="grid grid-cols-2 gap-3">
+                      <EzTextInput
+                        id="org-legal-name-edit"
+                        label="Razão Social"
+                        value={generalDraft?.legalName ?? ''}
+                        hasError={!!generalErrors.legalName}
+                        message={generalErrors.legalName}
+                        onChange={(e) => {
+                          setGeneralDraft((prev) => (prev ? { ...prev, legalName: e.target.value } : prev));
+                          setGeneralErrors((prev) => ({ ...prev, legalName: undefined }));
+                        }}
+                      />
+                      <EzTextInput
+                        id="org-name-edit"
+                        label="Nome Fantasia"
+                        value={generalDraft?.name ?? ''}
+                        hasError={!!generalErrors.name}
+                        message={generalErrors.name}
+                        onChange={(e) => {
+                          setGeneralDraft((prev) => (prev ? { ...prev, name: e.target.value } : prev));
+                          setGeneralErrors((prev) => ({ ...prev, name: undefined }));
+                        }}
+                      />
+                    </div>
+                    {generalSaveError && (
+                      <EzAlert variant="error" onClose={() => setGeneralSaveError(null)}>
+                        {generalSaveError}
+                      </EzAlert>
+                    )}
+                    <div className="flex items-center justify-end gap-3">
+                      <span aria-live="polite" className="text-xs text-gray-600">
+                        {saveGeneralMutation.isPending
+                          ? 'Salvando…'
+                          : generalDirty
+                            ? 'Alterações não salvas'
+                            : saveGeneralMutation.isSuccess
+                              ? 'Salvo'
+                              : null}
+                      </span>
+                      <EzButton
+                        type="submit"
+                        size="small"
+                        label="Salvar alterações"
+                        loading={saveGeneralMutation.isPending}
+                        disabled={!generalDirty}
+                        disabledReason="Nenhuma alteração para salvar."
+                      />
+                    </div>
+                  </form>
 
                   <h4 className="text-sm font-semibold text-gray-900 pt-2">Perfil do Cliente</h4>
                   {profileDraft && (
@@ -1455,7 +1597,13 @@ className="isolate flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll
                         <EzButton
                           variant="tertiary"
                           size="x-small"
-                          onClick={() => removeAddressMutation.mutate(addr.id)}
+                          aria-label={`Remover endereço ${addr.street || 'sem logradouro'}`}
+                          onClick={() => setPendingConfirm({
+                            title: 'Remover endereço?',
+                            message: `O endereço ${addr.street || 'sem logradouro'} será removido do cadastro do cliente.`,
+                            variant: 'danger',
+                            onConfirm: () => removeAddressMutation.mutate(addr.id),
+                          })}
                           disabled={removeAddressMutation.isPending}
                           className="text-red-600 hover:text-red-700"
                         >
@@ -1503,7 +1651,13 @@ className="isolate flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll
                         <EzButton
                           variant="tertiary"
                           size="x-small"
-                          onClick={() => removeContactMutation.mutate(contact.id)}
+                          aria-label={`Remover contato ${contact.name}`}
+                          onClick={() => setPendingConfirm({
+                            title: 'Remover contato?',
+                            message: `O contato ${contact.name} será removido do cadastro do cliente.`,
+                            variant: 'danger',
+                            onConfirm: () => removeContactMutation.mutate(contact.id),
+                          })}
                           disabled={removeContactMutation.isPending}
                           className="text-red-600 hover:text-red-700"
                         >
@@ -1572,7 +1726,7 @@ className="isolate flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll
               {detailTab === 'resources' && (
                 <EzEmptyCard
                   title="Nenhum recurso cadastrado"
-                  description="O Aponta ainda não possui um módulo de Recursos (ativos/equipamentos) por cliente. Esta aba existe no Tiflux real mas não tem funcionalidade implementada no Aponta ainda."
+                  description="O Aponta ainda não possui um módulo de Recursos (ativos/equipamentos) por cliente. Esta aba ainda não tem funcionalidade."
                 />
               )}
 
@@ -1627,7 +1781,7 @@ className="isolate flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll
 
                   <div>
                     <h4 className="text-sm font-semibold text-gray-900 mb-2">
-                      Grupo de atendentes (entidade por cliente, Tiflux-parity)
+                      Grupos de atendentes do cliente
                     </h4>
                     <ul className="divide-y divide-gray-100 border border-gray-200 rounded-[12px]">
                       {(orgDetail.agentGroups ?? []).map((group) => (
@@ -1641,7 +1795,13 @@ className="isolate flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll
                           <EzButton
                             variant="tertiary"
                             size="x-small"
-                            onClick={() => removeAgentGroupMutation.mutate(group.id)}
+                            aria-label={`Remover grupo de atendentes ${group.name}`}
+                            onClick={() => setPendingConfirm({
+                              title: 'Remover grupo de atendentes?',
+                              message: `O grupo ${group.name} será removido do cadastro do cliente.`,
+                              variant: 'danger',
+                              onConfirm: () => removeAgentGroupMutation.mutate(group.id),
+                            })}
                             disabled={removeAgentGroupMutation.isPending}
                             className="text-red-600 hover:text-red-700"
                           >
@@ -1690,7 +1850,7 @@ className="isolate flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll
                         <CreditCard className="w-5 h-5 text-brand-600" />
                         <div>
                           <h4 className="text-sm font-semibold text-gray-900">
-                            Preferências de Faturamento & Cobrança (Tiflux-parity)
+                            Preferências de Faturamento & Cobrança
                           </h4>
                           <p className="text-xs text-gray-500">
                             Configurações de regime financeiro, faturamento quarteirizado e canais de cobrança.
@@ -1960,6 +2120,18 @@ className="isolate flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll
       {deleteTargets && (
         <OrganizationDeleteDialog targets={deleteTargets} onClose={() => setDeleteTargets(null)} onDone={handleDeleted} />
       )}
+      <EzDialog
+        open={pendingConfirm !== null}
+        title={pendingConfirm?.title ?? ''}
+        message={pendingConfirm?.message ?? ''}
+        variant={pendingConfirm?.variant}
+        onCancel={() => setPendingConfirm(null)}
+        onConfirm={() => {
+          const confirmed = pendingConfirm;
+          setPendingConfirm(null);
+          confirmed?.onConfirm();
+        }}
+      />
     </EzPageLayout>
   );
 }

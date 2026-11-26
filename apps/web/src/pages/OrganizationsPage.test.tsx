@@ -501,7 +501,8 @@ describe('OrganizationsPage', { timeout: 15000 }, () => {
     expect(screen.getByLabelText(/faturamento quarteirizado/i)).toBeInTheDocument();
   });
 
-  it('shows the "Cliente ativo" toggle and inactivates the organization', async () => {
+  // ORG-01 (#463): inativar o cliente pede confirmação com o efeito descrito; o PATCH só sai no Confirmar.
+  it('shows the "Cliente ativo" toggle and inactivates the organization only after confirming the dialog', async () => {
     vi.mocked(api.patch).mockResolvedValue({ data: { ...orgDetail, active: false } });
     loginAs('ADMIN');
     const user = userEvent.setup();
@@ -509,11 +510,106 @@ describe('OrganizationsPage', { timeout: 15000 }, () => {
 
     await openDetail(user);
 
-    const toggle = screen.getByLabelText(/cliente ativo/i);
-    await user.click(toggle);
+    await user.click(screen.getByLabelText(/cliente ativo/i));
+    expect(api.patch).not.toHaveBeenCalled();
+
+    const dialog = await screen.findByRole('dialog', { name: /inativar cliente/i });
+    expect(dialog).toHaveTextContent(/usuários/i);
+    expect(dialog).toHaveTextContent(/mesas/i);
+    expect(dialog).toHaveTextContent(/tickets/i);
+    expect(api.patch).not.toHaveBeenCalled();
+
+    await user.click(within(dialog).getByRole('button', { name: 'Confirmar' }));
 
     await waitFor(() => {
       expect(api.patch).toHaveBeenCalledWith('/organizations/org-1', { active: false });
+    });
+    expect(api.patch).toHaveBeenCalledTimes(1);
+  });
+
+  it('ORG-01: Cancelar e Esc mantêm o cliente ativo e não enviam PATCH', async () => {
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    renderPage();
+
+    await openDetail(user);
+
+    await user.click(screen.getByLabelText(/cliente ativo/i));
+    expect(api.patch).not.toHaveBeenCalled();
+    const dialog = await screen.findByRole('dialog', { name: /inativar cliente/i });
+    await user.click(within(dialog).getByRole('button', { name: 'Cancelar' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(screen.getByLabelText(/cliente ativo/i)).toBeChecked();
+
+    await user.click(screen.getByLabelText(/cliente ativo/i));
+    await screen.findByRole('dialog', { name: /inativar cliente/i });
+    await user.keyboard('{Escape}');
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(screen.getByLabelText(/cliente ativo/i)).toBeChecked();
+    expect(api.patch).not.toHaveBeenCalled();
+  });
+
+  it('ORG-01: reativar um cliente inativo segue direto, sem diálogo', async () => {
+    vi.mocked(api.get).mockImplementation((url: string) => {
+      if (url === '/organizations/org-1') return Promise.resolve({ data: { ...orgDetail, active: false } });
+      if (url === PREF_URL) return Promise.resolve({ data: {} });
+      if (url === '/organizations') return Promise.resolve({ data: orgs });
+      if (url === '/users') return Promise.resolve({ data: users });
+      if (url === '/service-desks') return Promise.resolve({ data: serviceDesks });
+      return Promise.reject(new Error(`Unexpected GET ${url}`));
+    });
+    vi.mocked(api.patch).mockResolvedValue({ data: orgDetail });
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    renderPage();
+
+    await openDetail(user);
+    await user.click(screen.getByLabelText(/cliente ativo/i));
+
+    await waitFor(() => expect(api.patch).toHaveBeenCalledWith('/organizations/org-1', { active: true }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  // ORG-03 (#463): lixeiras com nome acessível e confirmação antes do DELETE.
+  describe.each([
+    ['endereço', /remover endereço av paulista/i, '/organizations/org-1/addresses/addr-1', 'general', /remover endereço\?/i],
+    ['contato', /remover contato jane doe/i, '/organizations/org-1/contacts/contact-1', 'general', /remover contato\?/i],
+    ['grupo de atendentes', /remover grupo de atendentes grupo suporte/i, '/organizations/org-1/agent-groups/group-1', 'relationships', /remover grupo de atendentes\?/i],
+  ])('ORG-03: remover %s', (_label, buttonName, deleteUrl, tab, dialogName) => {
+    async function openTab(user: ReturnType<typeof userEvent.setup>) {
+      await openDetail(user);
+      if (tab === 'relationships') await user.click(screen.getByRole('tab', { name: /relacionamentos/i }));
+    }
+
+    it('exposes a named button and deletes only after confirming', async () => {
+      vi.mocked(api.delete).mockResolvedValue({ data: {} });
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      renderPage();
+
+      await openTab(user);
+      await user.click(await screen.findByRole('button', { name: buttonName }));
+
+      const dialog = await screen.findByRole('dialog', { name: dialogName });
+      expect(api.delete).not.toHaveBeenCalled();
+      await user.click(within(dialog).getByRole('button', { name: 'Confirmar' }));
+
+      await waitFor(() => expect(api.delete).toHaveBeenCalledWith(deleteUrl));
+      expect(api.delete).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not delete when the dialog is cancelled', async () => {
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      renderPage();
+
+      await openTab(user);
+      await user.click(await screen.findByRole('button', { name: buttonName }));
+      const dialog = await screen.findByRole('dialog', { name: dialogName });
+      await user.click(within(dialog).getByRole('button', { name: 'Cancelar' }));
+
+      await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+      expect(api.delete).not.toHaveBeenCalled();
     });
   });
 
@@ -545,7 +641,8 @@ describe('OrganizationsPage', { timeout: 15000 }, () => {
     });
   });
 
-  it('updates organization name and legal name on blur in Geral tab', async () => {
+  // ORG-04 (#463): a aba Geral edita um rascunho local e só o botão Salvar envia o PATCH (antes: onBlur).
+  it('updates organization name and legal name only when Salvar is pressed in Geral tab', async () => {
     vi.mocked(api.patch).mockResolvedValue({ data: orgDetail });
     loginAs('ADMIN');
     const user = userEvent.setup();
@@ -553,23 +650,94 @@ describe('OrganizationsPage', { timeout: 15000 }, () => {
 
     await openDetail(user);
 
-    const legalNameInput = screen.getByLabelText(/razão social/i);
+    const legalNameInput = screen.getByLabelText(/razão social/i, { selector: 'input' });
     await user.clear(legalNameInput);
     await user.type(legalNameInput, 'Empresa A Nova Razao');
     await user.tab();
-
-    await waitFor(() => {
-      expect(api.patch).toHaveBeenCalledWith('/organizations/org-1', { legalName: 'Empresa A Nova Razao' });
-    });
-
-    const nameInput = screen.getByLabelText(/nome fantasia/i);
+    const nameInput = screen.getByLabelText(/nome fantasia/i, { selector: 'input' });
     await user.clear(nameInput);
     await user.type(nameInput, 'Empresa A Novo Nome');
     await user.tab();
 
+    expect(api.patch).not.toHaveBeenCalled();
+    expect(screen.getByText('Alterações não salvas')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Salvar alterações' }));
+
     await waitFor(() => {
-      expect(api.patch).toHaveBeenCalledWith('/organizations/org-1', { name: 'Empresa A Novo Nome' });
+      expect(api.patch).toHaveBeenCalledWith('/organizations/org-1', {
+        legalName: 'Empresa A Nova Razao',
+        name: 'Empresa A Novo Nome',
+      });
     });
+    expect(api.patch).toHaveBeenCalledTimes(1);
+  });
+
+  it('ORG-04: shows Salvando… while saving and Salvo afterwards, and hides the unsaved notice', async () => {
+    let finish: (value: unknown) => void = () => undefined;
+    vi.mocked(api.patch).mockReturnValue(new Promise((resolve) => { finish = resolve; }));
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    renderPage();
+
+    await openDetail(user);
+    expect(screen.queryByText('Alterações não salvas')).not.toBeInTheDocument();
+    const nameInput = screen.getByLabelText(/nome fantasia/i, { selector: 'input' });
+    await user.clear(nameInput);
+    await user.type(nameInput, 'Empresa A Novo Nome');
+    await user.click(screen.getByRole('button', { name: 'Salvar alterações' }));
+
+    expect(await screen.findByText('Salvando…')).toBeInTheDocument();
+    // O servidor devolve o cadastro já alterado na releitura.
+    vi.mocked(api.get).mockImplementation((url: string) => {
+      if (url === '/organizations/org-1') return Promise.resolve({ data: { ...orgDetail, name: 'Empresa A Novo Nome' } });
+      if (url === PREF_URL) return Promise.resolve({ data: {} });
+      if (url === '/organizations') return Promise.resolve({ data: orgs });
+      if (url === '/users') return Promise.resolve({ data: users });
+      if (url === '/service-desks') return Promise.resolve({ data: serviceDesks });
+      return Promise.reject(new Error(`Unexpected GET ${url}`));
+    });
+    finish({ data: { ...orgDetail, name: 'Empresa A Novo Nome' } });
+
+    expect(await screen.findByText('Salvo')).toBeInTheDocument();
+    expect(screen.queryByText('Salvando…')).not.toBeInTheDocument();
+    expect(screen.queryByText('Alterações não salvas')).not.toBeInTheDocument();
+  });
+
+  it.each([
+    ['Razão Social', 'Informe a Razão Social.'],
+    ['Nome Fantasia', 'Informe o Nome Fantasia.'],
+  ])('ORG-04: clearing %s and saving shows the field error and sends no PATCH', async (label, message) => {
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    renderPage();
+
+    await openDetail(user);
+    await user.clear(screen.getByLabelText(new RegExp(label, 'i'), { selector: 'input' }));
+    await user.tab();
+    expect(api.patch).not.toHaveBeenCalled();
+    await user.click(screen.getByRole('button', { name: 'Salvar alterações' }));
+
+    expect(await screen.findByText(message)).toBeInTheDocument();
+    expect(api.patch).not.toHaveBeenCalled();
+  });
+
+  it('ORG-04: shows the API error next to the form and keeps the draft when the save fails', async () => {
+    vi.mocked(api.patch).mockRejectedValue({ response: { status: 409, data: { message: 'Já existe um cliente com este nome.' } } });
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    renderPage();
+
+    await openDetail(user);
+    const nameInput = screen.getByLabelText(/nome fantasia/i, { selector: 'input' });
+    await user.clear(nameInput);
+    await user.type(nameInput, 'Empresa B');
+    await user.click(screen.getByRole('button', { name: 'Salvar alterações' }));
+
+    const form = screen.getByRole('form', { name: /dados cadastrais do cliente/i });
+    expect(await within(form).findByRole('alert')).toHaveTextContent('Já existe um cliente com este nome.');
+    expect(nameInput).toHaveValue('Empresa B');
+    expect(screen.getByText('Alterações não salvas')).toBeInTheDocument();
   });
 
   it('toggles visibility and quarterly billing from the detail header', async () => {
@@ -690,6 +858,31 @@ describe('OrganizationsPage', { timeout: 15000 }, () => {
         name: 'Grupo Vendas',
       }));
     });
+  });
+
+  // ORG-05 (#463): jargão interno de projeto não aparece como texto para o usuário.
+  it('ORG-05: nenhuma tela do cadastro cita Tiflux nem "padrão Sankhya"', async () => {
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    renderPage();
+    const jargon = /tiflux|padrão sankhya/i;
+
+    await screen.findByText('Empresa A');
+    await user.click(screen.getByTestId('ez-toolbar-actions-button'));
+    await user.click(screen.getByRole('menuitem', { name: /cadastrar manualmente/i }));
+    await screen.findByText('Nova Empresa');
+    expect(document.body.textContent).not.toMatch(jargon);
+    await user.click(screen.getByRole('button', { name: 'Cancelar' }));
+
+    await openDetail(user);
+    expect(document.body.textContent).not.toMatch(jargon);
+    for (const tab of [/recursos/i, /relacionamentos/i, /faturamento/i]) {
+      await user.click(screen.getByRole('tab', { name: tab }));
+      expect(document.body.textContent).not.toMatch(jargon);
+      if (tab.source === 'relationships') {
+        expect(screen.getByRole('heading', { name: /grupos? de atendentes/i })).toBeInTheDocument();
+      }
+    }
   });
 
   it('DMTE-560 AC-29: o título do vínculo N:N de mesas na aba Relacionamentos não cita o Tiflux', async () => {
