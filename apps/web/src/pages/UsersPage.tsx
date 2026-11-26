@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { ColumnDef } from '@tanstack/react-table';
 import { ActiveTag } from '../components/ActiveTag';
@@ -25,10 +25,11 @@ import {
 } from '../components/ds';
 import { applyDynamicFilters } from '../components/ds/EzDynamicFilter';
 import type { EzDynamicFilterField, EzDynamicFilterRule } from '../components/ds/EzDynamicFilter';
-import { useHasPermission } from '../hooks/usePermissions';
+import { useEffectivePermissions, useHasPermission } from '../hooks/usePermissions';
 import { usePermissionGroups } from '../hooks/usePermissionGroups';
 import { useTechnicalGroups } from '../hooks/useTechnicalGroups';
 import { useUserScreenConfig } from '../hooks/useUserScreenConfig';
+import { useAuthStore } from '../stores/authStore';
 import {
   UserListItem,
   apiErrorMessage,
@@ -161,6 +162,7 @@ function UsersPageContent() {
   const queryClient = useQueryClient();
   const canCreate = useHasPermission('CREATE_USERS');
   const canToggleActive = useHasPermission('ACTIVATE_DEACTIVATE_USERS');
+  const currentUserId = useAuthStore((state) => state.user?.sub);
 
   const [mode, setMode] = useState<'list' | 'form'>('list');
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
@@ -169,6 +171,21 @@ function UsersPageContent() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [activeSavedFilterId, setActiveSavedFilterId] = useState<string | null>(null);
   const [isConfigOpen, setIsConfigOpen] = useState(false);
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  // Atalho "/": foca a busca, exceto quando a tecla é texto de outro campo, combinada com Ctrl/Meta/Alt ou com diálogo aberto.
+  useEffect(() => {
+    if (mode !== 'list') return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== '/' || event.ctrlKey || event.metaKey || event.altKey || event.defaultPrevented) return;
+      const target = event.target as HTMLElement | null;
+      if (target?.closest('input, textarea, select, [contenteditable=""], [contenteditable="true"], [role="dialog"]')) return;
+      event.preventDefault();
+      searchRef.current?.focus();
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [mode]);
 
   // Alteração não salva pede confirmação antes de sair do formulário.
   const hasPending = useMesaPending();
@@ -191,7 +208,7 @@ function UsersPageContent() {
     page,
     pageSize: PAGE_SIZE,
   };
-  const { data, isLoading, isError } = useUsersList(params);
+  const { data, isLoading, isError, refetch } = useUsersList(params);
   const { data: technicalGroups } = useTechnicalGroups();
   const { data: permissionGroups } = usePermissionGroups();
 
@@ -217,6 +234,9 @@ function UsersPageContent() {
   const selected = selection.key === gridKey ? selection.rows : [];
 
   const [batch, setBatch] = useState<boolean | null>(null); // active a aplicar, quando há confirmação aberta
+  // Avisos preventivos do lote; o servidor continua recusando (ConflictException) e a mensagem dele é exibida.
+  const includesSelf = selected.some((u) => u.id === currentUserId);
+  const includesAdmin = selected.some((u) => u.role === 'ADMIN');
   const [batchError, setBatchError] = useState<string | null>(null);
   const setUsersActive = useSetUsersActive();
   const confirmBatch = () => {
@@ -250,12 +270,20 @@ function UsersPageContent() {
     isVisible: config.grid.columnVisibility[c.id ?? ''] !== false,
   }));
 
+  const hasActiveFilters = JSON.stringify(filters) !== JSON.stringify(NO_FILTERS);
   const total = meta?.total ?? 0;
   const first = (page - 1) * PAGE_SIZE;
+  // Regra dinâmica ativa (com valor, ou vazio/não vazio) filtra só a página carregada: o total do servidor não vale.
+  const hasDynamicRules = filters.rules.some(
+    (rule) => rule.operator === 'empty' || rule.operator === 'notEmpty' || rule.value.trim() !== '',
+  );
+  const loadedCount = data?.data.length ?? 0;
   const recordCountText =
     mode === 'form' && selectedUserId
       ? `1 de ${total}`
-      : `${users.length === 0 ? 0 : first + 1} - ${first + users.length} de ${total}`;
+      : hasDynamicRules
+        ? `${users.length} de ${loadedCount} nesta página`
+        : `${users.length === 0 ? 0 : first + 1} - ${first + users.length} de ${total}`;
 
   const label = (htmlFor: string, text: string) => (
     <label htmlFor={htmlFor} className="text-xs font-medium text-gray-700">
@@ -307,8 +335,24 @@ function UsersPageContent() {
 
         {mode === 'list' && (
           <>
+            <div className="border-b border-gray-200 px-3 py-2">
+              <EzTextInput
+                ref={searchRef}
+                id="users-search-input"
+                aria-label="Buscar usuário"
+                placeholder="Buscar por nome ou e-mail… (/)"
+                autoComplete="off"
+                value={filters.search}
+                onChange={(e) => change({ search: e.target.value })}
+              />
+              {hasDynamicRules && (
+                <p className="mt-1.5 text-xs text-gray-700">
+                  Filtro por campo aplicado só a esta página ({users.length} de {loadedCount} usuários carregados).
+                </p>
+              )}
+            </div>
             {canToggleActive && (
-              <div className="flex items-center gap-2 border-b border-gray-200 px-3 py-1.5 max-sm:hidden">
+              <div className="flex flex-wrap items-center gap-2 border-b border-gray-200 px-3 py-1.5">
                 <EzButton
                   type="button"
                   variant="secondary"
@@ -358,14 +402,6 @@ function UsersPageContent() {
                 }}
               >
                 <div className="space-y-4">
-                  <EzTextInput
-                    id="filter-search-input"
-                    label="Buscar usuário"
-                    placeholder="Nome ou e-mail…"
-                    value={filters.search}
-                    onChange={(e) => change({ search: e.target.value })}
-                  />
-
                   <fieldset className="space-y-1.5">
                     <legend className="mb-1 text-xs font-medium text-gray-700">Tipo</legend>
                     {Object.entries(ROLE_LABELS).map(([role, text]) => (
@@ -442,11 +478,30 @@ function UsersPageContent() {
                   </div>
                 ) : isError ? (
                   <div className="p-4">
-                    <EzEmptyCard title="Erro ao carregar usuários." />
+                    <EzEmptyCard
+                      title="Erro ao carregar usuários."
+                      action={<EzButton variant="secondary" size="small" label="Tentar de novo" onClick={() => void refetch()} />}
+                    />
                   </div>
                 ) : users.length === 0 ? (
                   <div className="p-4">
-                    <EzEmptyCard title="Nenhum usuário encontrado." />
+                    {hasActiveFilters ? (
+                      <EzEmptyCard
+                        title="Nenhum usuário encontrado com estes filtros"
+                        action={
+                          <EzButton variant="secondary" size="small" label="Limpar filtros" onClick={() => change(NO_FILTERS)} />
+                        }
+                      />
+                    ) : (
+                      <EzEmptyCard
+                        title="Nenhum usuário encontrado."
+                        action={
+                          canCreate ? (
+                            <EzButton variant="secondary" size="small" label="Novo usuário" onClick={() => guard(startNew)} />
+                          ) : undefined
+                        }
+                      />
+                    )}
                   </div>
                 ) : (
                   <EzEntityGrid
@@ -500,7 +555,18 @@ function UsersPageContent() {
         }`}
         onCancel={() => setBatch(null)}
         onConfirm={confirmBatch}
-      />
+      >
+        {batch === false && includesSelf && (
+          <EzAlert variant="warning" className="mt-3">
+            Você não pode inativar a si mesmo.
+          </EzAlert>
+        )}
+        {batch === false && includesAdmin && (
+          <EzAlert variant="warning" className="mt-3">
+            A seleção inclui administradores. O último administrador ativo não pode ser inativado.
+          </EzAlert>
+        )}
+      </EzDialog>
 
       {isConfigOpen && (
         <EzEntityScreenConfigModal
@@ -519,11 +585,49 @@ function UsersPageContent() {
   );
 }
 
+/**
+ * Guarda de UI da página: sem MANAGE_USERS não monta a lista (nenhum GET /users) e mostra o acesso restrito.
+ * Só reflexo da tela; a autorização continua no servidor. Enquanto /auth/me carrega, mostra o carregando
+ * em vez de piscar "restrito".
+ */
+function UsersAccessGate({ children }: { children: ReactNode }) {
+  const { data, isError, refetch } = useEffectivePermissions();
+  if (isError) {
+    return (
+      <EzPageLayout header={<EzPageHeader title="Usuários" />}>
+        <EzEmptyCard
+          title="Não foi possível verificar suas permissões."
+          action={<EzButton variant="secondary" size="small" label="Tentar de novo" onClick={() => void refetch()} />}
+        />
+      </EzPageLayout>
+    );
+  }
+  if (!data) {
+    return (
+      <EzPageLayout header={<EzPageHeader title="Usuários" />}>
+        <div className="p-8">
+          <EzSpinner label="Carregando permissões…" />
+        </div>
+      </EzPageLayout>
+    );
+  }
+  if (!data.isAdmin && !data.permissions.includes('MANAGE_USERS')) {
+    return (
+      <EzPageLayout header={<EzPageHeader title="Usuários" />}>
+        <EzEmptyCard title="Acesso restrito" description="Você não tem permissão para gerenciar usuários." />
+      </EzPageLayout>
+    );
+  }
+  return <>{children}</>;
+}
+
 export function UsersPage() {
   return (
-    <MesaSaveProvider>
-      <UsersPageContent />
-    </MesaSaveProvider>
+    <UsersAccessGate>
+      <MesaSaveProvider>
+        <UsersPageContent />
+      </MesaSaveProvider>
+    </UsersAccessGate>
   );
 }
 

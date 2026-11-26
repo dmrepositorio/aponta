@@ -216,6 +216,22 @@ describe('EzSelect (DMTE-490 T2)', () => {
     expect(native).toHaveAttribute('aria-hidden', 'true');
   });
 
+  it('F3-26 USR-09: a required select exposes aria-required on the visible combobox, and an optional one does not', () => {
+    render(
+      <>
+        <EzSelect id="req-a" label="Obrigatório" required defaultValue="open">
+          {options}
+        </EzSelect>
+        <EzSelect id="opt-a" label="Opcional" defaultValue="open">
+          {options}
+        </EzSelect>
+      </>,
+    );
+
+    expect(screen.getByRole('combobox', { name: 'Obrigatório' })).toHaveAttribute('aria-required', 'true');
+    expect(screen.getByRole('combobox', { name: 'Opcional' })).not.toHaveAttribute('aria-required');
+  });
+
   it('AC-10: clicking the label moves focus to the visible control, not to the hidden native select', async () => {
     const { user, control } = setup();
 

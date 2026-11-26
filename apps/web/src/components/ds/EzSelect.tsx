@@ -263,6 +263,7 @@ export const EzSelect = forwardRef<HTMLSelectElement, EzSelectProps>(
               aria-controls={open ? listId : undefined}
               aria-activedescendant={open ? `${listId}-${active}` : undefined}
               aria-invalid={showError || undefined}
+              aria-required={required || undefined}
               aria-label={accessibleName}
               disabled={disabled}
               onClick={() => (open ? setOpen(false) : openList())}

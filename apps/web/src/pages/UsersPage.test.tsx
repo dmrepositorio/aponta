@@ -88,6 +88,7 @@ const USERS_PAGE_1: UsersList = {
   data: [ANA, BRUNO],
   meta: { total: 2, page: 1, pageSize: 20, totalPages: 1 },
 };
+const EMPTY_LIST: UsersList = { data: [], meta: { total: 0, page: 1, pageSize: 20, totalPages: 0 } };
 const WITH_CARLA: UsersList = { data: [ANA, BRUNO, CARLA], meta: { total: 3, page: 1, pageSize: 20, totalPages: 1 } };
 const USERS_MANY: UsersList = { data: [ANA, BRUNO, CARLA], meta: { total: 45, page: 1, pageSize: 20, totalPages: 3 } };
 
@@ -97,15 +98,16 @@ interface ApiOptions {
   list?: UsersList;
   preference?: Record<string, unknown>;
   extraUsers?: TestUser[];
+  isAdmin?: boolean;
 }
 
 /** Servidor simulado: lista, detalhe, permissões da tela (/auth/me), flag, preferência de tela e listas de apoio do formulário. */
-function mockApi({ permissions = ALL_PERMISSIONS, flag = false, list = USERS_PAGE_1, preference = {}, extraUsers = [] }: ApiOptions = {}) {
+function mockApi({ permissions = ALL_PERMISSIONS, flag = false, list = USERS_PAGE_1, preference = {}, extraUsers = [], isAdmin = false }: ApiOptions = {}) {
   const everyone = [...list.data, ...extraUsers];
   vi.mocked(api.get).mockImplementation((url: string) => {
     if (url === '/users') return Promise.resolve({ data: list });
     if (url.startsWith('/users/')) return Promise.resolve({ data: everyone.find((u) => `/users/${u.id}` === url) });
-    if (url === '/auth/me') return Promise.resolve({ data: { id: 'u-0', isAdmin: false, permissions } });
+    if (url === '/auth/me') return Promise.resolve({ data: { id: 'u-0', isAdmin, permissions } });
     if (url === '/feature-flags') return Promise.resolve({ data: { [FLAG]: flag } });
     if (url === '/me/screen-preferences/users') return Promise.resolve({ data: preference });
     if (url === '/technical-groups') return Promise.resolve({ data: [{ id: 'tg-1', name: 'Suporte N1' }, { id: 'tg-2', name: 'Suporte N2' }] });
@@ -155,7 +157,7 @@ async function openUser(user: ReturnType<typeof userEvent.setup>, name: string) 
 describe('UsersPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    useAuthStore.setState({ token: null, user: null });
+    signIn();
     mockApi();
   });
 
@@ -174,13 +176,14 @@ describe('UsersPage', () => {
     );
   });
 
-  // DMTE-550: a busca mora no painel de filtros (dsgrid), então o teste abre o painel antes de digitar.
-  it('searches by typing in the filter drawer, sending q to GET /users', async () => {
+  // F3-26 USR-02: a busca fica sempre visível na lista (antes morava dentro do painel de filtros fechado).
+  it('USR-02: searches by typing in the visible search box with the drawer closed, sending q to GET /users', async () => {
     const user = userEvent.setup();
     renderUsersPage();
-    const drawer = await openFilters(user);
+    await screen.findByText('Ana Silva');
+    expect(screen.queryByTestId('ez-filter-drawer')).not.toBeInTheDocument();
 
-    await user.type(within(drawer).getByLabelText(/buscar usuário/i), 'ana');
+    await user.type(screen.getByRole('textbox', { name: 'Buscar usuário' }), 'ana');
 
     await waitFor(() =>
       expect(api.get).toHaveBeenCalledWith(
@@ -188,6 +191,30 @@ describe('UsersPage', () => {
         expect.objectContaining({ params: expect.objectContaining({ q: 'ana', page: 1 }) }),
       ),
     );
+  });
+
+  it('USR-02: the / key focuses the search box, except while typing in another field', async () => {
+    const user = userEvent.setup();
+    renderUsersPage();
+    await screen.findByText('Ana Silva');
+    const search = screen.getByRole('textbox', { name: 'Buscar usuário' });
+    expect(search).not.toHaveFocus();
+
+    await user.keyboard('/');
+    expect(search).toHaveFocus();
+    expect((search as HTMLInputElement).value).toBe('');
+
+    await user.type(search, 'a/b');
+    expect((search as HTMLInputElement).value).toBe('a/b');
+  });
+
+  it('USR-02: the search box is not repeated inside the filter drawer', async () => {
+    const user = userEvent.setup();
+    renderUsersPage();
+    const drawer = await openFilters(user);
+
+    expect(within(drawer).queryByLabelText(/buscar usuário/i)).not.toBeInTheDocument();
+    expect(screen.getAllByLabelText(/buscar usuário/i)).toHaveLength(1);
   });
 
   // DMTE-550: as abas passam de Perfil e Segurança para Geral e Segurança.
@@ -271,7 +298,7 @@ describe('UsersPage', () => {
   });
 
   describe('AC-03: painel de filtros, colunas e paginação', () => {
-    it('AC-03: the drawer has Tipo with the five roles, Status, the groups, the search, dynamic filters and saved filters', async () => {
+    it('AC-03: the drawer has Tipo with the five roles, Status, the groups, dynamic filters and saved filters', async () => {
       const user = userEvent.setup();
       renderUsersPage();
       const drawer = await openFilters(user);
@@ -285,7 +312,6 @@ describe('UsersPage', () => {
       expect(within(drawer).getByLabelText(/^status$/i)).toBeInTheDocument();
       expect(within(drawer).getByLabelText(/^grupo de atendentes$/i)).toBeInTheDocument();
       expect(within(drawer).getByLabelText(/^grupo de permissões$/i)).toBeInTheDocument();
-      expect(within(drawer).getByLabelText(/buscar usuário/i)).toBeInTheDocument();
       expect(within(drawer).getByTestId('ez-dynamic-filter-add')).toBeInTheDocument();
       expect(within(drawer).getByTestId('ez-filter-drawer-save-btn')).toBeInTheDocument();
     });
@@ -341,7 +367,7 @@ describe('UsersPage', () => {
 
       await user.click(screen.getByRole('button', { name: 'Página 2' }));
       await waitFor(() => expect(usersParams().page).toBe(2));
-      await user.type(within(drawer).getByLabelText(/buscar usuário/i), 'a');
+      await user.type(screen.getByRole('textbox', { name: 'Buscar usuário' }), 'a');
       await waitFor(() => expect(usersParams()).toEqual(expect.objectContaining({ q: 'a', page: 1 })));
 
       await user.click(screen.getByRole('button', { name: 'Página 2' }));
@@ -486,7 +512,7 @@ describe('UsersPage', () => {
 
       expect(screen.getByLabelText(/^nome/i)).toHaveValue('');
       for (const label of [/^e-mail/i, /^tipo/i, /^telefone/i, /^ramal/i, /^cliente/i, /^grupo de atendentes/i]) {
-        expect(screen.getByLabelText(label)).toBeInTheDocument();
+        expect(screen.getByLabelText(label, { selector: 'input, select' })).toBeInTheDocument();
       }
       expect(screen.getByRole('group', { name: /grupos de permissões/i })).toBeInTheDocument();
       expect(screen.queryByLabelText(/senha/i)).not.toBeInTheDocument();
@@ -519,7 +545,7 @@ describe('UsersPage', () => {
 
       await user.type(screen.getByLabelText(/^nome/i), '  Dora Lima ');
       await user.type(screen.getByLabelText(/^e-mail/i), ' dora@aponta.com ');
-      await user.selectOptions(screen.getByLabelText(/^tipo/i), 'AGENT');
+      await user.selectOptions(screen.getByLabelText(/^tipo/i, { selector: 'select' }), 'AGENT');
       await user.click(save);
 
       await waitFor(() => expect(api.post).toHaveBeenCalledTimes(1));
@@ -540,7 +566,7 @@ describe('UsersPage', () => {
 
       await user.type(screen.getByLabelText(/^nome/i), 'Dora Lima');
       await user.type(screen.getByLabelText(/^e-mail/i), 'dora@aponta.com');
-      await user.selectOptions(screen.getByLabelText(/^tipo/i), 'AGENT');
+      await user.selectOptions(screen.getByLabelText(/^tipo/i, { selector: 'select' }), 'AGENT');
       await user.type(screen.getByLabelText(/^telefone/i), '11999990000');
       await user.type(screen.getByLabelText(/^ramal/i), '123');
       await screen.findByRole('option', { name: 'Acme Ltda', hidden: true });
@@ -572,7 +598,7 @@ describe('UsersPage', () => {
 
       await user.type(screen.getByLabelText(/^nome/i), 'Dora Lima');
       await user.type(screen.getByLabelText(/^e-mail/i), 'ANA@aponta.com');
-      await user.selectOptions(screen.getByLabelText(/^tipo/i), 'AGENT');
+      await user.selectOptions(screen.getByLabelText(/^tipo/i, { selector: 'select' }), 'AGENT');
       await user.click(save);
 
       expect(await screen.findByText('E-mail já cadastrado')).toBeInTheDocument();
@@ -584,7 +610,7 @@ describe('UsersPage', () => {
       const user = userEvent.setup();
       const save = await openNewUser(user);
       await user.type(screen.getByLabelText(/^nome/i), 'Dora Lima');
-      await user.selectOptions(screen.getByLabelText(/^tipo/i), 'AGENT');
+      await user.selectOptions(screen.getByLabelText(/^tipo/i, { selector: 'select' }), 'AGENT');
 
       fireEvent.change(screen.getByLabelText(/^e-mail/i), { target: { value: 'dora@aponta.com\r\nBcc: alvo@example.com' } });
       await user.click(save);
@@ -605,7 +631,7 @@ describe('UsersPage', () => {
 
       await user.type(screen.getByLabelText(/^nome/i), hostile.name);
       await user.type(screen.getByLabelText(/^e-mail/i), 'dora@aponta.com');
-      await user.selectOptions(screen.getByLabelText(/^tipo/i), 'AGENT');
+      await user.selectOptions(screen.getByLabelText(/^tipo/i, { selector: 'select' }), 'AGENT');
       await user.click(save);
 
       await waitFor(() => expect(api.post).toHaveBeenCalledTimes(1));
@@ -626,7 +652,7 @@ describe('UsersPage', () => {
       expect(screen.getByLabelText(/^e-mail/i)).toHaveValue('ana@aponta.com');
       expect(screen.getByLabelText(/^telefone/i)).toHaveValue('1133334444');
       expect(screen.getByLabelText(/^ramal/i)).toHaveValue('210');
-      expect(screen.getByLabelText(/^tipo/i)).toHaveValue('AGENT');
+      expect(screen.getByLabelText(/^tipo/i, { selector: 'select' })).toHaveValue('AGENT');
       expect(await screen.findByLabelText(/^grupo de atendentes/i)).toHaveValue('tg-1');
       expect(await screen.findByRole('checkbox', { name: 'Grupo Atendimento' })).toBeChecked();
       expect(screen.getByRole('checkbox', { name: 'Grupo Gestão' })).not.toBeChecked();
@@ -721,9 +747,9 @@ describe('UsersPage', () => {
       vi.mocked(api.patch).mockResolvedValue({ data: { ...ANA, role: 'AGENT_MASTER' } });
       renderUsersPage();
       await openUser(user, 'Ana Silva');
-      await waitFor(() => expect(screen.getByLabelText(/^tipo/i)).toBeEnabled());
+      await waitFor(() => expect(screen.getByLabelText(/^tipo/i, { selector: 'select' })).toBeEnabled());
 
-      await user.selectOptions(screen.getByLabelText(/^tipo/i), 'AGENT_MASTER');
+      await user.selectOptions(screen.getByLabelText(/^tipo/i, { selector: 'select' }), 'AGENT_MASTER');
 
       expect(screen.getByText(/não troca os grupos de permissões/i)).toBeInTheDocument();
       await user.click(screen.getByRole('button', { name: 'Salvar' }));
@@ -738,7 +764,7 @@ describe('UsersPage', () => {
       await openUser(user, 'Ana Silva');
       await waitFor(() => expect(vi.mocked(api.get)).toHaveBeenCalledWith('/auth/me'));
 
-      expect(screen.getByLabelText(/^tipo/i)).toBeDisabled();
+      expect(screen.getByLabelText(/^tipo/i, { selector: 'select' })).toBeDisabled();
       expect(screen.getByLabelText(/^nome/i)).toBeEnabled();
       expect(screen.getByLabelText(/^e-mail/i)).toBeEnabled();
     });
@@ -970,6 +996,232 @@ describe('UsersPage', () => {
       await waitFor(() => expect(vi.mocked(api.get)).toHaveBeenCalledWith('/feature-flags'));
 
       expect(screen.getByRole('button', { name: 'Redefinir senha' })).toBeDisabled();
+    });
+  });
+
+  describe('F3-26 USR-01: guarda de acesso à página', () => {
+    it('USR-01: without MANAGE_USERS shows Acesso restrito, no load error, and never calls GET /users', async () => {
+      mockApi({ permissions: ['CREATE_USERS', 'ACTIVATE_DEACTIVATE_USERS'] });
+      renderUsersPage();
+
+      expect(await screen.findByText('Acesso restrito')).toBeInTheDocument();
+      expect(screen.queryByText('Erro ao carregar usuários.')).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Novo usuário' })).not.toBeInTheDocument();
+      expect(vi.mocked(api.get).mock.calls.some(([url]) => url === '/users')).toBe(false);
+    });
+
+    it('USR-01: does not flash Acesso restrito while the permissions are still loading', async () => {
+      let release: (value: unknown) => void = () => undefined;
+      const pendingMe = new Promise((resolve) => {
+        release = resolve;
+      });
+      mockApi();
+      const base = vi.mocked(api.get).getMockImplementation()!;
+      vi.mocked(api.get).mockImplementation((url: string) =>
+        url === '/auth/me' ? (pendingMe as Promise<never>) : base(url),
+      );
+      renderUsersPage();
+
+      expect(await screen.findByText('Carregando permissões…')).toBeInTheDocument();
+      expect(screen.queryByText('Acesso restrito')).not.toBeInTheDocument();
+      expect(vi.mocked(api.get).mock.calls.some(([url]) => url === '/users')).toBe(false);
+
+      release({ data: { id: 'u-0', isAdmin: false, permissions: ['MANAGE_USERS'] } });
+      expect(await screen.findByText('Ana Silva')).toBeInTheDocument();
+      expect(screen.queryByText('Acesso restrito')).not.toBeInTheDocument();
+    });
+
+    it('USR-01: an admin without the explicit key sees the list', async () => {
+      mockApi({ permissions: [], isAdmin: true });
+      renderUsersPage();
+
+      expect(await screen.findByText('Ana Silva')).toBeInTheDocument();
+      expect(screen.queryByText('Acesso restrito')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('F3-26 USR-03: vazio e erro com ação', () => {
+    it('USR-03: no results with an active filter says so and Limpar filtros clears the search and refetches', async () => {
+      mockApi({ list: EMPTY_LIST });
+      const user = userEvent.setup();
+      renderUsersPage();
+      await screen.findByText('Nenhum usuário encontrado.');
+      await user.type(screen.getByRole('textbox', { name: 'Buscar usuário' }), 'zzz');
+
+      expect(await screen.findByText('Nenhum usuário encontrado com estes filtros')).toBeInTheDocument();
+      await user.click(screen.getByRole('button', { name: 'Limpar filtros' }));
+
+      await waitFor(() => expect(usersParams().q).toBeUndefined());
+      expect(screen.getByRole('textbox', { name: 'Buscar usuário' })).toHaveValue('');
+      expect(await screen.findByText('Nenhum usuário encontrado.')).toBeInTheDocument();
+    });
+
+    it('USR-03: no data and no filters offers Novo usuário to who has CREATE_USERS and no Limpar filtros', async () => {
+      mockApi({ list: EMPTY_LIST });
+      const user = userEvent.setup();
+      renderUsersPage();
+      const card = (await screen.findByText('Nenhum usuário encontrado.')).parentElement as HTMLElement;
+
+      expect(screen.queryByRole('button', { name: 'Limpar filtros' })).not.toBeInTheDocument();
+      await user.click(await within(card).findByRole('button', { name: 'Novo usuário' }));
+      expect(await screen.findByRole('textbox', { name: 'Nome' })).toBeInTheDocument();
+    });
+
+    it('USR-03: without CREATE_USERS the empty state has no Novo usuário action', async () => {
+      mockApi({ list: EMPTY_LIST, permissions: ['MANAGE_USERS'] });
+      renderUsersPage();
+      const card = (await screen.findByText('Nenhum usuário encontrado.')).parentElement as HTMLElement;
+      await waitFor(() => expect(api.get).toHaveBeenCalledWith('/auth/me'));
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      expect(within(card).queryByRole('button')).not.toBeInTheDocument();
+    });
+
+    it('USR-03: a server error shows Tentar de novo, which fetches the list again', async () => {
+      mockApi();
+      const base = vi.mocked(api.get).getMockImplementation()!;
+      let failing = true;
+      vi.mocked(api.get).mockImplementation((url: string) =>
+        url === '/users' && failing ? Promise.reject(axiosError(500)) : base(url),
+      );
+      const user = userEvent.setup();
+      renderUsersPage();
+      expect(await screen.findByText('Erro ao carregar usuários.')).toBeInTheDocument();
+      const before = vi.mocked(api.get).mock.calls.filter(([url]) => url === '/users').length;
+
+      failing = false;
+      await user.click(screen.getByRole('button', { name: 'Tentar de novo' }));
+
+      expect(await screen.findByText('Ana Silva')).toBeInTheDocument();
+      expect(vi.mocked(api.get).mock.calls.filter(([url]) => url === '/users').length).toBeGreaterThan(before);
+    });
+  });
+
+  describe('F3-26 USR-04: filtro dinâmico vale só para a página', () => {
+    it('USR-04: without dynamic rules the counter is unchanged', async () => {
+      mockApi({ list: USERS_MANY });
+      renderUsersPage();
+      await screen.findByText('Ana Silva');
+
+      expect(screen.getByTestId('ez-toolbar-record-count')).toHaveTextContent('1 - 3 de 45');
+      expect(screen.queryByText(/nesta página/i)).not.toBeInTheDocument();
+    });
+
+    it('USR-04: with an active dynamic rule the counter says how many of the loaded page match, and warns it is page-only', async () => {
+      mockApi({ list: USERS_MANY });
+      const user = userEvent.setup();
+      renderUsersPage();
+      const drawer = await openFilters(user);
+
+      await user.click(within(drawer).getByTestId('ez-dynamic-filter-add'));
+      await user.type(within(drawer).getByLabelText('Valor'), 'ana');
+
+      await waitFor(() => expect(screen.getByTestId('ez-toolbar-record-count')).toHaveTextContent('1 de 3 nesta página'));
+      expect(screen.getByText(/filtro por campo aplicado só a esta página/i)).toBeInTheDocument();
+      expect(screen.getByTestId('ez-toolbar-record-count')).not.toHaveTextContent('de 45');
+    });
+
+    it('USR-04: a dynamic rule still empty does not change the counter', async () => {
+      mockApi({ list: USERS_MANY });
+      const user = userEvent.setup();
+      renderUsersPage();
+      const drawer = await openFilters(user);
+
+      await user.click(within(drawer).getByTestId('ez-dynamic-filter-add'));
+
+      expect(screen.getByTestId('ez-toolbar-record-count')).toHaveTextContent('1 - 3 de 45');
+      expect(screen.queryByText(/nesta página/i)).not.toBeInTheDocument();
+    });
+  });
+
+  describe('F3-26 USR-05: ativar e inativar em lote no celular', () => {
+    it('USR-05: the batch bar is not hidden below sm and can wrap', async () => {
+      renderUsersPage();
+      const inativar = await screen.findByRole('button', { name: 'Inativar' });
+
+      const bar = inativar.closest('div.border-b') as HTMLElement;
+      expect(bar).not.toBeNull();
+      expect(bar.className).not.toMatch(/max-sm:hidden|(^|\s)hidden(\s|$)/);
+      expect(bar).toHaveClass('flex-wrap');
+      expect(within(bar).getByRole('button', { name: 'Ativar' })).toBeInTheDocument();
+    });
+  });
+
+  describe('F3-26 USR-06: aviso ao inativar a si mesmo ou administrador', () => {
+    const ROOT: TestUser = { ...ANA, id: 'user-7', name: 'Rui Admin', email: 'rui@aponta.com', role: 'ADMIN' };
+    const signInAsAna = () =>
+      useAuthStore.setState({ token: 'fake-token', user: { sub: 'user-1', email: 'ana@aponta.com', role: 'AGENT' } });
+    const pick = async (user: ReturnType<typeof userEvent.setup>, name: string) =>
+      user.click(within(rowOf(name)).getByRole('checkbox', { name: 'Selecionar linha' }));
+    const inactivate = async (user: ReturnType<typeof userEvent.setup>) => {
+      await user.click(await screen.findByRole('button', { name: 'Inativar' }));
+      return within(await screen.findByRole('dialog'));
+    };
+
+    it('USR-06: the batch dialog warns when the selection includes the logged user', async () => {
+      signInAsAna();
+      const user = userEvent.setup();
+      renderUsersPage();
+      await screen.findByText('Ana Silva');
+      await pick(user, 'Ana Silva');
+
+      const dialog = await inactivate(user);
+
+      expect(dialog.getByText('Você não pode inativar a si mesmo.')).toBeInTheDocument();
+    });
+
+    it('USR-06: no self warning when the logged user is not in the selection', async () => {
+      signInAsAna();
+      const user = userEvent.setup();
+      renderUsersPage();
+      await screen.findByText('Ana Silva');
+      await pick(user, 'Bruno Costa');
+
+      const dialog = await inactivate(user);
+
+      expect(dialog.getByRole('button', { name: 'Confirmar' })).toBeInTheDocument();
+      expect(dialog.queryByText(/inativar a si mesmo/i)).not.toBeInTheDocument();
+    });
+
+    it('USR-06: activating a selection that includes the logged user shows no warning', async () => {
+      signInAsAna();
+      const user = userEvent.setup();
+      renderUsersPage();
+      await screen.findByText('Ana Silva');
+      await pick(user, 'Ana Silva');
+
+      await user.click(await screen.findByRole('button', { name: 'Ativar' }));
+
+      const dialog = within(await screen.findByRole('dialog'));
+      expect(dialog.getByRole('button', { name: 'Confirmar' })).toBeInTheDocument();
+      expect(dialog.queryByText(/inativar a si mesmo/i)).not.toBeInTheDocument();
+    });
+
+    it('USR-06: warns that the last active administrator cannot be inactivated when an admin is selected', async () => {
+      mockApi({ list: { data: [ANA, ROOT], meta: { total: 2, page: 1, pageSize: 20, totalPages: 1 } } });
+      const user = userEvent.setup();
+      renderUsersPage();
+      await screen.findByText('Rui Admin');
+      await pick(user, 'Rui Admin');
+
+      const dialog = await inactivate(user);
+
+      expect(dialog.getByText(/inclui administradores/i)).toBeInTheDocument();
+      expect(dialog.queryByText(/inativar a si mesmo/i)).not.toBeInTheDocument();
+    });
+
+    it('USR-06: the server refusal is still shown after confirming', async () => {
+      signInAsAna();
+      vi.mocked(api.patch).mockRejectedValue(axiosError(409, 'O último administrador ativo não pode ser inativado.'));
+      const user = userEvent.setup();
+      renderUsersPage();
+      await screen.findByText('Ana Silva');
+      await pick(user, 'Ana Silva');
+
+      const dialog = await inactivate(user);
+      await user.click(dialog.getByRole('button', { name: 'Confirmar' }));
+
+      expect(await screen.findByText('O último administrador ativo não pode ser inativado.')).toBeInTheDocument();
     });
   });
 });
