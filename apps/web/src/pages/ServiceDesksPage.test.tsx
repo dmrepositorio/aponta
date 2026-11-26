@@ -1018,6 +1018,16 @@ describe('F3-23: ServiceDesksPage (MSA-01 a MSA-09)', () => {
     useAuthStore.setState({ token: null, user: null });
   });
 
+  it('MSA-06 RBAC: AGENT também vê o Acesso restrito e nenhuma mesa é consultada nem listada', async () => {
+    loginAs('AGENT');
+    renderPage();
+
+    expect(screen.getByText('Acesso restrito')).toBeInTheDocument();
+    expect(screen.queryByTestId('ez-entity-toolbar')).not.toBeInTheDocument();
+    await Promise.resolve();
+    expect(vi.mocked(api.get).mock.calls.every(([url]) => url === '/me/screen-preferences/service-desks')).toBe(true);
+  });
+
   it('MSA-01: Excluir abre o dialog de perigo com a contagem e os nomes; Cancelar não exclui', async () => {
     loginAs('ADMIN');
     const user = userEvent.setup();
@@ -1120,7 +1130,7 @@ describe('F3-23: ServiceDesksPage (MSA-01 a MSA-09)', () => {
     expect(screen.getByText('Nenhuma mesa encontrada')).toBeInTheDocument();
     expect(screen.queryByText('Nenhuma mesa cadastrada ainda.')).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: 'Limpar filtros' }));
+    await user.click(within(screen.getByTestId('service-desks-grid-content')).getByRole('button', { name: 'Limpar filtros' }));
     expect(await screen.findByText('Suporte N1')).toBeInTheDocument();
     expect(screen.getByText('Infraestrutura')).toBeInTheDocument();
     expect(screen.queryByText('Nenhuma mesa encontrada')).not.toBeInTheDocument();
@@ -1172,8 +1182,11 @@ describe('F3-23: ServiceDesksPage (MSA-01 a MSA-09)', () => {
   it('MSA-09: depois de criar a mesa, abre o detalhe dela com as abas de configuração', async () => {
     loginAs('ADMIN');
     const user = userEvent.setup();
-    vi.mocked(api.post).mockResolvedValue({
-      data: { id: 'sd-3', name: 'Financeiro', createdAt: '2026-09-30T10:00:00.000Z' },
+    const created = { id: 'sd-3', name: 'Financeiro', createdAt: '2026-09-30T10:00:00.000Z' };
+    vi.mocked(api.post).mockImplementation(() => {
+      // Como na API real: depois do POST, a listagem já traz a mesa nova.
+      mockDesks([...serviceDesks, created]);
+      return Promise.resolve({ data: created });
     });
     renderPage();
     await screen.findByText('Suporte N1');
