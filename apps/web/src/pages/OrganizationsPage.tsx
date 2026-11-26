@@ -12,6 +12,7 @@ import {
   EzButton,
   EzCheck,
   EzComboBox,
+  EzDialog,
   EzDynamicFilter,
   EzEmptyCard,
   EzEntityGrid,
@@ -116,6 +117,13 @@ interface CnpjLookupResult {
     state: string | null;
     complement: string | null;
   };
+}
+
+interface PendingConfirm {
+  title: string;
+  message: string;
+  variant: 'warning' | 'danger';
+  onConfirm: () => void;
 }
 
 /** Mensagem da API para o usuário: lista do ValidationPipe junta; 5xx (texto técnico em inglês) cai no fallback. */
@@ -226,6 +234,8 @@ export function OrganizationsPage() {
   const [detailOrgId, setDetailOrgId] = useState<string | null>(null);
   const [detailTab, setDetailTab] = useState<DetailTab>('general');
   const [cnpjLookupError, setCnpjLookupError] = useState<string | null>(null);
+  // ORG-01/ORG-03 (#463): confirmação compartilhada (inativar cliente e remover endereço, contato ou grupo).
+  const [pendingConfirm, setPendingConfirm] = useState<PendingConfirm | null>(null);
   const [profileDraft, setProfileDraft] = useState<{ serviceType: string; healthStatus: string } | null>(null);
   const [billingDraft, setBillingDraft] = useState<{
     quarterlyBilling?: boolean;
@@ -1300,7 +1310,18 @@ className="isolate flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll
                         label="Cliente ativo"
                         checked={orgDetail.active !== false}
                         disabled={updateOrgMutation.isPending}
-                        onChange={(e) => updateOrgMutation.mutate({ active: e.target.checked })}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            updateOrgMutation.mutate({ active: true });
+                            return;
+                          }
+                          setPendingConfirm({
+                            title: 'Inativar cliente?',
+                            message: `${orgDetail.name} deixará de constar como cliente ativo. Os usuários, as mesas e os tickets do cliente continuam cadastrados, mas revise-os antes de confirmar. Você pode reativar o cliente depois.`,
+                            variant: 'warning',
+                            onConfirm: () => updateOrgMutation.mutate({ active: false }),
+                          });
+                        }}
                       />
                     </div>
                   </div>
@@ -1455,7 +1476,13 @@ className="isolate flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll
                         <EzButton
                           variant="tertiary"
                           size="x-small"
-                          onClick={() => removeAddressMutation.mutate(addr.id)}
+                          aria-label={`Remover endereço ${addr.street || 'sem logradouro'}`}
+                          onClick={() => setPendingConfirm({
+                            title: 'Remover endereço?',
+                            message: `O endereço ${addr.street || 'sem logradouro'} será removido do cadastro do cliente.`,
+                            variant: 'danger',
+                            onConfirm: () => removeAddressMutation.mutate(addr.id),
+                          })}
                           disabled={removeAddressMutation.isPending}
                           className="text-red-600 hover:text-red-700"
                         >
@@ -1503,7 +1530,13 @@ className="isolate flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll
                         <EzButton
                           variant="tertiary"
                           size="x-small"
-                          onClick={() => removeContactMutation.mutate(contact.id)}
+                          aria-label={`Remover contato ${contact.name}`}
+                          onClick={() => setPendingConfirm({
+                            title: 'Remover contato?',
+                            message: `O contato ${contact.name} será removido do cadastro do cliente.`,
+                            variant: 'danger',
+                            onConfirm: () => removeContactMutation.mutate(contact.id),
+                          })}
                           disabled={removeContactMutation.isPending}
                           className="text-red-600 hover:text-red-700"
                         >
@@ -1641,7 +1674,13 @@ className="isolate flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll
                           <EzButton
                             variant="tertiary"
                             size="x-small"
-                            onClick={() => removeAgentGroupMutation.mutate(group.id)}
+                            aria-label={`Remover grupo de atendentes ${group.name}`}
+                            onClick={() => setPendingConfirm({
+                              title: 'Remover grupo de atendentes?',
+                              message: `O grupo ${group.name} será removido do cadastro do cliente.`,
+                              variant: 'danger',
+                              onConfirm: () => removeAgentGroupMutation.mutate(group.id),
+                            })}
                             disabled={removeAgentGroupMutation.isPending}
                             className="text-red-600 hover:text-red-700"
                           >
@@ -1960,6 +1999,18 @@ className="isolate flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll
       {deleteTargets && (
         <OrganizationDeleteDialog targets={deleteTargets} onClose={() => setDeleteTargets(null)} onDone={handleDeleted} />
       )}
+      <EzDialog
+        open={pendingConfirm !== null}
+        title={pendingConfirm?.title ?? ''}
+        message={pendingConfirm?.message ?? ''}
+        variant={pendingConfirm?.variant}
+        onCancel={() => setPendingConfirm(null)}
+        onConfirm={() => {
+          const confirmed = pendingConfirm;
+          setPendingConfirm(null);
+          confirmed?.onConfirm();
+        }}
+      />
     </EzPageLayout>
   );
 }
