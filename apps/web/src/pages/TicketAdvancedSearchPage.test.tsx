@@ -71,9 +71,9 @@ describe('TicketAdvancedSearchPage (D4)', () => {
     expect(screen.getByLabelText(/número/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/título/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/^status$/i, { selector: 'select' })).toBeInTheDocument();
-    expect(screen.getByLabelText(/^cliente$/i, { selector: 'select' })).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: /^cliente$/i })).toBeInTheDocument();
     expect(screen.getByLabelText(/solicitante/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/atendente/i, { selector: 'select' })).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: /^atendente$/i })).toBeInTheDocument();
     expect(screen.getByLabelText(/mesa de serviço/i, { selector: 'select' })).toBeInTheDocument();
     expect(screen.getByLabelText(/estágio/i, { selector: 'select' })).toBeInTheDocument();
     expect(screen.getByLabelText(/^prioridade$/i, { selector: 'select' })).toBeInTheDocument();
@@ -85,9 +85,9 @@ describe('TicketAdvancedSearchPage (D4)', () => {
     useAuthStore.setState({ token: 'tok', user: { sub: 'u2', email: 'client@x.com', role: 'CLIENT', organizationId: null } });
     renderPage();
 
-    expect(screen.queryByLabelText(/^cliente$/i, { selector: 'select' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('textbox', { name: /^cliente$/i })).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/solicitante/i)).not.toBeInTheDocument();
-    expect(screen.queryByLabelText(/atendente/i, { selector: 'select' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('textbox', { name: /^atendente$/i })).not.toBeInTheDocument();
   });
 
   it('RODADA 2: hides Atendente (but keeps Solicitante) for CLIENT_MASTER, since GET /users/agents returns 403 for this role', () => {
@@ -97,9 +97,9 @@ describe('TicketAdvancedSearchPage (D4)', () => {
     });
     renderPage();
 
-    expect(screen.queryByLabelText(/^cliente$/i, { selector: 'select' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('textbox', { name: /^cliente$/i })).not.toBeInTheDocument();
     expect(screen.getByLabelText(/solicitante/i)).toBeInTheDocument();
-    expect(screen.queryByLabelText(/atendente/i, { selector: 'select' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('textbox', { name: /^atendente$/i })).not.toBeInTheDocument();
     expect(api.get).not.toHaveBeenCalledWith('/users/agents');
   });
 
@@ -242,6 +242,7 @@ describe('TicketAdvancedSearchPage (D4)', () => {
       renderPage();
 
       expect(screen.queryByRole('textbox', { name: /^cliente$/i })).toBeInTheDocument();
+      await waitFor(() => expect(screen.getByRole('textbox', { name: /^cliente$/i })).toBeEnabled());
       await user.type(screen.getByRole('textbox', { name: /^cliente$/i }), 'bet');
       expect(await screen.findByText('Beta Ltda')).toBeInTheDocument();
       expect(screen.queryByText('Acme')).not.toBeInTheDocument();
@@ -256,6 +257,7 @@ describe('TicketAdvancedSearchPage (D4)', () => {
       renderPage();
 
       expect(screen.queryByRole('textbox', { name: /^atendente$/i })).toBeInTheDocument();
+      await waitFor(() => expect(screen.getByRole('textbox', { name: /^atendente$/i })).toBeEnabled());
       await user.type(screen.getByRole('textbox', { name: /^atendente$/i }), 'sou');
       expect(await screen.findByText('Agente Souza')).toBeInTheDocument();
       expect(screen.queryByText('Agente Silva')).not.toBeInTheDocument();
