@@ -765,6 +765,8 @@ describe('F3-10: TicketsPage parte 1 (TKT-01, 05, 07, 08)', () => {
     });
   }
 
+  /** O atalho Autorizações consulta /tickets com limit 1 só para contar. */
+  const isCountCall = (config?: { params?: unknown }) => (config?.params as { limit?: number } | undefined)?.limit === 1;
   const ticketCalls = () =>
     vi.mocked(api.get).mock.calls.filter(
       ([url, config]) => url === '/tickets' && (config as { params?: { limit?: number } })?.params?.limit === 20,
@@ -788,10 +790,10 @@ describe('F3-10: TicketsPage parte 1 (TKT-01, 05, 07, 08)', () => {
   it('TKT-05: ao trocar de página a tabela anterior continua visível, marcada como ocupada, até a resposta chegar', async () => {
     const user = userEvent.setup();
     let calls = 0;
-    vi.mocked(api.get).mockImplementation((url: string, config?: { params?: { limit?: number } }) => {
+    vi.mocked(api.get).mockImplementation((url: string, config?: { params?: unknown }) => {
       if (url.startsWith('/me/screen-preferences/')) return Promise.resolve({ data: {} });
       // O atalho Autorizações também consulta /tickets (limit 1); só a lista principal conta.
-      if (url === '/tickets' && config?.params?.limit === 1) return Promise.resolve({ data: { meta: { total: 0 } } });
+      if (url === '/tickets' && isCountCall(config)) return Promise.resolve({ data: { meta: { total: 0 } } });
       if (url === '/tickets') {
         calls += 1;
         if (calls > 1) return new Promise(() => undefined);
@@ -823,10 +825,10 @@ describe('F3-10: TicketsPage parte 1 (TKT-01, 05, 07, 08)', () => {
   it('TKT-07: em falha de rede mostra um único alerta com "Tentar novamente", que busca de novo', async () => {
     const user = userEvent.setup();
     let calls = 0;
-    vi.mocked(api.get).mockImplementation((url: string, config?: { params?: { limit?: number } }) => {
+    vi.mocked(api.get).mockImplementation((url: string, config?: { params?: unknown }) => {
       if (url.startsWith('/me/screen-preferences/')) return Promise.resolve({ data: {} });
       if (url === '/service-desks') return Promise.resolve({ data: serviceDesks });
-      if (url === '/tickets' && config?.params?.limit === 1) return Promise.resolve({ data: { meta: { total: 0 } } });
+      if (url === '/tickets' && isCountCall(config)) return Promise.resolve({ data: { meta: { total: 0 } } });
       if (url === '/tickets') {
         calls += 1;
         if (calls === 1) return Promise.reject(new Error('Network Error'));

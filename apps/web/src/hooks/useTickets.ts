@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { api } from '../lib/api';
 
 export type TicketStatus =
@@ -237,6 +237,9 @@ export function useTickets(filters: TicketFiltersInput = {}) {
       });
       return data;
     },
+    // Ao refiltrar ou trocar de página a tela segue mostrando o resultado anterior (marcado como
+    // ocupado) até o novo chegar, em vez de trocar a tabela por um spinner.
+    placeholderData: keepPreviousData,
     // Defensive: normalize so `.data` is always an array for every consumer,
     // even if the backend/proxy ever returns an unexpected payload shape.
     select: (page) => ({

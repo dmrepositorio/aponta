@@ -63,6 +63,11 @@ function describeFilters(filters: TicketFiltersInput, names: TicketFilterNames):
   return entries.filter(([, active]) => Boolean(active)).map(([key, , label]) => ({ key, label }));
 }
 
+/** Há ao menos um filtro ativo (página, ordenação e filtro por avatar do Kanban não contam). */
+export function hasActiveFilters(filters: TicketFiltersInput): boolean {
+  return describeFilters(filters, {}).length > 0;
+}
+
 /**
  * Filtros ativos da Lista (vindos da URL ou da Busca avançada): cada um é uma tag que se remove
  * sozinha, mais a ação de redefinir todos. Página, ordenação e o filtro por avatar do Kanban não
