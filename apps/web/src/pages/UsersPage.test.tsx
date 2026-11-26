@@ -1146,4 +1146,82 @@ describe('UsersPage', () => {
       expect(within(bar).getByRole('button', { name: 'Ativar' })).toBeInTheDocument();
     });
   });
+
+  describe('F3-26 USR-06: aviso ao inativar a si mesmo ou administrador', () => {
+    const ROOT: TestUser = { ...ANA, id: 'user-7', name: 'Rui Admin', email: 'rui@aponta.com', role: 'ADMIN' };
+    const signInAsAna = () =>
+      useAuthStore.setState({ token: 'fake-token', user: { sub: 'user-1', email: 'ana@aponta.com', role: 'AGENT' } });
+    const pick = async (user: ReturnType<typeof userEvent.setup>, name: string) =>
+      user.click(within(rowOf(name)).getByRole('checkbox', { name: 'Selecionar linha' }));
+    const inactivate = async (user: ReturnType<typeof userEvent.setup>) => {
+      await user.click(await screen.findByRole('button', { name: 'Inativar' }));
+      return within(await screen.findByRole('dialog'));
+    };
+
+    it('USR-06: the batch dialog warns when the selection includes the logged user', async () => {
+      signInAsAna();
+      const user = userEvent.setup();
+      renderUsersPage();
+      await screen.findByText('Ana Silva');
+      await pick(user, 'Ana Silva');
+
+      const dialog = await inactivate(user);
+
+      expect(dialog.getByText('Você não pode inativar a si mesmo.')).toBeInTheDocument();
+    });
+
+    it('USR-06: no self warning when the logged user is not in the selection', async () => {
+      signInAsAna();
+      const user = userEvent.setup();
+      renderUsersPage();
+      await screen.findByText('Ana Silva');
+      await pick(user, 'Bruno Costa');
+
+      const dialog = await inactivate(user);
+
+      expect(dialog.getByRole('button', { name: 'Confirmar' })).toBeInTheDocument();
+      expect(dialog.queryByText(/inativar a si mesmo/i)).not.toBeInTheDocument();
+    });
+
+    it('USR-06: activating a selection that includes the logged user shows no warning', async () => {
+      signInAsAna();
+      const user = userEvent.setup();
+      renderUsersPage();
+      await screen.findByText('Ana Silva');
+      await pick(user, 'Ana Silva');
+
+      await user.click(await screen.findByRole('button', { name: 'Ativar' }));
+
+      const dialog = within(await screen.findByRole('dialog'));
+      expect(dialog.getByRole('button', { name: 'Confirmar' })).toBeInTheDocument();
+      expect(dialog.queryByText(/inativar a si mesmo/i)).not.toBeInTheDocument();
+    });
+
+    it('USR-06: warns that the last active administrator cannot be inactivated when an admin is selected', async () => {
+      mockApi({ list: { data: [ANA, ROOT], meta: { total: 2, page: 1, pageSize: 20, totalPages: 1 } } });
+      const user = userEvent.setup();
+      renderUsersPage();
+      await screen.findByText('Rui Admin');
+      await pick(user, 'Rui Admin');
+
+      const dialog = await inactivate(user);
+
+      expect(dialog.getByText(/inclui administradores/i)).toBeInTheDocument();
+      expect(dialog.queryByText(/inativar a si mesmo/i)).not.toBeInTheDocument();
+    });
+
+    it('USR-06: the server refusal is still shown after confirming', async () => {
+      signInAsAna();
+      vi.mocked(api.patch).mockRejectedValue(axiosError(409, 'O último administrador ativo não pode ser inativado.'));
+      const user = userEvent.setup();
+      renderUsersPage();
+      await screen.findByText('Ana Silva');
+      await pick(user, 'Ana Silva');
+
+      const dialog = await inactivate(user);
+      await user.click(dialog.getByRole('button', { name: 'Confirmar' }));
+
+      expect(await screen.findByText('O último administrador ativo não pode ser inativado.')).toBeInTheDocument();
+    });
+  });
 });
