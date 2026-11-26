@@ -541,6 +541,22 @@ describe('TicketsPage', () => {
     );
   });
 
+  it('F3-15 ADV-04: "Busca avançada" leva os filtros ativos da lista na query', async () => {
+    mockApiGet();
+    const user = userEvent.setup();
+    renderDashboard(['/?priority=HIGH&mine=true']);
+
+    await screen.findByText('Printer not working');
+    await user.click(screen.getByRole('button', { name: 'Busca avançada' }));
+
+    await waitFor(() => {
+      const url = screen.getByTestId('location-probe').textContent ?? '';
+      expect(url).toContain('/tickets/search?');
+      expect(url).toContain('priority=HIGH');
+      expect(url).toContain('mine=true');
+    });
+  });
+
   describe('atalhos da lista (DMTE-503)', () => {
     type Role = 'ADMIN' | 'AGENT_MASTER' | 'AGENT' | 'CLIENT_MASTER' | 'CLIENT';
 

@@ -9,6 +9,11 @@ function LocationProbe() {
   return <div data-testid="location-probe">{location.pathname}</div>;
 }
 
+function SearchProbe() {
+  const location = useLocation();
+  return <div data-testid="search-probe">{location.search}</div>;
+}
+
 function OpenButton({ path, title }: { path: string; title: string }) {
   const openInTab = useOpenInTab();
   return (
@@ -39,7 +44,9 @@ function renderApp(initialEntries: string[] = ['/']) {
     <MemoryRouter initialEntries={initialEntries}>
       <TabsProvider>
         <LocationProbe />
+        <SearchProbe />
         <TabsProbe />
+        <OpenButton path="/tickets/search?priority=HIGH" title="Busca avançada" />
         <OpenButton path="/tickets/t1" title="#AP-0001 - Impressora" />
         <OpenButton path="/tickets/t2" title="#AP-0002 - VPN" />
         <Routes>
@@ -111,6 +118,17 @@ describe('TabsContext', () => {
       '#AP-0001 - Impressora',
     );
     expect(screen.getByTestId('location-probe')).toHaveTextContent('/tickets/t1');
+  });
+
+  it('F3-15 ADV-04: abrir um caminho com query guarda a aba pelo pathname e navega com a query', async () => {
+    const user = userEvent.setup();
+    renderApp();
+
+    await user.click(screen.getByText('Open Busca avançada'));
+
+    expect(screen.getByTestId('tab-/tickets/search')).toHaveTextContent('Busca avançada');
+    expect(screen.getByTestId('location-probe')).toHaveTextContent('/tickets/search');
+    expect(screen.getByTestId('search-probe')).toHaveTextContent('?priority=HIGH');
   });
 
   it('reopening an already-open path activates it instead of duplicating the tab', async () => {
