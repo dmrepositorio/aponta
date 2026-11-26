@@ -1096,4 +1096,41 @@ describe('UsersPage', () => {
       expect(vi.mocked(api.get).mock.calls.filter(([url]) => url === '/users').length).toBeGreaterThan(before);
     });
   });
+
+  describe('F3-26 USR-04: filtro dinâmico vale só para a página', () => {
+    it('USR-04: without dynamic rules the counter is unchanged', async () => {
+      mockApi({ list: USERS_MANY });
+      renderUsersPage();
+      await screen.findByText('Ana Silva');
+
+      expect(screen.getByTestId('ez-toolbar-record-count')).toHaveTextContent('1 - 3 de 45');
+      expect(screen.queryByText(/nesta página/i)).not.toBeInTheDocument();
+    });
+
+    it('USR-04: with an active dynamic rule the counter says how many of the loaded page match, and warns it is page-only', async () => {
+      mockApi({ list: USERS_MANY });
+      const user = userEvent.setup();
+      renderUsersPage();
+      const drawer = await openFilters(user);
+
+      await user.click(within(drawer).getByTestId('ez-dynamic-filter-add'));
+      await user.type(within(drawer).getByLabelText('Valor'), 'ana');
+
+      await waitFor(() => expect(screen.getByTestId('ez-toolbar-record-count')).toHaveTextContent('1 de 3 nesta página'));
+      expect(screen.getByText(/filtro por campo aplicado só a esta página/i)).toBeInTheDocument();
+      expect(screen.getByTestId('ez-toolbar-record-count')).not.toHaveTextContent('de 45');
+    });
+
+    it('USR-04: a dynamic rule still empty does not change the counter', async () => {
+      mockApi({ list: USERS_MANY });
+      const user = userEvent.setup();
+      renderUsersPage();
+      const drawer = await openFilters(user);
+
+      await user.click(within(drawer).getByTestId('ez-dynamic-filter-add'));
+
+      expect(screen.getByTestId('ez-toolbar-record-count')).toHaveTextContent('1 - 3 de 45');
+      expect(screen.queryByText(/nesta página/i)).not.toBeInTheDocument();
+    });
+  });
 });
