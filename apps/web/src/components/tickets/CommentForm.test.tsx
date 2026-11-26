@@ -13,10 +13,10 @@ vi.mock('../../lib/api', () => ({
   },
 }));
 
-function setRole(role: 'CLIENT' | 'AGENT') {
+function setRole(role: 'CLIENT' | 'AGENT', sub = 'u-1') {
   useAuthStore.setState({
     token: 'fake.jwt.token',
-    user: { sub: 'u-1', email: 'user@example.com', role },
+    user: { sub, email: 'user@example.com', role },
   });
 }
 
@@ -109,6 +109,37 @@ describe('CommentForm (GH-448 DET-14)', () => {
     await user.click(screen.getByRole('button', { name: /publicar comentário/i }));
     await waitFor(() => expect(api.post).toHaveBeenCalled());
     await waitFor(() => expect(screen.getByLabelText(/adicionar um comentário/i)).toHaveValue(''));
+    first.unmount();
+
+    renderForm('t-1');
+    expect(screen.getByLabelText(/adicionar um comentário/i)).toHaveValue('');
+  });
+
+  it('rascunho do usuário A não aparece para o usuário B no mesmo ticket (troca de usuário sem recarregar)', async () => {
+    const user = userEvent.setup();
+    const first = renderForm('t-1');
+    await user.type(screen.getByLabelText(/adicionar um comentário/i), 'rascunho do A');
+    first.unmount();
+
+    setRole('AGENT', 'u-2');
+    renderForm('t-1');
+    expect(screen.getByLabelText(/adicionar um comentário/i)).toHaveValue('');
+  });
+
+  it('sem usuário autenticado não grava rascunho', async () => {
+    const user = userEvent.setup();
+    useAuthStore.setState({ token: null, user: null });
+    renderForm('t-1');
+    await user.type(screen.getByLabelText(/adicionar um comentário/i), 'sem login');
+
+    expect(Object.keys(window.sessionStorage).filter((k) => k.startsWith('aponta:comment-draft:'))).toEqual([]);
+  });
+
+  it('rascunho de nota interna não é guardado (o flag não é restaurado, então não pode virar comentário público)', async () => {
+    const user = userEvent.setup();
+    const first = renderForm('t-1');
+    await user.click(screen.getByRole('checkbox', { name: /nota interna/i }));
+    await user.type(screen.getByLabelText(/adicionar um comentário/i), 'segredo interno');
     first.unmount();
 
     renderForm('t-1');
