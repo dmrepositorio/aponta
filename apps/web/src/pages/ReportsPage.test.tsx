@@ -110,8 +110,10 @@ describe('ReportsPage', () => {
       expect(screen.getByText('Empresa A')).toBeInTheDocument();
     });
     expect(api.get).toHaveBeenCalledWith('/reports/billing', { params: { contractId: undefined, startDate: undefined, endDate: undefined } });
-    expect(screen.getByText('1h 0m / 1h 0m')).toBeInTheDocument();
-    expect(screen.getByText(/120,00/)).toBeInTheDocument();
+    // Com uma só organização a linha de total repete os valores; confere a linha da organização.
+    const organizationRow = within(screen.getByText('Empresa A').closest('tr')!);
+    expect(organizationRow.getByText('1h 0m / 1h 0m')).toBeInTheDocument();
+    expect(organizationRow.getByText(/120,00/)).toBeInTheDocument();
   });
 
   it('shows the Faturamento tab for CLIENT_MASTER too', async () => {
@@ -328,7 +330,7 @@ describe('ReportsPage F3-17 (#454)', () => {
       expect(within(table).getByRole('columnheader', { name: /tempo apontado/i })).toHaveAttribute('aria-sort', 'descending');
       expect(rowTexts()[0]).toContain('Alice');
 
-      expect(within(table).getByRole('row', { name: /total/i })).toHaveTextContent('3h 5m');
+      expect(within(table).getByRole('row', { name: /^total /i })).toHaveTextContent('3h 5m');
     });
 
     it('Faturamento: scope col, ordenação por coluna e linha de total', async () => {
@@ -354,7 +356,7 @@ describe('ReportsPage F3-17 (#454)', () => {
       await user.click(within(table).getByRole('button', { name: /horas faturáveis/i }));
       const orgs = within(table).getAllByRole('row').map((row) => row.textContent ?? '').filter((text) => /Empresa/.test(text));
       expect(orgs[0]).toContain('Empresa B');
-      expect(within(table).getByRole('row', { name: /total/i })).toHaveTextContent(/150,00/);
+      expect(within(table).getByRole('row', { name: /^total /i })).toHaveTextContent(/150,00/);
     });
   });
 
