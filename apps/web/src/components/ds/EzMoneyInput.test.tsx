@@ -210,7 +210,10 @@ describe('EzMoneyInput', () => {
 });
 
 describe('EzMoneyInput editing the masked text (QA CTR-07)', () => {
-  const at = (position: number) => ({ initialSelectionStart: position, initialSelectionEnd: position });
+  const at = (position: number) => ({
+    initialSelectionStart: position,
+    initialSelectionEnd: position,
+  });
 
   it('keeps the value when deleting the last digit of a thousands amount', async () => {
     const user = userEvent.setup();
@@ -285,7 +288,10 @@ describe('EzMoneyInput editing the masked text (QA CTR-07)', () => {
   it('replaces everything when all the text is selected and a digit is typed', async () => {
     const user = userEvent.setup();
     render(<Harness initial={150000} />);
-    await user.type(field(), '7', { initialSelectionStart: 0, initialSelectionEnd: 11 });
+    await user.type(field(), '7', {
+      initialSelectionStart: 0,
+      initialSelectionEnd: 11,
+    });
     expect(field()).toHaveValue('R$ 7');
     expect(cents()).toBe('700');
   });

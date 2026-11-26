@@ -130,16 +130,25 @@ describe('parseMoney deleting a digit from the masked text (QA CTR-07)', () => {
 });
 
 describe('formatCents and parseMoney round trip', () => {
-  const values = [0, 1, 9, 10, 99, 100, 101, 999, 1000, 12345, 99999, 100000, 150000, 150050, 123456, 1000000, 100000000, 2147483647, 900719925474099];
-  it.each(values)('keeps %i cents through format, typing and paste', (cents) => {
-    const text = formatCents(cents);
-    expect(parseMoney(text, 'typing')?.cents).toBe(cents);
-    expect(parseMoney(text, 'paste')?.cents).toBe(cents);
-    expect(parseMoney(text, 'typing', { deleting: true })?.cents).toBe(cents);
-  });
-  it.each(values)('keeps the typed text of %i reais stable when re-read', (cents) => {
-    const typed = parseMoney(String(Math.floor(cents / 100)), 'typing');
-    expect(typed).not.toBeNull();
-    expect(parseMoney(typed!.text, 'typing')).toEqual(typed);
-  });
+  const values = [
+    0, 1, 9, 10, 99, 100, 101, 999, 1000, 12345, 99999, 100000, 150000, 150050,
+    123456, 1000000, 100000000, 2147483647, 900719925474099,
+  ];
+  it.each(values)(
+    'keeps %i cents through format, typing and paste',
+    (cents) => {
+      const text = formatCents(cents);
+      expect(parseMoney(text, 'typing')?.cents).toBe(cents);
+      expect(parseMoney(text, 'paste')?.cents).toBe(cents);
+      expect(parseMoney(text, 'typing', { deleting: true })?.cents).toBe(cents);
+    },
+  );
+  it.each(values)(
+    'keeps the typed text of %i reais stable when re-read',
+    (cents) => {
+      const typed = parseMoney(String(Math.floor(cents / 100)), 'typing');
+      expect(typed).not.toBeNull();
+      expect(parseMoney(typed!.text, 'typing')).toEqual(typed);
+    },
+  );
 });

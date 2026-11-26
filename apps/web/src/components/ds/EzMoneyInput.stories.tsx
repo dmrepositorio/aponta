@@ -6,7 +6,7 @@ import { EzMoneyInput, type EzMoneyInputProps } from './EzMoneyInput';
  * Aponta DS Money Input — campo de dinheiro pt-BR com máscara "R$ 1.234,56". O valor é um inteiro em
  * centavos (sem ponto flutuante): vazio é `null` e zero é um valor válido. É um campo de texto com teclado
  * decimal, sem setas nem roda do mouse, e recusa "e", sinal negativo e letras. A vírgula separa os centavos;
- * ao colar, formatos ambíguos como "1,234" são recusados. Use no lugar de `type="number"` para preço, tarifa
+ * ao colar, formatos ambíguos como "1,234" são recusados. Ao apagar dígitos, o ponto é sempre o de milhar da máscara ("R$ 1.500" sem o último dígito é "R$ 150"); um ponto digitado no fim vira a vírgula decimal. Use no lugar de `type="number"` para preço, tarifa
  * e mensalidade.
  */
 const meta: Meta<typeof EzMoneyInput> = {

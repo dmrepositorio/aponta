@@ -24,6 +24,7 @@ export function formatCents(cents: number | null): string {
 function split(
   body: string,
   mode: 'typing' | 'paste',
+  deleting: boolean,
 ): { int: string; frac: string | null } | null {
   if (body.includes(',')) {
     const parts = body.split(',');
@@ -38,8 +39,10 @@ function split(
     // Digitando, a terceira casa é descartada (não arredondada).
     return { int: intPart.replace(/\./g, ''), frac: fracPart.slice(0, 2) };
   }
-  // Sem vírgula, um único ponto com 1 ou 2 dígitos depois só pode ser decimal (milhar tem 3 dígitos).
-  const decimalPoint = /^(\d*)\.(\d{1,2})$/.exec(body);
+  // Sem vírgula, um único ponto com 1 ou 2 dígitos depois só pode ser decimal (milhar tem 3 dígitos),
+  // exceto ao apagar: aí o ponto é o de milhar da máscara ("R$ 1.500" sem o último dígito vira "1.50",
+  // que são 150 reais, não 1,50).
+  const decimalPoint = deleting ? null : /^(\d*)\.(\d{1,2})$/.exec(body);
   if (decimalPoint) return { int: decimalPoint[1], frac: decimalPoint[2] };
   if (mode === 'paste' && body.includes('.') && !GROUPED.test(body))
     return null;
@@ -48,16 +51,18 @@ function split(
 
 /**
  * Lê o texto de um campo de dinheiro pt-BR. `typing` é tolerante (o campo se reformata a cada tecla);
- * `paste` é estrito. Devolve null quando o texto deve ser recusado (negativo, letra, "e", formato ambíguo).
+ * `paste` é estrito; `deleting` marca uma edição que encurtou o texto (o ponto é sempre de milhar). Devolve null quando o texto deve ser recusado (negativo, letra, "e", formato ambíguo).
  * `cents` null = vazio.
  */
 export function parseMoney(
   raw: string,
   mode: 'typing' | 'paste',
+  options: { deleting?: boolean } = {},
 ): ParsedMoney | null {
-  const body = raw.replace(/R\$/g, '').replace(/\s/g, '');
+  // R e $ soltos somem: apagar dentro do prefixo da máscara não pode rejeitar nem corromper o valor.
+  const body = raw.replace(/[R$]/g, '').replace(/\s/g, '');
   if (/[^\d.,]/.test(body)) return null;
-  const parts = split(body, mode);
+  const parts = split(body, mode, options.deleting === true);
   if (!parts) return null;
   const hasComma = parts.frac !== null;
   const reais = parts.int.replace(/^0+(?=\d)/, '');

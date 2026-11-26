@@ -65,7 +65,17 @@ export const EzMoneyInput = forwardRef<HTMLInputElement, EzMoneyInputProps>(
     }, [value]);
 
     const accept = (raw: string, mode: 'typing' | 'paste') => {
-      const parsed = parseMoney(raw, mode);
+      // Ponto digitado no fim, sem vírgula ainda, é a vírgula decimal (teclado numérico).
+      const typed =
+        mode === 'typing' &&
+        text !== '' &&
+        !text.includes(',') &&
+        raw === `${text}.`
+          ? `${text},`
+          : raw;
+      // Edição que encurta o texto (Backspace/Delete): os pontos que sobram são os de milhar da máscara.
+      const deleting = mode === 'typing' && raw.length < text.length;
+      const parsed = parseMoney(typed, mode, { deleting });
       if (!parsed || (parsed.cents !== null && parsed.cents > max)) return;
       setText(parsed.text);
       if (parsed.cents !== value) onChange(parsed.cents);
