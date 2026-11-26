@@ -32,7 +32,9 @@ function Harness({
       <button type="button" onClick={() => setValue(4200)}>
         definir 42
       </button>
-      <output data-testid="cents">{value === null ? 'null' : String(value)}</output>
+      <output data-testid="cents">
+        {value === null ? 'null' : String(value)}
+      </output>
     </>
   );
 }
@@ -145,7 +147,9 @@ describe('EzMoneyInput', () => {
 
   it('pastes a pt-BR amount as a whole value', () => {
     render(<Harness initial={100} />);
-    fireEvent.paste(field(), { clipboardData: { getData: () => 'R$ 1.234,56' } });
+    fireEvent.paste(field(), {
+      clipboardData: { getData: () => 'R$ 1.234,56' },
+    });
     expect(field()).toHaveValue('R$ 1.234,56');
     expect(cents()).toBe('123456');
   });

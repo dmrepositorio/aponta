@@ -51,8 +51,14 @@ describe('parseMoney while typing', () => {
     expect(typing('1.5')).toEqual({ cents: 150, text: 'R$ 1,5' });
   });
   it('accepts the currency symbol and non-breaking spaces', () => {
-    expect(typing('R$ 1.234,56')).toEqual({ cents: 123456, text: 'R$ 1.234,56' });
-    expect(typing('R$ 1.234,56')).toEqual({ cents: 123456, text: 'R$ 1.234,56' });
+    expect(typing('R$ 1.234,56')).toEqual({
+      cents: 123456,
+      text: 'R$ 1.234,56',
+    });
+    expect(typing('R$ 1.234,56')).toEqual({
+      cents: 123456,
+      text: 'R$ 1.234,56',
+    });
   });
   it('drops leading zeros', () => {
     expect(typing('007')).toEqual({ cents: 700, text: 'R$ 7' });
@@ -64,7 +70,10 @@ describe('parseMoney while typing', () => {
     expect(typing('1,2,3')).toBeNull();
   });
   it('holds large values as exact integers and refuses digits beyond the safe range', () => {
-    expect(typing('9999999999999')).toEqual({ cents: 999999999999900, text: 'R$ 9.999.999.999.999' });
+    expect(typing('9999999999999')).toEqual({
+      cents: 999999999999900,
+      text: 'R$ 9.999.999.999.999',
+    });
     expect(typing('99999999999999')).toBeNull();
     expect(typing('21474836,47')?.cents).toBe(2147483647);
   });
