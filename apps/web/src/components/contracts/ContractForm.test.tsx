@@ -93,3 +93,76 @@ describe('ContractForm precision', () => {
     expect(screen.queryByText('16/10/2026')).not.toBeInTheDocument();
   });
 });
+
+describe('ContractForm onDirtyChange (CTR-02)', () => {
+  const existing = {
+    id: 'c1',
+    name: 'Suporte',
+    organizationId: 'org-1',
+    type: 'MONTHLY_HOURS',
+    active: true,
+    approved: false,
+    includedMinutes: 600,
+    monthlyFeeCents: 100000,
+    excessHourlyRateCents: 12000,
+    createdAt: '2026-01-01',
+  };
+  const renderForm = (contract?: typeof existing) => {
+    const onDirtyChange = vi.fn();
+    render(
+      <ContractForm
+        contract={contract}
+        organizations={[{ id: 'org-1', name: 'Empresa' }]}
+        onSave={vi.fn()}
+        onCancel={vi.fn()}
+        onDirtyChange={onDirtyChange}
+      />,
+    );
+    return onDirtyChange;
+  };
+  const last = (fn: ReturnType<typeof vi.fn>) => fn.mock.calls.at(-1)?.[0];
+
+  it('reports a clean form when nothing changed', () => {
+    const onDirtyChange = renderForm(existing);
+    expect(last(onDirtyChange)).toBe(false);
+  });
+
+  it('reports dirty when a text field changes and clean again when it is restored', () => {
+    const onDirtyChange = renderForm(existing);
+    fireEvent.change(screen.getByLabelText('Nome do contrato'), { target: { value: 'Outro' } });
+    expect(last(onDirtyChange)).toBe(true);
+    fireEvent.change(screen.getByLabelText('Nome do contrato'), { target: { value: 'Suporte' } });
+    expect(last(onDirtyChange)).toBe(false);
+  });
+
+  it('reports dirty for a checkbox, a number, a date and a select, and clean when each is restored', () => {
+    const onDirtyChange = renderForm(existing);
+    fireEvent.click(screen.getByLabelText('Condições comerciais aprovadas'));
+    expect(last(onDirtyChange)).toBe(true);
+    fireEvent.click(screen.getByLabelText('Condições comerciais aprovadas'));
+    expect(last(onDirtyChange)).toBe(false);
+    fireEvent.change(screen.getByLabelText('Franquia mensal (horas)'), { target: { value: '12' } });
+    expect(last(onDirtyChange)).toBe(true);
+    fireEvent.change(screen.getByLabelText('Franquia mensal (horas)'), { target: { value: '10' } });
+    expect(last(onDirtyChange)).toBe(false);
+    fireEvent.change(screen.getByLabelText('Início da vigência'), { target: { value: '2026-10-01' } });
+    expect(last(onDirtyChange)).toBe(true);
+    fireEvent.change(screen.getByLabelText('Início da vigência'), { target: { value: '' } });
+    expect(last(onDirtyChange)).toBe(false);
+    fireEvent.change(screen.getByLabelText('Modalidade', { selector: 'select' }), { target: { value: 'HOURLY' } });
+    expect(last(onDirtyChange)).toBe(true);
+  });
+
+  it('treats the empty new-contract form as clean and a typed name as dirty', () => {
+    const onDirtyChange = renderForm();
+    expect(last(onDirtyChange)).toBe(false);
+    fireEvent.change(screen.getByLabelText('Nome do contrato'), { target: { value: 'Novo' } });
+    expect(last(onDirtyChange)).toBe(true);
+  });
+
+  it('does not report false dirt when the company is re-selected with the same value', () => {
+    const onDirtyChange = renderForm(existing);
+    fireEvent.change(screen.getByLabelText(/Empresa/, { selector: 'select' }), { target: { value: 'org-1' } });
+    expect(last(onDirtyChange)).toBe(false);
+  });
+});

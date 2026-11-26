@@ -1259,4 +1259,150 @@ describe('ContractsPage F3-34', () => {
       expect(screen.getByTestId('ez-toolbar-delete-button')).toBeDisabled();
     });
   });
+
+  describe('CTR-02 descartar alterações do formulário', () => {
+    const DISCARD = 'Descartar alterações?';
+
+    async function openEdit(user: ReturnType<typeof userEvent.setup>) {
+      mockList(named(2));
+      loginAs('ADMIN');
+      renderPage();
+      await user.click(await screen.findByRole('button', { name: 'Ver detalhes Contrato 1' }));
+      await user.click(await screen.findByRole('button', { name: 'Editar contrato' }));
+      await screen.findByLabelText('Nome do contrato');
+      await screen.findByRole('option', { name: 'Empresa 2', hidden: true });
+    }
+    const dirty = () =>
+      fireEvent.change(screen.getByLabelText('Nome do contrato'), {
+        target: { value: 'Alterado sem salvar' },
+      });
+    const record = () => screen.getByTestId('ez-toolbar-record-count');
+
+    it('asks before Próximo drops the edit, and keeps the record and the typed text when the user stays', async () => {
+      const user = userEvent.setup();
+      await openEdit(user);
+      dirty();
+      await user.click(screen.getByTestId('ez-toolbar-next-button'));
+
+      const dialog = await screen.findByRole('dialog', { name: DISCARD });
+      expect(record()).toHaveTextContent('1 de 2');
+      await user.click(within(dialog).getByRole('button', { name: 'Continuar editando' }));
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      expect(screen.getByLabelText('Nome do contrato')).toHaveValue('Alterado sem salvar');
+      expect(record()).toHaveTextContent('1 de 2');
+    });
+
+    it('moves to the next record only after the user confirms the discard', async () => {
+      const user = userEvent.setup();
+      await openEdit(user);
+      dirty();
+      await user.click(screen.getByTestId('ez-toolbar-next-button'));
+      const dialog = await screen.findByRole('dialog', { name: DISCARD });
+      await user.click(within(dialog).getByRole('button', { name: 'Descartar' }));
+
+      await waitFor(() => expect(record()).toHaveTextContent('2 de 2'));
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      expect(screen.queryByLabelText('Nome do contrato')).not.toBeInTheDocument();
+    });
+
+    it('asks before the back button leaves a dirty form, and goes back after confirming', async () => {
+      const user = userEvent.setup();
+      await openEdit(user);
+      dirty();
+      await user.click(screen.getByTitle('Voltar'));
+      const dialog = await screen.findByRole('dialog', { name: DISCARD });
+      expect(screen.getByLabelText('Nome do contrato')).toBeInTheDocument();
+      await user.click(within(dialog).getByRole('button', { name: 'Descartar' }));
+      expect(await screen.findByText('Empresa 2')).toBeInTheDocument();
+      expect(screen.queryByLabelText('Nome do contrato')).not.toBeInTheDocument();
+    });
+
+    it('asks before Cancelar leaves a dirty form', async () => {
+      const user = userEvent.setup();
+      await openEdit(user);
+      dirty();
+      await user.click(screen.getByRole('button', { name: 'Cancelar' }));
+      expect(await screen.findByRole('dialog', { name: DISCARD })).toBeInTheDocument();
+      expect(screen.getByLabelText('Nome do contrato')).toBeInTheDocument();
+    });
+
+    it('asks before switching to Grade with a dirty form', async () => {
+      const user = userEvent.setup();
+      await openEdit(user);
+      dirty();
+      await user.click(screen.getByTestId('ez-toolbar-mode-toggle-button'));
+      expect(await screen.findByRole('dialog', { name: DISCARD })).toBeInTheDocument();
+      expect(screen.getByLabelText('Nome do contrato')).toBeInTheDocument();
+    });
+
+    it('closes the discard dialog with Escape and keeps editing', async () => {
+      const user = userEvent.setup();
+      await openEdit(user);
+      dirty();
+      await user.click(screen.getByTitle('Voltar'));
+      await screen.findByRole('dialog', { name: DISCARD });
+      await user.keyboard('{Escape}');
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      expect(screen.getByLabelText('Nome do contrato')).toHaveValue('Alterado sem salvar');
+    });
+
+    it('navigates straight away, with no dialog, while the form has no changes', async () => {
+      const user = userEvent.setup();
+      await openEdit(user);
+      await user.click(screen.getByTestId('ez-toolbar-next-button'));
+      await waitFor(() => expect(record()).toHaveTextContent('2 de 2'));
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+
+    it('does not ask once the typed change is reverted to the original value', async () => {
+      const user = userEvent.setup();
+      await openEdit(user);
+      dirty();
+      fireEvent.change(screen.getByLabelText('Nome do contrato'), { target: { value: 'Contrato 1' } });
+      await user.click(screen.getByTitle('Voltar'));
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      expect(await screen.findByText('Empresa 2')).toBeInTheDocument();
+    });
+
+    it('does not ask after saving: the save itself leaves the form', async () => {
+      const user = userEvent.setup();
+      await openEdit(user);
+      vi.mocked(api.post).mockResolvedValue({ data: {} });
+      dirty();
+      await user.click(screen.getByRole('button', { name: 'Salvar contrato' }));
+      expect(await screen.findByText('Empresa 2')).toBeInTheDocument();
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+
+    it('does not carry a discarded change into the next form', async () => {
+      const user = userEvent.setup();
+      await openEdit(user);
+      dirty();
+      await user.click(screen.getByTitle('Voltar'));
+      await user.click(within(await screen.findByRole('dialog', { name: DISCARD })).getByRole('button', { name: 'Descartar' }));
+      await user.click(await screen.findByRole('button', { name: 'Ver detalhes Contrato 1' }));
+      await user.click(await screen.findByRole('button', { name: 'Editar contrato' }));
+      await screen.findByLabelText('Nome do contrato');
+      await user.click(screen.getByTitle('Voltar'));
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+
+    it('asks before Cancelar leaves a new contract that was filled in, but not an untouched one', async () => {
+      mockList(named(2));
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      renderPage();
+      await user.click(await screen.findByRole('button', { name: 'Novo contrato' }));
+      await screen.findByRole('option', { name: 'Empresa 2', hidden: true });
+      await user.click(screen.getByRole('button', { name: 'Cancelar' }));
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      expect(await screen.findByText('Empresa 2')).toBeInTheDocument();
+
+      await user.click(await screen.findByRole('button', { name: 'Novo contrato' }));
+      await screen.findByRole('option', { name: 'Empresa 2', hidden: true });
+      fireEvent.change(screen.getByLabelText('Nome do contrato'), { target: { value: 'Rascunho' } });
+      await user.click(screen.getByRole('button', { name: 'Cancelar' }));
+      expect(await screen.findByRole('dialog', { name: DISCARD })).toBeInTheDocument();
+    });
+  });
 });
