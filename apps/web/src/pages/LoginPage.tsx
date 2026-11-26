@@ -128,15 +128,27 @@ function TwoFactorStep({ challengeToken, onBack, onExpired }: { challengeToken: 
         <EzCardItem className="space-y-4 p-6">
           <h1 className="text-[20px] font-semibold text-gray-900">Segundo fator</h1>
           <p className="text-sm text-gray-700">Informe o código do aplicativo autenticador ou um código de recuperação.</p>
-          <EzTextInput
-            id="login-code"
-            label="Código do aplicativo ou de recuperação"
-            autoComplete="one-time-code"
-            spellCheck={false}
-            autoFocus
-            value={code}
-            onChange={(e) => setCode(e.target.value)}
-          />
+          <div className="space-y-1">
+            <EzTextInput
+              id="login-code"
+              label="Código do aplicativo ou de recuperação"
+              autoComplete="one-time-code"
+              // Texto, não numérico: o código de recuperação é alfanumérico.
+              inputMode="text"
+              autoCapitalize="off"
+              spellCheck={false}
+              autoFocus
+              aria-describedby="login-code-help login-code-lost"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+            />
+            <p id="login-code-help" className="text-xs text-gray-700">
+              Digite os 6 dígitos do aplicativo ou um código de recuperação.
+            </p>
+            <p id="login-code-lost" className="text-xs text-gray-700">
+              Perdi o aplicativo: digite um código de recuperação, dos que você guardou ao ativar o segundo fator.
+            </p>
+          </div>
           <div aria-live="polite">{error && <EzAlert variant="error">{error}</EzAlert>}</div>
           <EzButton type="submit" disabled={sending} className="w-full">
             Entrar
@@ -156,6 +168,8 @@ export function LoginPage() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [forgotOpen, setForgotOpen] = useState(false);
   const [challengeToken, setChallengeToken] = useState<string | null>(null);
+  // Troca do código do login social em andamento (LOG-03): lida já na primeira renderização, antes do efeito apagar o fragmento.
+  const [exchanging, setExchanging] = useState(() => new URLSearchParams(window.location.hash.slice(1)).has('social'));
   const canRecover = useFeatureFlag('convite-e-redefinicao-usuario');
   const { data: social } = useQuery<string[]>({
     queryKey: ['social-providers'],
@@ -186,11 +200,13 @@ export function LoginPage() {
           navigate('/');
         } else setSubmitError(SOCIAL_FALLBACK);
       })
-      .catch(() => setSubmitError(SOCIAL_FALLBACK));
+      .catch(() => setSubmitError(SOCIAL_FALLBACK))
+      .finally(() => setExchanging(false));
   }, [login, navigate]);
   const {
     register,
     handleSubmit,
+    setFocus,
     formState: { errors, isSubmitting },
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -214,6 +230,10 @@ export function LoginPage() {
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.status === 401) {
         setSubmitError('E-mail ou senha inválidos.');
+        // A senha fica no campo; o foco volta a ele para corrigir (LOG-02).
+        setFocus('password');
+      } else if (axios.isAxiosError(error) && error.response?.status === 429) {
+        setSubmitError('Muitas tentativas. Aguarde um minuto e tente de novo.');
       } else {
         setSubmitError('Algo deu errado. Tente novamente.');
       }
@@ -244,6 +264,7 @@ export function LoginPage() {
             label="E-mail"
             type="email"
             autoComplete="email"
+            disabled={exchanging}
             hasError={!!errors.email}
             message={errors.email?.message}
             {...register('email')}
@@ -254,14 +275,28 @@ export function LoginPage() {
             label="Senha"
             type="password"
             autoComplete="current-password"
+            disabled={exchanging}
             hasError={!!errors.password}
             message={errors.password?.message}
             {...register('password')}
           />
 
+          {canRecover && (
+            <button
+              type="button"
+              onClick={() => setForgotOpen(true)}
+              disabled={exchanging}
+              className="text-sm font-medium text-brand-700 hover:underline disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Esqueci minha senha
+            </button>
+          )}
+
+          {exchanging && <p role="status" className="text-sm text-gray-700">Entrando com o Google…</p>}
+
           {submitError && <EzAlert variant="error">{submitError}</EzAlert>}
 
-          <EzButton type="submit" disabled={isSubmitting} className="w-full">
+          <EzButton type="submit" disabled={isSubmitting || exchanging} className="w-full">
             Entrar
           </EzButton>
 
@@ -272,23 +307,16 @@ export function LoginPage() {
                 <a
                   key={provider}
                   href={`/api/auth/social/${provider}/start`}
-                  className="flex h-[42px] w-full items-center justify-center gap-2 rounded-[12px] border border-gray-300 bg-white text-sm font-medium text-gray-900 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"
+                  aria-disabled={exchanging || undefined}
+                  tabIndex={exchanging ? -1 : undefined}
+                  onClick={exchanging ? (e) => e.preventDefault() : undefined}
+                  className={`flex h-[42px] w-full items-center justify-center gap-2 rounded-[12px] border border-gray-300 bg-white text-sm font-medium text-gray-900 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600${exchanging ? ' pointer-events-none opacity-50' : ''}`}
                 >
                   <SocialProviderIcon provider={provider} />
                   Entrar com {PROVIDER_LABELS[provider] ?? provider}
                 </a>
               ))}
             </div>
-          )}
-
-          {canRecover && (
-            <button
-              type="button"
-              onClick={() => setForgotOpen(true)}
-              className="w-full text-center text-sm font-medium text-brand-700 hover:underline"
-            >
-              Esqueci minha senha
-            </button>
           )}
         </EzCardItem>
       </form>
