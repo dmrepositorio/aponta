@@ -1149,4 +1149,114 @@ describe('ContractsPage F3-34', () => {
       expect(api.delete).toHaveBeenCalledTimes(1);
     });
   });
+
+  describe('CTR-03 busca sempre visível e filtros ativos', () => {
+    const SEARCH = 'Buscar contrato ou empresa';
+
+    it('searches by contract or company with the filter panel closed', async () => {
+      mockList(named(3));
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      renderPage();
+      await screen.findByText('Empresa 1');
+      expect(screen.queryByTestId('ez-filter-drawer')).not.toBeInTheDocument();
+
+      await user.type(screen.getByLabelText(SEARCH), 'Empresa 3');
+      expect(screen.queryByText('Empresa 1')).not.toBeInTheDocument();
+      expect(screen.getByText('Empresa 3')).toBeInTheDocument();
+
+      await user.clear(screen.getByLabelText(SEARCH));
+      await user.type(screen.getByLabelText(SEARCH), 'contrato 2');
+      expect(screen.getByText('Empresa 2')).toBeInTheDocument();
+      expect(screen.queryByText('Empresa 3')).not.toBeInTheDocument();
+    });
+
+    it('shares the search text with the drawer field', async () => {
+      mockList(named(2));
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      renderPage();
+      await screen.findByText('Empresa 1');
+      await user.type(screen.getByLabelText(SEARCH), 'Empresa 2');
+      await user.click(screen.getByTestId('ez-toolbar-filter-panel-button'));
+      expect(
+        within(screen.getByTestId('ez-filter-drawer')).getByLabelText(/buscar contrato\/empresa/i),
+      ).toHaveValue('Empresa 2');
+    });
+
+    it('shows no indicator while nothing is filtered', async () => {
+      mockList(named(2));
+      loginAs('ADMIN');
+      renderPage();
+      await screen.findByText('Empresa 1');
+      expect(screen.queryByText(/filtros? ativos?/)).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Limpar filtros' })).not.toBeInTheDocument();
+    });
+
+    it('counts the active filters with the panel closed and clears them all', async () => {
+      mockList(named(3));
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      renderPage();
+      await screen.findByText('Empresa 1');
+
+      await user.click(screen.getByTestId('ez-toolbar-filter-panel-button'));
+      await user.selectOptions(
+        within(screen.getByTestId('ez-filter-drawer')).getByLabelText('Status'),
+        'ACTIVE',
+      );
+      await user.click(screen.getByTestId('ez-toolbar-filter-panel-button'));
+      expect(screen.queryByTestId('ez-filter-drawer')).not.toBeInTheDocument();
+      expect(screen.getByText('1 filtro ativo')).toBeInTheDocument();
+
+      await user.type(screen.getByLabelText(SEARCH), 'Empresa 3');
+      expect(screen.getByText('2 filtros ativos')).toBeInTheDocument();
+      expect(screen.queryByText('Empresa 1')).not.toBeInTheDocument();
+
+      await user.click(screen.getByRole('button', { name: 'Limpar filtros' }));
+      expect(screen.getByText('Empresa 1')).toBeInTheDocument();
+      expect(screen.getByText('Empresa 2')).toBeInTheDocument();
+      expect(screen.getByLabelText(SEARCH)).toHaveValue('');
+      expect(screen.queryByText(/filtros? ativos?/)).not.toBeInTheDocument();
+    });
+
+    it('counts each dynamic rule that is complete, and ignores an empty one', async () => {
+      mockList(named(3));
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      renderPage();
+      await screen.findByText('Empresa 1');
+
+      await user.click(screen.getByTestId('ez-toolbar-filter-panel-button'));
+      const drawer = screen.getByTestId('ez-filter-drawer');
+      await user.click(within(drawer).getByTestId('ez-dynamic-filter-add'));
+      expect(screen.queryByText(/filtros? ativos?/)).not.toBeInTheDocument();
+      const rule = within(drawer).getByTestId('ez-dynamic-filter-rule');
+      await user.selectOptions(within(rule).getByLabelText('Campo', { selector: 'select' }), 'status');
+      await user.selectOptions(within(rule).getByLabelText('Valor', { selector: 'select' }), 'Inativo');
+      expect(screen.getByText('1 filtro ativo')).toBeInTheDocument();
+    });
+
+    it('does not offer the strip inside the form mode', async () => {
+      mockList(named(2));
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      renderPage();
+      await user.click(await screen.findByRole('button', { name: 'Ver detalhes Contrato 1' }));
+      await screen.findByText('Mesas cobertas');
+      expect(screen.queryByLabelText(SEARCH)).not.toBeInTheDocument();
+    });
+
+    it('clears the grid selection when the search changes', async () => {
+      mockList(named(2));
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      renderPage();
+      await screen.findByText('Empresa 1');
+      await user.click(screen.getAllByRole('checkbox')[1]);
+      expect(screen.getByTestId('ez-toolbar-delete-button')).toBeEnabled();
+      await user.type(screen.getByLabelText(SEARCH), 'Empresa 2');
+      expect(screen.getByTestId('ez-toolbar-delete-button')).toBeDisabled();
+    });
+  });
 });
