@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { clearCommentDrafts } from '../lib/commentDraft';
 
 export type Role = 'CLIENT' | 'CLIENT_MASTER' | 'AGENT' | 'AGENT_MASTER' | 'ADMIN';
 
@@ -50,6 +51,7 @@ export const useAuthStore = create<AuthState>()(
         set({ token, user: decodeJwtPayload(token) });
       },
       logout: () => {
+        clearCommentDrafts();
         set({ token: null, user: null });
       },
     }),

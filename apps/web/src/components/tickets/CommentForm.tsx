@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { api } from '../../lib/api';
+import { readCommentDraft, writeCommentDraft } from '../../lib/commentDraft';
 import { useAuthStore } from '../../stores/authStore';
 import type { TicketComment } from './TicketComments';
 import { commentsQueryKey } from './TicketComments';
@@ -16,26 +17,6 @@ const commentSchema = z.object({
 });
 
 type CommentFormValues = z.infer<typeof commentSchema>;
-
-// GH-448 DET-14: rascunho por ticket em sessionStorage (por viewer, some ao fechar a aba).
-const draftKey = (ticketId: string) => `aponta:comment-draft:${ticketId}`;
-
-function readDraft(ticketId: string): string {
-  try {
-    return window.sessionStorage.getItem(draftKey(ticketId)) ?? '';
-  } catch {
-    return '';
-  }
-}
-
-function writeDraft(ticketId: string, content: string) {
-  try {
-    if (content) window.sessionStorage.setItem(draftKey(ticketId), content);
-    else window.sessionStorage.removeItem(draftKey(ticketId));
-  } catch {
-    // storage indisponível (modo privado/bloqueado): o rascunho só não é preservado.
-  }
-}
 
 interface CommentFormProps {
   ticketId: string;
@@ -50,6 +31,7 @@ interface CommentFormProps {
  */
 export function CommentForm({ ticketId }: CommentFormProps) {
   const role = useAuthStore((state) => state.user?.role);
+  const userId = useAuthStore((state) => state.user?.sub);
   const canMarkInternal = ['AGENT', 'AGENT_MASTER', 'ADMIN'].includes(role as string);
   const queryClient = useQueryClient();
 
@@ -62,16 +44,18 @@ export function CommentForm({ ticketId }: CommentFormProps) {
     formState: { errors },
   } = useForm<CommentFormValues>({
     resolver: zodResolver(commentSchema),
-    defaultValues: { content: readDraft(ticketId), isInternal: false },
+    defaultValues: { content: readCommentDraft(userId, ticketId), isInternal: false },
   });
 
   const isInternal = watch('isInternal');
   const content = watch('content');
   const showInternal = canMarkInternal && isInternal;
 
+  // O flag de nota interna não é restaurado; por isso um rascunho de nota interna nunca é guardado
+  // (senão voltaria como texto de um comentário público).
   useEffect(() => {
-    writeDraft(ticketId, content);
-  }, [ticketId, content]);
+    writeCommentDraft(userId, ticketId, showInternal ? '' : content);
+  }, [userId, ticketId, content, showInternal]);
 
   const mutation = useMutation({
     mutationFn: async (values: CommentFormValues) => {
@@ -86,7 +70,7 @@ export function CommentForm({ ticketId }: CommentFormProps) {
     },
     onSuccess: () => {
       reset();
-      writeDraft(ticketId, '');
+      writeCommentDraft(userId, ticketId, '');
       void queryClient.invalidateQueries({
         queryKey: commentsQueryKey(ticketId),
       });
