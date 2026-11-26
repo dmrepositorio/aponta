@@ -99,6 +99,7 @@ export const EzEntityToolbar = forwardRef<HTMLDivElement, EzEntityToolbarProps>(
       hasNext = false,
       onDelete,
       onClone,
+      cloneTooltip,
       selectedCount = 0,
       onRefresh,
       onOpenGridConfig,
@@ -375,7 +376,7 @@ export const EzEntityToolbar = forwardRef<HTMLDivElement, EzEntityToolbarProps>(
               type="button"
               data-testid="ez-toolbar-clone-button"
               aria-label="Duplicar"
-              title={hasSelection ? 'Duplicar registro selecionado' : 'Selecione um registro para duplicar'}
+              title={hasSelection ? (cloneTooltip ?? 'Duplicar registro selecionado') : 'Selecione um registro para duplicar'}
               disabled={!hasSelection}
               onClick={onClone}
               className={cn(
