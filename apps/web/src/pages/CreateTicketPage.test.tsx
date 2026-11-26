@@ -661,6 +661,97 @@ describe('CreateTicketPage', () => {
       expect(screen.getByLabelText('Cliente')).toBeInTheDocument();
     });
 
+    describe('GH-404 NEW-01: Salvar e criar novo', () => {
+      async function openBlankAndFill(user: ReturnType<typeof userEvent.setup>) {
+        mockApi();
+        renderPage();
+        await user.click(await screen.findByRole('button', { name: /meu problema não está catalogado/i }));
+        await user.type(await screen.findByLabelText(/título \(assunto\)/i), 'Impressora não liga');
+        await waitFor(() => {
+          expect(screen.getByRole('option', { name: 'Suporte N1', hidden: true })).toBeInTheDocument();
+        });
+        await user.selectOptions(screen.getByLabelText(/^mesa/i, { selector: 'select' }), 'sd-1');
+        await fillDescription();
+      }
+
+      it('cria o chamado, não navega ao detalhe, limpa o título com foco, avisa o sucesso e invalida tickets', async () => {
+        const user = userEvent.setup();
+        const invalidate = vi.spyOn(queryClient, 'invalidateQueries');
+        await openBlankAndFill(user);
+
+        await user.click(screen.getByRole('button', { name: /salvar e criar novo/i }));
+
+        await waitFor(() => {
+          expect(api.post).toHaveBeenCalledWith(
+            '/tickets',
+            expect.objectContaining({ title: 'Impressora não liga', serviceDeskId: 'sd-1' }),
+          );
+        });
+        const title = await screen.findByLabelText(/título \(assunto\)/i);
+        await waitFor(() => expect(title).toHaveValue(''));
+        await waitFor(() => expect(title).toHaveFocus());
+        expect(navigateMock).not.toHaveBeenCalled();
+        expect(await screen.findByRole('status')).toHaveTextContent(/chamado criado/i);
+        expect(invalidate).toHaveBeenCalledWith({ queryKey: ['tickets'] });
+        expect(screen.getByRole('button', { name: /abrir ticket/i })).toBeEnabled();
+      });
+
+      it('mantém o catálogo e o Cliente escolhidos e esvazia a descrição', async () => {
+        mockApi();
+        const user = userEvent.setup();
+        renderPage();
+        await screen.findByLabelText('Cliente');
+        await chooseCliente(user);
+        await user.click(await screen.findByRole('button', { name: /liberar vpn/i }));
+        await waitFor(() => expect(screen.getByLabelText('Cliente')).toHaveValue('Acme Corp'));
+        await fillDescription();
+
+        await user.click(screen.getByRole('button', { name: /salvar e criar novo/i }));
+
+        await waitFor(() => {
+          expect(api.post).toHaveBeenCalledWith('/tickets', expect.objectContaining({ catalogItemId: 'i-1' }));
+        });
+        await waitFor(() => {
+          expect(
+            screen.getByTestId('ticket-description').querySelector('[contenteditable="true"]'),
+          ).toHaveTextContent('');
+        });
+        expect(navigateMock).not.toHaveBeenCalled();
+        expect(screen.getByText('Serviço Selecionado:')).toBeInTheDocument();
+        expect(screen.getByLabelText('Cliente')).toHaveValue('Acme Corp');
+        expect(screen.getByLabelText('Cliente')).toBeDisabled();
+      });
+
+      it('com erro no POST mantém o rascunho, mostra o erro e não avisa sucesso', async () => {
+        const user = userEvent.setup();
+        await openBlankAndFill(user);
+        vi.mocked(api.post).mockRejectedValueOnce(new Error('boom'));
+
+        await user.click(screen.getByRole('button', { name: /salvar e criar novo/i }));
+
+        expect(await screen.findByText(/falha ao criar o chamado/i)).toBeInTheDocument();
+        expect(screen.getByLabelText(/título \(assunto\)/i)).toHaveValue('Impressora não liga');
+        expect(screen.queryByText(/chamado criado/i)).not.toBeInTheDocument();
+        expect(navigateMock).not.toHaveBeenCalled();
+      });
+
+      it('duplo clique cria um único chamado', async () => {
+        const user = userEvent.setup();
+        await openBlankAndFill(user);
+        let release: (value: unknown) => void = () => undefined;
+        vi.mocked(api.post).mockImplementationOnce(
+          () => new Promise((resolve) => { release = resolve; }) as never,
+        );
+
+        const button = screen.getByRole('button', { name: /salvar e criar novo/i });
+        await user.dblClick(button);
+        release({ data: { id: 't-1', title: 'x' } });
+
+        await waitFor(() => expect(screen.getByLabelText(/título \(assunto\)/i)).toHaveValue(''));
+        expect(vi.mocked(api.post).mock.calls.filter(([url]) => url === '/tickets')).toHaveLength(1);
+      });
+    });
+
     it('AC-08: o Cliente escolhido no catálogo chega ao formulário travado e o envio não leva organizationId', async () => {
       mockApi();
       const user = userEvent.setup();
