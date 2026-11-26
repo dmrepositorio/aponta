@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { ContractDetail, ContractForm } from './ContractViews';
 
@@ -164,5 +164,168 @@ describe('ContractForm onDirtyChange (CTR-02)', () => {
     const onDirtyChange = renderForm(existing);
     fireEvent.change(screen.getByLabelText(/Empresa/, { selector: 'select' }), { target: { value: 'org-1' } });
     expect(last(onDirtyChange)).toBe(false);
+  });
+});
+
+describe('ContractForm campos monetários (CTR-07)', () => {
+  const organizations = [
+    { id: 'org', name: 'Empresa', serviceDesks: [{ id: 'desk', name: 'Desenvolvimento' }] },
+  ];
+  const MONEY_LABELS = [
+    'Preço fechado (R$)',
+    'Valor mensal (R$)',
+    'Hora excedente (R$)',
+    'Hora avulsa (R$)',
+  ];
+  const open = (type: string, contract?: Record<string, unknown>) => {
+    const onSave = vi.fn();
+    render(
+      <ContractForm
+        contract={contract as never}
+        organizations={organizations}
+        onSave={onSave}
+        onCancel={vi.fn()}
+      />,
+    );
+    fireEvent.change(screen.getByLabelText(/Empresa/, { selector: 'select' }), { target: { value: 'org' } });
+    fireEvent.change(screen.getByLabelText('Modalidade', { selector: 'select' }), { target: { value: type } });
+    return onSave;
+  };
+  const save = () => fireEvent.click(screen.getByRole('button', { name: 'Salvar contrato' }));
+  const type = (label: string, value: string) =>
+    fireEvent.change(screen.getByLabelText(label), { target: { value } });
+
+  it('uses a masked R$ text field with a decimal keyboard for every money field, never a number spinner', () => {
+    const seen = new Set<string>();
+    for (const modalityValue of ['FIXED_PROJECT', 'MONTHLY_HOURS', 'HOURLY']) {
+      const { unmount } = render(
+        <ContractForm organizations={organizations} onSave={vi.fn()} onCancel={vi.fn()} />,
+      );
+      fireEvent.change(screen.getByLabelText('Modalidade', { selector: 'select' }), {
+        target: { value: modalityValue },
+      });
+      for (const label of MONEY_LABELS) {
+        const input = screen.queryByLabelText(label);
+        if (!input) continue;
+        seen.add(label);
+        expect(input).toHaveAttribute('type', 'text');
+        expect(input).toHaveAttribute('inputmode', 'decimal');
+      }
+      unmount();
+    }
+    expect([...seen].sort()).toEqual([...MONEY_LABELS].sort());
+  });
+
+  it('shows 1234,56 as R$ 1.234,56 and saves 123456 cents in Valor mensal', () => {
+    const onSave = open('MONTHLY_HOURS');
+    type('Valor mensal (R$)', '1234,56');
+    expect(screen.getByLabelText('Valor mensal (R$)')).toHaveValue('R$ 1.234,56');
+    type('Franquia mensal (horas)', '10');
+    save();
+    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ monthlyFeeCents: 123456, monthlyValue: 1234.56 }));
+  });
+
+  it('saves Hora excedente, Preço fechado and Hora avulsa in whole cents', () => {
+    let onSave = open('MONTHLY_HOURS');
+    type('Hora excedente (R$)', '120,25');
+    expect(screen.getByLabelText('Hora excedente (R$)')).toHaveValue('R$ 120,25');
+    save();
+    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ excessHourlyRateCents: 12025 }));
+    cleanup();
+
+    onSave = open('FIXED_PROJECT');
+    type('Preço fechado (R$)', '15000,5');
+    save();
+    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ fixedPriceCents: 1500050 }));
+    cleanup();
+
+    onSave = open('HOURLY');
+    type('Hora avulsa (R$)', '99,99');
+    save();
+    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ hourlyRateCents: 9999 }));
+  });
+
+  it('rejects e in a money field: the typed letter never reaches the value', () => {
+    open('MONTHLY_HOURS');
+    type('Valor mensal (R$)', '12');
+    type('Valor mensal (R$)', 'R$ 12e');
+    expect(screen.getByLabelText('Valor mensal (R$)')).toHaveValue('R$ 12');
+  });
+
+  it('keeps zero as a valid value and an empty field as no value', () => {
+    let onSave = open('MONTHLY_HOURS');
+    type('Valor mensal (R$)', '0');
+    type('Hora excedente (R$)', '0');
+    save();
+    expect(onSave).toHaveBeenCalledWith(
+      expect.objectContaining({ monthlyFeeCents: 0, monthlyValue: 0, excessHourlyRateCents: 0 }),
+    );
+    cleanup();
+
+    onSave = open('MONTHLY_HOURS');
+    save();
+    expect(onSave).toHaveBeenCalledWith(
+      expect.objectContaining({ monthlyFeeCents: null, monthlyValue: null, excessHourlyRateCents: null }),
+    );
+  });
+
+  it('opens an existing contract with the stored cents formatted, and saves them back unchanged', () => {
+    const onSave = vi.fn();
+    render(
+      <ContractForm
+        contract={{
+          id: 'c1',
+          organizationId: 'org',
+          type: 'MONTHLY_HOURS',
+          active: true,
+          includedMinutes: 600,
+          monthlyFeeCents: 850000,
+          excessHourlyRateCents: 19050,
+          createdAt: '2026-01-01',
+        }}
+        organizations={organizations}
+        onSave={onSave}
+        onCancel={vi.fn()}
+      />,
+    );
+    expect(screen.getByLabelText('Valor mensal (R$)')).toHaveValue('R$ 8.500,00');
+    expect(screen.getByLabelText('Hora excedente (R$)')).toHaveValue('R$ 190,50');
+    save();
+    expect(onSave).toHaveBeenCalledWith(
+      expect.objectContaining({ monthlyFeeCents: 850000, excessHourlyRateCents: 19050 }),
+    );
+  });
+
+  it('refuses an amount above the API limit instead of sending it', () => {
+    open('MONTHLY_HOURS');
+    type('Valor mensal (R$)', '21474836,47');
+    type('Valor mensal (R$)', '21474836,48');
+    expect(screen.getByLabelText('Valor mensal (R$)')).toHaveValue('R$ 21.474.836,47');
+  });
+
+  it('marks the form dirty when only a money field changes', () => {
+    const onDirtyChange = vi.fn();
+    render(
+      <ContractForm
+        contract={{
+          id: 'c1',
+          organizationId: 'org',
+          type: 'MONTHLY_HOURS',
+          active: true,
+          includedMinutes: 600,
+          monthlyFeeCents: 100000,
+          excessHourlyRateCents: 12000,
+          createdAt: '2026-01-01',
+        }}
+        organizations={organizations}
+        onSave={vi.fn()}
+        onCancel={vi.fn()}
+        onDirtyChange={onDirtyChange}
+      />,
+    );
+    type('Valor mensal (R$)', '1000,01');
+    expect(onDirtyChange.mock.calls.at(-1)?.[0]).toBe(true);
+    type('Valor mensal (R$)', '1000');
+    expect(onDirtyChange.mock.calls.at(-1)?.[0]).toBe(false);
   });
 });
