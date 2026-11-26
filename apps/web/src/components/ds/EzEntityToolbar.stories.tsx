@@ -44,6 +44,7 @@ export const CloneTooltip: Story = {
   render: () => (
     <EzEntityToolbar
       viewMode="GRID"
+      onToggleViewMode={() => undefined}
       onClone={() => undefined}
       selectedCount={1}
       cloneTooltip="Duplicar (copia só o nome)"

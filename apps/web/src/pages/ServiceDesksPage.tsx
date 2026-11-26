@@ -41,6 +41,8 @@ import {
   ezTabPanelId,
 } from '../components/ds';
 import { EzEntityGrid } from '../components/ds/EzEntityGrid';
+// O EzEmptyCard do barrel (EzCardItem) não tem variant de erro; o standalone tem (ícone vermelho).
+import { EzEmptyCard as EzErrorCard } from '../components/ds/EzEmptyCard';
 import { applyDynamicFilters } from '../components/ds/EzDynamicFilter';
 import type { EzDynamicFilterField, EzDynamicFilterRule } from '../components/ds/EzDynamicFilter';
 import { useUserScreenConfig } from '../hooks/useUserScreenConfig';
@@ -825,7 +827,7 @@ function ServiceDesksPageContent() {
 className="isolate flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll-x-contain min-w-0 flex flex-col">
                 {isLoadError && !serviceDesks ? (
                   <div className="p-4">
-                    <EzEmptyCard
+                    <EzErrorCard
                       variant="error"
                       title="Não foi possível carregar as mesas."
                       description="Verifique a conexão e tente de novo."
