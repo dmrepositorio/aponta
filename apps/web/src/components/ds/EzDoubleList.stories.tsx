@@ -65,6 +65,44 @@ export const ListaSelecionadaVazia: Story = {
   },
 };
 
+const muitosItens: EzDoubleListItem[] = Array.from({ length: 30 }, (_, i) => ({
+  id: 100 + i,
+  label: `Usuário ${String(i + 1).padStart(2, '0')}`,
+  description: `usuario${i + 1}@exemplo.com`,
+}));
+
+/** Busca em cada lista (padrão); digite para filtrar por nome ou descrição. */
+export const ComBusca: Story = {
+  args: {
+    available: muitosItens,
+    selected: tecnicosSelecionados,
+    onAdd: () => undefined,
+    onRemove: () => undefined,
+  },
+};
+
+/** `searchable={false}` remove as buscas (listas curtas). */
+export const SemBusca: Story = {
+  args: {
+    available: tecnicosDisponiveis,
+    selected: tecnicosSelecionados,
+    searchable: false,
+    onAdd: () => undefined,
+    onRemove: () => undefined,
+  },
+};
+
+/** `listMaxHeight` define a altura máxima antes da rolagem (padrão 15rem). */
+export const AlturaConfiguravel: Story = {
+  args: {
+    available: muitosItens,
+    selected: tecnicosSelecionados,
+    listMaxHeight: '24rem',
+    onAdd: () => undefined,
+    onRemove: () => undefined,
+  },
+};
+
 export const Interactive: Story = {
   render: () => {
     function Demo() {

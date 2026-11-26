@@ -83,4 +83,87 @@ describe('EzDoubleList', () => {
     );
     expect(screen.getByText('Description A')).toBeInTheDocument();
   });
+  it('gives the add button an accessible name with the item label', async () => {
+    const onAddMock = vi.fn();
+    render(
+      <EzDoubleList available={available} selected={selected} onAdd={onAddMock} onRemove={vi.fn()} />
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Adicionar Item B' }));
+    expect(onAddMock).toHaveBeenCalledWith(available[1]);
+  });
+
+  it('gives the remove button an accessible name with the item label', async () => {
+    const onRemoveMock = vi.fn();
+    render(
+      <EzDoubleList available={available} selected={selected} onAdd={vi.fn()} onRemove={onRemoveMock} />
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Remover Item C' }));
+    expect(onRemoveMock).toHaveBeenCalledWith(selected[0]);
+  });
+
+  it('uses accessibleLabel for the button name when the label is not text', () => {
+    render(
+      <EzDoubleList
+        available={[{ id: 9, label: <strong>Rico</strong>, accessibleLabel: 'Item Rico' }]}
+        selected={[]}
+        onAdd={vi.fn()}
+        onRemove={vi.fn()}
+      />
+    );
+    expect(screen.getByRole('button', { name: 'Adicionar Item Rico' })).toBeInTheDocument();
+  });
+
+  it('filters the available list by the search box, matching label or description', async () => {
+    render(
+      <EzDoubleList available={available} selected={selected} onAdd={vi.fn()} onRemove={vi.fn()} />
+    );
+    await userEvent.type(screen.getByRole('searchbox', { name: 'Buscar em Disponíveis' }), 'item b');
+    expect(screen.queryByText('Item A')).not.toBeInTheDocument();
+    expect(screen.getByText('Item B')).toBeInTheDocument();
+    expect(screen.getByText('Item C')).toBeInTheDocument();
+
+    await userEvent.clear(screen.getByRole('searchbox', { name: 'Buscar em Disponíveis' }));
+    await userEvent.type(screen.getByRole('searchbox', { name: 'Buscar em Disponíveis' }), 'description a');
+    expect(screen.getByText('Item A')).toBeInTheDocument();
+    expect(screen.queryByText('Item B')).not.toBeInTheDocument();
+  });
+
+  it('filters the selected list independently and keeps the total count', async () => {
+    render(
+      <EzDoubleList available={available} selected={selected} onAdd={vi.fn()} onRemove={vi.fn()} />
+    );
+    await userEvent.type(screen.getByRole('searchbox', { name: 'Buscar em Selecionados' }), 'zzz');
+    expect(screen.queryByText('Item C')).not.toBeInTheDocument();
+    expect(screen.getByText('Nenhum resultado para a busca')).toBeInTheDocument();
+    expect(screen.getByText('Item A')).toBeInTheDocument();
+    expect(screen.getByText('(1)')).toBeInTheDocument();
+  });
+
+  it('omits the search boxes when searchable is false', () => {
+    render(
+      <EzDoubleList
+        available={available}
+        selected={selected}
+        onAdd={vi.fn()}
+        onRemove={vi.fn()}
+        searchable={false}
+      />
+    );
+    expect(screen.queryByRole('searchbox')).not.toBeInTheDocument();
+  });
+
+  it('applies a configurable max height to both lists', () => {
+    const { container } = render(
+      <EzDoubleList
+        available={available}
+        selected={selected}
+        onAdd={vi.fn()}
+        onRemove={vi.fn()}
+        listMaxHeight="30rem"
+      />
+    );
+    const scrollers = container.querySelectorAll('[data-testid="ez-double-list-scroll"]');
+    expect(scrollers).toHaveLength(2);
+    scrollers.forEach((el) => expect((el as HTMLElement).style.maxHeight).toBe('30rem'));
+  });
 });
