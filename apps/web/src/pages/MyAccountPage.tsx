@@ -71,7 +71,7 @@ export function MyAccountPage() {
         tabs={tabs}
         activeTab={tab}
         idPrefix={ACCOUNT_TABS_ID}
-        onChange={(id) => setSearchParams({ tab: id }, { replace: true })}
+        onChange={(id) => setSearchParams({ tab: String(id) }, { replace: true })}
       />
 
       <div
