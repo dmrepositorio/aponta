@@ -11,6 +11,8 @@ interface TicketsHeaderProps {
   search: string;
   onSearchChange: (search: string) => void;
   onOpenAdvancedSearch: () => void;
+  /** Há requisição de chamados em curso: o campo Buscar expõe `aria-busy`. */
+  isSearching?: boolean;
 }
 
 /**
@@ -25,6 +27,7 @@ export function TicketsHeader({
   search,
   onSearchChange,
   onOpenAdvancedSearch,
+  isSearching = false,
 }: TicketsHeaderProps) {
   const [searchText, setSearchText] = useState(search);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -89,6 +92,7 @@ export function TicketsHeader({
             type="search"
             name="search"
             autoComplete="off"
+            aria-busy={isSearching}
             placeholder="Buscar…"
             value={searchText}
             onChange={(event) => setSearchText(event.target.value)}

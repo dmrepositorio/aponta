@@ -243,7 +243,7 @@ describe('TicketsPage', () => {
     await screen.findByText('Printer not working');
 
     expect(screen.getByText(/página 1 de 3/i)).toBeInTheDocument();
-    expect(screen.getByText(/25 chamados/i)).toBeInTheDocument();
+    expect(screen.getByText(/\(25 chamados\)/i)).toBeInTheDocument();
 
     const nextButton = screen.getByRole('button', { name: 'Próxima' });
     expect(screen.getByRole('button', { name: 'Anterior' })).toBeDisabled();
