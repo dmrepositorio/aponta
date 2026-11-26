@@ -43,7 +43,7 @@ describe('OrganizationsPage: falha ao salvar a edição de um cliente (DMTE-554)
       </QueryClientProvider>,
     );
     await user.click(await screen.findByRole('button', { name: /abrir cadastro de empresa a/i }));
-    await screen.findByText('Empresa A Ltda');
+    await waitFor(() => expect(screen.getByLabelText(/razão social/i, { selector: 'input' })).toHaveValue('Empresa A Ltda'));
 
     await user.click(screen.getByLabelText(/visível para clientes/i));
 

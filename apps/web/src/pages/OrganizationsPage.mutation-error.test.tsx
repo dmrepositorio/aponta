@@ -41,7 +41,7 @@ function renderPage() {
 async function openDetail(user: ReturnType<typeof userEvent.setup>) {
   renderPage();
   await user.click(await screen.findByRole('button', { name: /abrir cadastro de empresa a/i }));
-  await screen.findByText('Empresa A Ltda');
+  await waitFor(() => expect(screen.getByLabelText(/razão social/i, { selector: 'input' })).toHaveValue('Empresa A Ltda'));
 }
 
 /** A remoção pode pedir confirmação (ORG-03); o teste de erro não depende de ela existir. */
