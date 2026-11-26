@@ -1807,6 +1807,25 @@ describe('OrganizationsPage F3-25 (#470)', { timeout: 15000 }, () => {
       expect(screen.getByLabelText('Buscar Parceiro')).toHaveValue('');
     });
 
+    it('drops the selection when the filters hide every client, so Excluir cannot reach rows nobody sees', async () => {
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      renderPage();
+      await screen.findByText('Empresa A');
+
+      const rowA = screen.getByText('Empresa A').closest('tr') as HTMLElement;
+      await user.click(within(rowA).getByRole('checkbox', { name: 'Selecionar linha' }));
+      expect(screen.getByTestId('ez-toolbar-delete-button')).toBeEnabled();
+
+      await searchOrgs(user, 'zzz-sem-resultado');
+      await within(gridContent()).findByText('Nenhum cliente encontrado');
+
+      expect(screen.getByTestId('ez-toolbar-delete-button')).toBeDisabled();
+      await user.click(within(gridContent()).getByRole('button', { name: 'Limpar filtros' }));
+      await within(gridContent()).findByText('Empresa A');
+      expect(screen.getByTestId('ez-toolbar-delete-button')).toBeDisabled();
+    });
+
     it('shows the error state with a retry button that queries the organizations again', async () => {
       let attempts = 0;
       const base = vi.mocked(api.get).getMockImplementation() as unknown as GetImpl;
