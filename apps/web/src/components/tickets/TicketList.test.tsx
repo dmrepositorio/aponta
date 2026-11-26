@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, useLocation } from 'react-router-dom';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { api } from '../../lib/api';
 import { useAuthStore } from '../../stores/authStore';
 import type { Ticket } from '../../hooks/useTickets';
@@ -149,7 +149,7 @@ describe('TicketList (D5: Lista agrupável)', () => {
     expect(screen.getByText('Acme')).toBeInTheDocument();
   });
 
-  it('groups by the chosen field, with a collapsible group row showing a count (AC6)', async () => {
+  it('groups by the chosen field, with a collapsible group row showing a count (AC6, TKT-12)', async () => {
     const user = userEvent.setup();
     await renderList();
 
@@ -157,29 +157,31 @@ describe('TicketList (D5: Lista agrupável)', () => {
 
     const acmeGroup = screen.getByText(/Acme.*\(1\)|Acme — 1|Acme \(1\)/i);
     expect(acmeGroup).toBeInTheDocument();
-    // Collapsed by default: rows hidden until the group is expanded
-    expect(screen.queryByText('AP-2026-0001')).not.toBeInTheDocument();
+    // TKT-12: os grupos iniciam expandidos, com as linhas visíveis sem clique.
+    expect(screen.getByText('AP-2026-0001')).toBeInTheDocument();
+    expect(screen.getByText('AP-2026-0002')).toBeInTheDocument();
 
     await user.click(acmeGroup);
-    expect(await screen.findByText('AP-2026-0001')).toBeInTheDocument();
-    expect(screen.queryByText('AP-2026-0002')).not.toBeInTheDocument();
+    expect(screen.queryByText('AP-2026-0001')).not.toBeInTheDocument();
+    expect(screen.getByText('AP-2026-0002')).toBeInTheDocument();
   });
 
-  it('AC-09: the group header exposes aria-expanded and flips it when toggled', async () => {
+  it('AC-09: the group header exposes aria-expanded and flips it when toggled (TKT-12: começa expandido)', async () => {
     const user = userEvent.setup();
     await renderList();
 
     await user.selectOptions(screen.getByLabelText(/agrupar por/i, { selector: 'select' }), 'organization');
     const header = screen.getByRole('button', { name: /Acme \(1\)/ });
-    expect(header).toHaveAttribute('aria-expanded', 'false');
-
-    await user.click(header);
     expect(header).toHaveAttribute('aria-expanded', 'true');
-    expect(await screen.findByText('AP-2026-0001')).toBeInTheDocument();
+    expect(screen.getByText('AP-2026-0001')).toBeInTheDocument();
 
     await user.click(header);
     expect(header).toHaveAttribute('aria-expanded', 'false');
     expect(screen.queryByText('AP-2026-0001')).not.toBeInTheDocument();
+
+    await user.click(header);
+    expect(header).toHaveAttribute('aria-expanded', 'true');
+    expect(await screen.findByText('AP-2026-0001')).toBeInTheDocument();
   });
 
   it('"Nenhum" removes grouping and shows every row flat', async () => {
@@ -628,5 +630,168 @@ describe('F3-10: SLA, linha por teclado e vazio da Lista', () => {
     expect(screen.queryByRole('button', { name: 'Abrir chamado' })).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Redefinir filtros' }));
     expect(onResetFilters).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('F3-11: menu de colunas, grupos e cartões da Lista', () => {
+  const originalMatchMedia = window.matchMedia;
+  function mockViewport(narrow: boolean) {
+    Object.defineProperty(window, 'matchMedia', {
+      configurable: true,
+      writable: true,
+      value: (query: string) => ({
+        matches: narrow && query.includes('max-width'),
+        media: query,
+        addEventListener: () => undefined,
+        removeEventListener: () => undefined,
+        addListener: () => undefined,
+        removeListener: () => undefined,
+        dispatchEvent: () => false,
+        onchange: null,
+      }),
+    });
+  }
+
+  beforeEach(() => {
+    localStorage.clear();
+    useAuthStore.setState({
+      token: null,
+      user: { sub: 'u1', email: 'a@x.com', role: 'ADMIN', organizationId: null } as any,
+    });
+  });
+
+  afterEach(() => {
+    Object.defineProperty(window, 'matchMedia', { configurable: true, writable: true, value: originalMatchMedia });
+  });
+
+  it('TKT-11: "Exibir colunas" expõe aria-haspopup e aria-expanded, e Esc fecha o menu devolvendo o foco ao botão', async () => {
+    const user = userEvent.setup();
+    await renderList();
+    const button = screen.getByRole('button', { name: 'Exibir colunas' });
+    expect(button).toHaveAttribute('aria-haspopup', 'true');
+    expect(button).toHaveAttribute('aria-expanded', 'false');
+
+    await user.click(button);
+    expect(button).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('checkbox', { name: 'Responsável' })).toBeInTheDocument();
+
+    await user.keyboard('{Escape}');
+    expect(button).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByRole('checkbox', { name: 'Responsável' })).not.toBeInTheDocument();
+    expect(button).toHaveFocus();
+  });
+
+  it('TKT-11: Esc com o foco numa caixa do menu fecha o menu e o foco volta ao botão', async () => {
+    const user = userEvent.setup();
+    await renderList();
+    const button = screen.getByRole('button', { name: 'Exibir colunas' });
+    await user.click(button);
+    await user.click(screen.getByRole('checkbox', { name: 'Responsável' }));
+
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('checkbox', { name: 'Responsável' })).not.toBeInTheDocument();
+    expect(button).toHaveFocus();
+  });
+
+  it('TKT-11: clique fora do menu fecha o menu; clique dentro não', async () => {
+    const user = userEvent.setup();
+    await renderList();
+    const button = screen.getByRole('button', { name: 'Exibir colunas' });
+    await user.click(button);
+
+    await user.click(screen.getByRole('checkbox', { name: 'Responsável' }));
+    expect(button).toHaveAttribute('aria-expanded', 'true');
+
+    await user.click(document.body);
+    expect(button).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByRole('checkbox', { name: 'Responsável' })).not.toBeInTheDocument();
+  });
+
+  it('TKT-12: com "Agrupar por" Status os dois grupos iniciam expandidos, sem clique', async () => {
+    const user = userEvent.setup();
+    await renderList();
+    await user.selectOptions(screen.getByLabelText(/agrupar por/i, { selector: 'select' }), 'status');
+
+    expect(screen.getByText('AP-2026-0001')).toBeInTheDocument();
+    expect(screen.getByText('AP-2026-0002')).toBeInTheDocument();
+  });
+
+  it('TKT-12: a preferência já salva com agrupamento abre com os grupos expandidos', async () => {
+    serverPreference = { groupBy: 'status' };
+    await renderList();
+    expect(screen.getByText('AP-2026-0001')).toBeInTheDocument();
+    expect(screen.getByText('AP-2026-0002')).toBeInTheDocument();
+  });
+
+  it('TKT-12: "Recolher tudo" fecha todos os grupos e "Expandir tudo" abre todos', async () => {
+    const user = userEvent.setup();
+    await renderList();
+    await user.selectOptions(screen.getByLabelText(/agrupar por/i, { selector: 'select' }), 'status');
+
+    await user.click(screen.getByRole('button', { name: 'Recolher tudo' }));
+    expect(screen.queryByText('AP-2026-0001')).not.toBeInTheDocument();
+    expect(screen.queryByText('AP-2026-0002')).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Expandir tudo' }));
+    expect(screen.getByText('AP-2026-0001')).toBeInTheDocument();
+    expect(screen.getByText('AP-2026-0002')).toBeInTheDocument();
+  });
+
+  it('TKT-12: sem agrupamento não há ação de expandir/recolher tudo', async () => {
+    await renderList();
+    expect(screen.queryByRole('button', { name: /recolher tudo|expandir tudo/i })).not.toBeInTheDocument();
+  });
+
+  it('TKT-14: em tela estreita a Lista vira cartões com número, título, status e SLA, sem tabela', async () => {
+    mockViewport(true);
+    await renderList({ tickets: [{ ...ticketA, resolveSlaStatus: 'BREACHED' }, ticketB] });
+
+    expect(screen.queryByRole('table')).not.toBeInTheDocument();
+    const cards = screen.getAllByRole('listitem');
+    expect(cards).toHaveLength(2);
+    const first = within(cards[0]);
+    expect(first.getByRole('link', { name: 'AP-2026-0001' })).toBeInTheDocument();
+    expect(first.getByText('Printer broken')).toBeInTheDocument();
+    expect(first.getByText('Aberto')).toBeInTheDocument();
+    expect(first.getByLabelText(/Resolução: vencido/)).toBeInTheDocument();
+  });
+
+  it('TKT-14: o cartão abre o ticket por Enter, como a linha da tabela', async () => {
+    mockViewport(true);
+    const user = userEvent.setup();
+    function Probe() {
+      const location = useLocation();
+      return <div data-testid="location-probe">{location.pathname}</div>;
+    }
+    render(
+      <MemoryRouter>
+        <TicketList tickets={[ticketA, ticketB]} isLoading={false} />
+        <Probe />
+      </MemoryRouter>,
+    );
+    await screen.findByRole('button', { name: /exibir colunas/i });
+    const card = screen.getAllByRole('listitem')[1];
+    card.focus();
+    await user.keyboard('{Enter}');
+    expect(screen.getByTestId('location-probe')).toHaveTextContent('/tickets/t2');
+  });
+
+  it('TKT-14: em tela estreita o agrupamento também mostra cartões sob o cabeçalho do grupo', async () => {
+    mockViewport(true);
+    const user = userEvent.setup();
+    await renderList();
+    await user.selectOptions(screen.getByLabelText(/agrupar por/i, { selector: 'select' }), 'organization');
+
+    expect(screen.queryByRole('table')).not.toBeInTheDocument();
+    expect(screen.getAllByRole('listitem')).toHaveLength(2);
+    await user.click(screen.getByRole('button', { name: /Acme \(1\)/ }));
+    expect(screen.getAllByRole('listitem')).toHaveLength(1);
+  });
+
+  it('TKT-14: em tela larga a tabela permanece e não há cartões', async () => {
+    mockViewport(false);
+    await renderList();
+    expect(screen.getByRole('table')).toBeInTheDocument();
+    expect(screen.queryAllByRole('listitem')).toHaveLength(0);
   });
 });
