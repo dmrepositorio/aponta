@@ -22,7 +22,7 @@ export interface EzButtonBaseProps extends ButtonHTMLAttributes<HTMLButtonElemen
    * The visual variant of the button.
    * @default 'primary'
    */
-  variant?: 'primary' | 'secondary' | 'tertiary';
+  variant?: 'primary' | 'secondary' | 'tertiary' | 'danger';
   /**
    * The size of the button.
    * @default 'medium'
@@ -123,6 +123,7 @@ export const EzButton = forwardRef<HTMLButtonElement, EzButtonProps>(
         if (variant === 'primary') ripple.classList.add('bg-white/30');
         if (variant === 'secondary') ripple.classList.add('bg-brand-600/20');
         if (variant === 'tertiary') ripple.classList.add('bg-brand-600/15');
+        if (variant === 'danger') ripple.classList.add('bg-white/30');
 
         ripple.style.left = `${x - 10}px`;
         ripple.style.top = `${y - 10}px`;
@@ -157,6 +158,9 @@ export const EzButton = forwardRef<HTMLButtonElement, EzButtonProps>(
           // Variants
           variant === 'primary' &&
             'bg-brand-600 text-gray-70 border border-brand-600 hover:bg-brand-700 hover:border-brand-700 disabled:bg-gray-400 disabled:border-gray-400 disabled:text-gray-70',
+          // Destrutivo: red-600 (#bd0025) com texto branco dá 6,6:1.
+          variant === 'danger' &&
+            'bg-red-600 text-gray-70 border border-red-600 hover:bg-red-700 hover:border-red-700 disabled:bg-gray-400 disabled:border-gray-400 disabled:text-gray-70',
           variant === 'secondary' &&
             'bg-transparent text-brand-600 border border-gray-200 hover:bg-gray-80 hover:border-gray-90 disabled:bg-gray-80 disabled:border-gray-200 disabled:text-gray-500',
           variant === 'tertiary' &&

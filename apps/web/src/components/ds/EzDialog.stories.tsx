@@ -39,6 +39,19 @@ export const Danger: Story = {
   },
 };
 
+/** `confirmLoading`: o Confirmar fica desabilitado (aria-busy) e cliques repetidos não repetem a ação. */
+export const DangerLoading: Story = {
+  args: {
+    open: true,
+    variant: 'danger',
+    title: 'Excluir chamado',
+    message: 'Excluindo o chamado #4821...',
+    confirmLoading: true,
+    onConfirm: () => undefined,
+    onCancel: () => undefined,
+  },
+};
+
 export const Warning: Story = {
   args: {
     open: true,

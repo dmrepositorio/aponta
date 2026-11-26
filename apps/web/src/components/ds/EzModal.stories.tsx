@@ -45,7 +45,7 @@ export const ComFooter: Story = {
   },
 };
 
-/** `trapFocus`: Tab e Shift+Tab ficam no modal e o foco entra nele ao abrir (ex.: "Esqueci minha senha"). */
+/** Foco preso (padrão): Tab e Shift+Tab ficam no modal e o foco entra nele ao abrir (ex.: "Esqueci minha senha"). `trapFocus={false}` desliga. */
 export const FocoPreso: Story = {
   args: {
     isOpen: true,
@@ -123,13 +123,13 @@ export const Interativo: Story = {
   },
 };
 
-/** Com `dirty`, Esc pede confirmação antes de descartar as alterações. */
+/** Com `dirty`, Esc, backdrop e X pedem confirmação antes de descartar as alterações. */
 export const AlteracoesNaoSalvas: Story = {
   args: {
     isOpen: true,
     onClose: () => undefined,
     dirty: true,
     title: 'Editar chamado',
-    children: 'Pressione Esc para ver a confirmação de descarte.',
+    children: 'Pressione Esc, clique fora ou no X para ver a confirmação de descarte.',
   },
 };

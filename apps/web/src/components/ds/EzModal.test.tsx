@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { EzModal } from './EzModal';
+import { EzDialog } from './EzDialog';
 
 describe('EzModal', () => {
   beforeEach(() => {
@@ -120,10 +121,77 @@ describe('EzModal', () => {
       expect(screen.getByLabelText('Fechar')).toHaveFocus();
     });
 
-    it('is opt-in: without it the dialog is not focusable and Tab can leave it', () => {
-      open();
+    it('traps focus by default (no prop needed) and can opt out with trapFocus={false}', async () => {
+      const user = userEvent.setup();
+      const { unmount } = open();
+      expect(screen.getByRole('dialog')).toHaveFocus();
+      await user.tab();
+      expect(screen.getByLabelText('Fechar')).toHaveFocus();
+      await user.tab({ shift: true });
+      expect(screen.getByText('Último')).toHaveFocus();
+      unmount();
+
+      open(false);
       expect(screen.getByRole('dialog')).not.toHaveAttribute('tabindex');
       expect(screen.getByText('Fora')).not.toHaveFocus();
+    });
+  });
+
+  describe('DS-19', () => {
+    it('links the dialog to its title through aria-labelledby', () => {
+      render(<EzModal isOpen onClose={vi.fn()} title="Editar chamado">Content</EzModal>);
+      expect(screen.getByRole('dialog', { name: 'Editar chamado' })).toBeInTheDocument();
+    });
+
+    it('asks to discard instead of closing when dirty and the backdrop is clicked', async () => {
+      const user = userEvent.setup();
+      const onClose = vi.fn();
+      render(<EzModal isOpen onClose={onClose} dirty title="T">Content</EzModal>);
+      await user.click(document.querySelector('.bg-gray-900\\/60') as Element);
+      expect(screen.getByText('Descartar alterações?')).toBeInTheDocument();
+      expect(onClose).not.toHaveBeenCalled();
+      await user.click(screen.getByRole('button', { name: 'Confirmar' }));
+      expect(onClose).toHaveBeenCalledTimes(1);
+    });
+
+    it('asks to discard instead of closing when dirty and the X is clicked', async () => {
+      const user = userEvent.setup();
+      const onClose = vi.fn();
+      render(<EzModal isOpen onClose={onClose} dirty title="T">Content</EzModal>);
+      await user.click(screen.getByLabelText('Fechar'));
+      expect(screen.getByText('Descartar alterações?')).toBeInTheDocument();
+      expect(onClose).not.toHaveBeenCalled();
+    });
+
+    it('keeps the body locked until the last of two stacked modals closes', () => {
+      const both = (outer: boolean, inner: boolean) => (
+        <>
+          <EzModal isOpen={outer} onClose={vi.fn()} title="A">a</EzModal>
+          <EzModal isOpen={inner} onClose={vi.fn()} title="B">b</EzModal>
+        </>
+      );
+      const { rerender } = render(both(true, true));
+      expect(document.body.style.overflow).toBe('hidden');
+      rerender(both(true, false));
+      expect(document.body.style.overflow).toBe('hidden');
+      rerender(both(false, false));
+      expect(document.body.style.overflow).toBe('');
+    });
+
+    it('keeps an EzDialog rendered inside the modal usable (its Tab is not hijacked by the modal trap)', async () => {
+      const user = userEvent.setup();
+      const tree = (confirming: boolean) => (
+        <EzModal isOpen onClose={vi.fn()} title="T">
+          <EzDialog open={confirming} variant="danger" title="Excluir" message="M" onConfirm={vi.fn()} onCancel={vi.fn()} />
+        </EzModal>
+      );
+      const { rerender } = render(tree(false));
+      rerender(tree(true));
+      expect(screen.getByRole('button', { name: 'Cancelar' })).toHaveFocus();
+      await user.tab();
+      expect(screen.getByRole('button', { name: 'Confirmar' })).toHaveFocus();
+      await user.tab();
+      expect(screen.getByRole('button', { name: 'Fechar diálogo' })).toHaveFocus();
     });
   });
 });

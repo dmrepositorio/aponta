@@ -18,6 +18,13 @@ describe('EzButton', () => {
     expect(button.querySelector('span')).not.toHaveClass('font-normal');
   });
 
+  it('renders the danger variant with the DS error token (red-600, 4.5:1+ with white text)', () => {
+    const { container } = render(<EzButton label="Excluir" variant="danger" />);
+    const button = container.firstChild as HTMLElement;
+    expect(button).toHaveClass('bg-red-600', 'border-red-600', 'text-gray-70', 'hover:bg-red-700');
+    expect(button).not.toHaveClass('bg-brand-600');
+  });
+
   it('renders secondary variant', () => {
     const { container } = render(<EzButton label="Outline" variant="secondary" />);
     expect(container.firstChild).toHaveClass('border-gray-200');

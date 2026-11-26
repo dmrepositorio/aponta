@@ -1106,6 +1106,12 @@ describe('VaultPage modals and load error (DMTE-545)', () => {
   }
 
   const save = (dialog: HTMLElement) => within(dialog).getByRole('button', { name: /^Salv/ });
+  // X com o formulário alterado pede confirmação (DS-19): confirma o descarte.
+  const closeDiscarding = async (user: ReturnType<typeof userEvent.setup>, dialog: HTMLElement) => {
+    await user.click(within(dialog).getByRole('button', { name: 'Fechar' }));
+    const discard = await screen.findByRole('dialog', { name: 'Descartar alterações?' });
+    await user.click(within(discard).getByRole('button', { name: 'Confirmar' }));
+  };
 
   it('uses the DS modal for folder and credential, with an accessible name and a discard prompt on Esc', async () => {
     const user = await loaded();
@@ -1281,7 +1287,7 @@ describe('VaultPage modals and load error (DMTE-545)', () => {
     const dialog = await openNewFolder(user);
     await user.click(save(dialog));
     await within(dialog).findByRole('button', { name: 'Salvando…' });
-    await user.click(within(dialog).getByRole('button', { name: 'Fechar' }));
+    await closeDiscarding(user, dialog);
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
 
     await act(async () => saving.reject(refusal()));
@@ -1318,7 +1324,7 @@ describe('VaultPage modals and load error (DMTE-545)', () => {
     const folderDialog = await openNewFolder(user);
     await user.click(save(folderDialog));
     await within(folderDialog).findByRole('button', { name: 'Salvando…' });
-    await user.click(within(folderDialog).getByRole('button', { name: 'Fechar' }));
+    await closeDiscarding(user, folderDialog);
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
 
     await openActionsMenu(user);
