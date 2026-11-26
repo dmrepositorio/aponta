@@ -189,3 +189,42 @@ describe('EzGridWrapper', () => {
   });
 });
 
+describe('EzGridWrapper acessibilidade (DS-27)', () => {
+  const body = (
+    <tbody>
+      <tr><td>Data</td></tr>
+    </tbody>
+  );
+
+  it('gera ids distintos e aria-controls correspondente com dois grids na mesma tela', () => {
+    render(
+      <>
+        <EzGridWrapper tableLabel="Grade A" alwaysShowHorizontalScrollbar>{body}</EzGridWrapper>
+        <EzGridWrapper tableLabel="Grade B" alwaysShowHorizontalScrollbar>{body}</EzGridWrapper>
+      </>
+    );
+    const regions = screen.getAllByRole('region');
+    expect(regions).toHaveLength(2);
+    expect(regions[0].id).not.toBe('');
+    expect(regions[0].id).not.toBe(regions[1].id);
+    const thumbs = screen.getAllByTestId('ez-grid-horizontal-scrollbar-thumb');
+    expect(thumbs[0]).toHaveAttribute('aria-controls', regions[0].id);
+    expect(thumbs[1]).toHaveAttribute('aria-controls', regions[1].id);
+  });
+
+  it('nomeia a tabela com tableLabel', () => {
+    render(<EzGridWrapper tableLabel="Chamados abertos">{body}</EzGridWrapper>);
+    expect(screen.getByRole('table', { name: 'Chamados abertos' })).toBeInTheDocument();
+  });
+
+  it('expõe a região rolável como região nomeada e focável pelo teclado', () => {
+    render(<EzGridWrapper tableLabel="Chamados abertos">{body}</EzGridWrapper>);
+    const region = screen.getByRole('region', { name: /Chamados abertos/ });
+    expect(region).toHaveAttribute('tabindex', '0');
+  });
+
+  it('não força min-width de 480px em tela estreita', () => {
+    render(<EzGridWrapper tableLabel="Chamados abertos">{body}</EzGridWrapper>);
+    expect(screen.getByRole('table').className).not.toContain('min-w-[480px]');
+  });
+});
