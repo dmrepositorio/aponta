@@ -91,6 +91,7 @@ export function TicketsPage() {
   const tickets = data?.data ?? [];
   const meta = data?.meta;
   const currentPage = filters.page ?? 1;
+  const foundCount = meta?.total ?? tickets.length;
 
   const resetFilters = () =>
     setFilters((prev) => ({ sortBy: prev.sortBy, sortDir: prev.sortDir }));
@@ -118,7 +119,15 @@ export function TicketsPage() {
           setFilters((prev) => ({ ...prev, search: search || undefined, page: 1 }))
         }
         onOpenAdvancedSearch={() => openInTab('/tickets/search', 'Busca avançada')}
+        isSearching={isFetching}
       />
+
+      {/* Anuncia o resultado a leitores de tela quando a busca ou os filtros mudam a contagem. */}
+      {!isLoading && !isError && (
+        <p role="status" aria-live="polite" className="sr-only">
+          {foundCount} {foundCount === 1 ? 'chamado encontrado' : 'chamados encontrados'}
+        </p>
+      )}
 
       {viewMode === 'list' && (
         <TicketShortcuts

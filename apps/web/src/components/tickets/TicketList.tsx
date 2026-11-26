@@ -1,4 +1,4 @@
-import { Fragment, useState, type MouseEvent, type ReactNode } from 'react';
+import { Fragment, useEffect, useRef, useState, type KeyboardEvent, type MouseEvent, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowDown, ArrowUp, ChevronDown, ChevronRight } from 'lucide-react';
 import type { Ticket } from '../../hooks/useTickets';
@@ -9,6 +9,11 @@ import { effectiveDeadline } from './TicketKanbanCard';
 import { useUserScreenConfig } from '../../hooks/useUserScreenConfig';
 import { useOpenInTab } from '../../contexts/TabsContext';
 import { useAuthStore } from '../../stores/authStore';
+import { useEscapeLayer } from '../../hooks/useEscapeLayer';
+import { useMediaQuery } from '../../hooks/useMediaQuery';
+
+/** Abaixo de 640 px (breakpoint `sm`) a Lista troca a tabela de colunas por cartões. */
+const NARROW_QUERY = '(max-width: 639px)';
 
 const sourceLabels: Record<string, string> = {
   WEB: 'Web',
@@ -265,8 +270,30 @@ export function TicketList({
     groupBy: 'none',
     grid: { columnVisibility: DEFAULT_COLUMN_VISIBILITY, density: 'compact' },
   });
-  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+  // Os grupos nascem expandidos: guarda só os que o usuário recolheu.
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
   const [isColumnMenuOpen, setIsColumnMenuOpen] = useState(false);
+  const columnMenuRef = useRef<HTMLDivElement>(null);
+  const columnButtonRef = useRef<HTMLButtonElement>(null);
+  const isNarrow = useMediaQuery(NARROW_QUERY);
+
+  useEscapeLayer(
+    () => {
+      setIsColumnMenuOpen(false);
+      columnButtonRef.current?.focus();
+    },
+    isColumnMenuOpen && !isNarrow,
+  );
+
+  useEffect(() => {
+    if (!isColumnMenuOpen) return undefined;
+    const closeOnOutsideClick = (event: globalThis.MouseEvent) => {
+      if (columnMenuRef.current?.contains(event.target as Node)) return;
+      setIsColumnMenuOpen(false);
+    };
+    document.addEventListener('mousedown', closeOnOutsideClick);
+    return () => document.removeEventListener('mousedown', closeOnOutsideClick);
+  }, [isColumnMenuOpen]);
   const [sort, setSort] = useState<{ field?: string; dir: 'asc' | 'desc' }>({
     field: initialSortBy,
     dir: initialSortDir ?? 'asc',
@@ -278,8 +305,20 @@ export function TicketList({
     onSortChange?.(field, nextDir);
   };
 
+  const sortableColumns = columns.filter((col) => col.sortField);
+  const handleSortFieldChange = (field: string) => {
+    if (!field) return;
+    setSort((prev) => ({ field, dir: prev.dir }));
+    onSortChange?.(field, sort.dir);
+  };
+  const handleSortDirChange = (dir: 'asc' | 'desc') => {
+    if (!sort.field) return;
+    setSort({ field: sort.field, dir });
+    onSortChange?.(sort.field, dir);
+  };
+
   const toggleGroup = (key: string) => {
-    setExpandedGroups((prev) => {
+    setCollapsedGroups((prev) => {
       const next = new Set(prev);
       if (next.has(key)) next.delete(key);
       else next.add(key);
@@ -310,23 +349,28 @@ export function TicketList({
       }, new Map())
     : null;
 
+  // Mesmo contrato de abrir o ticket para a linha da tabela e para o cartão.
+  const openProps = (ticket: Ticket) => ({
+    tabIndex: 0,
+    'aria-keyshortcuts': 'Enter',
+    onKeyDown: (event: KeyboardEvent<HTMLElement>) => {
+      // Só o próprio item: Enter no link do número já abre pelo link.
+      if (event.key !== 'Enter' || event.target !== event.currentTarget) return;
+      event.preventDefault();
+      openInTab(ticketPath(ticket), ticketTabTitle(ticket));
+    },
+    onClick: (event: MouseEvent<HTMLElement>) => {
+      // The number link and any button handle their own click.
+      if ((event.target as HTMLElement).closest('a, button')) return;
+      openInTab(ticketPath(ticket), ticketTabTitle(ticket));
+    },
+  });
+
   const renderRow = (ticket: Ticket) => (
     <tr
       key={ticket.id}
-      tabIndex={0}
-      aria-keyshortcuts="Enter"
+      {...openProps(ticket)}
       className="cursor-pointer border-b border-gray-100 last:border-0 hover:bg-grid-row-hover focus-within:bg-grid-row-hover focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-500"
-      onKeyDown={(event) => {
-        // Só a própria linha: Enter no link do número já abre pelo link.
-        if (event.key !== 'Enter' || event.target !== event.currentTarget) return;
-        event.preventDefault();
-        openInTab(ticketPath(ticket), ticketTabTitle(ticket));
-      }}
-      onClick={(event) => {
-        // The number link and any button handle their own click.
-        if ((event.target as HTMLElement).closest('a, button')) return;
-        openInTab(ticketPath(ticket), ticketTabTitle(ticket));
-      }}
     >
       {visibleColumns.map((col) => (
         <td key={col.id} className="px-3 py-2 text-[13px] text-gray-700">
@@ -334,6 +378,47 @@ export function TicketList({
         </td>
       ))}
     </tr>
+  );
+
+  // Cartão (< 640 px): número, status, título e SLA. Os dados vêm do mesmo modelo da linha.
+  const renderCard = (ticket: Ticket) => (
+    <li
+      key={ticket.id}
+      {...openProps(ticket)}
+      className="cursor-pointer space-y-2 rounded-control border border-gray-200 bg-white p-3 hover:bg-grid-row-hover focus-within:bg-grid-row-hover focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-500"
+    >
+      <div className="flex items-center justify-between gap-2">
+        <TicketNumberLink ticket={ticket} />
+        <TicketStatusTag status={ticket.status} />
+      </div>
+      <p className="break-words text-[14px] font-medium text-gray-900">{ticket.title}</p>
+      <div className="flex flex-wrap items-center gap-2 text-[12px] text-gray-600">
+        <span>SLA</span>
+        <TicketSlaCell ticket={ticket} />
+      </div>
+    </li>
+  );
+
+  const allExpanded = groups ? Array.from(groups.keys()).every((key) => !collapsedGroups.has(key)) : true;
+  const toggleAllGroups = () =>
+    setCollapsedGroups(allExpanded && groups ? new Set(groups.keys()) : new Set());
+
+  const renderGroupHeader = (groupKey: string, count: number, isExpanded: boolean) => (
+    <button
+      type="button"
+      aria-expanded={isExpanded}
+      onClick={() => toggleGroup(groupKey)}
+      className="flex w-full cursor-pointer items-center gap-2 rounded-control text-left text-[13px] font-semibold text-gray-900 outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+    >
+      {isExpanded ? (
+        <ChevronDown aria-hidden="true" className="h-4 w-4 shrink-0 text-gray-500" />
+      ) : (
+        <ChevronRight aria-hidden="true" className="h-4 w-4 shrink-0 text-gray-500" />
+      )}
+      <span>
+        {groupKey} ({count})
+      </span>
+    </button>
   );
 
   return (
@@ -348,7 +433,11 @@ export function TicketList({
           variant="compact"
           className="w-auto"
           value={config.groupBy || 'none'}
-          onChange={(e) => setGroupBy(e.target.value)}
+          onChange={(e) => {
+            // Ao escolher o agrupamento, todos os grupos começam expandidos.
+            setCollapsedGroups(new Set());
+            setGroupBy(e.target.value);
+          }}
         >
           {GROUP_OPTIONS.map((opt) => (
             <option key={opt.id} value={opt.id}>
@@ -357,16 +446,35 @@ export function TicketList({
           ))}
         </EzSelect>
 
-        <div className="relative">
+        {isGrouped && tickets.length > 0 && (
           <button
             type="button"
+            onClick={toggleAllGroups}
+            className="max-sm:h-11 sm:h-[var(--control-height-compact)] rounded-control border border-gray-200 bg-white px-3 text-[13px] font-medium text-gray-700 hover:bg-gray-90"
+          >
+            {allExpanded ? 'Recolher tudo' : 'Expandir tudo'}
+          </button>
+        )}
+
+        {/* Nos cartões as colunas não existem: o menu de colunas não teria efeito. */}
+        {!isNarrow && (
+        <div ref={columnMenuRef} className="relative">
+          <button
+            ref={columnButtonRef}
+            type="button"
+            aria-haspopup="true"
+            aria-expanded={isColumnMenuOpen}
             onClick={() => setIsColumnMenuOpen((prev) => !prev)}
             className="max-sm:h-11 sm:h-[var(--control-height-compact)] rounded-control border border-gray-200 bg-white px-3 text-[13px] font-medium text-gray-700 hover:bg-gray-90"
           >
             Exibir colunas
           </button>
           {isColumnMenuOpen && (
-            <div className="absolute z-10 mt-1 w-56 rounded-control border border-gray-200 bg-white p-2 shadow-popover">
+            <div
+              role="group"
+              aria-label="Colunas visíveis"
+              className="absolute z-10 mt-1 w-56 rounded-control border border-gray-200 bg-white p-2 shadow-popover"
+            >
               {columns.map((col) => (
                 <label key={col.id} className="flex items-center gap-2 px-1 py-1 text-[13px]">
                   <input
@@ -382,6 +490,40 @@ export function TicketList({
             </div>
           )}
         </div>
+        )}
+
+        {/* Sem cabeçalho de coluna nos cartões, a ordenação vem destes dois campos. */}
+        {isNarrow && tickets.length > 0 && (
+          <>
+            <EzSelect
+              aria-label="Ordenar por"
+              variant="compact"
+              className="w-auto"
+              value={sort.field ?? ''}
+              onChange={(e) => handleSortFieldChange(e.target.value)}
+            >
+              <option value="" disabled>
+                Ordenar por
+              </option>
+              {sortableColumns.map((col) => (
+                <option key={col.id} value={col.sortField}>
+                  {col.label}
+                </option>
+              ))}
+            </EzSelect>
+            <EzSelect
+              aria-label="Direção da ordenação"
+              variant="compact"
+              className="w-auto"
+              value={sort.dir}
+              disabled={!sort.field}
+              onChange={(e) => handleSortDirChange(e.target.value as 'asc' | 'desc')}
+            >
+              <option value="asc">Crescente</option>
+              <option value="desc">Decrescente</option>
+            </EzSelect>
+          </>
+        )}
 
         {isGrouped && tickets.length > 0 && totalPages && totalPages > 1 && (
           <span className="text-[12px] text-gray-500">
@@ -415,6 +557,30 @@ export function TicketList({
             }
           />
         )
+      ) : isNarrow ? (
+        <div className="space-y-2">
+          {isGrouped ? (
+            Array.from(groups ?? []).map(([groupKey, groupTickets]) => {
+              const isExpanded = !collapsedGroups.has(groupKey);
+              return (
+                <div key={groupKey} className="space-y-2">
+                  <div className="rounded-control bg-gray-80 px-3 py-2">
+                    {renderGroupHeader(groupKey, groupTickets.length, isExpanded)}
+                  </div>
+                  {isExpanded && (
+                    <ul aria-label={groupKey} className="space-y-2">
+                      {groupTickets.map(renderCard)}
+                    </ul>
+                  )}
+                </div>
+              );
+            })
+          ) : (
+            <ul aria-label="Chamados" className="space-y-2">
+              {tickets.map(renderCard)}
+            </ul>
+          )}
+        </div>
       ) : (
         <div
           role="region"
@@ -461,26 +627,12 @@ export function TicketList({
             <tbody>
               {isGrouped
                 ? Array.from(groups ?? []).map(([groupKey, groupTickets]) => {
-                    const isExpanded = expandedGroups.has(groupKey);
+                    const isExpanded = !collapsedGroups.has(groupKey);
                     return (
                       <Fragment key={groupKey}>
                         <tr className="bg-gray-80">
                           <td colSpan={visibleColumns.length} className="px-3 py-2">
-                            <button
-                              type="button"
-                              aria-expanded={isExpanded}
-                              onClick={() => toggleGroup(groupKey)}
-                              className="flex w-full cursor-pointer items-center gap-2 rounded-control text-left text-[13px] font-semibold text-gray-900 outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
-                            >
-                              {isExpanded ? (
-                                <ChevronDown aria-hidden="true" className="h-4 w-4 shrink-0 text-gray-500" />
-                              ) : (
-                                <ChevronRight aria-hidden="true" className="h-4 w-4 shrink-0 text-gray-500" />
-                              )}
-                              <span>
-                                {groupKey} ({groupTickets.length})
-                              </span>
-                            </button>
+                            {renderGroupHeader(groupKey, groupTickets.length, isExpanded)}
                           </td>
                         </tr>
                         {isExpanded && groupTickets.map(renderRow)}

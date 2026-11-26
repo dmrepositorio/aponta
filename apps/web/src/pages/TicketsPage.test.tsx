@@ -243,7 +243,7 @@ describe('TicketsPage', () => {
     await screen.findByText('Printer not working');
 
     expect(screen.getByText(/página 1 de 3/i)).toBeInTheDocument();
-    expect(screen.getByText(/25 chamados/i)).toBeInTheDocument();
+    expect(screen.getByText(/\(25 chamados\)/i)).toBeInTheDocument();
 
     const nextButton = screen.getByRole('button', { name: 'Próxima' });
     expect(screen.getByRole('button', { name: 'Anterior' })).toBeDisabled();
@@ -478,6 +478,36 @@ describe('TicketsPage', () => {
       expect.stringContaining('/tickets'),
       expect.objectContaining({ params: expect.objectContaining({ search: 'printer' }) }),
     );
+  });
+
+  it('TKT-09: anuncia "N chamados encontrados" numa região de status quando o resultado muda', async () => {
+    mockApiGet();
+    const user = userEvent.setup();
+    renderDashboard(['/?view=list']);
+
+    await screen.findByText('Printer not working');
+    expect(screen.queryByRole('status')).toHaveTextContent('2 chamados encontrados');
+
+    mockApiGet([tickets[0]]);
+    await user.type(screen.getByLabelText(/buscar/i), 'printer');
+    await waitFor(() => expect(screen.queryByRole('status')).toHaveTextContent('1 chamado encontrado'));
+    expect(screen.getByRole('status')).toHaveAttribute('aria-live', 'polite');
+  });
+
+  it('TKT-09: o campo Buscar expõe aria-busy enquanto a busca está em curso', async () => {
+    mockApiGet();
+    const user = userEvent.setup();
+    renderDashboard(['/?view=list']);
+
+    await screen.findByText('Printer not working');
+    expect(screen.getByLabelText(/buscar/i)).toHaveAttribute('aria-busy', 'false');
+
+    vi.mocked(api.get).mockImplementation((url: string) => {
+      if (url.startsWith('/me/screen-preferences/')) return Promise.resolve({ data: {} });
+      return new Promise(() => undefined);
+    });
+    await user.type(screen.getByLabelText(/buscar/i), 'vpn');
+    await waitFor(() => expect(screen.getByLabelText(/buscar/i)).toHaveAttribute('aria-busy', 'true'));
   });
 
   it('refetches with sortBy/sortDir when a List column header is clicked (D5)', async () => {
