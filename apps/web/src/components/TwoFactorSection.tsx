@@ -4,7 +4,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import { api } from '../lib/api';
 import { useFeatureFlag } from '../hooks/useFeatureFlag';
 import { apiErrorMessage } from '../hooks/useUsers';
-import { EzAlert, EzButton, EzTextInput } from './ds';
+import { EzAlert, EzBadge, EzButton, EzCheck, EzDialog, EzTextInput } from './ds';
 
 const FLAG = 'autenticacao-dois-fatores';
 type Setup = { secret: string; otpauthUri: string };
@@ -23,6 +23,9 @@ export function TwoFactorSection() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [confirmDisable, setConfirmDisable] = useState(false);
 
   const enabled = data?.enabled === true;
   // Sem a flag só aparece para quem já ativou (para poder desativar); durante a ativação, a seção segue até o fim.
@@ -31,6 +34,7 @@ export function TwoFactorSection() {
   const run = async (action: () => Promise<void>, fallback: string) => {
     setBusy(true);
     setError(null);
+    setNotice(null);
     try {
       await action();
     } catch (e) {
@@ -50,8 +54,13 @@ export function TwoFactorSection() {
       setCode('');
     }, 'Não foi possível confirmar o código.');
   };
-  const disable = (event: FormEvent) => {
+  // Desativar reduz a segurança da conta: o envio do formulário só abre a confirmação.
+  const askDisable = (event: FormEvent) => {
     event.preventDefault();
+    setConfirmDisable(true);
+  };
+  const disable = () => {
+    setConfirmDisable(false);
     return run(async () => {
       await api.post('/auth/2fa/disable', { password, code });
       setPassword('');
@@ -61,7 +70,34 @@ export function TwoFactorSection() {
   };
   const finish = async () => {
     setRecoveryCodes(null);
+    setSaved(false);
+    setNotice(null);
     await refresh();
+  };
+  const cancelSetup = () => {
+    setSetup(null);
+    setCode('');
+    setError(null);
+    setNotice(null);
+  };
+  // Os segredos ficam só no estado do componente: nada vai para storage nem para log.
+  const copy = async (text: string, done: string) => {
+    setError(null);
+    try {
+      await navigator.clipboard.writeText(text);
+      setNotice(done);
+    } catch {
+      setNotice(null);
+      setError('Não foi possível copiar automaticamente. Selecione o texto e copie manualmente.');
+    }
+  };
+  const download = (codes: string[]) => {
+    const url = URL.createObjectURL(new Blob([codes.join('\n') + '\n'], { type: 'text/plain' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'codigos-de-recuperacao.txt';
+    link.click();
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -78,7 +114,18 @@ export function TwoFactorSection() {
               <li key={item}>{item}</li>
             ))}
           </ul>
-          <EzButton type="button" onClick={finish}>Concluir</EzButton>
+          <div className="flex flex-wrap gap-2">
+            <EzButton type="button" variant="secondary" size="small" onClick={() => copy(recoveryCodes.join('\n'), 'Códigos copiados.')}>
+              Copiar códigos
+            </EzButton>
+            <EzButton type="button" variant="secondary" size="small" onClick={() => download(recoveryCodes)}>
+              Baixar (.txt)
+            </EzButton>
+          </div>
+          <EzCheck label="Guardei estes códigos" checked={saved} onChange={(e) => setSaved(e.target.checked)} />
+          <EzButton type="button" onClick={finish} disabled={!saved} disabledReason="Marque que guardou os códigos para concluir.">
+            Concluir
+          </EzButton>
         </div>
       )}
 
@@ -88,7 +135,12 @@ export function TwoFactorSection() {
             Escaneie o QR code com o aplicativo autenticador ou digite a chave, e informe o código de 6 dígitos que ele mostrar.
           </p>
           <QRCodeSVG value={setup.otpauthUri} size={160} role="img" aria-label="QR code para o aplicativo autenticador" />
-          <p className="break-all font-mono text-sm tabular-nums">{setup.secret}</p>
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="break-all font-mono text-sm tabular-nums">{setup.secret}</p>
+            <EzButton type="button" variant="secondary" size="small" onClick={() => copy(setup.secret, 'Chave copiada.')}>
+              Copiar chave
+            </EzButton>
+          </div>
           <EzTextInput
             id="two-factor-code"
             label="Código do aplicativo"
@@ -96,9 +148,13 @@ export function TwoFactorSection() {
             autoComplete="one-time-code"
             spellCheck={false}
             value={code}
+            maxLength={6}
             onChange={(e) => setCode(e.target.value)}
           />
-          <EzButton type="submit" disabled={busy}>Confirmar</EzButton>
+          <div className="flex gap-2">
+            <EzButton type="submit" disabled={busy} loading={busy} label={busy ? 'Confirmando...' : 'Confirmar'} />
+            <EzButton type="button" variant="secondary" onClick={cancelSetup} disabled={busy}>Cancelar</EzButton>
+          </div>
         </form>
       )}
 
@@ -110,8 +166,8 @@ export function TwoFactorSection() {
       )}
 
       {!recoveryCodes && !setup && enabled && (
-        <form onSubmit={disable} noValidate className="space-y-3">
-          <p className="font-medium text-gray-900">Ativado</p>
+        <form onSubmit={askDisable} noValidate className="space-y-3">
+          <EzBadge size="large">Ativado</EzBadge>
           <EzTextInput
             id="two-factor-password"
             label="Senha atual"
@@ -132,7 +188,18 @@ export function TwoFactorSection() {
         </form>
       )}
 
+      {notice && <p role="status" className="text-sm text-gray-700">{notice}</p>}
       {error && <EzAlert variant="error" role="alert">{error}</EzAlert>}
+
+      <EzDialog
+        open={confirmDisable}
+        variant="danger"
+        title="Desativar segundo fator?"
+        message="Desativar reduz a segurança da conta: o acesso passará a depender só da senha, e os códigos de recuperação atuais deixam de valer."
+        confirmLabel="Desativar segundo fator"
+        onConfirm={disable}
+        onCancel={() => setConfirmDisable(false)}
+      />
     </section>
   );
 }

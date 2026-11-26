@@ -6,7 +6,7 @@ import axios from 'axios';
 import { api } from '../lib/api';
 import { useAuthStore } from '../stores/authStore';
 import { useApiTokens } from '../hooks/useApiTokens';
-import { EzAlert, EzButton, EzTabs, EzTextInput } from '../components/ds';
+import { EzAlert, EzButton, EzDialog, EzTabs, EzTextInput } from '../components/ds';
 import { PasswordRules, PolicyErrors } from '../components/PasswordRules';
 import { TwoFactorSection } from '../components/TwoFactorSection';
 import { policyMessages } from '../lib/passwordRules';
@@ -238,7 +238,7 @@ function SecurityTab() {
       )}
       {success && (
         <EzAlert variant="success" role="status">
-          Senha atualizada com sucesso!
+          Senha atualizada com sucesso! Você saiu dos outros aparelhos.
         </EzAlert>
       )}
 
@@ -256,27 +256,54 @@ function ApiTokensTab() {
   const [name, setName] = useState('');
   const [justCreatedToken, setJustCreatedToken] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [copyError, setCopyError] = useState(false);
+  const [confirmClose, setConfirmClose] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
+  const [revokeTarget, setRevokeTarget] = useState<{ id: string; name: string } | null>(null);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
-    const created = await createMutation.mutateAsync(name.trim());
-    setJustCreatedToken(created.token);
-    setCopied(false);
-    setName('');
+    setCreateError(null);
+    try {
+      const created = await createMutation.mutateAsync(name.trim());
+      setJustCreatedToken(created.token);
+      setCopied(false);
+      setCopyError(false);
+      setConfirmClose(false);
+      setName('');
+    } catch {
+      setCreateError('Não foi possível gerar o token. Tente novamente.');
+    }
   };
 
-  const handleCopy = () => {
-    if (justCreatedToken) {
-      navigator.clipboard.writeText(justCreatedToken);
+  const handleCopy = async () => {
+    if (!justCreatedToken) return;
+    try {
+      await navigator.clipboard.writeText(justCreatedToken);
       setCopied(true);
+      setCopyError(false);
+      setConfirmClose(false);
+    } catch {
+      // Fora de HTTPS ou sem permissão o clipboard recusa: não marcar "Copiado!".
+      setCopied(false);
+      setCopyError(true);
     }
   };
 
-  const handleRevoke = (id: string) => {
-    if (window.confirm('Revogar este token? Qualquer integração usando-o perderá acesso imediatamente.')) {
-      revokeMutation.mutate(id);
+  const handleClose = () => {
+    if (!copied && !confirmClose) {
+      setConfirmClose(true);
+      return;
     }
+    setJustCreatedToken(null);
+    setConfirmClose(false);
+    setCopyError(false);
+  };
+
+  const confirmRevoke = () => {
+    if (!revokeTarget) return;
+    revokeMutation.mutate(revokeTarget.id, { onSettled: () => setRevokeTarget(null) });
   };
 
   const formatDate = (iso: string | null) => {
@@ -312,14 +339,41 @@ function ApiTokensTab() {
               {copied ? 'Copiado!' : 'Copiar'}
             </EzButton>
           </div>
-          <button
-            type="button"
-            onClick={() => setJustCreatedToken(null)}
-            className="text-xs text-amber-700 hover:underline"
-          >
-            Entendi, fechar
-          </button>
+          {copyError && (
+            <EzAlert variant="error" role="alert">
+              Não foi possível copiar automaticamente. Selecione o token acima e copie manualmente.
+            </EzAlert>
+          )}
+          {confirmClose && (
+            <p className="text-xs font-medium text-amber-800">
+              Você ainda não copiou o token e ele não será exibido de novo.
+            </p>
+          )}
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={handleClose}
+              className="text-xs text-amber-700 hover:underline"
+            >
+              Entendi, fechar
+            </button>
+            {confirmClose && (
+              <button
+                type="button"
+                onClick={handleClose}
+                className="text-xs font-semibold text-red-700 hover:underline"
+              >
+                Fechar sem copiar
+              </button>
+            )}
+          </div>
         </div>
+      )}
+
+      {createError && (
+        <EzAlert variant="error" role="alert">
+          {createError}
+        </EzAlert>
       )}
 
       <form onSubmit={handleCreate} className="flex items-end gap-2">
@@ -364,7 +418,7 @@ function ApiTokensTab() {
               type="button"
               variant="tertiary"
               size="small"
-              onClick={() => handleRevoke(token.id)}
+              onClick={() => setRevokeTarget({ id: token.id, name: token.name })}
               className="!text-red-600 hover:!text-red-700"
             >
               Revogar
@@ -372,6 +426,17 @@ function ApiTokensTab() {
           </div>
         ))}
       </div>
+
+      <EzDialog
+        open={revokeTarget !== null}
+        variant="danger"
+        title="Revogar token?"
+        message={`O token "${revokeTarget?.name ?? ''}" será revogado e qualquer integração usando-o perderá acesso imediatamente. Essa ação não pode ser desfeita.`}
+        confirmLabel="Revogar token"
+        confirmLoading={revokeMutation.isPending}
+        onConfirm={confirmRevoke}
+        onCancel={() => setRevokeTarget(null)}
+      />
     </div>
   );
 }

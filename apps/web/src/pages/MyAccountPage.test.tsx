@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -249,8 +249,7 @@ describe('MyAccountPage', () => {
       });
     });
 
-    it('revokes a token after confirmation', async () => {
-      const user = userEvent.setup();
+    const mockTokenList = () => {
       vi.mocked(api.get).mockImplementation((url: string) => {
         if (url === '/auth/me') {
           return Promise.resolve({
@@ -266,18 +265,119 @@ describe('MyAccountPage', () => {
         }
         return Promise.reject(new Error(`Unexpected GET ${url}`));
       });
+    };
+
+    const CREATED = {
+      id: 'tok-2',
+      name: 'Claude Desktop',
+      token: 'apta_abcdef1234567890',
+      createdAt: '2026-10-03T00:00:00.000Z',
+      lastUsedAt: null,
+    };
+
+    const createToken = async (user: ReturnType<typeof userEvent.setup>) => {
+      await user.click(screen.getByRole('tab', { name: /tokens de api/i }));
+      await user.type(screen.getByLabelText(/nome do token/i), 'Claude Desktop');
+      await user.click(screen.getByRole('button', { name: /gerar token/i }));
+    };
+
+    // ACC-02
+    it('revoking asks for confirmation in a dialog naming the token and only then calls DELETE', async () => {
+      const user = userEvent.setup();
+      mockTokenList();
       vi.mocked(api.delete).mockResolvedValueOnce({ data: { success: true } });
-      vi.spyOn(window, 'confirm').mockReturnValue(true);
+      const nativeConfirm = vi.spyOn(window, 'confirm').mockReturnValue(true);
 
       renderMyAccountPage();
       await user.click(screen.getByRole('tab', { name: /tokens de api/i }));
 
       expect(await screen.findByText('Old Script')).toBeInTheDocument();
-      await user.click(screen.getByRole('button', { name: /revogar/i }));
+      await user.click(screen.getByRole('button', { name: /^revogar$/i }));
+
+      const dialog = await screen.findByRole('dialog');
+      expect(nativeConfirm).not.toHaveBeenCalled();
+      expect(api.delete).not.toHaveBeenCalled();
+      expect(within(dialog).getByText(/old script/i)).toBeInTheDocument();
+      expect(within(dialog).getByText(/perderá acesso/i)).toBeInTheDocument();
+
+      await user.click(within(dialog).getByRole('button', { name: /revogar token/i }));
 
       await waitFor(() => {
         expect(api.delete).toHaveBeenCalledWith('/api-tokens/tok-1');
       });
+      await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    });
+
+    it('cancelling the revoke dialog keeps the token and does not call DELETE', async () => {
+      const user = userEvent.setup();
+      mockTokenList();
+
+      renderMyAccountPage();
+      await user.click(screen.getByRole('tab', { name: /tokens de api/i }));
+      await screen.findByText('Old Script');
+      await user.click(screen.getByRole('button', { name: /^revogar$/i }));
+      const dialog = await screen.findByRole('dialog');
+      await user.click(within(dialog).getByRole('button', { name: /cancelar/i }));
+
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      expect(api.delete).not.toHaveBeenCalled();
+    });
+
+    // ACC-03
+    it('shows a manual-copy message and no "Copiado!" when the clipboard write fails', async () => {
+      const user = userEvent.setup();
+      vi.spyOn(navigator.clipboard, 'writeText').mockRejectedValue(new Error('denied'));
+      vi.mocked(api.post).mockResolvedValueOnce({ data: CREATED });
+
+      renderMyAccountPage();
+      await createToken(user);
+      await screen.findByText(CREATED.token);
+      await user.click(screen.getByRole('button', { name: /^copiar$/i }));
+
+      expect(await screen.findByRole('alert')).toHaveTextContent(/copie manualmente/i);
+      expect(screen.queryByRole('button', { name: /copiado/i })).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /^copiar$/i })).toBeInTheDocument();
+    });
+
+    it('shows an error alert when creating the token fails', async () => {
+      const user = userEvent.setup();
+      vi.mocked(api.post).mockRejectedValueOnce({ isAxiosError: true, response: { status: 500 } });
+
+      renderMyAccountPage();
+      await createToken(user);
+
+      expect(await screen.findByRole('alert')).toHaveTextContent(/não foi possível gerar o token/i);
+    });
+
+    it('asks before discarding a token that was not copied, and closes after the second click', async () => {
+      const user = userEvent.setup();
+      vi.mocked(api.post).mockResolvedValueOnce({ data: CREATED });
+
+      renderMyAccountPage();
+      await createToken(user);
+      await screen.findByText(CREATED.token);
+      await user.click(screen.getByRole('button', { name: /entendi, fechar/i }));
+
+      expect(screen.getByText(CREATED.token)).toBeInTheDocument();
+      expect(screen.getByText(/ainda não copiou/i)).toBeInTheDocument();
+
+      await user.click(screen.getByRole('button', { name: /fechar sem copiar/i }));
+      expect(screen.queryByText(CREATED.token)).not.toBeInTheDocument();
+    });
+
+    it('closes right away when the token was already copied', async () => {
+      const user = userEvent.setup();
+      vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue(undefined);
+      vi.mocked(api.post).mockResolvedValueOnce({ data: CREATED });
+
+      renderMyAccountPage();
+      await createToken(user);
+      await screen.findByText(CREATED.token);
+      await user.click(screen.getByRole('button', { name: /^copiar$/i }));
+      expect(await screen.findByRole('button', { name: /copiado/i })).toBeInTheDocument();
+      await user.click(screen.getByRole('button', { name: /entendi, fechar/i }));
+
+      expect(screen.queryByText(CREATED.token)).not.toBeInTheDocument();
     });
   });
 });
