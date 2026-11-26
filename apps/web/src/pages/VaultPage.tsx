@@ -28,6 +28,7 @@ import {
   EzButton,
   EzActionsButton,
   EzCardItem,
+  EzDialog,
   EzEmptyCard,
   EzModal,
   EzPageHeader,
@@ -48,6 +49,9 @@ const DANGER_ICON = 'text-red-600 hover:text-red-800';
 
 type SecretField = 'username' | 'password';
 type Feedback = { kind: 'success' | 'error'; text: string };
+type DeleteTarget = { kind: 'credential'; credential: VaultCredential } | { kind: 'folder'; folder: VaultFolder };
+
+const passwordCount = (count: number) => (count === 0 ? 'nenhuma senha' : count === 1 ? '1 senha' : `${count} senhas`);
 
 const SECRET_FIELDS: Record<SecretField, { noun: string; copied: string; copyError: string; revealError: string }> = {
   username: {
@@ -243,6 +247,9 @@ export function VaultPage() {
   const [modalId, setModalId] = useState(0);
   const [savingId, setSavingId] = useState<number | null>(null);
   const [modalError, setModalError] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const foldersQuery = useVaultFolders();
   const credentialsQuery = useVaultCredentials({
@@ -417,16 +424,6 @@ export function VaultPage() {
     );
   };
 
-  const handleRemoveFolder = (folder: VaultFolder) => {
-    if (!window.confirm(`Remover a pasta "${folder.name}"?`)) return;
-    removeFolderMutation.mutate(folder.id, {
-      onSuccess: () => {
-        hideAllFields();
-        if (selectedFolderId === folder.id) setSelectedFolderId(ROOT_FOLDER_ID);
-      },
-    });
-  };
-
   const handleSaveCredential = (dto: Partial<CredentialInput>) => {
     const credential = credentialModal?.credential;
     void runSave(
@@ -438,10 +435,42 @@ export function VaultPage() {
     );
   };
 
-  const handleRemoveCredential = (cred: VaultCredential) => {
-    if (!window.confirm('Excluir senha definitivamente?')) return;
-    hideAllFields();
-    removeCredentialMutation.mutate(cred.id);
+  const askDelete = (target: DeleteTarget) => {
+    setDeleteError(null);
+    setDeleteTarget(target);
+  };
+
+  const cancelDelete = () => {
+    if (!deleting) setDeleteTarget(null);
+  };
+
+  // The dialog closes only when the API confirms; a refusal stays visible inside it.
+  const confirmDelete = async () => {
+    if (!deleteTarget || deleting) return;
+    setDeleting(true);
+    setDeleteError(null);
+    try {
+      if (deleteTarget.kind === 'credential') {
+        hideAllFields();
+        await removeCredentialMutation.mutateAsync(deleteTarget.credential.id);
+      } else {
+        await removeFolderMutation.mutateAsync(deleteTarget.folder.id);
+        hideAllFields();
+        if (selectedFolderId === deleteTarget.folder.id) setSelectedFolderId(ROOT_FOLDER_ID);
+      }
+      setDeleteTarget(null);
+    } catch (error) {
+      setDeleteError(
+        apiErrorMessage(
+          error,
+          deleteTarget.kind === 'credential'
+            ? 'Não foi possível excluir a senha. Tente novamente.'
+            : 'Não foi possível remover a pasta. Tente novamente.',
+        ),
+      );
+    } finally {
+      setDeleting(false);
+    }
   };
 
   const renderSecret = (cred: VaultCredential, field: SecretField) => {
@@ -562,7 +591,7 @@ export function VaultPage() {
                     title="Remover pasta"
                     aria-label={`Remover pasta ${selectedFolder.name}`}
                     className={DANGER_ICON}
-                    onClick={() => handleRemoveFolder(selectedFolder)}
+                    onClick={() => askDelete({ kind: 'folder', folder: selectedFolder })}
                   />
                 </div>
               )}
@@ -656,7 +685,7 @@ export function VaultPage() {
                           title="Excluir"
                           aria-label={`Excluir ${cred.name}`}
                           className={DANGER_ICON}
-                          onClick={() => handleRemoveCredential(cred)}
+                          onClick={() => askDelete({ kind: 'credential', credential: cred })}
                         />
                       </div>
                     </td>
@@ -675,6 +704,29 @@ export function VaultPage() {
           )}
         </EzCardItem>
       </div>
+
+      <EzDialog
+        open={deleteTarget !== null}
+        variant="danger"
+        title={deleteTarget?.kind === 'folder' ? 'Remover pasta' : 'Excluir senha'}
+        message={
+          deleteTarget?.kind === 'folder'
+            ? `Remover a pasta "${deleteTarget.folder.name}"? Ela contém ${passwordCount(deleteTarget.folder.credentialCount)}.`
+            : deleteTarget
+              ? `Excluir a senha "${deleteTarget.credential.name}" definitivamente? Esta ação não pode ser desfeita.`
+              : ''
+        }
+        confirmLabel={deleting ? 'Excluindo…' : deleteTarget?.kind === 'folder' ? 'Remover' : 'Excluir'}
+        confirmLoading={deleting}
+        onConfirm={() => void confirmDelete()}
+        onCancel={cancelDelete}
+      >
+        {deleteError && (
+          <EzAlert variant="error" className="mt-3">
+            {deleteError}
+          </EzAlert>
+        )}
+      </EzDialog>
 
       {folderModal && (
         <FolderModal
