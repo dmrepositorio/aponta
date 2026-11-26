@@ -282,7 +282,8 @@ describe('DashboardPage', () => {
     await user.click(await screen.findByRole('tab', { name: 'Horas' }));
     const horasCard = within(screen.getByTestId('card-minhas-horas-apontadas'));
     expect(horasCard.getByRole('group', { name: /horas apontadas por dia/i })).toBeInTheDocument();
-    expect(horasCard.getByRole('button', { name: /01\/10\/2026/ })).toBeInTheDocument();
+    expect(horasCard.getByRole('slider', { name: /horas apontadas por dia/i })).toBeInTheDocument();
+    expect(horasCard.queryAllByRole('button')).toHaveLength(0);
   });
 
   it('switches to Chats tab and renders chat KPI rows, departments and agents tables', async () => {
