@@ -78,7 +78,7 @@ export function MesaSaveProvider({ children }: { children: ReactNode }) {
       </PendingContext.Provider>
       {notice && (
         <div className="pointer-events-none fixed right-4 top-4 z-40 w-[calc(100%-2rem)] max-w-sm">
-          <div role={notice.variant === 'error' ? 'alert' : 'status'}>
+          <div>
             <EzToast
               variant={notice.variant}
               title={

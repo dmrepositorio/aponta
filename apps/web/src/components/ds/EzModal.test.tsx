@@ -33,6 +33,17 @@ describe('EzModal', () => {
     expect(document.body.style.overflow).toBe('hidden');
   });
 
+  it('close button has a 3:1 icon color and 44px/36px targets', () => {
+    render(<EzModal isOpen={true} onClose={vi.fn()} title="Title">Content</EzModal>);
+    const btn = screen.getByLabelText('Fechar');
+    expect(btn).toHaveClass('text-gray-600');
+    expect(btn).not.toHaveClass('text-gray-400');
+    expect(btn).toHaveClass('min-h-11');
+    expect(btn).toHaveClass('min-w-11');
+    expect(btn).toHaveClass('sm:min-h-9');
+    expect(btn).toHaveClass('sm:min-w-9');
+  });
+
   it('calls onClose when clicking the close (X) button', async () => {
     const mockClose = vi.fn();
     const user = userEvent.setup();

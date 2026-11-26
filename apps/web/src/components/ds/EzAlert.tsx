@@ -31,7 +31,7 @@ export interface EzAlertProps extends HTMLAttributes<HTMLDivElement> {
  * Banner for contextual feedback messages.
  */
 export const EzAlert = forwardRef<HTMLDivElement, EzAlertProps>(
-  ({ variant = 'info', title, action, onClose, icon, children, className, ...props }, ref) => {
+  ({ variant = 'info', title, action, onClose, icon, children, className, role, ...props }, ref) => {
     // Map variants to colors and default icons
     const config = {
       success: {
@@ -69,7 +69,7 @@ export const EzAlert = forwardRef<HTMLDivElement, EzAlertProps>(
     return (
       <div
         ref={ref}
-        role="alert"
+        role={role ?? (variant === 'error' || variant === 'warning' ? 'alert' : 'status')}
         className={cn(
           'relative flex w-full flex-col sm:flex-row sm:items-start gap-3 p-4 rounded-[12px] border transition-colors',
           config.bg,
@@ -84,7 +84,7 @@ export const EzAlert = forwardRef<HTMLDivElement, EzAlertProps>(
         </div>
         
         <div className="flex flex-1 flex-col gap-1">
-          {title && <h5 className="font-semibold text-[14px] leading-tight">{title}</h5>}
+          {title && <p className="font-semibold text-[14px] leading-tight">{title}</p>}
           {children && (
             <div className={cn('text-[14px] leading-relaxed', title ? 'opacity-90' : 'font-medium')}>
               {children}
@@ -97,11 +97,12 @@ export const EzAlert = forwardRef<HTMLDivElement, EzAlertProps>(
             {action && <div>{action}</div>}
             {onClose && (
               <button
+                type="button"
                 onClick={onClose}
-                className={cn('p-1 rounded-md transition-colors hover:bg-black/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-gray-900/20', config.iconColor)}
+                className={cn('inline-flex min-h-8 min-w-8 items-center justify-center rounded-md transition-colors hover:bg-black/5 ez-focus', config.iconColor)}
                 aria-label="Fechar"
               >
-                <X className="w-4 h-4" />
+                <X className="w-4 h-4" aria-hidden="true" />
               </button>
             )}
           </div>

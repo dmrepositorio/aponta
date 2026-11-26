@@ -6,7 +6,10 @@ import { EzToast } from './EzToast';
  * Notificação transitória exibida sobre a interface (ex.: confirmação de
  * abertura de chamado, erro de salvamento). Use dentro de um Toast Provider
  * (react-hot-toast ou portal customizado). As variantes `success`, `warning`,
- * `error` e `info` controlam o ícone e a cor de destaque.
+ * `error` e `info` controlam o ícone e a cor de destaque. Acessibilidade:
+ * `error`/`warning` usam `role="alert"` (assertivo); `success`/`info` usam
+ * `role="status"` (educado). O botão de fechar se chama "Fechar" e tem alvo de
+ * 32px. O `role` pode ser sobrescrito por prop.
  */
 const meta: Meta<typeof EzToast> = {
   title: 'DS/EzToast',

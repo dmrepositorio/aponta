@@ -7,6 +7,9 @@ import { EzButton } from './EzButton';
  * Aponta DS Empty Card — estado vazio com ícone, título, descrição e ação
  * opcional. Usado em listas de chamados, contratos e anexos sem resultados.
  * Importar diretamente de './EzEmptyCard' (implementação standalone).
+ * `variant="error"` indica falha de carregamento (ícone vermelho) e exibe o
+ * botão "Tentar novamente" quando `onRetry` é informado; difere do vazio e do
+ * filtro sem resultado. O ícone é decorativo (`aria-hidden`).
  */
 const meta: Meta<typeof EzEmptyCard> = {
   title: 'DS/EzEmptyCard',
@@ -34,6 +37,15 @@ export const BuscaSemResultado: Story = {
     icon: SearchX,
     title: 'Nenhum resultado para "servidor"',
     description: 'Verifique os termos da busca ou ajuste os filtros aplicados à listagem.',
+  },
+};
+
+export const Erro: Story = {
+  args: {
+    variant: 'error',
+    title: 'Não foi possível carregar os chamados',
+    description: 'Ocorreu um erro ao buscar a listagem. Verifique a conexão e tente novamente.',
+    onRetry: () => undefined,
   },
 };
 

@@ -4,6 +4,9 @@ import { EzAlert } from './EzAlert';
 /**
  * Aponta DS Alert
  * Banner para mensagens de feedback contextual (sucesso, aviso, erro, info).
+ * Acessibilidade: `error`/`warning` usam `role="alert"`; `info`/`success` usam
+ * `role="status"` (sobrescrevível por prop `role`). O título é um `<p>` (não
+ * cria nível de cabeçalho) e o botão de fechar tem alvo de 32px com `ez-focus`.
  * Suporta título opcional, ícone customizado, ação à direita e botão de
  * fechar (`onClose`). Usado para avisos de SLA, status de chamados e
  * confirmações de ações do operador.

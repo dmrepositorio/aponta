@@ -23,6 +23,22 @@ describe('EzSpinner', () => {
     expect(screen.getByText('Deleting...')).toHaveClass('text-red-500');
   });
 
+  it('names the status "Carregando" when there is no label', () => {
+    render(<EzSpinner />);
+    expect(screen.getByRole('status', { name: 'Carregando' })).toBeInTheDocument();
+  });
+
+  it('lets aria-label override the default name', () => {
+    render(<EzSpinner aria-label="Salvando" />);
+    expect(screen.getByRole('status', { name: 'Salvando' })).toBeInTheDocument();
+  });
+
+  it('hides the icon from assistive tech', () => {
+    const { container } = render(<EzSpinner label="Carregando chamados" />);
+    expect(container.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
+    expect(screen.getByRole('status', { name: 'Carregando chamados' })).toBeInTheDocument();
+  });
+
   it('renders a label if provided', () => {
     render(<EzSpinner label="Loading items..." />);
     expect(screen.getByText('Loading items...')).toBeInTheDocument();
