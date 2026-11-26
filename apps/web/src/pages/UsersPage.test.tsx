@@ -175,13 +175,14 @@ describe('UsersPage', () => {
     );
   });
 
-  // DMTE-550: a busca mora no painel de filtros (dsgrid), então o teste abre o painel antes de digitar.
-  it('searches by typing in the filter drawer, sending q to GET /users', async () => {
+  // F3-26 USR-02: a busca fica sempre visível na lista (antes morava dentro do painel de filtros fechado).
+  it('USR-02: searches by typing in the visible search box with the drawer closed, sending q to GET /users', async () => {
     const user = userEvent.setup();
     renderUsersPage();
-    const drawer = await openFilters(user);
+    await screen.findByText('Ana Silva');
+    expect(screen.queryByTestId('ez-filter-drawer')).not.toBeInTheDocument();
 
-    await user.type(within(drawer).getByLabelText(/buscar usuário/i), 'ana');
+    await user.type(screen.getByRole('textbox', { name: 'Buscar usuário' }), 'ana');
 
     await waitFor(() =>
       expect(api.get).toHaveBeenCalledWith(
@@ -189,6 +190,30 @@ describe('UsersPage', () => {
         expect.objectContaining({ params: expect.objectContaining({ q: 'ana', page: 1 }) }),
       ),
     );
+  });
+
+  it('USR-02: the / key focuses the search box, except while typing in another field', async () => {
+    const user = userEvent.setup();
+    renderUsersPage();
+    await screen.findByText('Ana Silva');
+    const search = screen.getByRole('textbox', { name: 'Buscar usuário' });
+    expect(search).not.toHaveFocus();
+
+    await user.keyboard('/');
+    expect(search).toHaveFocus();
+    expect((search as HTMLInputElement).value).toBe('');
+
+    await user.type(search, 'a/b');
+    expect((search as HTMLInputElement).value).toBe('a/b');
+  });
+
+  it('USR-02: the search box is not repeated inside the filter drawer', async () => {
+    const user = userEvent.setup();
+    renderUsersPage();
+    const drawer = await openFilters(user);
+
+    expect(within(drawer).queryByLabelText(/buscar usuário/i)).not.toBeInTheDocument();
+    expect(screen.getAllByLabelText(/buscar usuário/i)).toHaveLength(1);
   });
 
   // DMTE-550: as abas passam de Perfil e Segurança para Geral e Segurança.
@@ -272,7 +297,7 @@ describe('UsersPage', () => {
   });
 
   describe('AC-03: painel de filtros, colunas e paginação', () => {
-    it('AC-03: the drawer has Tipo with the five roles, Status, the groups, the search, dynamic filters and saved filters', async () => {
+    it('AC-03: the drawer has Tipo with the five roles, Status, the groups, dynamic filters and saved filters', async () => {
       const user = userEvent.setup();
       renderUsersPage();
       const drawer = await openFilters(user);
@@ -286,7 +311,6 @@ describe('UsersPage', () => {
       expect(within(drawer).getByLabelText(/^status$/i)).toBeInTheDocument();
       expect(within(drawer).getByLabelText(/^grupo de atendentes$/i)).toBeInTheDocument();
       expect(within(drawer).getByLabelText(/^grupo de permissões$/i)).toBeInTheDocument();
-      expect(within(drawer).getByLabelText(/buscar usuário/i)).toBeInTheDocument();
       expect(within(drawer).getByTestId('ez-dynamic-filter-add')).toBeInTheDocument();
       expect(within(drawer).getByTestId('ez-filter-drawer-save-btn')).toBeInTheDocument();
     });
@@ -342,7 +366,7 @@ describe('UsersPage', () => {
 
       await user.click(screen.getByRole('button', { name: 'Página 2' }));
       await waitFor(() => expect(usersParams().page).toBe(2));
-      await user.type(within(drawer).getByLabelText(/buscar usuário/i), 'a');
+      await user.type(screen.getByRole('textbox', { name: 'Buscar usuário' }), 'a');
       await waitFor(() => expect(usersParams()).toEqual(expect.objectContaining({ q: 'a', page: 1 })));
 
       await user.click(screen.getByRole('button', { name: 'Página 2' }));
