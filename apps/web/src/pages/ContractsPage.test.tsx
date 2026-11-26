@@ -1102,8 +1102,8 @@ describe('ContractsPage F3-34', () => {
 
   describe('CTR-04 rótulo do botão de exclusão', () => {
     const openDialog = async (user: ReturnType<typeof userEvent.setup>, rows: number) => {
-      const boxes = screen.getAllByRole('checkbox');
-      for (let i = 1; i <= rows; i += 1) await user.click(boxes[i]);
+      // A grade recria as caixas a cada marca: consulte de novo antes de cada clique.
+      for (let i = 1; i <= rows; i += 1) await user.click(screen.getAllByRole('checkbox')[i]);
       await user.click(screen.getByTestId('ez-toolbar-delete-button'));
       return screen.findByRole('dialog');
     };
@@ -1128,8 +1128,7 @@ describe('ContractsPage F3-34', () => {
       const dialog = await openDialog(user, 3);
       expect(within(dialog).getByRole('button', { name: 'Excluir 3 contratos' })).toBeInTheDocument();
       await user.click(within(dialog).getByRole('button', { name: 'Cancelar' }));
-      const boxes = screen.getAllByRole('checkbox');
-      for (let i = 4; i <= 7; i += 1) await user.click(boxes[i]);
+      for (let i = 4; i <= 7; i += 1) await user.click(screen.getAllByRole('checkbox')[i]);
       await user.click(screen.getByTestId('ez-toolbar-delete-button'));
       const again = await screen.findByRole('dialog');
       expect(within(again).getByRole('button', { name: 'Excluir 7 contratos' })).toBeInTheDocument();
