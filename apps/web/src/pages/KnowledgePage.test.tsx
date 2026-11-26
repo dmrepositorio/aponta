@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor, fireEvent, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { api } from '../lib/api';
 import { useAuthStore } from '../stores/authStore';
@@ -1199,5 +1199,493 @@ describe('KnowledgePage', () => {
       await user.click(screen.getByText('Suporte'));
       await waitFor(() => expect(screen.getByText(title)).toBeInTheDocument());
     }
+  });
+});
+
+// F3-29 (#474): Base de Conhecimento, parte 1 (KNW-01, 02, 03, 04, 06).
+describe('KnowledgePage F3-29', () => {
+  const restricted = {
+    id: 'article-restricted',
+    title: 'Artigo restrito',
+    content: '<p>Corpo</p>',
+    visibility: 'PRIVATE',
+    tags: [],
+    author: { id: 'u-1', name: 'Fulano' },
+    updatedAt: '2026-01-10T10:00:00.000Z',
+    attachments: [],
+    autoShareWithNewOrganizations: true,
+    allowedAgentGroups: [{ id: 'group-1', name: 'Suporte N1' }],
+    allowedOrganizations: [
+      { id: 'org-1', name: 'Cliente A' },
+      { id: 'org-2', name: 'Cliente B' },
+    ],
+  };
+
+  function LocationProbe() {
+    const location = useLocation();
+    return <div data-testid="location">{location.search}</div>;
+  }
+
+  function renderAt(entry: string) {
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    return render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={[entry]}>
+          <Routes>
+            <Route
+              path="/knowledge"
+              element={
+                <>
+                  <KnowledgePage />
+                  <LocationProbe />
+                </>
+              }
+            />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>,
+    );
+  }
+
+  function mockArticleList(list: unknown[]) {
+    vi.mocked(api.get).mockImplementation((url: string) => {
+      if (url.startsWith('/knowledge-folders')) return Promise.resolve({ data: folders });
+      if (url.startsWith('/articles')) return Promise.resolve({ data: list });
+      if (url.startsWith('/organizations')) return Promise.resolve({ data: organizations });
+      if (url.startsWith('/service-catalog-items')) return Promise.resolve({ data: catalogItems });
+      return Promise.reject(new Error(`Unexpected GET ${url}`));
+    });
+  }
+
+  /** Abre a pasta Suporte pela interface (sem depender do query string). */
+  async function renderInFolder() {
+    renderAt('/knowledge');
+    await userEvent.setup().click(await screen.findByText('Suporte'));
+  }
+
+  function articleCards(title: string) {
+    return screen.getByRole('heading', { name: title }).closest('article')!;
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockApiGet();
+    useAuthStore.setState({ token: null, user: null });
+    window.scrollTo = vi.fn();
+  });
+
+  describe('KNW-01: exclusão de artigo', () => {
+    async function askToDelete() {
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      await renderInFolder();
+      await screen.findByText('Como abrir um chamado');
+      await user.click(within(articleCards('Como abrir um chamado')).getByRole('button', { name: 'Excluir' }));
+      const dialog = await screen.findByRole('dialog');
+      return { user, dialog };
+    }
+
+    it('keeps the dialog open with the API message and the article listed when the API refuses', async () => {
+      vi.mocked(api.delete).mockRejectedValueOnce({
+        response: { status: 409, data: { message: 'Artigo em uso por um item do catálogo.' } },
+      });
+      const { user, dialog } = await askToDelete();
+
+      await user.click(within(dialog).getByRole('button', { name: 'Confirmar' }));
+
+      await waitFor(() => {
+        expect(within(screen.getByRole('dialog')).getByText('Artigo em uso por um item do catálogo.')).toBeInTheDocument();
+      });
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+      expect(screen.getByText('Como abrir um chamado')).toBeInTheDocument();
+    });
+
+    it('shows a generic message when the refusal carries none', async () => {
+      vi.mocked(api.delete).mockRejectedValueOnce(new Error('Network Error'));
+      const { user, dialog } = await askToDelete();
+
+      await user.click(within(dialog).getByRole('button', { name: 'Confirmar' }));
+
+      expect(await within(await screen.findByRole('dialog')).findByText('Não foi possível excluir o artigo.')).toBeInTheDocument();
+    });
+
+    it('keeps the dialog open with the confirm button busy while the request is pending, and closes on success', async () => {
+      let finish: (value: unknown) => void = () => undefined;
+      vi.mocked(api.delete).mockImplementationOnce(() => new Promise((resolve) => { finish = resolve; }));
+      const { user, dialog } = await askToDelete();
+
+      await user.click(within(dialog).getByRole('button', { name: 'Confirmar' }));
+
+      const confirm = within(screen.getByRole('dialog')).getByRole('button', { name: /Confirmar/ });
+      expect(confirm).toHaveAttribute('aria-busy', 'true');
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+
+      finish({ data: {} });
+      await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    });
+
+    it('clears the previous error when the dialog is opened again', async () => {
+      vi.mocked(api.delete).mockRejectedValueOnce({ response: { status: 403, data: { message: 'Sem permissão.' } } });
+      const { user, dialog } = await askToDelete();
+      await user.click(within(dialog).getByRole('button', { name: 'Confirmar' }));
+      await screen.findByText('Sem permissão.');
+      await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Cancelar' }));
+
+      await user.click(within(articleCards('Como abrir um chamado')).getByRole('button', { name: 'Excluir' }));
+
+      expect(await screen.findByRole('dialog')).toBeInTheDocument();
+      expect(screen.queryByText('Sem permissão.')).not.toBeInTheDocument();
+    });
+
+    it('offers Excluir only to an ADMIN, not to an AGENT', async () => {
+      loginAs('AGENT');
+      await renderInFolder();
+      await screen.findByText('Como abrir um chamado');
+
+      const card = articleCards('Como abrir um chamado');
+      expect(within(card).getByRole('button', { name: 'Editar' })).toBeInTheDocument();
+      expect(within(card).queryByRole('button', { name: 'Excluir' })).not.toBeInTheDocument();
+    });
+  });
+
+  describe('KNW-02: salvar e cancelar o artigo', () => {
+    async function openEdit() {
+      loginAs('AGENT');
+      const user = userEvent.setup();
+      await renderInFolder();
+      await screen.findByText('Como abrir um chamado');
+      await user.click(within(articleCards('Como abrir um chamado')).getByRole('button', { name: 'Editar' }));
+      return user;
+    }
+
+    it('shows the API message in the error alert when the save is refused', async () => {
+      vi.mocked(api.patch).mockRejectedValueOnce({
+        response: { status: 400, data: { message: 'Título já existe nesta pasta.' } },
+      });
+      const user = await openEdit();
+
+      await user.click(screen.getByRole('button', { name: 'Atualizar' }));
+
+      const alert = await screen.findByRole('alert');
+      expect(alert).toHaveTextContent('Falha ao atualizar o artigo.');
+      expect(alert).toHaveTextContent('Título já existe nesta pasta.');
+    });
+
+    it('confirms a successful update with a toast', async () => {
+      vi.mocked(api.patch).mockResolvedValueOnce({ data: {} });
+      const user = await openEdit();
+
+      await user.click(screen.getByRole('button', { name: 'Atualizar' }));
+
+      expect(await screen.findByText('Artigo atualizado.')).toBeInTheDocument();
+      expect(screen.queryByLabelText(/título/i)).not.toBeInTheDocument();
+    });
+
+    it('confirms a successful creation with a toast', async () => {
+      vi.mocked(api.post).mockResolvedValueOnce({ data: { id: 'article-9' } });
+      loginAs('AGENT');
+      const user = userEvent.setup();
+      await renderInFolder();
+      await screen.findByText('Como abrir um chamado');
+      await user.click(screen.getByRole('button', { name: '+ Novo artigo' }));
+      await user.type(screen.getByLabelText(/título/i), 'Novo');
+
+      await user.click(screen.getByRole('button', { name: 'Salvar' }));
+
+      expect(await screen.findByText('Artigo salvo.')).toBeInTheDocument();
+    });
+
+    it('asks before discarding an edited title, and "Continuar editando" keeps the form and the text', async () => {
+      const user = await openEdit();
+      await user.type(screen.getByLabelText(/título/i), ' alterado');
+
+      await user.click(screen.getByRole('button', { name: 'Cancelar' }));
+
+      const dialog = await screen.findByRole('dialog');
+      expect(within(dialog).getByText('Descartar alterações?')).toBeInTheDocument();
+      await user.click(within(dialog).getByRole('button', { name: 'Continuar editando' }));
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      expect(screen.getByLabelText(/título/i)).toHaveValue('Como abrir um chamado alterado');
+    });
+
+    it('closes the form when the discard is confirmed', async () => {
+      const user = await openEdit();
+      await user.type(screen.getByLabelText(/título/i), ' alterado');
+      await user.click(screen.getByRole('button', { name: 'Cancelar' }));
+
+      await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Descartar' }));
+
+      expect(screen.queryByLabelText(/título/i)).not.toBeInTheDocument();
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+
+    it('asks before discarding an edited body', async () => {
+      const user = await openEdit();
+      const editable = screen
+        .getByTestId('article-content-editor')
+        .querySelector('[contenteditable="true"]') as HTMLElement;
+      editable.innerHTML = '<p>Outro conteúdo</p>';
+      editable.dispatchEvent(new Event('input', { bubbles: true }));
+
+      await user.click(screen.getByRole('button', { name: 'Cancelar' }));
+
+      expect(await screen.findByRole('dialog')).toBeInTheDocument();
+    }, 20000);
+
+    it('closes without asking when nothing changed', async () => {
+      const user = await openEdit();
+
+      await user.click(screen.getByRole('button', { name: 'Cancelar' }));
+
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      expect(screen.queryByLabelText(/título/i)).not.toBeInTheDocument();
+    });
+  });
+
+  describe('KNW-03: estado na URL', () => {
+    it('opens the folder and fills the search from the query string', async () => {
+      loginAs('CLIENT');
+      renderAt('/knowledge?folder=folder-1&q=senha');
+
+      expect(await screen.findByText('Como abrir um chamado')).toBeInTheDocument();
+      expect(screen.getByRole('searchbox')).toHaveValue('senha');
+      expect(api.get).toHaveBeenCalledWith('/articles?search=senha&folderId=folder-1');
+    });
+
+    it('restores tags, sort and view mode from the query string', async () => {
+      loginAs('CLIENT');
+      renderAt('/knowledge?folder=folder-1&tags=senha,ajuda&sort=title_asc&view=grid');
+
+      await screen.findByText('Como abrir um chamado');
+      expect(screen.getByText('Tag: senha')).toBeInTheDocument();
+      expect(screen.getByText('Tag: ajuda')).toBeInTheDocument();
+      expect(screen.getByLabelText('Ordenar por', { selector: 'select' })).toHaveValue('title_asc');
+      expect(screen.getByTestId('knowledge-articles')).toHaveAttribute('data-view-mode', 'grid');
+      expect(api.get).toHaveBeenCalledWith('/articles?tags=senha%2Cajuda&sort=title_asc&folderId=folder-1');
+    });
+
+    it('restores the page from the query string', async () => {
+      const many = Array.from({ length: 12 }, (_, i) => ({
+        id: `extra-${i}`,
+        title: `Artigo ${i}`,
+        content: 'Conteúdo',
+        visibility: 'PUBLIC',
+        tags: [],
+        updatedAt: '2026-01-01T00:00:00.000Z',
+      }));
+      mockArticleList(many);
+      loginAs('CLIENT');
+      renderAt('/knowledge?folder=folder-1&page=2');
+
+      expect(await screen.findByText('Artigo 11')).toBeInTheDocument();
+      expect(screen.getByText('Página 2 de 2')).toBeInTheDocument();
+      expect(screen.queryByText('Artigo 0')).not.toBeInTheDocument();
+    });
+
+    it('falls back to the folders grid when the folder in the URL does not exist', async () => {
+      loginAs('CLIENT');
+      renderAt('/knowledge?folder=pasta-inexistente&q=senha');
+
+      expect(await screen.findByRole('heading', { name: 'Base de Conhecimento' })).toBeInTheDocument();
+      expect(screen.getByText('Suporte')).toBeInTheDocument();
+      await waitFor(() => expect(screen.getByTestId('location')).toHaveTextContent(/^$/));
+    });
+
+    it('writes folder, search, tag, sort, view and page to the URL as the user navigates', async () => {
+      loginAs('CLIENT');
+      const user = userEvent.setup();
+      renderAt('/knowledge');
+      await user.click(await screen.findByText('Suporte'));
+      await screen.findByText('Como abrir um chamado');
+      expect(screen.getByTestId('location')).toHaveTextContent('folder=folder-1');
+
+      await user.click(screen.getByLabelText('Exibir em grade'));
+      expect(screen.getByTestId('location')).toHaveTextContent('view=grid');
+
+      await user.selectOptions(screen.getByLabelText('Ordenar por', { selector: 'select' }), 'title_desc');
+      expect(screen.getByTestId('location')).toHaveTextContent('sort=title_desc');
+
+      await user.click(screen.getByTitle('Filtrar por senha'));
+      await waitFor(() => expect(screen.getByTestId('location')).toHaveTextContent('tags=senha'));
+
+      fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'chamado' } });
+      await waitFor(() => expect(screen.getByTestId('location')).toHaveTextContent('q=chamado'));
+    });
+
+    it('returns to the folders grid and drops the folder from the URL through the breadcrumb', async () => {
+      loginAs('CLIENT');
+      const user = userEvent.setup();
+      renderAt('/knowledge?folder=folder-1&q=senha');
+      await screen.findByText('Como abrir um chamado');
+
+      await user.click(screen.getByText('Pastas'));
+
+      expect(await screen.findByRole('heading', { name: 'Base de Conhecimento' })).toBeInTheDocument();
+      expect(screen.getByTestId('location')).not.toHaveTextContent('folder=');
+    });
+
+    it('keeps the default values out of the URL', async () => {
+      loginAs('CLIENT');
+      renderAt('/knowledge?folder=folder-1');
+      await screen.findByText('Como abrir um chamado');
+
+      expect(screen.getByTestId('location')).toHaveTextContent(/^\?folder=folder-1$/);
+    });
+  });
+
+  describe('KNW-04: busca com debounce e lista anterior visível', () => {
+    it('sends one request for the final text after the debounce, not one per keystroke', async () => {
+      loginAs('CLIENT');
+      await renderInFolder();
+      await screen.findByText('Como abrir um chamado');
+      vi.mocked(api.get).mockClear();
+      mockApiGet();
+
+      const box = screen.getByRole('searchbox');
+      fireEvent.change(box, { target: { value: 's' } });
+      fireEvent.change(box, { target: { value: 'se' } });
+      fireEvent.change(box, { target: { value: 'sen' } });
+      expect(box).toHaveValue('sen');
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      expect(vi.mocked(api.get).mock.calls.filter((c) => String(c[0]).includes('search='))).toHaveLength(0);
+
+      await waitFor(() => {
+        expect(vi.mocked(api.get).mock.calls.some((c) => c[0] === '/articles?search=sen&folderId=folder-1')).toBe(true);
+      });
+      expect(vi.mocked(api.get).mock.calls.filter((c) => String(c[0]).includes('search='))).toHaveLength(1);
+    });
+
+    it('keeps the previous cards on screen, with no full spinner, while the new search loads', async () => {
+      loginAs('CLIENT');
+      await renderInFolder();
+      await screen.findByText('Como abrir um chamado');
+      vi.mocked(api.get).mockImplementation((url: string) => {
+        if (url.startsWith('/articles?search=')) return new Promise(() => undefined);
+        return Promise.resolve({ data: url.startsWith('/knowledge-folders') ? folders : articles });
+      });
+
+      fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'senha' } });
+      await waitFor(() => {
+        expect(vi.mocked(api.get).mock.calls.some((c) => String(c[0]).startsWith('/articles?search=senha'))).toBe(true);
+      });
+
+      expect(screen.getByText('Como abrir um chamado')).toBeInTheDocument();
+      expect(screen.queryByText('Carregando artigos...')).not.toBeInTheDocument();
+      expect(screen.queryByText(/Nenhum artigo encontrado/)).not.toBeInTheDocument();
+    });
+
+    it('does not show the articles of another folder as placeholder', async () => {
+      const second = [
+        ...folders,
+        { id: 'folder-2', name: 'Financeiro', description: null, icon: null, _count: { articles: 0 } },
+      ];
+      vi.mocked(api.get).mockImplementation((url: string) => {
+        if (url.startsWith('/knowledge-folders')) return Promise.resolve({ data: second });
+        if (url.includes('folderId=folder-2')) return new Promise(() => undefined);
+        if (url.startsWith('/articles')) return Promise.resolve({ data: articles });
+        return Promise.resolve({ data: [] });
+      });
+      loginAs('CLIENT');
+      const user = userEvent.setup();
+      await renderInFolder();
+      await screen.findByText('Como abrir um chamado');
+
+      await user.click(screen.getByText('Pastas'));
+      await user.click(await screen.findByText('Financeiro'));
+
+      expect(await screen.findByText('Carregando artigos...')).toBeInTheDocument();
+      expect(screen.queryByText('Como abrir um chamado')).not.toBeInTheDocument();
+    });
+
+    it('applies clearing the filters immediately, without waiting for the debounce', async () => {
+      loginAs('CLIENT');
+      const user = userEvent.setup();
+      await renderInFolder();
+      await screen.findByText('Como abrir um chamado');
+      mockArticleList([]);
+      fireEvent.change(screen.getByRole('searchbox'), { target: { value: 'zzz' } });
+      await screen.findByText('Nenhum artigo encontrado para a busca atual.');
+
+      await user.click(screen.getByRole('button', { name: 'Limpar busca e filtros' }));
+
+      expect(screen.getByRole('searchbox')).toHaveValue('');
+      expect(screen.getByTestId('location')).not.toHaveTextContent('q=');
+      await waitFor(() => {
+        expect(vi.mocked(api.get).mock.calls.at(-1)?.[0]).toBe('/articles?folderId=folder-1');
+      });
+    });
+  });
+
+  describe('KNW-06: compartilhamento', () => {
+    async function openRestrictedForm() {
+      mockArticleList([restricted]);
+      loginAs('AGENT');
+      const user = userEvent.setup();
+      await renderInFolder();
+      await screen.findByText('Artigo restrito');
+      await user.click(within(articleCards('Artigo restrito')).getByRole('button', { name: 'Editar' }));
+      return user;
+    }
+
+    it('sends empty lists and no auto-share when a Privado article is saved as Público', async () => {
+      vi.mocked(api.patch).mockResolvedValueOnce({ data: {} });
+      const user = await openRestrictedForm();
+
+      await user.selectOptions(screen.getByLabelText(/tipo de acesso/i, { selector: 'select' }), 'PUBLIC');
+      await user.click(screen.getByRole('button', { name: 'Atualizar' }));
+
+      await waitFor(() => {
+        expect(api.patch).toHaveBeenCalledWith(
+          '/articles/article-restricted',
+          expect.objectContaining({
+            visibility: 'PUBLIC',
+            agentGroupIds: [],
+            organizationIds: [],
+            autoShareWithNewOrganizations: false,
+          }),
+        );
+      });
+    });
+
+    it('keeps the lists and the auto-share when the article stays Privado', async () => {
+      vi.mocked(api.patch).mockResolvedValueOnce({ data: {} });
+      const user = await openRestrictedForm();
+
+      await user.click(screen.getByRole('button', { name: 'Atualizar' }));
+
+      await waitFor(() => {
+        expect(api.patch).toHaveBeenCalledWith(
+          '/articles/article-restricted',
+          expect.objectContaining({
+            visibility: 'PRIVATE',
+            agentGroupIds: ['group-1'],
+            organizationIds: ['org-1', 'org-2'],
+            autoShareWithNewOrganizations: true,
+          }),
+        );
+      });
+    });
+
+    it('summarizes the chosen groups and clients next to Compartilhar, only while Privado', async () => {
+      const user = await openRestrictedForm();
+
+      expect(screen.getByText('1 grupo, 2 clientes')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Compartilhar' })).toBeInTheDocument();
+
+      await user.selectOptions(screen.getByLabelText(/tipo de acesso/i, { selector: 'select' }), 'PUBLIC');
+      expect(screen.queryByText('1 grupo, 2 clientes')).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Compartilhar' })).not.toBeInTheDocument();
+    });
+
+    it('shows no summary for a Privado article with nothing chosen', async () => {
+      loginAs('AGENT');
+      const user = userEvent.setup();
+      await renderInFolder();
+      await screen.findByText('Artigo interno');
+      await user.click(within(articleCards('Artigo interno')).getByRole('button', { name: 'Editar' }));
+
+      expect(screen.getByRole('button', { name: 'Compartilhar' })).toBeInTheDocument();
+      expect(screen.queryByText(/^[0-9]+ (grupos?|clientes?)/)).not.toBeInTheDocument();
+    });
   });
 });
