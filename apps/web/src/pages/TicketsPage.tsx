@@ -118,7 +118,10 @@ export function TicketsPage() {
         onSearchChange={(search) =>
           setFilters((prev) => ({ ...prev, search: search || undefined, page: 1 }))
         }
-        onOpenAdvancedSearch={() => openInTab('/tickets/search', 'Busca avançada')}
+        onOpenAdvancedSearch={() => {
+          const query = filtersToSearchParams(filters).toString();
+          openInTab(query ? `/tickets/search?${query}` : '/tickets/search', 'Busca avançada');
+        }}
         isSearching={isFetching}
       />
 

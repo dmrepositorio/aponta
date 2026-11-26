@@ -1,13 +1,13 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../lib/api';
 import { useAuthStore } from '../stores/authStore';
-import { filtersToSearchParams } from '../lib/ticketFilterParams';
+import { filtersToSearchParams, parseFiltersFromSearchParams } from '../lib/ticketFilterParams';
 import type { TicketFiltersInput, TicketPriority, TicketStatus } from '../hooks/useTickets';
 import { statusLabels, priorityLabels } from '../components/tickets/TicketCard';
 import type { DeskStage } from '../components/MesaStagesEditor';
-import { EzCheck, EzCollapsibleBox, EzComboBox, EzTextInput, EzButton } from '../components/ds';
+import { EzAlert, EzCheck, EzCollapsibleBox, EzComboBox, EzSearch, EzTextInput, EzButton } from '../components/ds';
 
 interface PickerOption {
   id: string;
@@ -43,6 +43,54 @@ const EMPTY_FORM = {
 
 type AdvancedSearchForm = typeof EMPTY_FORM;
 
+/** ADV-04: o formulário abre com os filtros ativos da lista (query string). */
+function formFromFilters(filters: TicketFiltersInput): AdvancedSearchForm {
+  let status: StatusFieldValue = filters.status ?? '';
+  if (filters.notClosed) status = 'OPEN_SHORTCUT';
+  else if (filters.closedOnly) status = 'CLOSED_SHORTCUT';
+  return {
+    dateField: filters.dateField ?? EMPTY_FORM.dateField,
+    dateFrom: filters.dateFrom ?? '',
+    dateTo: filters.dateTo ?? '',
+    number: filters.number ?? '',
+    titleContains: filters.titleContains ?? '',
+    status,
+    organizationId: filters.organizationId ?? '',
+    requesterQuery: filters.requesterQuery ?? '',
+    agentId: filters.agentId ?? '',
+    serviceDeskId: filters.serviceDeskId ?? '',
+    stageId: filters.stageId ?? '',
+    priority: filters.priority ?? '',
+    mine: Boolean(filters.mine),
+    unassigned: Boolean(filters.unassigned),
+    paused: Boolean(filters.paused),
+    overdue: Boolean(filters.overdue),
+  };
+}
+
+function filtersFromForm(form: AdvancedSearchForm): TicketFiltersInput {
+  const filters: TicketFiltersInput = {};
+  if (form.number) filters.number = form.number;
+  if (form.titleContains) filters.titleContains = form.titleContains;
+  if (form.status === 'OPEN_SHORTCUT') filters.notClosed = true;
+  else if (form.status === 'CLOSED_SHORTCUT') filters.closedOnly = true;
+  else if (form.status) filters.status = form.status;
+  if (form.organizationId) filters.organizationId = form.organizationId;
+  if (form.requesterQuery) filters.requesterQuery = form.requesterQuery;
+  if (form.agentId) filters.agentId = form.agentId;
+  if (form.serviceDeskId) filters.serviceDeskId = form.serviceDeskId;
+  if (form.stageId) filters.stageId = form.stageId;
+  if (form.priority) filters.priority = form.priority;
+  if (form.dateFrom) filters.dateFrom = form.dateFrom;
+  if (form.dateTo) filters.dateTo = form.dateTo;
+  if (form.dateFrom || form.dateTo) filters.dateField = form.dateField;
+  if (form.mine) filters.mine = true;
+  if (form.unassigned) filters.unassigned = true;
+  if (form.paused) filters.paused = true;
+  if (form.overdue) filters.overdue = true;
+  return filters;
+}
+
 /**
  * Busca avançada (SPEC DMTE-137 D4): absorve o painel TicketFilters antigo.
  * "Buscar" navega para "/" com os filtros na query string — a Lista/Kanban
@@ -53,57 +101,53 @@ export function TicketAdvancedSearchPage() {
   const user = useAuthStore((state) => state.user);
   const isClient = user?.role === 'CLIENT';
   const isClientMaster = user?.role === 'CLIENT_MASTER';
-  const [form, setForm] = useState<AdvancedSearchForm>(EMPTY_FORM);
+  const location = useLocation();
+  const [form, setForm] = useState<AdvancedSearchForm>(() =>
+    formFromFilters(parseFiltersFromSearchParams(new URLSearchParams(location.search))),
+  );
+  const [submitAttempted, setSubmitAttempted] = useState(false);
 
-  const { data: serviceDesks = [] } = useQuery({
+  const { data: serviceDesks = [], isLoading: desksLoading, isError: desksError } = useQuery({
     queryKey: ['service-desks', 'advanced-search'],
     queryFn: async () => (await api.get<PickerOption[]>('/service-desks')).data,
   });
-  const { data: organizations = [] } = useQuery({
+  const { data: organizations = [], isLoading: orgsLoading, isError: orgsError } = useQuery({
     queryKey: ['organizations', 'advanced-search'],
     queryFn: async () => (await api.get<PickerOption[]>('/organizations')).data,
     enabled: !isClient && !isClientMaster,
   });
-  const { data: agents = [] } = useQuery({
+  const { data: agents = [], isLoading: agentsLoading, isError: agentsError } = useQuery({
     queryKey: ['agents', 'advanced-search'],
     queryFn: async () => (await api.get<PickerOption[]>('/users/agents')).data,
     // GET /users/agents rejects CLIENT_MASTER with 403 (it's an agent-scoped
     // endpoint) — hide the field instead of leaving it permanently empty.
     enabled: !isClient && !isClientMaster,
   });
-  const { data: stages = [] } = useQuery({
+  const { data: stages = [], isLoading: stagesLoading, isError: stagesError } = useQuery({
     queryKey: ['service-desk-stages', 'advanced-search', form.serviceDeskId],
     queryFn: async () =>
       (await api.get<DeskStage[]>(`/service-desks/${form.serviceDeskId}/stages`)).data,
     enabled: Boolean(form.serviceDeskId),
   });
 
+  const filters = filtersFromForm(form);
+  const hasAnyFilter = Object.keys(filters).length > 0;
+  const dateRangeInvalid = Boolean(form.dateFrom && form.dateTo && form.dateTo < form.dateFrom);
+
   const handleSearch = (event: React.FormEvent) => {
     event.preventDefault();
-    const filters: TicketFiltersInput = {};
-    if (form.number) filters.number = form.number;
-    if (form.titleContains) filters.titleContains = form.titleContains;
-    if (form.status === 'OPEN_SHORTCUT') filters.notClosed = true;
-    else if (form.status === 'CLOSED_SHORTCUT') filters.closedOnly = true;
-    else if (form.status) filters.status = form.status;
-    if (form.organizationId) filters.organizationId = form.organizationId;
-    if (form.requesterQuery) filters.requesterQuery = form.requesterQuery;
-    if (form.agentId) filters.agentId = form.agentId;
-    if (form.serviceDeskId) filters.serviceDeskId = form.serviceDeskId;
-    if (form.stageId) filters.stageId = form.stageId;
-    if (form.priority) filters.priority = form.priority;
-    if (form.dateFrom) filters.dateFrom = form.dateFrom;
-    if (form.dateTo) filters.dateTo = form.dateTo;
-    if (form.dateFrom || form.dateTo) filters.dateField = form.dateField;
-    if (form.mine) filters.mine = true;
-    if (form.unassigned) filters.unassigned = true;
-    if (form.paused) filters.paused = true;
-    if (form.overdue) filters.overdue = true;
-
+    if (dateRangeInvalid) return;
+    if (!hasAnyFilter) {
+      setSubmitAttempted(true);
+      return;
+    }
     navigate(`/?${filtersToSearchParams(filters).toString()}`);
   };
 
-  const handleClear = () => setForm(EMPTY_FORM);
+  const handleClear = () => {
+    setForm(EMPTY_FORM);
+    setSubmitAttempted(false);
+  };
 
   return (
     <div className="space-y-6">
@@ -122,7 +166,7 @@ export function TicketAdvancedSearchPage() {
             <option value="createdAt">Abertura</option>
             <option value="closedAt">Fechamento</option>
           </EzComboBox>
-          <div className="flex gap-2 lg:col-span-2">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-start lg:col-span-2">
             <EzTextInput
               id="adv-search-date-from"
               label="De"
@@ -135,6 +179,8 @@ export function TicketAdvancedSearchPage() {
               label="Até"
               type="date"
               value={form.dateTo}
+              hasError={dateRangeInvalid}
+              message={dateRangeInvalid ? 'A data final não pode ser anterior à data inicial' : undefined}
               onChange={(e) => setForm((f) => ({ ...f, dateTo: e.target.value }))}
             />
           </div>
@@ -187,19 +233,17 @@ export function TicketAdvancedSearchPage() {
           </EzComboBox>
 
           {!isClient && !isClientMaster && (
-            <EzComboBox
+            <EzSearch
               id="adv-search-organization"
               label="Cliente"
-              value={form.organizationId}
-              onChange={(e) => setForm((f) => ({ ...f, organizationId: e.target.value }))}
-            >
-              <option value="">Todos os clientes</option>
-              {organizations.map((org) => (
-                <option key={org.id} value={org.id}>
-                  {org.name}
-                </option>
-              ))}
-            </EzComboBox>
+              placeholder={orgsLoading ? 'Carregando clientes…' : 'Todos os clientes'}
+              disabled={orgsLoading}
+              hasError={orgsError}
+              message={orgsError ? 'Não foi possível carregar os clientes' : undefined}
+              options={organizations.map((org) => ({ label: org.name, value: org.id }))}
+              value={form.organizationId || null}
+              onChange={(value) => setForm((f) => ({ ...f, organizationId: value ? String(value) : '' }))}
+            />
           )}
 
           {!isClient && (
@@ -213,30 +257,31 @@ export function TicketAdvancedSearchPage() {
           )}
 
           {!isClient && !isClientMaster && (
-            <EzComboBox
+            <EzSearch
               id="adv-search-agent"
               label="Atendente"
-              value={form.agentId}
-              onChange={(e) => setForm((f) => ({ ...f, agentId: e.target.value }))}
-            >
-              <option value="">Todos os atendentes</option>
-              {agents.map((agent) => (
-                <option key={agent.id} value={agent.id}>
-                  {agent.name}
-                </option>
-              ))}
-            </EzComboBox>
+              placeholder={agentsLoading ? 'Carregando atendentes…' : 'Todos os atendentes'}
+              disabled={agentsLoading}
+              hasError={agentsError}
+              message={agentsError ? 'Não foi possível carregar os atendentes' : undefined}
+              options={agents.map((agent) => ({ label: agent.name, value: agent.id }))}
+              value={form.agentId || null}
+              onChange={(value) => setForm((f) => ({ ...f, agentId: value ? String(value) : '' }))}
+            />
           )}
 
           <EzComboBox
             id="adv-search-service-desk"
             label="Mesa de serviço"
             value={form.serviceDeskId}
+            disabled={desksLoading}
+            hasError={desksError}
+            message={desksError ? 'Não foi possível carregar as mesas' : undefined}
             onChange={(e) =>
               setForm((f) => ({ ...f, serviceDeskId: e.target.value, stageId: '' }))
             }
           >
-            <option value="">Todas as mesas</option>
+            <option value="">{desksLoading ? 'Carregando mesas…' : 'Todas as mesas'}</option>
             {serviceDesks.map((desk) => (
               <option key={desk.id} value={desk.id}>
                 {desk.name}
@@ -248,10 +293,12 @@ export function TicketAdvancedSearchPage() {
             id="adv-search-stage"
             label="Estágio"
             value={form.stageId}
-            disabled={!form.serviceDeskId}
+            disabled={!form.serviceDeskId || stagesLoading}
+            hasError={stagesError}
+            message={stagesError ? 'Não foi possível carregar os estágios' : undefined}
             onChange={(e) => setForm((f) => ({ ...f, stageId: e.target.value }))}
           >
-            <option value="">Todos os estágios</option>
+            <option value="">{stagesLoading ? 'Carregando estágios…' : 'Todos os estágios'}</option>
             {stages.map((stage) => (
               <option key={stage.id} value={stage.id}>
                 {stage.name}
@@ -288,6 +335,10 @@ export function TicketAdvancedSearchPage() {
             />
           </div>
         </EzCollapsibleBox>
+
+        {submitAttempted && !hasAnyFilter && (
+          <EzAlert variant="warning">Preencha ao menos um filtro</EzAlert>
+        )}
 
         <div className="flex gap-2">
           <EzButton type="submit">Buscar</EzButton>

@@ -125,9 +125,13 @@ test.describe('dashboard filtering', () => {
     await expect(page.getByText(itTitle)).toBeHidden();
 
     // Clear the filter: both are visible again.
-    await page.getByRole('button', { name: 'Busca avançada' }).click();
-    await page.getByRole('button', { name: 'Limpar' }).click();
-    await page.getByRole('button', { name: 'Buscar' }).click();
+    // F3-15 ADV-01: "Buscar" com o formulário vazio não navega mais; voltar à lista
+    // completa é "Redefinir filtros" na própria lista (a Busca avançada abre já preenchida).
+    // "Buscar" volta para "/" sem `view` (Kanban por padrão) e "Redefinir filtros" só
+    // existe no modo Lista; o alternador preserva os filtros da query.
+    await page.getByRole('button', { name: 'Lista' }).click();
+    await expect(page).toHaveURL(/view=list/);
+    await page.getByRole('button', { name: 'Redefinir filtros' }).first().click();
     await expect(page.getByText(generalTitle)).toBeVisible();
     await expect(page.getByText(itTitle)).toBeVisible();
   });
@@ -161,9 +165,13 @@ test.describe('dashboard filtering', () => {
     await page.getByRole('button', { name: 'Buscar' }).click();
     await expect(page.getByText(uniqueTitle)).toBeHidden();
 
-    await page.getByRole('button', { name: 'Busca avançada' }).click();
-    await page.getByRole('button', { name: 'Limpar' }).click();
-    await page.getByRole('button', { name: 'Buscar' }).click();
+    // F3-15 ADV-01: "Buscar" com o formulário vazio não navega mais; voltar à lista
+    // completa é "Redefinir filtros" na própria lista (a Busca avançada abre já preenchida).
+    // "Buscar" volta para "/" sem `view` (Kanban por padrão) e "Redefinir filtros" só
+    // existe no modo Lista; o alternador preserva os filtros da query.
+    await page.getByRole('button', { name: 'Lista' }).click();
+    await expect(page).toHaveURL(/view=list/);
+    await page.getByRole('button', { name: 'Redefinir filtros' }).first().click();
     await expect(page.getByText(uniqueTitle)).toBeVisible();
   });
 });
