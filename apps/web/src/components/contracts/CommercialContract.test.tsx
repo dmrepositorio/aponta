@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { ContractForm, ContractDetail } from './ContractViews';
+import { ContractForm, ContractDetail, modality } from './ContractViews';
 
 describe('commercial contract setup', () => {
   const organizations = [
@@ -105,5 +105,42 @@ describe('commercial contract setup', () => {
       screen.getByText(/Novos lançamentos bloqueados até regularizar/),
     ).toBeInTheDocument();
     expect(screen.queryByText('Empreito')).not.toBeInTheDocument();
+  });
+});
+
+describe('horas em pt-BR (CTR-06)', () => {
+  const base = { id: 'c', organizationId: 'org', active: true, createdAt: '2026-01-01' };
+  const estimate = (minutes: number | undefined) => {
+    const { unmount } = render(
+      <ContractDetail
+        contract={{ ...base, type: 'FIXED_PROJECT', estimatedMinutes: minutes }}
+        showFinancial={false}
+      />,
+    );
+    const text = screen.getByText('Estimativa total').nextElementSibling?.textContent;
+    unmount();
+    return text;
+  };
+  it('shows the total estimate with a decimal comma and at most two places', () => {
+    expect(estimate(80)).toBe('1,33h');
+  });
+  it('shows whole and half hours without trailing zeros', () => {
+    expect(estimate(60)).toBe('1h');
+    expect(estimate(90)).toBe('1,5h');
+  });
+  it('shows zero and missing estimates as 0h', () => {
+    expect(estimate(0)).toBe('0h');
+    expect(estimate(undefined)).toBe('0h');
+  });
+  it('shows large estimates with the thousands separator', () => {
+    expect(estimate(120000)).toBe('2.000h');
+  });
+  it('shows the package allowance with a decimal comma', () => {
+    expect(modality({ ...base, type: 'HOURS_LIMIT', hoursLimit: 1.5 })).toBe('Pacote: 1,5h');
+    expect(modality({ ...base, type: 'HOURS_LIMIT', includedMinutes: 80 })).toBe('Pacote: 1,33h');
+    expect(modality({ ...base, type: 'HOURS_LIMIT', hoursLimit: 40 })).toBe('Pacote: 40h');
+  });
+  it('keeps the dash when the package has no allowance', () => {
+    expect(modality({ ...base, type: 'HOURS_LIMIT' })).toBe('Pacote: —h');
   });
 });
