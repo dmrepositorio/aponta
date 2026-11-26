@@ -347,7 +347,7 @@ function UsersPageContent() {
               )}
             </div>
             {canToggleActive && (
-              <div className="flex items-center gap-2 border-b border-gray-200 px-3 py-1.5 max-sm:hidden">
+              <div className="flex flex-wrap items-center gap-2 border-b border-gray-200 px-3 py-1.5">
                 <EzButton
                   type="button"
                   variant="secondary"
