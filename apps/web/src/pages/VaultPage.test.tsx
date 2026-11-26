@@ -134,14 +134,16 @@ describe('VaultPage', () => {
     expect(screen.getByText(/carregando cofre/i)).toBeInTheDocument();
   });
 
-  it('shows an error state when the request fails', async () => {
+  it('shows an error state in the list and in the tree when the requests fail, keeping the page header', async () => {
     vi.mocked(api.get).mockRejectedValue(new Error('network error'));
     loginAs('ADMIN');
     renderPage();
 
     await waitFor(() => {
-      expect(screen.getByText(/erro ao carregar o cofre/i)).toBeInTheDocument();
+      expect(screen.getByText(/não foi possível carregar as senhas/i)).toBeInTheDocument();
     });
+    expect(screen.getByText(/não foi possível carregar as pastas/i)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Cofre de Senhas' })).toBeInTheDocument();
   });
 
   it('shows the empty state when there are no credentials in the selected folder', async () => {
@@ -156,8 +158,9 @@ describe('VaultPage', () => {
     renderPage();
 
     await waitFor(() => {
-      expect(screen.getByText(/nenhuma credencial liberada/i)).toBeInTheDocument();
+      expect(screen.getByText('Esta pasta ainda não tem senhas')).toBeInTheDocument();
     });
+    expect(screen.queryByText(/liberada para esta operação/i)).not.toBeInTheDocument();
   });
 
   it('renders the folder tree and masks every password/username by default (acceptance criterion #1)', async () => {
@@ -1364,20 +1367,23 @@ describe('VaultPage modals and load error (DMTE-545)', () => {
     const user = userEvent.setup();
     renderPage();
 
-    expect(await screen.findByText('Erro ao carregar o cofre de senhas.')).toBeInTheDocument();
+    const folderError = /não foi possível carregar as pastas/i;
+    expect(await screen.findByText(folderError)).toBeInTheDocument();
+    expect(await screen.findByText('Servidor FTP')).toBeInTheDocument();
     const credentialCalls = () => vi.mocked(api.get).mock.calls.filter(([url]) => url === '/vault/credentials').length;
     const folderCalls = () => vi.mocked(api.get).mock.calls.filter(([url]) => url === '/vault/folders').length;
     const [credentialsBefore, foldersBefore] = [credentialCalls(), folderCalls()];
 
     await user.click(screen.getByRole('button', { name: 'Tentar de novo' }));
-    expect(await screen.findByText('Erro ao carregar o cofre de senhas.')).toBeInTheDocument();
+    expect(await screen.findByText(folderError)).toBeInTheDocument();
     expect(folderCalls()).toBe(foldersBefore + 1);
     expect(credentialCalls()).toBe(credentialsBefore);
 
     foldersFail = false;
     await user.click(screen.getByRole('button', { name: 'Tentar de novo' }));
-    expect(await screen.findByText('Servidor FTP')).toBeInTheDocument();
-    expect(screen.queryByText('Erro ao carregar o cofre de senhas.')).not.toBeInTheDocument();
+    expect(await screen.findByText(/Servidores \(1\)/)).toBeInTheDocument();
+    expect(screen.queryByText(folderError)).not.toBeInTheDocument();
+    expect(screen.getByText('Servidor FTP')).toBeInTheDocument();
     expect(credentialCalls()).toBe(credentialsBefore);
   });
 });
@@ -1707,5 +1713,191 @@ describe('VaultPage — revelação anunciada, rótulo único e valor legível (
     await user.click(eye('senha'));
     await waitFor(() => expect(screen.queryByText('fake-password-123')).not.toBeInTheDocument());
     expect(ftpRow().getAllByText('••••••••')[0]).not.toHaveClass('select-all');
+  });
+});
+
+describe('VaultPage — estados vazios e erro de carga por região (VLT-09, VLT-10)', () => {
+  const emptyMeta = { total: 0, page: 1, limit: 10, totalPages: 1 };
+  const listCalls = () => vi.mocked(api.get).mock.calls.filter(([url]) => url === '/vault/credentials').length;
+  const folderCalls = () => vi.mocked(api.get).mock.calls.filter(([url]) => url === '/vault/folders').length;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    useAuthStore.setState({ token: null, user: null });
+    window.confirm = vi.fn(() => true);
+  });
+
+  function mockGets(options: { folders?: unknown; credentials?: (params: any) => unknown }) {
+    vi.mocked(api.get).mockImplementation(async (url: string, config?: any) => {
+      if (url === '/vault/folders') {
+        if (options.folders instanceof Error) throw options.folders;
+        return { data: options.folders ?? folders };
+      }
+      if (url === '/vault/credentials') {
+        const result = options.credentials ? options.credentials(config?.params) : undefined;
+        if (result instanceof Error) throw result;
+        return { data: result ?? { data: credentials, meta: { total: 3, page: 1, limit: 10, totalPages: 1 } } };
+      }
+      throw new Error(`Unexpected GET ${url}`);
+    });
+  }
+
+  describe('carregamento', () => {
+    it('keeps the header, the tree and the search while the credentials load', async () => {
+      vi.mocked(api.get).mockImplementation(async (url: string) => {
+        if (url === '/vault/folders') return { data: folders };
+        return new Promise(() => undefined);
+      });
+      loginAs('ADMIN');
+      renderPage();
+
+      expect(screen.getByRole('heading', { name: 'Cofre de Senhas' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Auditoria' })).toBeInTheDocument();
+      expect(screen.getByTestId('tree-node-root')).toBeInTheDocument();
+      expect(screen.getByPlaceholderText('Buscar senha...')).toBeInTheDocument();
+      expect(screen.getByText(/carregando cofre/i)).toBeInTheDocument();
+      expect(await screen.findByText(/Servidores \(1\)/)).toBeInTheDocument();
+    });
+
+    it('lists the credentials while the folders are still loading, without one query blocking the other', async () => {
+      vi.mocked(api.get).mockImplementation(async (url: string) => {
+        if (url === '/vault/credentials') {
+          return { data: { data: credentials, meta: { total: 3, page: 1, limit: 10, totalPages: 1 } } };
+        }
+        return new Promise(() => undefined);
+      });
+      loginAs('ADMIN');
+      renderPage();
+
+      expect(await screen.findByText('Servidor FTP')).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'Cofre de Senhas' })).toBeInTheDocument();
+      expect(screen.getByTestId('tree-node-root')).toBeInTheDocument();
+      expect(screen.getByText(/carregando pastas/i)).toBeInTheDocument();
+    });
+  });
+
+  describe('erro de carga', () => {
+    it('shows an access-denied message in the list for a 403, keeping header, tree and search', async () => {
+      mockGets({ credentials: () => httpError(403, 'Forbidden resource') });
+      loginAs('AGENT');
+      renderPage();
+
+      expect(await screen.findByText(/acesso negado/i)).toBeInTheDocument();
+      expect(screen.getByRole('alert')).toHaveTextContent(/não tem permissão para ver as senhas/i);
+      expect(screen.getByRole('heading', { name: 'Cofre de Senhas' })).toBeInTheDocument();
+      expect(screen.getByTestId('tree-node-root')).toBeInTheDocument();
+      expect(await screen.findByText(/Servidores \(1\)/)).toBeInTheDocument();
+      expect(screen.getByPlaceholderText('Buscar senha...')).toBeInTheDocument();
+      expect(screen.queryByRole('table')).not.toBeInTheDocument();
+      expect(screen.queryByText(/não foi possível carregar as senhas/i)).not.toBeInTheDocument();
+    });
+
+    it('does not leak the server message of the refusal into the page', async () => {
+      mockGets({ credentials: () => httpError(403, 'mensagem interna do servidor') });
+      loginAs('AGENT');
+      renderPage();
+
+      await screen.findByText(/acesso negado/i);
+      expect(screen.queryByText(/mensagem interna do servidor/i)).not.toBeInTheDocument();
+    });
+
+    it('shows a network-failure message, distinct from access denied, for a failure without a 403', async () => {
+      mockGets({ credentials: () => httpError(500) });
+      loginAs('ADMIN');
+      renderPage();
+
+      expect(await screen.findByText(/não foi possível carregar as senhas/i)).toBeInTheDocument();
+      expect(screen.getByText(/conexão/i)).toBeInTheDocument();
+      expect(screen.queryByText(/acesso negado/i)).not.toBeInTheDocument();
+      expect(screen.getByTestId('tree-node-root')).toBeInTheDocument();
+    });
+
+    it('retries only the failed list and shows the credentials after a success', async () => {
+      let fail = true;
+      mockGets({ credentials: () => (fail ? httpError(500) : undefined) });
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      renderPage();
+
+      await screen.findByText(/não foi possível carregar as senhas/i);
+      await screen.findByText(/Servidores \(1\)/);
+      const [listBefore, foldersBefore] = [listCalls(), folderCalls()];
+      fail = false;
+      await user.click(screen.getByRole('button', { name: 'Tentar de novo' }));
+
+      expect(await screen.findByText('Servidor FTP')).toBeInTheDocument();
+      expect(listCalls()).toBe(listBefore + 1);
+      expect(folderCalls()).toBe(foldersBefore);
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    });
+
+    it('shows an access-denied message in the tree for a 403 on the folders, and still lists the credentials', async () => {
+      mockGets({ folders: httpError(403) });
+      loginAs('AGENT');
+      renderPage();
+
+      expect(await screen.findByText(/não tem permissão para ver as pastas/i)).toBeInTheDocument();
+      expect(await screen.findByText('Servidor FTP')).toBeInTheDocument();
+      expect(screen.getByTestId('tree-node-root')).toBeInTheDocument();
+    });
+  });
+
+  describe('estados vazios', () => {
+    it('says the folder is empty and offers "Nova senha" to an ADMIN, opening the modal on that folder', async () => {
+      mockGets({ credentials: () => ({ data: [], meta: emptyMeta }) });
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      renderPage();
+
+      expect(await screen.findByText('Esta pasta ainda não tem senhas')).toBeInTheDocument();
+      expect(screen.queryByText(/liberada para esta operação/i)).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Limpar busca' })).not.toBeInTheDocument();
+
+      await user.click(screen.getByTestId('tree-node-f1'));
+      await user.click(await screen.findByRole('button', { name: 'Nova senha' }));
+      const dialog = screen.getByRole('dialog', { name: 'Nova senha' });
+      expect((fieldFor(dialog, 'Pasta') as HTMLSelectElement).value).toBe('f1');
+    });
+
+    it('does not offer "Nova senha" in the empty folder to a non-ADMIN role', async () => {
+      mockGets({ credentials: () => ({ data: [], meta: emptyMeta }) });
+      loginAs('AGENT');
+      renderPage();
+
+      expect(await screen.findByText('Esta pasta ainda não tem senhas')).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Nova senha' })).not.toBeInTheDocument();
+    });
+
+    it('names the search term and offers "Limpar busca" when the search finds nothing, instead of the folder message', async () => {
+      mockGets({ credentials: (params) => (params?.search ? { data: [], meta: emptyMeta } : undefined) });
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      renderPage();
+      await screen.findByText('Servidor FTP');
+
+      await user.type(screen.getByPlaceholderText('Buscar senha...'), 'zzz');
+
+      expect(await screen.findByText('Nenhuma senha encontrada para "zzz"')).toBeInTheDocument();
+      expect(screen.queryByText('Esta pasta ainda não tem senhas')).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Nova senha' })).not.toBeInTheDocument();
+
+      await user.click(screen.getByRole('button', { name: 'Limpar busca' }));
+
+      expect(screen.getByPlaceholderText('Buscar senha...')).toHaveValue('');
+      expect(await screen.findByText('Servidor FTP')).toBeInTheDocument();
+      expect(screen.queryByText(/nenhuma senha encontrada/i)).not.toBeInTheDocument();
+    });
+
+    it('also offers "Limpar busca" to a non-ADMIN role', async () => {
+      mockGets({ credentials: (params) => (params?.search ? { data: [], meta: emptyMeta } : undefined) });
+      loginAs('AGENT');
+      const user = userEvent.setup();
+      renderPage();
+      await screen.findByText('Servidor FTP');
+
+      await user.type(screen.getByPlaceholderText('Buscar senha...'), 'zzz');
+
+      expect(await screen.findByRole('button', { name: 'Limpar busca' })).toBeInTheDocument();
+    });
   });
 });
