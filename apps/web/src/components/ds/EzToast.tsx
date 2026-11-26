@@ -32,7 +32,7 @@ export interface EzToastProps extends HTMLAttributes<HTMLDivElement> {
  * Use this inside a Toast Provider (e.g. react-hot-toast or custom portal).
  */
 export const EzToast = forwardRef<HTMLDivElement, EzToastProps>(
-  ({ variant = 'info', title, description, onClose, visible = true, className, ...props }, ref) => {
+  ({ variant = 'info', title, description, onClose, visible = true, className, role, ...props }, ref) => {
     const config = {
       success: {
         iconColor: 'text-green-600',
@@ -57,6 +57,8 @@ export const EzToast = forwardRef<HTMLDivElement, EzToastProps>(
     return (
       <div
         ref={ref}
+        role={role ?? (variant === 'error' || variant === 'warning' ? 'alert' : 'status')}
+        aria-live={variant === 'error' || variant === 'warning' ? 'assertive' : 'polite'}
         className={cn(
           'pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-[12px] bg-white p-4 shadow-lg ring-1 ring-black/5 transition-all duration-300',
           visible ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-2 opacity-0 scale-95',
@@ -65,7 +67,7 @@ export const EzToast = forwardRef<HTMLDivElement, EzToastProps>(
         {...props}
       >
         <div className={cn('shrink-0 mt-0.5', config.iconColor)}>
-          <DefaultIcon className="w-5 h-5" />
+          <DefaultIcon className="w-5 h-5" aria-hidden="true" />
         </div>
         
         <div className="flex flex-1 flex-col justify-center pt-0.5">
@@ -76,11 +78,12 @@ export const EzToast = forwardRef<HTMLDivElement, EzToastProps>(
         {onClose && (
           <div className="ml-4 flex shrink-0">
             <button
+              type="button"
               onClick={onClose}
-              className="inline-flex rounded-md bg-white text-gray-400 hover:text-gray-600 ez-focus"
+              className="inline-flex min-h-8 min-w-8 items-center justify-center rounded-md bg-white text-gray-400 hover:text-gray-600 ez-focus"
             >
-              <span className="sr-only">Close</span>
-              <X className="h-4 w-4" />
+              <span className="sr-only">Fechar</span>
+              <X className="h-4 w-4" aria-hidden="true" />
             </button>
           </div>
         )}

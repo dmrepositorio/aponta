@@ -5,6 +5,8 @@ import { EzSpinner } from './EzSpinner';
  * Aponta DS Spinner
  * Indica um estado de carregamento ou processo em andamento. Usado em telas
  * de chamados, listas de clientes e ações assíncronas (salvar, carregar mais).
+ * Sem `label`, o status é anunciado como "Carregando" (sobrescrevível por
+ * `aria-label`); o ícone é decorativo (`aria-hidden`).
  */
 const meta: Meta<typeof EzSpinner> = {
   title: 'DS/EzSpinner',

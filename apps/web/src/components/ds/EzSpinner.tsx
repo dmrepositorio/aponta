@@ -24,16 +24,18 @@ export interface EzSpinnerProps extends HTMLAttributes<HTMLDivElement> {
  * Indicates a loading state or ongoing process.
  */
 export const EzSpinner = forwardRef<HTMLDivElement, EzSpinnerProps>(
-  ({ size = 24, colorClass, label, className, role, ...props }, ref) => {
+  ({ size = 24, colorClass, label, className, role, 'aria-label': ariaLabel, ...props }, ref) => {
     return (
       <div
         ref={ref}
         role={role ?? 'status'}
+        aria-label={ariaLabel ?? label ?? 'Carregando'}
         className={cn('inline-flex flex-col items-center justify-center gap-2', className)}
         {...props}
       >
         <Loader2
           size={size}
+          aria-hidden="true"
           className={cn('animate-spin', colorClass || 'text-brand-600')}
         />
         {label && (

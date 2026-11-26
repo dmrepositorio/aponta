@@ -58,7 +58,7 @@ export function EzDialog({
             <Icon className={iconClass} />
             <span id={titleId} className="text-[16px] font-semibold text-gray-900">{title}</span>
           </div>
-          <button onClick={onCancel} aria-label="Fechar diálogo" className="rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-700 ez-focus">
+          <button onClick={onCancel} aria-label="Fechar diálogo" className="inline-flex min-h-11 min-w-11 sm:min-h-9 sm:min-w-9 items-center justify-center rounded-full p-1 text-gray-600 hover:bg-gray-100 hover:text-gray-700 ez-focus">
             <X className="h-4 w-4" />
           </button>
         </div>

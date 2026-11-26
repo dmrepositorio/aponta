@@ -297,7 +297,7 @@ export function CreateTicketPage() {
 
       {savedNotice && (
         <div className="pointer-events-none fixed right-4 top-4 z-40 w-[calc(100%-2rem)] max-w-sm">
-          <div role="status">
+          <div>
             <EzToast variant="success" title="Chamado criado." onClose={() => setSavedNotice(false)} />
           </div>
         </div>
