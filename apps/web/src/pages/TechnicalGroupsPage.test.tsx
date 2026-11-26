@@ -53,6 +53,15 @@ async function expectText(text: string | RegExp) {
   await waitFor(() => expect(screen.queryByText(text)).toBeInTheDocument());
 }
 
+async function expectDialog(name: string) {
+  await waitFor(() => expect(screen.queryByRole('dialog', { name })).toBeInTheDocument());
+  return screen.getByRole('dialog', { name });
+}
+
+async function expectButton(name: string) {
+  await waitFor(() => expect(screen.queryByRole('button', { name })).toBeInTheDocument());
+}
+
 async function openGroup(tab?: 'Equipe' | 'Acessos') {
   await userEvent.click(await screen.findByText('Suporte N1'));
   await screen.findByRole('tablist');
@@ -251,5 +260,140 @@ describe('TechnicalGroupsPage: feedback das mutações (TG-01)', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Adicionar Carlos Dias' }));
     await expectText('Membro adicionado');
     expect(screen.queryByText('Falha momentânea')).not.toBeInTheDocument();
+  });
+});
+
+describe('TechnicalGroupsPage: rascunho da aba Informações (TG-04, TG-05)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(api.get).mockImplementation((url: string) => {
+      if (url === '/technical-groups') return Promise.resolve({ data: GROUP_LIST });
+      if (url === '/technical-groups/tg-1') return Promise.resolve({ data: GROUP_DETAIL });
+      if (url === '/users') return Promise.resolve({ data: ALL_USERS });
+      if (url === '/organizations') return Promise.resolve({ data: ALL_ORGS });
+      if (url === '/service-desks') return Promise.resolve({ data: ALL_DESKS });
+      return Promise.reject(new Error(`Unexpected GET ${url}`));
+    });
+    vi.mocked(api.post).mockResolvedValue({ data: {} });
+    vi.mocked(api.patch).mockResolvedValue({ data: {} });
+    vi.mocked(api.delete).mockResolvedValue({ data: {} });
+  });
+
+  it('não grava ao marcar "Agenda habilitada": um único patch com os 4 campos só no Salvar', async () => {
+    renderPage();
+    await openGroup();
+    await userEvent.click(screen.getByLabelText('Agenda habilitada'));
+    await userEvent.click(screen.getByLabelText('Enviar e-mail diário de apontamentos'));
+    expect(api.patch).not.toHaveBeenCalled();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Salvar' }));
+
+    await waitFor(() => expect(api.patch).toHaveBeenCalledTimes(1));
+    expect(api.patch).toHaveBeenCalledWith('/technical-groups/tg-1', {
+      name: 'Suporte N1',
+      description: 'Primeira linha',
+      dailyWorklogEmailEnabled: true,
+      scheduleEnabled: false,
+    });
+  });
+
+  it('Salvar começa desabilitado, sem aviso de alterações', async () => {
+    renderPage();
+    await openGroup();
+
+    expect(screen.getByRole('button', { name: 'Salvar' })).toBeDisabled();
+    expect(screen.queryByText('Alterações não salvas')).not.toBeInTheDocument();
+  });
+
+  it.each([
+    ['o nome', () => userEvent.type(screen.getByLabelText('Nome'), ' B')],
+    ['a descrição', () => userEvent.type(screen.getByLabelText('Descrição'), ' B')],
+    ['o e-mail diário', () => userEvent.click(screen.getByLabelText('Enviar e-mail diário de apontamentos'))],
+    ['a agenda', () => userEvent.click(screen.getByLabelText('Agenda habilitada'))],
+  ])('alterar %s habilita Salvar e mostra "Alterações não salvas"', async (_label, change) => {
+    renderPage();
+    await openGroup();
+    await change();
+
+    expect(screen.getByRole('button', { name: 'Salvar' })).toBeEnabled();
+    await expectText('Alterações não salvas');
+  });
+
+  it('desfazer a edição manual desabilita Salvar de novo', async () => {
+    renderPage();
+    await openGroup();
+    await userEvent.click(screen.getByLabelText('Agenda habilitada'));
+    await userEvent.click(screen.getByLabelText('Agenda habilitada'));
+
+    expect(screen.getByRole('button', { name: 'Salvar' })).toBeDisabled();
+    expect(screen.queryByText('Alterações não salvas')).not.toBeInTheDocument();
+  });
+
+  it('Voltar com alterações pendentes abre o diálogo de descarte e Cancelar mantém a edição', async () => {
+    renderPage();
+    await openGroup();
+    await userEvent.type(screen.getByLabelText('Nome'), ' B');
+    await userEvent.click(screen.getByRole('button', { name: /voltar para a lista/i }));
+
+    const dialog = await expectDialog('Descartar alterações?');
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Cancelar' }));
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Nome')).toHaveValue('Suporte N1 B');
+  });
+
+  it('confirmar o descarte volta para a lista sem gravar', async () => {
+    renderPage();
+    await openGroup();
+    await userEvent.type(screen.getByLabelText('Nome'), ' B');
+    await userEvent.click(screen.getByRole('button', { name: /voltar para a lista/i }));
+    const dialog = await expectDialog('Descartar alterações?');
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Confirmar' }));
+
+    await expectButton('Novo grupo');
+    expect(api.patch).not.toHaveBeenCalled();
+  });
+
+  it('o botão Voltar do cabeçalho também pede confirmação com alterações pendentes', async () => {
+    renderPage();
+    await openGroup();
+    await userEvent.type(screen.getByLabelText('Nome'), ' B');
+    await userEvent.click(screen.getByTitle('Voltar'));
+
+    await expectDialog('Descartar alterações?');
+  });
+
+  it('sem alterações, Voltar sai direto, sem diálogo', async () => {
+    renderPage();
+    await openGroup();
+    await userEvent.click(screen.getByRole('button', { name: /voltar para a lista/i }));
+
+    await expectButton('Novo grupo');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('ressincroniza o rascunho quando o servidor muda o grupo (sem edição pendente)', async () => {
+    renderPage();
+    await openGroup('Equipe');
+    mockGroupDetail({ ...GROUP_DETAIL, name: 'Suporte N1 (v2)', description: 'Outra' });
+    await userEvent.click(await screen.findByRole('button', { name: 'Adicionar Carlos Dias' }));
+    await expectText('Membro adicionado');
+    await userEvent.click(screen.getByRole('tab', { name: 'Informações' }));
+
+    await waitFor(() => expect(screen.getByLabelText('Nome')).toHaveValue('Suporte N1 (v2)'));
+    expect(screen.getByLabelText('Descrição')).toHaveValue('Outra');
+    expect(screen.queryByText('Alterações não salvas')).not.toBeInTheDocument();
+  });
+
+  it('guarda: um refetch que não muda os campos preserva a edição pendente', async () => {
+    renderPage();
+    await userEvent.click(await screen.findByText('Suporte N1'));
+    await userEvent.type(await screen.findByLabelText('Nome'), ' B');
+    await userEvent.click(screen.getByRole('tab', { name: 'Equipe' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Adicionar Carlos Dias' }));
+    await expectText('Membro adicionado');
+    await userEvent.click(screen.getByRole('tab', { name: 'Informações' }));
+
+    expect(screen.getByLabelText('Nome')).toHaveValue('Suporte N1 B');
   });
 });
