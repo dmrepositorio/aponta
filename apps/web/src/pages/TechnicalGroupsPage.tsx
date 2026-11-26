@@ -1,7 +1,8 @@
-import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
+import { useQuery, type UseMutationResult } from '@tanstack/react-query';
 import { ArrowLeft, Plus } from 'lucide-react';
 import {
+  EzAlert,
   EzButton,
   EzCardItem,
   EzCheck,
@@ -15,8 +16,10 @@ import {
   EzTabs,
   EzTextArea,
   EzTextInput,
+  EzToast,
 } from '../components/ds';
 import { api } from '../lib/api';
+import { apiErrorMessage } from '../hooks/useUsers';
 import {
   useTechnicalGroups,
   useTechnicalGroup,
@@ -28,6 +31,9 @@ import {
 } from '../hooks/useTechnicalGroups';
 
 type DetailTab = 'info' | 'team' | 'access';
+
+const TOAST_MS = 4000;
+const ACTION_ERROR_FALLBACK = 'Não foi possível concluir a ação. Tente novamente.';
 
 interface SimpleUser {
   id: string;
@@ -70,7 +76,7 @@ function useAllServiceDesks() {
   });
 }
 
-function CreateGroupModal({ onClose }: { onClose: () => void }) {
+function CreateGroupModal({ onClose, onNotify }: { onClose: () => void; onNotify: (message: string) => void }) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const createMutation = useCreateTechnicalGroup();
@@ -79,13 +85,21 @@ function CreateGroupModal({ onClose }: { onClose: () => void }) {
     if (!name.trim()) return;
     createMutation.mutate(
       { name: name.trim(), description: description.trim() || undefined },
-      { onSuccess: onClose },
+      {
+        onSuccess: () => {
+          onNotify('Grupo criado');
+          onClose();
+        },
+      },
     );
   };
 
   return (
     <EzModal isOpen onClose={onClose} title="Novo grupo de atendentes">
       <div className="space-y-4">
+        {createMutation.isError && (
+          <EzAlert variant="error">{apiErrorMessage(createMutation.error, ACTION_ERROR_FALLBACK)}</EzAlert>
+        )}
         <EzTextInput id="tg-name" label="Nome" value={name} onChange={(e) => setName(e.target.value)} />
         <EzTextArea
           id="tg-description"
@@ -106,7 +120,15 @@ function CreateGroupModal({ onClose }: { onClose: () => void }) {
   );
 }
 
-function GroupDetail({ groupId, onBack }: { groupId: string; onBack: () => void }) {
+function GroupDetail({
+  groupId,
+  onBack,
+  onNotify,
+}: {
+  groupId: string;
+  onBack: () => void;
+  onNotify: (message: string) => void;
+}) {
   const { data: group, isLoading } = useTechnicalGroup(groupId);
   const [tab, setTab] = useState<DetailTab>('info');
   const updateMutation = useUpdateTechnicalGroup(groupId);
@@ -117,6 +139,16 @@ function GroupDetail({ groupId, onBack }: { groupId: string; onBack: () => void 
   const { data: allUsers } = useAllUsers();
   const { data: allOrganizations } = useAllOrganizations();
   const { data: allServiceDesks } = useAllServiceDesks();
+
+  const [actionError, setActionError] = useState<string | null>(null);
+  // Roda a mutação e mostra o resultado: toast de sucesso, ou o erro da API no alerta da seção.
+  const run = <V,>(mutation: UseMutationResult<unknown, unknown, V>, variables: V, success: string) => {
+    setActionError(null);
+    mutation.mutate(variables, {
+      onSuccess: () => onNotify(success),
+      onError: (error) => setActionError(apiErrorMessage(error, ACTION_ERROR_FALLBACK)),
+    });
+  };
 
   const [infoDraft, setInfoDraft] = useState<{ name: string; description: string } | null>(null);
 
@@ -144,6 +176,12 @@ function GroupDetail({ groupId, onBack }: { groupId: string; onBack: () => void 
   return (
     <div className="space-y-5 p-5">
       <h2 className="text-[18px] font-semibold text-gray-900">{group.name}</h2>
+
+      {actionError && (
+        <EzAlert variant="error" onClose={() => setActionError(null)}>
+          {actionError}
+        </EzAlert>
+      )}
 
       <EzTabs
         tabs={[
@@ -173,19 +211,19 @@ function GroupDetail({ groupId, onBack }: { groupId: string; onBack: () => void 
             id="tg-daily-worklog"
             label="Enviar e-mail diário de apontamentos"
             checked={group.dailyWorklogEmailEnabled}
-            onChange={(e) => updateMutation.mutate({ dailyWorklogEmailEnabled: e.target.checked })}
+            onChange={(e) => run(updateMutation, { dailyWorklogEmailEnabled: e.target.checked }, 'Grupo salvo')}
           />
           <EzCheck
             id="tg-schedule-enabled"
             label="Agenda habilitada"
             checked={group.scheduleEnabled}
-            onChange={(e) => updateMutation.mutate({ scheduleEnabled: e.target.checked })}
+            onChange={(e) => run(updateMutation, { scheduleEnabled: e.target.checked }, 'Grupo salvo')}
           />
           <div className="flex justify-end">
             <EzButton
               size="small"
               disabled={updateMutation.isPending}
-              onClick={() => updateMutation.mutate(infoDraft)}
+              onClick={() => run(updateMutation, infoDraft, 'Grupo salvo')}
             >
               Salvar
             </EzButton>
@@ -199,8 +237,8 @@ function GroupDetail({ groupId, onBack }: { groupId: string; onBack: () => void 
           selectedLabel="Membros da equipe"
           available={availableUsers.map((u) => ({ id: u.id, label: u.name, description: u.email }))}
           selected={group.members.map((m) => ({ id: m.id, label: m.name, description: m.email }))}
-          onAdd={(item) => addMember.mutate(String(item.id))}
-          onRemove={(item) => removeMember.mutate(String(item.id))}
+          onAdd={(item) => run(addMember, String(item.id), 'Membro adicionado')}
+          onRemove={(item) => run(removeMember, String(item.id), 'Membro removido')}
         />
       )}
 
@@ -216,8 +254,8 @@ function GroupDetail({ groupId, onBack }: { groupId: string; onBack: () => void 
                 id: l.organization.id,
                 label: l.organization.name,
               }))}
-              onAdd={(item) => addOrganization.mutate(String(item.id))}
-              onRemove={(item) => removeOrganization.mutate(String(item.id))}
+              onAdd={(item) => run(addOrganization, String(item.id), 'Cliente vinculado')}
+              onRemove={(item) => run(removeOrganization, String(item.id), 'Cliente desvinculado')}
             />
           </div>
           <div className="space-y-2">
@@ -230,8 +268,8 @@ function GroupDetail({ groupId, onBack }: { groupId: string; onBack: () => void 
                 id: l.serviceDesk.id,
                 label: l.serviceDesk.name,
               }))}
-              onAdd={(item) => addServiceDesk.mutate(String(item.id))}
-              onRemove={(item) => removeServiceDesk.mutate(String(item.id))}
+              onAdd={(item) => run(addServiceDesk, String(item.id), 'Mesa vinculada')}
+              onRemove={(item) => run(removeServiceDesk, String(item.id), 'Mesa desvinculada')}
             />
           </div>
         </div>
@@ -254,6 +292,13 @@ export function TechnicalGroupsPage() {
   const { data: groups, isLoading } = useTechnicalGroups();
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!notice) return;
+    const timer = setTimeout(() => setNotice(null), TOAST_MS);
+    return () => clearTimeout(timer);
+  }, [notice]);
 
   return (
     <EzPageLayout
@@ -267,7 +312,7 @@ export function TechnicalGroupsPage() {
     >
       {selectedGroupId ? (
         <EzCardItem flat className="p-0">
-          <GroupDetail groupId={selectedGroupId} onBack={() => setSelectedGroupId(null)} />
+          <GroupDetail groupId={selectedGroupId} onBack={() => setSelectedGroupId(null)} onNotify={setNotice} />
         </EzCardItem>
       ) : (
         <EzCardItem flat className="overflow-hidden p-0">
@@ -302,7 +347,13 @@ export function TechnicalGroupsPage() {
         </EzCardItem>
       )}
 
-      {isCreateOpen && <CreateGroupModal onClose={() => setIsCreateOpen(false)} />}
+      {isCreateOpen && <CreateGroupModal onClose={() => setIsCreateOpen(false)} onNotify={setNotice} />}
+
+      {notice && (
+        <div className="pointer-events-none fixed right-4 top-4 z-40 w-[calc(100%-2rem)] max-w-sm">
+          <EzToast variant="success" title={notice} onClose={() => setNotice(null)} />
+        </div>
+      )}
     </EzPageLayout>
   );
 }
