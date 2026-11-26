@@ -206,7 +206,7 @@ function UsersPageContent() {
     page,
     pageSize: PAGE_SIZE,
   };
-  const { data, isLoading, isError } = useUsersList(params);
+  const { data, isLoading, isError, refetch } = useUsersList(params);
   const { data: technicalGroups } = useTechnicalGroups();
   const { data: permissionGroups } = usePermissionGroups();
 
@@ -265,6 +265,7 @@ function UsersPageContent() {
     isVisible: config.grid.columnVisibility[c.id ?? ''] !== false,
   }));
 
+  const hasActiveFilters = JSON.stringify(filters) !== JSON.stringify(NO_FILTERS);
   const total = meta?.total ?? 0;
   const first = (page - 1) * PAGE_SIZE;
   const recordCountText =
@@ -460,11 +461,31 @@ function UsersPageContent() {
                   </div>
                 ) : isError ? (
                   <div className="p-4">
-                    <EzEmptyCard title="Erro ao carregar usuários." />
+                    <EzEmptyCard
+                      variant="error"
+                      title="Erro ao carregar usuários."
+                      action={<EzButton variant="secondary" size="small" label="Tentar de novo" onClick={() => void refetch()} />}
+                    />
                   </div>
                 ) : users.length === 0 ? (
                   <div className="p-4">
-                    <EzEmptyCard title="Nenhum usuário encontrado." />
+                    {hasActiveFilters ? (
+                      <EzEmptyCard
+                        title="Nenhum usuário encontrado com estes filtros"
+                        action={
+                          <EzButton variant="secondary" size="small" label="Limpar filtros" onClick={() => change(NO_FILTERS)} />
+                        }
+                      />
+                    ) : (
+                      <EzEmptyCard
+                        title="Nenhum usuário encontrado."
+                        action={
+                          canCreate ? (
+                            <EzButton variant="secondary" size="small" label="Novo usuário" onClick={() => guard(startNew)} />
+                          ) : undefined
+                        }
+                      />
+                    )}
                   </div>
                 ) : (
                   <EzEntityGrid
