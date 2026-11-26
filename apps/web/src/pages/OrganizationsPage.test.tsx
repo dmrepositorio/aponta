@@ -860,6 +860,31 @@ describe('OrganizationsPage', { timeout: 15000 }, () => {
     });
   });
 
+  // ORG-05 (#463): jargão interno de projeto não aparece como texto para o usuário.
+  it('ORG-05: nenhuma tela do cadastro cita Tiflux nem "padrão Sankhya"', async () => {
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    renderPage();
+    const jargon = /tiflux|padrão sankhya/i;
+
+    await screen.findByText('Empresa A');
+    await user.click(screen.getByTestId('ez-toolbar-actions-button'));
+    await user.click(screen.getByRole('menuitem', { name: /cadastrar manualmente/i }));
+    await screen.findByText('Nova Empresa');
+    expect(document.body.textContent).not.toMatch(jargon);
+    await user.click(screen.getByRole('button', { name: 'Cancelar' }));
+
+    await openDetail(user);
+    expect(document.body.textContent).not.toMatch(jargon);
+    for (const tab of [/recursos/i, /relacionamentos/i, /faturamento/i]) {
+      await user.click(screen.getByRole('tab', { name: tab }));
+      expect(document.body.textContent).not.toMatch(jargon);
+      if (tab.source === 'relationships') {
+        expect(screen.getByRole('heading', { name: /grupos? de atendentes/i })).toBeInTheDocument();
+      }
+    }
+  });
+
   it('DMTE-560 AC-29: o título do vínculo N:N de mesas na aba Relacionamentos não cita o Tiflux', async () => {
     loginAs('ADMIN');
     const user = userEvent.setup();
