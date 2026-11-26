@@ -268,10 +268,17 @@ function UsersPageContent() {
   const hasActiveFilters = JSON.stringify(filters) !== JSON.stringify(NO_FILTERS);
   const total = meta?.total ?? 0;
   const first = (page - 1) * PAGE_SIZE;
+  // Regra dinâmica ativa (com valor, ou vazio/não vazio) filtra só a página carregada: o total do servidor não vale.
+  const hasDynamicRules = filters.rules.some(
+    (rule) => rule.operator === 'empty' || rule.operator === 'notEmpty' || rule.value.trim() !== '',
+  );
+  const loadedCount = data?.data.length ?? 0;
   const recordCountText =
     mode === 'form' && selectedUserId
       ? `1 de ${total}`
-      : `${users.length === 0 ? 0 : first + 1} - ${first + users.length} de ${total}`;
+      : hasDynamicRules
+        ? `${users.length} de ${loadedCount} nesta página`
+        : `${users.length === 0 ? 0 : first + 1} - ${first + users.length} de ${total}`;
 
   const label = (htmlFor: string, text: string) => (
     <label htmlFor={htmlFor} className="text-xs font-medium text-gray-700">
@@ -333,6 +340,11 @@ function UsersPageContent() {
                 value={filters.search}
                 onChange={(e) => change({ search: e.target.value })}
               />
+              {hasDynamicRules && (
+                <p className="mt-1.5 text-xs text-gray-700">
+                  Filtro por campo aplicado só a esta página ({users.length} de {loadedCount} usuários carregados).
+                </p>
+              )}
             </div>
             {canToggleActive && (
               <div className="flex items-center gap-2 border-b border-gray-200 px-3 py-1.5 max-sm:hidden">
