@@ -1,5 +1,5 @@
 import { keepPreviousData, useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useEscapeLayer } from '../hooks/useEscapeLayer';
 import { ArrowLeft } from 'lucide-react';
@@ -8,7 +8,7 @@ import { useAuthStore } from '../stores/authStore';
 import type { Ticket, TicketPriority } from '../hooks/useTickets';
 import type { TicketFormValues } from '../components/tickets/TicketForm';
 import { TicketForm } from '../components/tickets/TicketForm';
-import { EzCardItem, EzAlert, EzButton, EzSearch, EzSpinner } from '../components/ds';
+import { EzCardItem, EzAlert, EzButton, EzSearch, EzSpinner, EzToast } from '../components/ds';
 
 export interface CatalogItem {
   id: string;
@@ -26,11 +26,19 @@ export interface CatalogCategory {
   items: CatalogItem[];
 }
 
+const SAVED_TOAST_MS = 5000;
+
 export function CreateTicketPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [selectedCatalogItem, setSelectedCatalogItem] = useState<CatalogItem | null>(null);
+  // "Salvar e criar novo": trocar a key remonta o TicketForm (campos, anexos e erros voltam ao
+  // inicial). Catálogo e Cliente vivem aqui na página, então sobrevivem ao remontar.
+  const [formKey, setFormKey] = useState(0);
+  const [savedNotice, setSavedNotice] = useState(false);
+  // Trava síncrona: isPending só muda no próximo render e dois cliques cabem antes dele.
+  const submittingRef = useRef(false);
 
   const currentUser = useAuthStore((state) => state.user);
   const isClientBase = currentUser?.role === 'CLIENT' || currentUser?.role === 'CLIENT_MASTER';
@@ -64,7 +72,7 @@ export function CreateTicketPage() {
   });
 
   const mutation = useMutation({
-    mutationFn: async (values: TicketFormValues & { catalogItemId?: string }) => {
+    mutationFn: async (values: TicketFormValues & { saveAndNew?: boolean }) => {
       // IMPORTANT: apps/api's ValidationPipe uses forbidNonWhitelisted: true,
       // and CreateTicketDto only accepts catalogItemId/semCatalogo/title/
       // description/serviceDeskId/priority. organizationId, requesterId,
@@ -116,14 +124,34 @@ export function CreateTicketPage() {
 
       return data;
     },
-    onSuccess: (data) => {
+    onSuccess: (data, values) => {
       void queryClient.invalidateQueries({ queryKey: ['tickets'] });
+      if (values.saveAndNew) {
+        setFormKey((key) => key + 1);
+        setSavedNotice(true);
+        return;
+      }
       navigate(`/tickets/${data.id}`);
+    },
+    onSettled: () => {
+      submittingRef.current = false;
     },
     onError: () => {
       setSubmitError('Falha ao criar o chamado. Verifique os dados e tente novamente.');
     },
   });
+
+  useEffect(() => {
+    if (!savedNotice) return;
+    const timer = setTimeout(() => setSavedNotice(false), SAVED_TOAST_MS);
+    return () => clearTimeout(timer);
+  }, [savedNotice]);
+
+  // Depois de "Salvar e criar novo" o foco volta ao título (desabilitado quando o serviço do
+  // catálogo o fixa; nesse caso o foco fica onde está).
+  useEffect(() => {
+    if (formKey > 0) document.getElementById('ticket-title')?.focus();
+  }, [formKey]);
 
   // Com Cliente escolhido a tela fica no catálogo mesmo vazia (estado vazio + botão em branco).
   const showCatalog = catalog.length > 0 || !!organizationId;
@@ -253,12 +281,27 @@ export function CreateTicketPage() {
       )}
 
       <TicketForm
+        key={formKey}
         catalogOverride={selectedCatalogItem?.id === 'custom' ? undefined : selectedCatalogItem}
         lockedOrganizationId={organizationId || undefined}
-        onSubmit={(values) => mutation.mutate(values)}
+        onSubmit={(values) => {
+          if (submittingRef.current) return;
+          submittingRef.current = true;
+          setSubmitError(null);
+          setSavedNotice(false);
+          mutation.mutate(values);
+        }}
         isSubmitting={mutation.isPending}
         submitError={submitError}
       />
+
+      {savedNotice && (
+        <div className="pointer-events-none fixed right-4 top-4 z-40 w-[calc(100%-2rem)] max-w-sm">
+          <div role="status">
+            <EzToast variant="success" title="Chamado criado." onClose={() => setSavedNotice(false)} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
