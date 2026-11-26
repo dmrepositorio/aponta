@@ -641,7 +641,8 @@ describe('OrganizationsPage', { timeout: 15000 }, () => {
     });
   });
 
-  it('updates organization name and legal name on blur in Geral tab', async () => {
+  // ORG-04 (#463): a aba Geral edita um rascunho local e só o botão Salvar envia o PATCH (antes: onBlur).
+  it('updates organization name and legal name only when Salvar is pressed in Geral tab', async () => {
     vi.mocked(api.patch).mockResolvedValue({ data: orgDetail });
     loginAs('ADMIN');
     const user = userEvent.setup();
@@ -649,23 +650,94 @@ describe('OrganizationsPage', { timeout: 15000 }, () => {
 
     await openDetail(user);
 
-    const legalNameInput = screen.getByLabelText(/razão social/i);
+    const legalNameInput = screen.getByLabelText(/razão social/i, { selector: 'input' });
     await user.clear(legalNameInput);
     await user.type(legalNameInput, 'Empresa A Nova Razao');
     await user.tab();
-
-    await waitFor(() => {
-      expect(api.patch).toHaveBeenCalledWith('/organizations/org-1', { legalName: 'Empresa A Nova Razao' });
-    });
-
-    const nameInput = screen.getByLabelText(/nome fantasia/i);
+    const nameInput = screen.getByLabelText(/nome fantasia/i, { selector: 'input' });
     await user.clear(nameInput);
     await user.type(nameInput, 'Empresa A Novo Nome');
     await user.tab();
 
+    expect(api.patch).not.toHaveBeenCalled();
+    expect(screen.getByText('Alterações não salvas')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Salvar alterações' }));
+
     await waitFor(() => {
-      expect(api.patch).toHaveBeenCalledWith('/organizations/org-1', { name: 'Empresa A Novo Nome' });
+      expect(api.patch).toHaveBeenCalledWith('/organizations/org-1', {
+        legalName: 'Empresa A Nova Razao',
+        name: 'Empresa A Novo Nome',
+      });
     });
+    expect(api.patch).toHaveBeenCalledTimes(1);
+  });
+
+  it('ORG-04: shows Salvando… while saving and Salvo afterwards, and hides the unsaved notice', async () => {
+    let finish: (value: unknown) => void = () => undefined;
+    vi.mocked(api.patch).mockReturnValue(new Promise((resolve) => { finish = resolve; }));
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    renderPage();
+
+    await openDetail(user);
+    expect(screen.queryByText('Alterações não salvas')).not.toBeInTheDocument();
+    const nameInput = screen.getByLabelText(/nome fantasia/i, { selector: 'input' });
+    await user.clear(nameInput);
+    await user.type(nameInput, 'Empresa A Novo Nome');
+    await user.click(screen.getByRole('button', { name: 'Salvar alterações' }));
+
+    expect(await screen.findByText('Salvando…')).toBeInTheDocument();
+    // O servidor devolve o cadastro já alterado na releitura.
+    vi.mocked(api.get).mockImplementation((url: string) => {
+      if (url === '/organizations/org-1') return Promise.resolve({ data: { ...orgDetail, name: 'Empresa A Novo Nome' } });
+      if (url === PREF_URL) return Promise.resolve({ data: {} });
+      if (url === '/organizations') return Promise.resolve({ data: orgs });
+      if (url === '/users') return Promise.resolve({ data: users });
+      if (url === '/service-desks') return Promise.resolve({ data: serviceDesks });
+      return Promise.reject(new Error(`Unexpected GET ${url}`));
+    });
+    finish({ data: { ...orgDetail, name: 'Empresa A Novo Nome' } });
+
+    expect(await screen.findByText('Salvo')).toBeInTheDocument();
+    expect(screen.queryByText('Salvando…')).not.toBeInTheDocument();
+    expect(screen.queryByText('Alterações não salvas')).not.toBeInTheDocument();
+  });
+
+  it.each([
+    ['Razão Social', 'Informe a Razão Social.'],
+    ['Nome Fantasia', 'Informe o Nome Fantasia.'],
+  ])('ORG-04: clearing %s and saving shows the field error and sends no PATCH', async (label, message) => {
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    renderPage();
+
+    await openDetail(user);
+    await user.clear(screen.getByLabelText(new RegExp(label, 'i'), { selector: 'input' }));
+    await user.tab();
+    expect(api.patch).not.toHaveBeenCalled();
+    await user.click(screen.getByRole('button', { name: 'Salvar alterações' }));
+
+    expect(await screen.findByText(message)).toBeInTheDocument();
+    expect(api.patch).not.toHaveBeenCalled();
+  });
+
+  it('ORG-04: shows the API error next to the form and keeps the draft when the save fails', async () => {
+    vi.mocked(api.patch).mockRejectedValue({ response: { status: 409, data: { message: 'Já existe um cliente com este nome.' } } });
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    renderPage();
+
+    await openDetail(user);
+    const nameInput = screen.getByLabelText(/nome fantasia/i, { selector: 'input' });
+    await user.clear(nameInput);
+    await user.type(nameInput, 'Empresa B');
+    await user.click(screen.getByRole('button', { name: 'Salvar alterações' }));
+
+    const form = screen.getByRole('form', { name: /dados cadastrais do cliente/i });
+    expect(await within(form).findByRole('alert')).toHaveTextContent('Já existe um cliente com este nome.');
+    expect(nameInput).toHaveValue('Empresa B');
+    expect(screen.getByText('Alterações não salvas')).toBeInTheDocument();
   });
 
   it('toggles visibility and quarterly billing from the detail header', async () => {
