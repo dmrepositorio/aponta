@@ -419,8 +419,8 @@ describe('VaultPage', () => {
     await user.click(editBtns[0]);
 
     const editDialog = screen.getByRole('dialog');
-    expect(fieldFor(editDialog, 'Usuário (deixe em branco para não alterar)')).toHaveValue('');
-    expect(fieldFor(editDialog, 'Senha (deixe em branco para não alterar)')).toHaveValue('');
+    expect(fieldFor(editDialog, 'Usuário')).toHaveValue('');
+    expect(fieldFor(editDialog, 'Senha')).toHaveValue('');
     const nameInput = fieldFor(editDialog, 'Nome');
     await user.clear(nameInput);
     await user.type(nameInput, 'Servidor FTP Renomeado');
@@ -1233,7 +1233,7 @@ describe('VaultPage modals and load error (DMTE-545)', () => {
         open: async (user: ReturnType<typeof userEvent.setup>) => {
           await user.click(screen.getByRole('button', { name: 'Editar Servidor FTP' }));
           const dialog = screen.getByRole('dialog');
-          await user.type(fieldFor(dialog, 'Senha (deixe em branco para não alterar)'), 'fake-new-password');
+          await user.type(fieldFor(dialog, 'Senha'), 'fake-new-password');
           return dialog;
         },
         method: 'patch' as const,
@@ -1241,7 +1241,7 @@ describe('VaultPage modals and load error (DMTE-545)', () => {
         payload: expect.objectContaining({ password: 'fake-new-password' }),
         message: 'Sem permissão para alterar esta senha.',
         expected: 'Sem permissão para alterar esta senha.',
-        fields: [['Senha (deixe em branco para não alterar)', 'fake-new-password']],
+        fields: [['Senha', 'fake-new-password']],
       },
     ];
 
@@ -1899,5 +1899,142 @@ describe('VaultPage — estados vazios e erro de carga por região (VLT-09, VLT-
 
       expect(await screen.findByRole('button', { name: 'Limpar busca' })).toBeInTheDocument();
     });
+  });
+});
+
+describe('VaultPage — campo de senha do modal (VLT-11)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    useAuthStore.setState({ token: null, user: null });
+    window.confirm = vi.fn(() => true);
+    mockDefaultGets();
+    loginAs('ADMIN');
+  });
+
+  const HINT = 'Deixe em branco para não alterar.';
+  const ALLOWED = /^[a-zA-Z0-9!@#$%&*?\-_+=]{20}$/;
+
+  async function openCreate() {
+    const user = userEvent.setup();
+    renderPage();
+    await screen.findByText('Servidor FTP');
+    await openActionsMenu(user);
+    await user.click(screen.getByRole('menuitem', { name: 'Nova senha' }));
+    return { user, dialog: screen.getByRole('dialog', { name: 'Nova senha' }) };
+  }
+
+  async function openEdit() {
+    const user = userEvent.setup();
+    renderPage();
+    await screen.findByText('Servidor FTP');
+    await user.click(screen.getByRole('button', { name: 'Editar Servidor FTP' }));
+    return { user, dialog: screen.getByRole('dialog', { name: 'Editar senha' }) };
+  }
+
+  it('moves "deixe em branco para não alterar" out of the labels and into helper text tied to each field when editing', async () => {
+    const { dialog } = await openEdit();
+
+    const username = fieldFor(dialog, 'Usuário');
+    const password = fieldFor(dialog, 'Senha');
+    expect(username).toHaveValue('');
+    expect(password).toHaveValue('');
+    expect(username).toHaveAccessibleDescription(HINT);
+    expect(password).toHaveAccessibleDescription(HINT);
+    expect(within(dialog).getAllByText(HINT)).toHaveLength(2);
+    expect(within(dialog).queryByText(/\(deixe em branco/i)).not.toBeInTheDocument();
+  });
+
+  it('shows no "deixe em branco" helper when creating a password', async () => {
+    const { dialog } = await openCreate();
+
+    expect(fieldFor(dialog, 'Senha')).not.toHaveAccessibleDescription(HINT);
+    expect(within(dialog).queryByText(HINT)).not.toBeInTheDocument();
+  });
+
+  it('shows and hides the typed password with a toggle button', async () => {
+    const { user, dialog } = await openCreate();
+    const password = fieldFor(dialog, 'Senha');
+    await user.type(password, 'fake-password-123');
+    expect(password).toHaveAttribute('type', 'password');
+
+    await user.click(within(dialog).getByRole('button', { name: 'Mostrar senha' }));
+    expect(password).toHaveAttribute('type', 'text');
+
+    await user.click(within(dialog).getByRole('button', { name: 'Ocultar senha' }));
+    expect(password).toHaveAttribute('type', 'password');
+  });
+
+  it('fills the password field with a generated password that is saved as typed', async () => {
+    vi.mocked(api.post).mockResolvedValue({ data: {} });
+    const { user, dialog } = await openCreate();
+    await user.type(fieldFor(dialog, 'Nome'), 'Novo Serviço');
+
+    await user.click(within(dialog).getByRole('button', { name: 'Gerar senha' }));
+
+    const generated = (fieldFor(dialog, 'Senha') as HTMLInputElement).value;
+    expect(generated).toMatch(ALLOWED);
+    await user.click(within(dialog).getByRole('button', { name: 'Mostrar senha' }));
+    expect(fieldFor(dialog, 'Senha')).toHaveAttribute('type', 'text');
+
+    await user.click(within(dialog).getByRole('button', { name: 'Salvar' }));
+    await waitFor(() =>
+      expect(api.post).toHaveBeenCalledWith('/vault/credentials', expect.objectContaining({ name: 'Novo Serviço', password: generated })),
+    );
+  });
+
+  it('generates a different password each time and replaces what was typed', async () => {
+    const { user, dialog } = await openCreate();
+    await user.type(fieldFor(dialog, 'Senha'), 'fake-typed');
+
+    await user.click(within(dialog).getByRole('button', { name: 'Gerar senha' }));
+    const first = (fieldFor(dialog, 'Senha') as HTMLInputElement).value;
+    await user.click(within(dialog).getByRole('button', { name: 'Gerar senha' }));
+    const second = (fieldFor(dialog, 'Senha') as HTMLInputElement).value;
+
+    expect(first).toMatch(ALLOWED);
+    expect(second).toMatch(ALLOWED);
+    expect(second).not.toBe(first);
+    expect(first).not.toContain('fake-typed');
+  });
+
+  it('tells the user the password was generated, then goes back to the helper text when they type', async () => {
+    const { user, dialog } = await openEdit();
+
+    await user.click(within(dialog).getByRole('button', { name: 'Gerar senha' }));
+    expect(fieldFor(dialog, 'Senha')).toHaveAccessibleDescription('Senha gerada. Use "Mostrar senha" para conferir antes de salvar.');
+
+    await user.type(fieldFor(dialog, 'Senha'), 'x');
+    expect(fieldFor(dialog, 'Senha')).toHaveAccessibleDescription(HINT);
+  });
+
+  it('never logs, stores or sends the generated password anywhere else, and a reopened modal starts empty', async () => {
+    const consoleSpies = (['log', 'info', 'warn', 'error', 'debug'] as const).map((method) => vi.spyOn(console, method));
+    const { user, dialog } = await openCreate();
+    await user.click(within(dialog).getByRole('button', { name: 'Gerar senha' }));
+    const generated = (fieldFor(dialog, 'Senha') as HTMLInputElement).value;
+    expect(generated).toMatch(ALLOWED);
+
+    for (const spy of consoleSpies) expect(JSON.stringify(spy.mock.calls)).not.toContain(generated);
+    expect(JSON.stringify([...Object.entries(window.localStorage), ...Object.entries(window.sessionStorage)])).not.toContain(generated);
+    expect(document.title).not.toContain(generated);
+    expect(window.location.href).not.toContain(generated);
+    expect(api.post).not.toHaveBeenCalled();
+
+    await user.click(within(dialog).getByRole('button', { name: 'Fechar' }));
+    await user.click(within(await screen.findByRole('dialog', { name: 'Descartar alterações?' })).getByRole('button', { name: 'Confirmar' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    await openActionsMenu(user);
+    await user.click(screen.getByRole('menuitem', { name: 'Nova senha' }));
+    expect(fieldFor(screen.getByRole('dialog', { name: 'Nova senha' }), 'Senha')).toHaveValue('');
+    consoleSpies.forEach((spy) => spy.mockRestore());
+  });
+
+  it('keeps the new password required when creating, and optional when editing', async () => {
+    const created = await openCreate();
+    expect(fieldFor(created.dialog, 'Senha')).toBeRequired();
+    cleanup();
+
+    const edited = await openEdit();
+    expect(fieldFor(edited.dialog, 'Senha')).not.toBeRequired();
   });
 });
