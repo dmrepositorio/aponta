@@ -104,6 +104,46 @@ describe('LoginPage', () => {
     ).toBeInTheDocument();
   });
 
+  it('LOG-02: após 401 o foco vai para o campo de senha, que mantém o valor, e o erro é um alerta', async () => {
+    const user = userEvent.setup();
+    vi.mocked(api.post).mockRejectedValueOnce({ isAxiosError: true, response: { status: 401 } });
+
+    renderLoginPage();
+
+    await user.type(screen.getByLabelText(/e-mail/i), 'jane@example.com');
+    await user.type(screen.getByLabelText('Senha'), 'wrongpassword');
+    await user.click(screen.getByRole('button', { name: 'Entrar' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(/e-mail ou senha inválidos/i);
+    await waitFor(() => expect(screen.getByLabelText('Senha')).toHaveFocus());
+    expect(screen.getByLabelText('Senha')).toHaveValue('wrongpassword');
+  });
+
+  it('LOG-02: com a flag ligada, "Esqueci minha senha" vem depois do campo Senha e antes do botão Entrar', async () => {
+    mockFlag(true);
+    renderLoginPage();
+
+    const forgot = await screen.findByRole('button', { name: 'Esqueci minha senha' });
+    const password = screen.getByLabelText('Senha');
+    const submit = screen.getByRole('button', { name: 'Entrar' });
+    expect(password.compareDocumentPosition(forgot) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(forgot.compareDocumentPosition(submit) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('LOG-07: 429 no login por senha mostra a frase de limite, a mesma do segundo fator', async () => {
+    const user = userEvent.setup();
+    vi.mocked(api.post).mockRejectedValueOnce({ isAxiosError: true, response: { status: 429 } });
+
+    renderLoginPage();
+
+    await user.type(screen.getByLabelText(/e-mail/i), 'jane@example.com');
+    await user.type(screen.getByLabelText('Senha'), 'password123');
+    await user.click(screen.getByRole('button', { name: 'Entrar' }));
+
+    expect(await screen.findByText('Muitas tentativas. Aguarde um minuto e tente de novo.')).toBeInTheDocument();
+    expect(screen.queryByText(/algo deu errado/i)).not.toBeInTheDocument();
+  });
+
   describe('DMTE-550: Esqueci minha senha', () => {
     const ASK = { name: 'Esqueci minha senha' };
 

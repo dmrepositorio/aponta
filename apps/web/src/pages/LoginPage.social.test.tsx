@@ -61,6 +61,28 @@ describe('LoginPage: login social', () => {
     expect(navigate).toHaveBeenCalledWith('/');
   });
 
+  it('LOG-03: com a troca pendente, mostra "Entrando com o Google…" e desabilita campos e botões', async () => {
+    providers(['google']);
+    vi.mocked(api.post).mockReturnValue(new Promise(() => {}));
+    renderLogin('#social=abc123');
+
+    expect(await screen.findByRole('status')).toHaveTextContent('Entrando com o Google…');
+    expect(screen.getByRole('button', { name: 'Entrar' })).toBeDisabled();
+    expect(screen.getByLabelText(/e-mail/i)).toBeDisabled();
+    expect(screen.getByLabelText('Senha')).toBeDisabled();
+    expect(await screen.findByRole('link', { name: /entrar com google/i })).toHaveAttribute('aria-disabled', 'true');
+  });
+
+  it('LOG-03: se a troca falha, o indicador some, o alerta atual aparece e o formulário volta a funcionar', async () => {
+    vi.mocked(api.post).mockRejectedValue({ isAxiosError: true, response: { status: 401, data: {} } });
+    renderLogin('#social=vencido');
+
+    expect(await screen.findByText(/não foi possível entrar com a conta social/i)).toBeInTheDocument();
+    expect(screen.queryByText('Entrando com o Google…')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Entrar' })).toBeEnabled();
+    expect(screen.getByLabelText('Senha')).toBeEnabled();
+  });
+
   it('AC-21: se a troca devolve o desafio do segundo fator, pede o código em vez de entrar', async () => {
     vi.mocked(api.post).mockResolvedValue({ data: { twoFactorRequired: true, challengeToken: 'desafio' } });
     renderLogin('#social=abc123');
