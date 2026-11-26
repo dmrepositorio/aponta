@@ -584,7 +584,13 @@ export function ContractsPage() {
               ? 'Não foi possível excluir:'
               : 'Esta ação não pode ser desfeita.'
           }
-          confirmLabel={retrying ? 'Tentar novamente' : 'Confirmar'}
+          confirmLabel={
+            retrying
+              ? 'Tentar novamente'
+              : deleteDialog.targets.length === 1
+                ? 'Excluir'
+                : `Excluir ${deleteDialog.targets.length} contratos`
+          }
           cancelLabel={retrying ? 'Fechar' : 'Cancelar'}
           confirmDisabled={deleteDialog.running}
           onConfirm={() => void confirmDelete()}
