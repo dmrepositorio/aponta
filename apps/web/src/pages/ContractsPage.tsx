@@ -134,6 +134,9 @@ export function ContractsPage() {
   const [creating, setCreating] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const [selectedContracts, setSelectedContracts] = useState<Contract[]>([]);
+  // A grade guarda as linhas marcadas por posição e não aceita seleção de fora: para zerar a barra e as
+  // caixas ao mesmo tempo, a grade remonta quando esta chave muda.
+  const [gridKey, setGridKey] = useState(0);
   const [deleteDialog, setDeleteDialog] = useState<DeleteDialog | null>(null);
   const contracts = useContracts('');
   const detail = useContract(selectedContractId);
@@ -208,6 +211,19 @@ export function ContractsPage() {
     }));
   }, [showFinancial, screenConfig.grid.columnVisibility]);
 
+  const clearSelection = () => {
+    if (selectedContracts.length === 0) return;
+    setSelectedContracts([]);
+    setGridKey((key) => key + 1);
+  };
+
+  // Marcar linhas e filtrar são ações separadas: a linha marcada que o filtro esconde não pode continuar
+  // valendo na barra (o Excluir agiria sobre algo que o usuário não vê).
+  const changeFilter = (apply: () => void) => {
+    apply();
+    clearSelection();
+  };
+
   const handleDelete = () => {
     if (selectedContracts.length === 0) return;
     setDeleteDialog({ targets: selectedContracts, failures: [], running: false });
@@ -265,6 +281,8 @@ export function ContractsPage() {
   };
 
   const backToList = () => {
+    // openDetail usa a seleção como foco de Anterior/Próximo; ao voltar ela não vale como marcação.
+    setSelectedContracts([]);
     setMode('list');
     setSelectedContractId(null);
     setEditing(false);
@@ -432,25 +450,29 @@ export function ContractsPage() {
           <EzFilterDrawer
             isOpen={isFilterPanelOpen}
             onClose={() => setIsFilterPanelOpen(false)}
-            onClear={() => {
-              setFilterSearch('');
-              setFilterStatus('ALL');
-              setDynamicRules([]);
-              setActiveSavedFilterId(null);
-            }}
+            onClear={() =>
+              changeFilter(() => {
+                setFilterSearch('');
+                setFilterStatus('ALL');
+                setDynamicRules([]);
+                setActiveSavedFilterId(null);
+              })
+            }
             title="Filtros de Contratos"
             savedFilters={screenConfig.savedFilters}
             activeSavedFilterId={activeSavedFilterId}
-            onApplySavedFilter={(sf) => {
-              setActiveSavedFilterId(sf.id);
-              if (sf.criteria.search !== undefined)
-                setFilterSearch(sf.criteria.search);
-              if (sf.criteria.status !== undefined)
-                setFilterStatus(sf.criteria.status);
-              setDynamicRules(
-                Array.isArray(sf.criteria.rules) ? sf.criteria.rules : [],
-              );
-            }}
+            onApplySavedFilter={(sf) =>
+              changeFilter(() => {
+                setActiveSavedFilterId(sf.id);
+                if (sf.criteria.search !== undefined)
+                  setFilterSearch(sf.criteria.search);
+                if (sf.criteria.status !== undefined)
+                  setFilterStatus(sf.criteria.status);
+                setDynamicRules(
+                  Array.isArray(sf.criteria.rules) ? sf.criteria.rules : [],
+                );
+              })
+            }
             onSaveCurrentFilter={(name) => {
               saveFilter(name, {
                 search: filterSearch,
@@ -475,7 +497,9 @@ export function ContractsPage() {
                   id="contract-filter-search-input"
                   placeholder="Nome do contrato ou empresa…"
                   value={filterSearch}
-                  onChange={(e) => setFilterSearch(e.target.value)}
+                  onChange={(e) =>
+                    changeFilter(() => setFilterSearch(e.target.value))
+                  }
                 />
               </div>
 
@@ -490,7 +514,11 @@ export function ContractsPage() {
                   id="contract-filter-status-select"
                   value={filterStatus}
                   onChange={(e) =>
-                    setFilterStatus(e.target.value as 'ALL' | 'ACTIVE' | 'INACTIVE')
+                    changeFilter(() =>
+                      setFilterStatus(
+                        e.target.value as 'ALL' | 'ACTIVE' | 'INACTIVE',
+                      ),
+                    )
                   }
                 >
                   <option value="ALL">Todos os status</option>
@@ -502,13 +530,14 @@ export function ContractsPage() {
               <EzDynamicFilter
                 fields={CONTRACT_FILTER_FIELDS}
                 rules={dynamicRules}
-                onChange={setDynamicRules}
+                onChange={(rules) => changeFilter(() => setDynamicRules(rules))}
               />
             </div>
           </EzFilterDrawer>
 
           <div className="isolate flex-1 p-3 overflow-x-auto min-w-0 flex flex-col">
             <ContractList
+              key={gridKey}
               contracts={filteredContracts}
               loading={contracts.isLoading}
               error={contracts.isError}
