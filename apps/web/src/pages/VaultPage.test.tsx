@@ -175,7 +175,7 @@ describe('VaultPage', () => {
     expect(screen.getAllByText('••••••••').length).toBeGreaterThan(0);
   });
 
-  it('allows ADMIN to delete a credential after confirming', async () => {
+  it('allows ADMIN to delete a credential after confirming in the DS dialog', async () => {
     mockDefaultGets();
     vi.mocked(api.delete).mockResolvedValue({ data: {} });
     loginAs('ADMIN');
@@ -189,7 +189,10 @@ describe('VaultPage', () => {
     const deleteBtns = screen.getAllByTitle('Excluir');
     await user.click(deleteBtns[0]);
 
-    expect(window.confirm).toHaveBeenCalledWith('Excluir senha definitivamente?');
+    const dialog = await screen.findByRole('dialog', { name: 'Excluir senha' });
+    expect(window.confirm).not.toHaveBeenCalled();
+    expect(api.delete).not.toHaveBeenCalled();
+    await user.click(within(dialog).getByRole('button', { name: 'Excluir' }));
     await waitFor(() => {
       expect(api.delete).toHaveBeenCalledWith('/vault/credentials/cred-1');
     });
@@ -351,7 +354,7 @@ describe('VaultPage', () => {
     });
   });
 
-  it('does not delete the folder when confirm is cancelled, but does when confirmed', async () => {
+  it('does not delete the folder when the dialog is cancelled, but does when confirmed', async () => {
     mockDefaultGets();
     vi.mocked(api.delete).mockResolvedValue({ data: {} });
     loginAs('ADMIN');
@@ -366,13 +369,16 @@ describe('VaultPage', () => {
       expect(screen.getByTitle('Remover pasta')).toBeInTheDocument();
     });
 
-    window.confirm = vi.fn(() => false);
     await user.click(screen.getByTitle('Remover pasta'));
-    expect(window.confirm).toHaveBeenCalledWith('Remover a pasta "Servidores"?');
+    const cancelled = await screen.findByRole('dialog', { name: 'Remover pasta' });
+    expect(window.confirm).not.toHaveBeenCalled();
+    await user.click(within(cancelled).getByRole('button', { name: 'Cancelar' }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(api.delete).not.toHaveBeenCalledWith('/vault/folders/f1');
 
-    window.confirm = vi.fn(() => true);
     await user.click(screen.getByTitle('Remover pasta'));
+    const confirmed = await screen.findByRole('dialog', { name: 'Remover pasta' });
+    await user.click(within(confirmed).getByRole('button', { name: 'Remover' }));
     await waitFor(() => {
       expect(api.delete).toHaveBeenCalledWith('/vault/folders/f1');
     });
@@ -989,6 +995,8 @@ describe('VaultPage — row actions and per-field reveal (DMTE-544)', () => {
     await user.click(eye('senha'));
     expect(await screen.findByText('fake-password-123')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Excluir Servidor FTP' }));
+    await user.click(within(await screen.findByRole('dialog', { name: 'Excluir senha' })).getByRole('button', { name: 'Excluir' }));
+    await waitFor(() => expect(api.delete).toHaveBeenCalledWith('/vault/credentials/cred-1'));
     await waitFor(() => expect(screen.queryByText('fake-password-123')).not.toBeInTheDocument());
   });
 
@@ -1017,6 +1025,7 @@ describe('VaultPage — row actions and per-field reveal (DMTE-544)', () => {
     expect(await screen.findByText('fake-password-123')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Remover pasta Servidores' }));
+    await user.click(within(await screen.findByRole('dialog', { name: 'Remover pasta' })).getByRole('button', { name: 'Remover' }));
 
     await waitFor(() => expect(api.delete).toHaveBeenCalledWith('/vault/folders/f1'));
     await waitFor(() => expect(screen.queryByText('fake-password-123')).not.toBeInTheDocument());
@@ -1370,5 +1379,167 @@ describe('VaultPage modals and load error (DMTE-545)', () => {
     expect(await screen.findByText('Servidor FTP')).toBeInTheDocument();
     expect(screen.queryByText('Erro ao carregar o cofre de senhas.')).not.toBeInTheDocument();
     expect(credentialCalls()).toBe(credentialsBefore);
+  });
+});
+
+const httpError = (status: number, message?: string) =>
+  Object.assign(new Error('Request failed'), { isAxiosError: true, response: { status, data: message ? { message } : {} } });
+
+const deferredPromise = () => {
+  let resolve: (value: unknown) => void = () => undefined;
+  let reject: (reason: unknown) => void = () => undefined;
+  const promise = new Promise((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+  return { promise, resolve, reject };
+};
+
+function mockGetsWithFolders(folderList: typeof folders) {
+  vi.mocked(api.get).mockImplementation(async (url: string) => {
+    if (url === '/vault/folders') return { data: folderList };
+    if (url === '/vault/credentials') {
+      return { data: { data: credentials, meta: { total: 3, page: 1, limit: 10, totalPages: 1 } } };
+    }
+    throw new Error(`Unexpected GET ${url}`);
+  });
+}
+
+describe('VaultPage — exclusão com diálogo de perigo (VLT-02)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    useAuthStore.setState({ token: null, user: null });
+    window.confirm = vi.fn(() => true);
+    mockDefaultGets();
+    loginAs('ADMIN');
+  });
+
+  async function loaded() {
+    const user = userEvent.setup();
+    renderPage();
+    await screen.findByText('Servidor FTP');
+    return user;
+  }
+
+  async function openFolderRemoval(user: ReturnType<typeof userEvent.setup>) {
+    await user.click(screen.getByTestId('tree-node-f1'));
+    await user.click(await screen.findByRole('button', { name: 'Remover pasta Servidores' }));
+    return screen.findByRole('dialog', { name: 'Remover pasta' });
+  }
+
+  it('asks for confirmation in a danger dialog that names the credential, without window.confirm', async () => {
+    const user = await loaded();
+    await user.click(screen.getByRole('button', { name: 'Excluir Servidor FTP' }));
+
+    const dialog = await screen.findByRole('dialog', { name: 'Excluir senha' });
+    expect(dialog).toHaveTextContent('Servidor FTP');
+    expect(within(dialog).getByRole('button', { name: 'Excluir' })).toBeInTheDocument();
+    expect(within(dialog).getByRole('button', { name: 'Cancelar' })).toHaveFocus();
+    expect(window.confirm).not.toHaveBeenCalled();
+    expect(api.delete).not.toHaveBeenCalled();
+  });
+
+  it('shows "Excluindo…", blocks a second delete and keeps the dialog open while the request is in flight', async () => {
+    const user = await loaded();
+    const pending = deferredPromise();
+    vi.mocked(api.delete).mockReturnValue(pending.promise as Promise<never>);
+    await user.click(screen.getByRole('button', { name: 'Excluir Servidor FTP' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Excluir senha' });
+
+    await user.click(within(dialog).getByRole('button', { name: 'Excluir' }));
+    const busy = await within(dialog).findByRole('button', { name: 'Excluindo…' });
+    expect(busy).toBeDisabled();
+    expect(busy).toHaveAttribute('aria-busy', 'true');
+    await user.click(busy);
+    await user.click(within(dialog).getByRole('button', { name: 'Cancelar' }));
+    expect(screen.getByRole('dialog', { name: 'Excluir senha' })).toBeInTheDocument();
+    expect(api.delete).toHaveBeenCalledTimes(1);
+
+    await act(async () => pending.resolve({ data: {} }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  });
+
+  it('shows the API refusal as an alert inside the dialog, keeps it open, and lets the user try again', async () => {
+    const user = await loaded();
+    vi.mocked(api.delete).mockRejectedValueOnce(httpError(403, 'Sem permissão para excluir esta senha.'));
+    await user.click(screen.getByRole('button', { name: 'Excluir Servidor FTP' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Excluir senha' });
+
+    await user.click(within(dialog).getByRole('button', { name: 'Excluir' }));
+    expect(await within(dialog).findByRole('alert')).toHaveTextContent('Sem permissão para excluir esta senha.');
+    expect(within(dialog).getByRole('button', { name: 'Excluir' })).toBeEnabled();
+
+    vi.mocked(api.delete).mockResolvedValueOnce({ data: {} });
+    await user.click(within(dialog).getByRole('button', { name: 'Excluir' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(api.delete).toHaveBeenCalledTimes(2);
+  });
+
+  it('falls back to a generic message when the refusal carries none, and clears it on cancel and reopen', async () => {
+    const user = await loaded();
+    vi.mocked(api.delete).mockRejectedValueOnce(new Error('network'));
+    await user.click(screen.getByRole('button', { name: 'Excluir Servidor FTP' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Excluir senha' });
+    await user.click(within(dialog).getByRole('button', { name: 'Excluir' }));
+    expect(await within(dialog).findByRole('alert')).toHaveTextContent('Não foi possível excluir a senha. Tente novamente.');
+
+    await user.click(within(dialog).getByRole('button', { name: 'Cancelar' }));
+    await user.click(screen.getByRole('button', { name: 'Excluir VPN Interna' }));
+    const reopened = await screen.findByRole('dialog', { name: 'Excluir senha' });
+    expect(reopened).toHaveTextContent('VPN Interna');
+    expect(within(reopened).queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it('removes a folder through the danger dialog with its name and password count, and returns to the root on success', async () => {
+    mockGetsWithFolders([{ ...folders[0], credentialCount: 3 }]);
+    vi.mocked(api.delete).mockResolvedValue({ data: {} });
+    const user = await loaded();
+
+    const dialog = await openFolderRemoval(user);
+    expect(dialog).toHaveTextContent('Servidores');
+    expect(dialog).toHaveTextContent('3 senhas');
+    expect(window.confirm).not.toHaveBeenCalled();
+    await user.click(within(dialog).getByRole('button', { name: 'Remover' }));
+
+    await waitFor(() => expect(api.delete).toHaveBeenCalledWith('/vault/folders/f1'));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(screen.queryByText('Pasta:')).not.toBeInTheDocument();
+  });
+
+  it('uses the singular for one password and "nenhuma senha" for an empty folder', async () => {
+    const user = await loaded();
+    let dialog = await openFolderRemoval(user);
+    expect(dialog).toHaveTextContent('1 senha');
+    expect(dialog).not.toHaveTextContent('1 senhas');
+    await user.click(within(dialog).getByRole('button', { name: 'Cancelar' }));
+
+    cleanup();
+    mockGetsWithFolders([{ ...folders[0], credentialCount: 0 }]);
+    const again = await loaded();
+    dialog = await openFolderRemoval(again);
+    expect(dialog).toHaveTextContent('nenhuma senha');
+  });
+
+  it('shows the API refusal for a folder (for example one that still has passwords) and keeps it selected', async () => {
+    const user = await loaded();
+    vi.mocked(api.delete).mockRejectedValueOnce(httpError(409, 'Não é possível remover uma pasta que contém credenciais'));
+    const dialog = await openFolderRemoval(user);
+
+    await user.click(within(dialog).getByRole('button', { name: 'Remover' }));
+
+    expect(await within(dialog).findByRole('alert')).toHaveTextContent('Não é possível remover uma pasta que contém credenciais');
+    expect(screen.getByRole('dialog', { name: 'Remover pasta' })).toBeInTheDocument();
+    expect(screen.getByText('Pasta:')).toBeInTheDocument();
+  });
+
+  it('does not offer to remove a folder or a password to a non-ADMIN role', async () => {
+    loginAs('AGENT');
+    const user = await loaded();
+    await user.click(screen.getByTestId('tree-node-f1'));
+    await waitFor(() => expect(screen.getByText('Servidor FTP')).toBeInTheDocument());
+
+    expect(screen.queryByRole('button', { name: 'Remover pasta Servidores' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Excluir Servidor FTP' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 });
