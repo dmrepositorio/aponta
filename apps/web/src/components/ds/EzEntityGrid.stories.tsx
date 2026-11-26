@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import type { ColumnDef } from '@tanstack/react-table';
+import { useState } from 'react';
 import { EzEntityGrid } from './EzEntityGrid';
 import { EzTag } from './EzTag';
 import type { FilterDef } from './EzFilterBar';
@@ -194,6 +195,32 @@ export const PaginacaoRicaEScrollbarFixa: Story = {
     pageSize: 3,
     pageSizeOptions: [3, 5, 10, 20],
     alwaysShowHorizontalScrollbar: true,
+  },
+};
+
+/**
+ * `onPaginationInfoChange` entrega `{ inicio, fim, total }` (total já filtrado) para a toolbar
+ * do consumidor exibir o mesmo contador do rodapé (MSA-13). Mude de página ou filtre para ver
+ * o texto acima da grade acompanhar.
+ */
+export const ContadorNaToolbarDoConsumidor: Story = {
+  args: {
+    tableLabel: 'Chamados',
+    columns,
+    data: tickets,
+    pageSize: 3,
+    pageSizeOptions: [3, 5, 10],
+  },
+  render: (args) => {
+    const [info, setInfo] = useState({ inicio: 0, fim: 0, total: 0 });
+    return (
+      <div className="flex flex-col gap-2">
+        <span data-testid="contador-toolbar" className="text-[13px] text-gray-500">
+          {info.inicio}-{info.fim} de {info.total}
+        </span>
+        <EzEntityGrid<Ticket> {...args} onPaginationInfoChange={setInfo} />
+      </div>
+    );
   },
 };
 

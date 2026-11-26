@@ -112,6 +112,12 @@ export type EzEntityGridProps<T> = Omit<HTMLAttributes<HTMLDivElement>, 'childre
   /** Callback fired whenever the user changes the page size via the dropdown selector. */
   onPageSizeChange?: (newPageSize: number) => void;
   /**
+   * Chamado com a faixa visível e o total filtrado (`{ inicio, fim, total }`, 1-based; zeros quando
+   * não há linhas) na montagem e sempre que algum deles muda (página, tamanho, filtros, dados).
+   * Permite à toolbar do consumidor mostrar o mesmo contador do rodapé. O rodapé não muda.
+   */
+  onPaginationInfoChange?: (info: { inicio: number; fim: number; total: number }) => void;
+  /**
    * Whether to display the persistent AG Grid style horizontal scrollbar on overflow.
    * @default true
    */
@@ -1160,6 +1166,7 @@ function EzEntityGridInner<T>(
     pageSize,
     pageSizeOptions,
     onPageSizeChange,
+    onPaginationInfoChange,
     showHorizontalScrollbar = true,
     alwaysShowHorizontalScrollbar = false,
     footerAggregations,
@@ -1462,6 +1469,18 @@ function EzEntityGridInner<T>(
   const showFilterBar = !!filters;
   const showPagination = pageSize !== undefined;
   const showFooter = !!footerAggregations && Object.keys(footerAggregations).length > 0;
+
+  // MSA-13: expõe faixa e total filtrado para a toolbar do consumidor (mesma conta do rodapé).
+  const paginationInfoCallbackRef = useRef(onPaginationInfoChange);
+  paginationInfoCallbackRef.current = onPaginationInfoChange;
+  const infoTotal = table.getFilteredRowModel().rows.length;
+  const infoPageIndex = pagination.pageIndex;
+  const infoPageSize = pagination.pageSize;
+  const infoInicio = infoTotal === 0 ? 0 : infoPageIndex * infoPageSize + 1;
+  const infoFim = infoTotal === 0 ? 0 : Math.min((infoPageIndex + 1) * infoPageSize, infoTotal);
+  useEffect(() => {
+    paginationInfoCallbackRef.current?.({ inicio: infoInicio, fim: infoFim, total: infoTotal });
+  }, [infoInicio, infoFim, infoTotal]);
 
   const footerValues = useMemo<Record<string, number>>(() => {
     if (!showFooter) return {};
