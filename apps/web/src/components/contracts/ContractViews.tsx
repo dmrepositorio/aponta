@@ -28,6 +28,9 @@ const dateLabel = (value?: string | null) =>
   value
     ? new Date(value).toLocaleDateString('pt-BR', { timeZone: 'UTC' })
     : 'Não informada';
+// Horas em pt-BR: vírgula decimal e no máximo duas casas (80 min = 1,33h). Só exibição; o valor salvo é em minutos.
+export const hoursLabel = (hours: number) =>
+  `${hours.toLocaleString('pt-BR', { maximumFractionDigits: 2 })}h`;
 const allowance = (c: Contract) =>
   c.includedMinutes != null ? c.includedMinutes / 60 : c.hoursLimit;
 // End dates entered in the form include the entire selected civil day.
@@ -56,7 +59,9 @@ export const commercialModalities: Record<string, string> = {
 };
 export const modality = (c: Contract) =>
   commercialModalities[c.type] ||
-  (c.type === 'HOURS_LIMIT' ? `Pacote: ${allowance(c) ?? '—'}h` : 'Cobertura');
+  (c.type === 'HOURS_LIMIT'
+    ? `Pacote: ${allowance(c) == null ? '—h' : hoursLabel(allowance(c) as number)}`
+    : 'Cobertura');
 const isLegacy = (c: Contract) => !commercialModalities[c.type];
 export const contractApproval = (c: Contract) =>
   approvalLabel({ legacy: isLegacy(c), approved: !!c.approved });
@@ -225,7 +230,7 @@ export function ContractDetail({
     ...(c.type === 'FIXED_PROJECT'
       ? [
           ['Escopo', c.scope || 'Não informado'],
-          ['Estimativa total', `${(c.estimatedMinutes || 0) / 60}h`],
+          ['Estimativa total', hoursLabel((c.estimatedMinutes || 0) / 60)],
         ]
       : []),
     [
