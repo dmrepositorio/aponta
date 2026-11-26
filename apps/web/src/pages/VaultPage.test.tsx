@@ -545,7 +545,7 @@ describe('VaultPage', () => {
       expect(screen.getByText('Servidor FTP')).toBeInTheDocument();
     });
 
-    const pageTwoBtn = screen.getByRole('button', { name: '2' });
+    const pageTwoBtn = screen.getByRole('button', { name: 'Página 2' });
     await user.click(pageTwoBtn);
 
     await waitFor(() => {
@@ -969,7 +969,7 @@ describe('VaultPage — row actions and per-field reveal (DMTE-544)', () => {
 
     await user.click(eye('senha'));
     expect(await screen.findByText('fake-password-123')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: '2' }));
+    await user.click(screen.getByRole('button', { name: 'Página 2' }));
 
     await waitFor(() => expect(screen.queryByText('fake-password-123')).not.toBeInTheDocument());
   });

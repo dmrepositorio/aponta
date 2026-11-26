@@ -1435,6 +1435,8 @@ export function TicketWorklogs({
                 <EzPagination
                   currentPage={prePage}
                   totalPages={preTotalPages}
+                  totalItems={preAppointments.length}
+                  pageSize={PRE_APPOINTMENTS_PAGE_SIZE}
                   onChange={setPrePage}
                 />
               </div>

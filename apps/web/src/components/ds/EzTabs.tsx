@@ -1,4 +1,4 @@
-import { HTMLAttributes, KeyboardEvent, forwardRef } from 'react';
+import { HTMLAttributes, KeyboardEvent, UIEvent, forwardRef, useCallback, useEffect, useRef, useState } from 'react';
 import { cn } from './utils';
 
 export interface EzTabItem {
@@ -33,7 +33,48 @@ export const ezTabPanelId = (prefix: string, tabId: string | number): string => 
  * Aponta DS Tabs (Tabselector)
  */
 export const EzTabs = forwardRef<HTMLDivElement, EzTabsProps>(
-  ({ tabs, activeTab, onChange, variant = 'line', idPrefix, className, role, onKeyDown, ...props }, ref) => {
+  ({ tabs, activeTab, onChange, variant = 'line', idPrefix, className, role, onKeyDown, onScroll, ...props }, ref) => {
+    const listRef = useRef<HTMLDivElement | null>(null);
+    const [overflow, setOverflow] = useState({ start: false, end: false });
+    const setRefs = (node: HTMLDivElement | null) => {
+      listRef.current = node;
+      if (typeof ref === 'function') ref(node);
+      else if (ref) ref.current = node;
+    };
+
+    // DS-26: bordas com abas escondidas ganham um gradiente (aria-hidden, sem ponteiro).
+    const measure = useCallback(() => {
+      const list = listRef.current;
+      if (!list) return;
+      const hidden = list.scrollWidth - list.clientWidth;
+      const next = { start: hidden > 1 && list.scrollLeft > 1, end: hidden > 1 && list.scrollLeft < hidden - 1 };
+      setOverflow((prev) => (prev.start === next.start && prev.end === next.end ? prev : next));
+    }, []);
+
+    useEffect(() => {
+      measure();
+      const list = listRef.current;
+      // jsdom não tem ResizeObserver; sem ele o scroll e a troca de abas já remedem.
+      if (!list || typeof ResizeObserver === 'undefined') return;
+      const observer = new ResizeObserver(measure);
+      observer.observe(list);
+      return () => observer.disconnect();
+    }, [measure, tabs]);
+
+    // A aba ativa entra na vista só quando a lista rola; jsdom não implementa scrollIntoView.
+    useEffect(() => {
+      const list = listRef.current;
+      if (!list || list.scrollWidth <= list.clientWidth) return;
+      const index = tabs.findIndex((tab) => tab.id === activeTab);
+      const target = list.children[index] as HTMLElement | undefined;
+      if (typeof target?.scrollIntoView === 'function') target.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    }, [activeTab, tabs]);
+
+    const handleScroll = (event: UIEvent<HTMLDivElement>) => {
+      onScroll?.(event);
+      measure();
+    };
+
     const resolvedRole = role ?? 'tablist';
     const tabRole = resolvedRole === 'tablist' ? 'tab' : undefined;
     // Tabindex móvel: só a aba ativa (ou a primeira habilitada) entra na ordem do Tab.
@@ -55,9 +96,11 @@ export const EzTabs = forwardRef<HTMLDivElement, EzTabsProps>(
       buttons[next].focus();
       if (enabledTabs[next].id !== activeTab) onChange(enabledTabs[next].id);
     };
+    const fade = 'pointer-events-none absolute inset-y-0 w-6 from-white to-transparent';
     return (
+      <div className="relative min-w-0 max-w-full">
       <div
-        ref={ref}
+        ref={setRefs}
         role={resolvedRole}
         className={cn(
           'flex items-center overflow-x-auto no-scrollbar',
@@ -65,6 +108,7 @@ export const EzTabs = forwardRef<HTMLDivElement, EzTabsProps>(
           className
         )}
         onKeyDown={handleKeyDown}
+        onScroll={handleScroll}
         {...props}
       >
         {tabs.map((tab) => {
@@ -91,7 +135,7 @@ export const EzTabs = forwardRef<HTMLDivElement, EzTabsProps>(
                   isActive
                     ? 'bg-brand-100 text-brand-700'
                     : 'text-gray-600 hover:bg-gray-90',
-                  tab.disabled && 'opacity-50 cursor-not-allowed hover:bg-transparent'
+                  tab.disabled && 'text-gray-400 cursor-not-allowed hover:bg-transparent'
                 )}
               >
                 {tab.label}
@@ -112,7 +156,7 @@ export const EzTabs = forwardRef<HTMLDivElement, EzTabsProps>(
                 isActive
                   ? 'text-brand-600'
                   : 'text-gray-500 hover:text-gray-900',
-                tab.disabled && 'opacity-50 cursor-not-allowed hover:text-gray-500'
+                tab.disabled && 'text-gray-400 cursor-not-allowed hover:text-gray-400'
               )}
             >
               {tab.label}
@@ -122,6 +166,9 @@ export const EzTabs = forwardRef<HTMLDivElement, EzTabsProps>(
             </button>
           );
         })}
+      </div>
+      {overflow.start && <div aria-hidden="true" data-testid="ez-tabs-overflow-start" className={`${fade} left-0 bg-linear-to-r`} />}
+      {overflow.end && <div aria-hidden="true" data-testid="ez-tabs-overflow-end" className={`${fade} right-0 bg-linear-to-l`} />}
       </div>
     );
   }

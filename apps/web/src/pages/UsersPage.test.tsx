@@ -334,17 +334,17 @@ describe('UsersPage', () => {
       renderUsersPage();
       const drawer = await openFilters(user);
 
-      await user.click(screen.getByRole('button', { name: '2' }));
+      await user.click(screen.getByRole('button', { name: 'Página 2' }));
       await waitFor(() => expect(usersParams().page).toBe(2));
       await user.selectOptions(within(drawer).getByLabelText(/^status$/i), 'ACTIVE');
       await waitFor(() => expect(usersParams().page).toBe(1));
 
-      await user.click(screen.getByRole('button', { name: '2' }));
+      await user.click(screen.getByRole('button', { name: 'Página 2' }));
       await waitFor(() => expect(usersParams().page).toBe(2));
       await user.type(within(drawer).getByLabelText(/buscar usuário/i), 'a');
       await waitFor(() => expect(usersParams()).toEqual(expect.objectContaining({ q: 'a', page: 1 })));
 
-      await user.click(screen.getByRole('button', { name: '2' }));
+      await user.click(screen.getByRole('button', { name: 'Página 2' }));
       await waitFor(() => expect(usersParams().page).toBe(2));
       await user.click(within(tipoGroup(drawer)).getByRole('checkbox', { name: 'Cliente' }));
       await waitFor(() => expect(usersParams().page).toBe(1));
@@ -356,7 +356,7 @@ describe('UsersPage', () => {
       await screen.findByText('Ana Silva');
 
       expect(usersParams().pageSize).toBe(20);
-      expect(screen.getByRole('button', { name: '3' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Página 3' })).toBeInTheDocument();
       expect(screen.getByTestId('ez-toolbar-record-count')).toHaveTextContent(/\bde 45\b/);
       expect(screen.queryByLabelText(/linhas por página/i)).not.toBeInTheDocument();
     });

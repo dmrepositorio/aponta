@@ -8,7 +8,9 @@ import { EzBreadcrumb } from './EzBreadcrumb';
  * navegação. Cada item pode ser um link (`href`), um botão (`onClick`)
  * ou texto estático; o último item da lista recebe `aria-current="page"`
  * e não é clicável. Usado para navegação entre organizações, clientes
- * e chamados.
+ * e chamados. O nav se chama "Trilha de navegação"; os chevrons são aria-hidden.
+ * Em tela estreita (< 640px) trilhas com mais de 3 itens colapsam os intermediários
+ * numa reticência em botão que os revela.
  */
 const meta: Meta<typeof EzBreadcrumb> = {
   title: 'DS/EzBreadcrumb',
@@ -65,4 +67,10 @@ export const HierarquiaProfunda: Story = {
       { label: 'Chamado #4821' },
     ],
   },
+};
+
+/** Em viewport estreito os intermediários viram "…" (botão "Mostrar itens intermediários"). */
+export const ColapsoEmTelaEstreita: Story = {
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  args: HierarquiaProfunda.args,
 };
