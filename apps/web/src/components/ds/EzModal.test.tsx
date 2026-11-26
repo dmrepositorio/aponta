@@ -180,14 +180,18 @@ describe('EzModal', () => {
 
     it('keeps an EzDialog rendered inside the modal usable (its Tab is not hijacked by the modal trap)', async () => {
       const user = userEvent.setup();
-      render(
+      const tree = (confirming: boolean) => (
         <EzModal isOpen onClose={vi.fn()} title="T">
-          <EzDialog open variant="danger" title="Excluir" message="M" onConfirm={vi.fn()} onCancel={vi.fn()} />
-        </EzModal>,
+          <EzDialog open={confirming} variant="danger" title="Excluir" message="M" onConfirm={vi.fn()} onCancel={vi.fn()} />
+        </EzModal>
       );
+      const { rerender } = render(tree(false));
+      rerender(tree(true));
       expect(screen.getByRole('button', { name: 'Cancelar' })).toHaveFocus();
       await user.tab();
       expect(screen.getByRole('button', { name: 'Confirmar' })).toHaveFocus();
+      await user.tab();
+      expect(screen.getByRole('button', { name: 'Fechar diálogo' })).toHaveFocus();
     });
   });
 });

@@ -3,6 +3,8 @@ import { createPortal } from 'react-dom';
 import { cn } from './utils';
 import { EzButton } from './EzButton';
 import { useEscapeLayer } from '../../hooks/useEscapeLayer';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
+import { useScrollLock } from '../../hooks/useScrollLock';
 import { AlertTriangle, Info, X } from 'lucide-react';
 
 export interface EzDialogProps {
@@ -17,6 +19,8 @@ export interface EzDialogProps {
   confirmLabel?: string;
   cancelLabel?: string;
   confirmDisabled?: boolean;
+  /** Ação em andamento: desabilita o Confirmar (aria-busy) e impede cliques repetidos. */
+  confirmLoading?: boolean;
 }
 
 export function EzDialog({
@@ -30,9 +34,14 @@ export function EzDialog({
   confirmLabel = 'Confirmar',
   cancelLabel = 'Cancelar',
   confirmDisabled = false,
+  confirmLoading = false,
 }: EzDialogProps) {
   useEscapeLayer(onCancel, open);
+  useScrollLock(open);
   const titleId = useId();
+  const messageId = useId();
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const keepFocusInside = useFocusTrap(dialogRef, open);
   const cancelRef = useRef<HTMLButtonElement>(null);
   // Ação destrutiva abre com o foco na ação segura.
   useEffect(() => {
@@ -52,7 +61,16 @@ export function EzDialog({
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
       <div className="fixed inset-0 bg-gray-900/60" onClick={onCancel} />
-      <div role="dialog" aria-modal="true" aria-labelledby={titleId} className="relative w-full max-w-sm rounded-[24px] bg-white shadow-2xl">
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={messageId}
+        tabIndex={-1}
+        onKeyDown={keepFocusInside}
+        className="relative w-full max-w-sm rounded-[24px] bg-white shadow-2xl focus:outline-none"
+      >
         <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
           <div className="flex items-center gap-2">
             <Icon className={iconClass} />
@@ -63,12 +81,18 @@ export function EzDialog({
           </button>
         </div>
         <div className="px-6 py-4 text-[14px] text-gray-700">
-          <p>{message}</p>
+          <p id={messageId}>{message}</p>
           {children}
         </div>
         <div className="flex items-center justify-end gap-3 border-t border-gray-100 bg-gray-90/50 px-6 py-4 rounded-b-[24px]">
           <EzButton ref={cancelRef} variant="secondary" label={cancelLabel} onClick={onCancel} />
-          <EzButton variant="primary" label={confirmLabel} onClick={onConfirm} disabled={confirmDisabled} />
+          <EzButton
+            variant={variant === 'danger' ? 'danger' : 'primary'}
+            label={confirmLabel}
+            onClick={onConfirm}
+            disabled={confirmDisabled}
+            loading={confirmLoading}
+          />
         </div>
       </div>
     </div>,

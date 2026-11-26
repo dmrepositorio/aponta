@@ -230,8 +230,8 @@ describe('OrganizationsPage', { timeout: 15000 }, () => {
 
     // CNPJ e Razão Social digitados manualmente (sem usar "Buscar CNPJ"): devem
     // permanecer sempre editáveis — o cadastro manual não depende da consulta à Receita.
-    expect(screen.getByLabelText(/cnpj/i)).toBeEnabled();
-    await user.type(screen.getByLabelText(/cnpj/i), '19131243000197');
+    expect(screen.getByLabelText(/cnpj/i, { selector: 'input' })).toBeEnabled();
+    await user.type(screen.getByLabelText(/cnpj/i, { selector: 'input' }), '19131243000197');
     await user.type(screen.getByLabelText(/nome fantasia/i), 'Empresa C');
     await user.type(screen.getByLabelText(/razão social/i), 'Empresa C Ltda');
     await user.click(screen.getByLabelText(/faturamento quarteirizado/i));
@@ -274,7 +274,7 @@ describe('OrganizationsPage', { timeout: 15000 }, () => {
       await openManualForm(user);
 
       await user.type(screen.getByLabelText(/nome fantasia/i), 'Empresa D');
-      await user.type(screen.getByLabelText(/cnpj/i), '19131243000197');
+      await user.type(screen.getByLabelText(/cnpj/i, { selector: 'input' }), '19131243000197');
       await user.click(screen.getByRole('button', { name: /cadastrar/i }));
 
       const alert = await screen.findByRole('alert');
@@ -291,7 +291,7 @@ describe('OrganizationsPage', { timeout: 15000 }, () => {
       await openManualForm(user);
 
       await user.type(screen.getByLabelText(/nome fantasia/i), 'Empresa D');
-      await user.type(screen.getByLabelText(/cnpj/i), '19131243000197');
+      await user.type(screen.getByLabelText(/cnpj/i, { selector: 'input' }), '19131243000197');
       await user.click(screen.getByRole('button', { name: /cadastrar/i }));
 
       expect(await screen.findByRole('alert')).toHaveTextContent(/não foi possível cadastrar o cliente/i);
@@ -305,7 +305,7 @@ describe('OrganizationsPage', { timeout: 15000 }, () => {
       await openManualForm(user);
 
       await user.type(screen.getByLabelText(/nome fantasia/i), 'Empresa D');
-      await user.type(screen.getByLabelText(/cnpj/i), '19131243000197');
+      await user.type(screen.getByLabelText(/cnpj/i, { selector: 'input' }), '19131243000197');
       await user.click(screen.getByRole('button', { name: /cadastrar/i }));
 
       await waitFor(() => {
@@ -332,7 +332,7 @@ describe('OrganizationsPage', { timeout: 15000 }, () => {
       });
       await user.click(screen.getByTestId('ez-toolbar-actions-button'));
       await user.click(screen.getByRole('menuitem', { name: /cadastrar por cnpj/i }));
-      await user.type(screen.getByLabelText(/cnpj/i), '19131243000197');
+      await user.type(screen.getByLabelText(/cnpj/i, { selector: 'input' }), '19131243000197');
       await user.click(screen.getByRole('button', { name: /consultar e abrir cadastro/i }));
     }
 
@@ -341,7 +341,7 @@ describe('OrganizationsPage', { timeout: 15000 }, () => {
 
       expect(await screen.findByText('CNPJ não encontrado ou inválido na Receita Federal.')).toBeInTheDocument();
       expect(screen.getByText('Cadastrar Parceiro por CNPJ')).toBeInTheDocument();
-      expect(screen.getByLabelText(/cnpj/i)).toHaveValue('19131243000197');
+      expect(screen.getByLabelText(/cnpj/i, { selector: 'input' })).toHaveValue('19131243000197');
     });
 
     it.each([
@@ -355,7 +355,7 @@ describe('OrganizationsPage', { timeout: 15000 }, () => {
       ).toBeInTheDocument();
       expect(screen.queryByText('CNPJ não encontrado ou inválido na Receita Federal.')).not.toBeInTheDocument();
       expect(screen.getByText('Cadastrar Parceiro por CNPJ')).toBeInTheDocument();
-      expect(screen.getByLabelText(/cnpj/i)).toHaveValue('19131243000197');
+      expect(screen.getByLabelText(/cnpj/i, { selector: 'input' })).toHaveValue('19131243000197');
     });
   });
 
@@ -388,7 +388,7 @@ describe('OrganizationsPage', { timeout: 15000 }, () => {
       expect(screen.getByText('Nova Empresa')).toBeInTheDocument();
     });
 
-    await user.type(screen.getByLabelText(/cnpj/i), '19131243000197');
+    await user.type(screen.getByLabelText(/cnpj/i, { selector: 'input' }), '19131243000197');
     await user.click(screen.getByRole('button', { name: /buscar cnpj/i }));
 
     await waitFor(() => {
@@ -426,10 +426,10 @@ describe('OrganizationsPage', { timeout: 15000 }, () => {
     });
 
     // Antes da consulta, os campos são livremente editáveis.
-    expect(screen.getByLabelText(/cnpj/i)).toBeEnabled();
+    expect(screen.getByLabelText(/cnpj/i, { selector: 'input' })).toBeEnabled();
     expect(screen.getByLabelText(/razão social/i)).toBeEnabled();
 
-    await user.type(screen.getByLabelText(/cnpj/i), '19131243000197');
+    await user.type(screen.getByLabelText(/cnpj/i, { selector: 'input' }), '19131243000197');
     await user.click(screen.getByRole('button', { name: /buscar cnpj/i }));
 
     await waitFor(() => {
@@ -437,12 +437,12 @@ describe('OrganizationsPage', { timeout: 15000 }, () => {
     });
 
     // Dados oficiais da Receita Federal (CNPJ/Razão Social) ficam travados até edição explícita.
-    expect(screen.getByLabelText(/cnpj/i)).toBeDisabled();
+    expect(screen.getByLabelText(/cnpj/i, { selector: 'input' })).toBeDisabled();
     expect(screen.getByLabelText(/razão social/i)).toBeDisabled();
     expect(screen.getByLabelText(/nome fantasia/i)).toBeEnabled();
 
     await user.click(screen.getByRole('button', { name: /editar manualmente/i }));
-    expect(screen.getByLabelText(/cnpj/i)).toBeEnabled();
+    expect(screen.getByLabelText(/cnpj/i, { selector: 'input' })).toBeEnabled();
     expect(screen.getByLabelText(/razão social/i)).toBeEnabled();
   });
 
@@ -784,7 +784,7 @@ describe('OrganizationsPage', { timeout: 15000 }, () => {
     await user.click(screen.getByRole('menuitem', { name: /cadastrar por cnpj/i }));
 
     expect(screen.getByText('Cadastrar Parceiro por CNPJ')).toBeInTheDocument();
-    await user.type(screen.getByLabelText(/cnpj/i), '19131243000197');
+    await user.type(screen.getByLabelText(/cnpj/i, { selector: 'input' }), '19131243000197');
     await user.click(screen.getByRole('button', { name: /consultar e abrir cadastro/i }));
 
     await waitFor(() => {

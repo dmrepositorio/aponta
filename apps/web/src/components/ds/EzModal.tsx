@@ -1,8 +1,10 @@
-import { HTMLAttributes, KeyboardEvent, forwardRef, ReactNode, useEffect, useRef, useState } from 'react';
+import { HTMLAttributes, KeyboardEvent, forwardRef, ReactNode, useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { cn } from './utils';
 import { X } from 'lucide-react';
 import { useEscapeLayer } from '../../hooks/useEscapeLayer';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
+import { useScrollLock } from '../../hooks/useScrollLock';
 import { EzDialog } from './EzDialog';
 
 export interface EzModalProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'> {
@@ -12,27 +14,25 @@ export interface EzModalProps extends Omit<HTMLAttributes<HTMLDivElement>, 'titl
   footer?: ReactNode;
   /** Prevent closing when clicking outside */
   preventOutsideClose?: boolean;
-  /** Alterações não salvas: Esc pede confirmação antes de fechar */
+  /** Alterações não salvas: Esc, backdrop e X pedem confirmação antes de fechar */
   dirty?: boolean;
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl' | 'full';
   /**
    * Foco preso: Tab e Shift+Tab ficam dentro do modal, e o foco entra nele ao abrir (no que já tiver
-   * `autoFocus`, senão no próprio diálogo). Ao fechar o foco volta ao gatilho (`useEscapeLayer`). Opt-in.
-   * @default false
+   * `autoFocus`, senão no próprio diálogo). Ao fechar o foco volta ao gatilho (`useEscapeLayer`). Passe `false` só se o conteúdo gerir o foco por conta própria.
+   * @default true
    */
   trapFocus?: boolean;
 }
-
-const FOCUSABLE =
-  'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
 
 /**
  * Aponta DS Modal (Dialog)
  */
 export const EzModal = forwardRef<HTMLDivElement, EzModalProps>(
-  ({ isOpen, onClose, title, footer, preventOutsideClose = false, dirty = false, maxWidth = 'md', trapFocus = false, className, children, onKeyDown, ...props }, ref) => {
+  ({ isOpen, onClose, title, footer, preventOutsideClose = false, dirty = false, maxWidth = 'md', trapFocus = true, className, children, onKeyDown, ...props }, ref) => {
     const [mounted, setMounted] = useState(false);
     const [confirmingDiscard, setConfirmingDiscard] = useState(false);
+    const titleId = useId();
     const dialog = useRef<HTMLDivElement | null>(null);
     const setDialog = (node: HTMLDivElement | null) => {
       dialog.current = node;
@@ -40,47 +40,26 @@ export const EzModal = forwardRef<HTMLDivElement, EzModalProps>(
       else if (ref) ref.current = node;
     };
 
-    useEffect(() => {
-      const node = dialog.current;
-      if (trapFocus && isOpen && node && !node.contains(document.activeElement)) node.focus();
-    }, [trapFocus, isOpen, mounted]);
-
+    const trapKeys = useFocusTrap(dialog, trapFocus && isOpen && mounted);
     const keepFocusInside = (event: KeyboardEvent<HTMLDivElement>) => {
       onKeyDown?.(event);
-      if (!trapFocus || event.key !== 'Tab') return;
-      const nodes = Array.from(event.currentTarget.querySelectorAll<HTMLElement>(FOCUSABLE));
-      const [first, last] = [nodes[0], nodes[nodes.length - 1]];
-      const active = document.activeElement;
-      if (nodes.length === 0 || (event.shiftKey && (active === first || active === event.currentTarget))) {
-        event.preventDefault();
-        (event.shiftKey ? last : event.currentTarget).focus();
-      } else if (!event.shiftKey && active === last) {
-        event.preventDefault();
-        first.focus();
-      }
+      trapKeys(event);
     };
 
     useEffect(() => {
       setMounted(true);
     }, []);
 
-    // Prevent body scroll when open
-    useEffect(() => {
-      if (isOpen) {
-        document.body.style.overflow = 'hidden';
-      } else {
-        document.body.style.overflow = '';
-      }
-      return () => {
-        document.body.style.overflow = '';
-      };
-    }, [isOpen]);
+    useScrollLock(isOpen);
 
     useEffect(() => {
       if (!isOpen) setConfirmingDiscard(false);
     }, [isOpen]);
 
-    useEscapeLayer(() => (dirty ? setConfirmingDiscard(true) : onClose()), isOpen);
+    // Esc, backdrop e X compartilham a regra: com alterações não salvas, pedem confirmação.
+    const requestClose = () => (dirty ? setConfirmingDiscard(true) : onClose());
+
+    useEscapeLayer(requestClose, isOpen);
 
     if (!mounted || !isOpen) return null;
 
@@ -101,7 +80,7 @@ export const EzModal = forwardRef<HTMLDivElement, EzModalProps>(
         {/* Backdrop */}
         <div 
           className="fixed inset-0 bg-gray-900/60 transition-opacity animate-in fade-in duration-200"
-          onClick={() => !preventOutsideClose && onClose()}
+          onClick={() => !preventOutsideClose && requestClose()}
         />
 
         {/* Dialog */}
@@ -109,6 +88,7 @@ export const EzModal = forwardRef<HTMLDivElement, EzModalProps>(
           ref={setDialog}
           role="dialog"
           aria-modal="true"
+          aria-labelledby={title && !props['aria-label'] ? titleId : undefined}
           tabIndex={trapFocus ? -1 : undefined}
           onKeyDown={keepFocusInside}
           className={cn(
@@ -121,11 +101,11 @@ export const EzModal = forwardRef<HTMLDivElement, EzModalProps>(
         >
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-            <div className="text-[18px] font-semibold text-gray-900 pr-4">
+            <div id={titleId} className="text-[18px] font-semibold text-gray-900 pr-4">
               {title}
             </div>
             <button
-              onClick={onClose}
+              onClick={requestClose}
               className="inline-flex min-h-11 min-w-11 sm:min-h-9 sm:min-w-9 items-center justify-center p-2 -mr-2 rounded-full text-gray-600 hover:bg-gray-100 hover:text-gray-700 transition-colors shrink-0 ez-focus"
               aria-label="Fechar"
             >

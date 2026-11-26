@@ -11,7 +11,7 @@ const meta: Meta<typeof EzButton> = {
   component: EzButton,
   tags: ['autodocs'],
   argTypes: {
-    variant: { control: 'select', options: ['primary', 'secondary', 'tertiary'] },
+    variant: { control: 'select', options: ['primary', 'secondary', 'tertiary', 'danger'] },
     size: { control: 'select', options: ['x-small', 'small', 'medium', 'large'] },
     loading: { control: 'boolean' },
     disabledReason: { control: 'text' },
@@ -36,6 +36,11 @@ export const Secondary: Story = {
 
 export const Tertiary: Story = {
   args: { label: 'Remover', variant: 'tertiary', leftIcon: Trash2 },
+};
+
+/** Ação destrutiva (token de erro do DS, red-600 com texto branco: 6,6:1). Use no Confirmar de EzDialog `danger`. */
+export const Danger: Story = {
+  args: { label: 'Excluir', variant: 'danger', leftIcon: Trash2 },
 };
 
 export const Sizes: Story = {
