@@ -16,7 +16,7 @@ vi.mock('../lib/api', () => ({
 // DMTE-550 D12/AC-19: a página pública /definir-senha. O token vem no fragmento (#t=…), sai da barra de
 // endereço e viaja só no corpo do POST /auth/password/set, junto com a senha e mais nada.
 const TOKEN = 'a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90';
-const PASSWORD = 'uma senha longa 123';
+const PASSWORD = 'Uma senha longa #123';
 
 function openLink(hash: string) {
   window.history.replaceState(null, '', `/definir-senha${hash}`);
@@ -110,14 +110,40 @@ describe('SetPasswordPage', () => {
     expect(api.post).not.toHaveBeenCalled();
   });
 
-  it('AC-19: keeps the inline messages in a polite live region', async () => {
+  it('SET-04: keeps the fields and rules out of any live region, and the error message in its own alert region', async () => {
     const user = userEvent.setup();
     renderPage();
 
     await user.click(submit());
 
     const message = await screen.findByText(/a senha deve ter de 10 a 128 caracteres/i);
-    expect(message.closest('[aria-live="polite"]')).not.toBeNull();
+    expect(message.closest('[role="alert"], [aria-live]')).not.toBeNull();
+    expect(newPassword().closest('[aria-live]')).toBeNull();
+    expect(confirmation().closest('[aria-live]')).toBeNull();
+    expect(newPassword()).toHaveAccessibleDescription(/a senha deve ter de 10 a 128 caracteres/i);
+  });
+
+  it('SET-01: refuses a password with 10+ characters that breaks the listed rules, sends nothing and focuses the field', async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    await fillAndSubmit(user, 'abcdefghij1');
+
+    expect(await screen.findByText(/não atende a todas as regras/i)).toBeInTheDocument();
+    expect(api.post).not.toHaveBeenCalled();
+    expect(newPassword()).toHaveFocus();
+    expect(newPassword()).toHaveAttribute('aria-invalid', 'true');
+  });
+
+  it('SET-01: sends a password that meets every listed rule', async () => {
+    const user = userEvent.setup();
+    vi.mocked(api.post).mockResolvedValueOnce({ data: { ok: true } });
+    renderPage();
+
+    await fillAndSubmit(user, 'Abcdefghi1#');
+
+    await waitFor(() => expect(api.post).toHaveBeenCalledTimes(1));
+    expect(screen.queryByText(/não atende a todas as regras/i)).not.toBeInTheDocument();
   });
 
   it('AC-19, AC-27: posts only token and password to /auth/password/set, with no e-mail and no user id', async () => {
@@ -176,7 +202,6 @@ describe('SetPasswordPage', () => {
   });
 
   it.each([
-    ['without a fragment', ''],
     ['with an empty token', '#t='],
     ['with a token that is not 64 hex characters', '#t=<script>alert(1)</script>'],
     ['with a token that is too short', '#t=abc123'],
@@ -192,9 +217,20 @@ describe('SetPasswordPage', () => {
     expect(window.location.hash).toBe('');
   });
 
+  it('SET-02: a link opened without a fragment (for example after F5) asks to open the e-mailed link again, without saying expired', () => {
+    openLink('');
+    renderPage();
+
+    expect(screen.getByText(/abra de novo o link recebido por e-mail/i)).toBeInTheDocument();
+    expect(screen.queryByText(/expirado/i)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/^nova senha/i)).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /voltar para o login/i })).toHaveAttribute('href', '/login');
+    expect(api.post).not.toHaveBeenCalled();
+  });
+
   it('AC-19, AC-26: what was typed never comes back as HTML', async () => {
     const user = userEvent.setup();
-    const hostile = '<img src=x onerror=alert(1)> 12345';
+    const hostile = '<img src=x onerror=alert(1)> Ab1';
     vi.mocked(api.post).mockResolvedValueOnce({ data: { ok: true } });
     const { container } = renderPage();
 
