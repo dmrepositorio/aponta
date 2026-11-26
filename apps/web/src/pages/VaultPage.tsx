@@ -53,20 +53,53 @@ type DeleteTarget = { kind: 'credential'; credential: VaultCredential } | { kind
 
 const passwordCount = (count: number) => (count === 0 ? 'nenhuma senha' : count === 1 ? '1 senha' : `${count} senhas`);
 
-const SECRET_FIELDS: Record<SecretField, { noun: string; copied: string; copyError: string; revealError: string }> = {
+const SECRET_FIELDS: Record<
+  SecretField,
+  { noun: string; copied: string; copyError: string; revealError: string; revealed: string; hidden: string }
+> = {
   username: {
     noun: 'usuário',
     copied: 'Usuário copiado',
     copyError: 'Não foi possível copiar o usuário.',
     revealError: 'Não foi possível revelar o usuário.',
+    revealed: `Usuário revelado por ${REVEAL_TTL_MS / 1000} s`,
+    hidden: 'Usuário ocultado',
   },
   password: {
     noun: 'senha',
     copied: 'Senha copiada',
     copyError: 'Não foi possível copiar a senha.',
     revealError: 'Não foi possível revelar a senha.',
+    revealed: `Senha revelada por ${REVEAL_TTL_MS / 1000} s`,
+    hidden: 'Senha ocultada',
   },
 };
+
+function CopyButton({
+  copied,
+  title,
+  label,
+  onClick,
+}: {
+  copied: boolean;
+  title: string;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <span className="relative inline-flex">
+      <EzButton variant="tertiary" size="small" leftIcon={Copy} title={title} aria-label={label} onClick={onClick} />
+      {copied && (
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute bottom-full left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-[8px] bg-gray-1000/90 px-2 py-1 text-xs font-medium text-white shadow-lg"
+        >
+          Copiado
+        </span>
+      )}
+    </span>
+  );
+}
 
 function FolderModal({
   initialName,
@@ -236,8 +269,17 @@ export function VaultPage() {
   const [revealed, setRevealed] = useState<Record<string, string>>({});
   const [pending, setPending] = useState<string[]>([]);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
+  // Screen-reader-only announcement of reveal/hide; it never carries the secret value.
+  const [announcement, setAnnouncement] = useState('');
+  // When each revealed field hides itself, to show the time left; `now` ticks once a second while any is shown.
+  const [expiresAt, setExpiresAt] = useState<Record<string, number>>({});
+  const [now, setNow] = useState(() => Date.now());
+  // Key of the copy button just used, for the "Copiado" confirmation beside it.
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const revealTimers = useRef(new Map<string, ReturnType<typeof setTimeout>>());
   const feedbackTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const announceTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const copiedTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   // Bumped on every clear: a reveal that answers after it must not show its value.
   const generation = useRef(0);
   const [folderModal, setFolderModal] = useState<{ folder?: VaultFolder } | null>(null);
@@ -287,13 +329,28 @@ export function VaultPage() {
       generation.current += 1;
       timers.forEach(clearTimeout);
       clearTimeout(feedbackTimer.current);
+      clearTimeout(announceTimer.current);
+      clearTimeout(copiedTimer.current);
     };
   }, []);
+
+  const anyRevealed = Object.keys(revealed).length > 0;
+  useEffect(() => {
+    if (!anyRevealed) return;
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [anyRevealed]);
 
   const showFeedback = (next: Feedback | null) => {
     clearTimeout(feedbackTimer.current);
     setFeedback(next);
     if (next?.kind === 'success') feedbackTimer.current = setTimeout(() => setFeedback(null), FEEDBACK_TTL_MS);
+  };
+
+  const markCopied = (key: string) => {
+    clearTimeout(copiedTimer.current);
+    setCopiedKey(key);
+    copiedTimer.current = setTimeout(() => setCopiedKey(null), FEEDBACK_TTL_MS);
   };
 
   const hideField = (key: string) => {
@@ -304,6 +361,14 @@ export function VaultPage() {
       delete next[key];
       return next;
     });
+    setExpiresAt((prev) => {
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+    clearTimeout(announceTimer.current);
+    setAnnouncement(SECRET_FIELDS[key.endsWith(':username') ? 'username' : 'password'].hidden);
+    announceTimer.current = setTimeout(() => setAnnouncement(''), FEEDBACK_TTL_MS);
   };
 
   const hideAllFields = () => {
@@ -311,6 +376,9 @@ export function VaultPage() {
     revealTimers.current.forEach(clearTimeout);
     revealTimers.current.clear();
     setRevealed({});
+    setExpiresAt({});
+    clearTimeout(announceTimer.current);
+    setAnnouncement('');
   };
 
   const handleSelectFolder = (node: EzTreeNode) => {
@@ -338,16 +406,18 @@ export function VaultPage() {
       if (!value) throw new Error('empty value');
       await navigator.clipboard.writeText(value);
       showFeedback({ kind: 'success', text: SECRET_FIELDS[field].copied });
+      markCopied(`${credentialId}:${field}`);
     } catch {
       showFeedback({ kind: 'error', text: SECRET_FIELDS[field].copyError });
     }
   };
 
-  const handleCopyUrl = async (url: string) => {
+  const handleCopyUrl = async (credentialId: string, url: string) => {
     showFeedback(null);
     try {
       await navigator.clipboard.writeText(url);
       showFeedback({ kind: 'success', text: 'URL copiada' });
+      markCopied(`${credentialId}:url`);
     } catch {
       showFeedback({ kind: 'error', text: 'Não foi possível copiar a URL.' });
     }
@@ -368,7 +438,12 @@ export function VaultPage() {
       revealMutation.reset();
       if (startedAt !== generation.current) return;
       if (!value) throw new Error('empty value');
+      const revealedAt = Date.now();
       setRevealed((prev) => ({ ...prev, [key]: value }));
+      setExpiresAt((prev) => ({ ...prev, [key]: revealedAt + REVEAL_TTL_MS }));
+      setNow(revealedAt);
+      clearTimeout(announceTimer.current);
+      setAnnouncement(SECRET_FIELDS[field].revealed);
       revealTimers.current.set(key, setTimeout(() => hideField(key), REVEAL_TTL_MS));
     } catch {
       if (startedAt === generation.current) showFeedback({ kind: 'error', text: SECRET_FIELDS[field].revealError });
@@ -480,24 +555,27 @@ export function VaultPage() {
     const shown = key in revealed;
     return (
       <div className="flex items-center gap-1 text-gray-700">
-        <span>{shown ? revealed[key] : '••••••••'}</span>
+        <span className={shown ? 'select-all break-all font-mono' : undefined}>{shown ? revealed[key] : '••••••••'}</span>
+        {shown && (
+          <span className="shrink-0 text-xs tabular-nums text-gray-500">
+            {Math.max(0, Math.ceil(((expiresAt[key] ?? now) - now) / 1000))} s
+          </span>
+        )}
         <EzButton
           variant="tertiary"
           size="small"
           leftIcon={shown ? EyeOff : Eye}
-          title={shown ? `Ocultar ${noun}` : `Revelar ${noun}`}
+          title={`Revelar ${noun}`}
           aria-label={`Revelar ${noun} de ${cred.name}`}
           aria-pressed={shown}
           disabled={pending.includes(key)}
           aria-busy={pending.includes(key)}
           onClick={() => handleToggleReveal(cred.id, field)}
         />
-        <EzButton
-          variant="tertiary"
-          size="small"
-          leftIcon={Copy}
+        <CopyButton
+          copied={copiedKey === key}
           title={`Copiar ${noun}`}
-          aria-label={`Copiar ${noun} de ${cred.name}`}
+          label={`Copiar ${noun} de ${cred.name}`}
           onClick={() => handleCopy(cred.id, field)}
         />
       </div>
@@ -608,6 +686,7 @@ export function VaultPage() {
           </div>
 
           <div role="status" aria-live="polite">
+            {announcement && <span className="sr-only">{announcement}</span>}
             {feedback?.kind === 'success' && (
               <p className="border-b border-gray-100 bg-green-100 px-4 py-2 text-sm text-green-800">{feedback.text}</p>
             )}
@@ -644,13 +723,11 @@ export function VaultPage() {
                     {cred.url ? (
                       <div className="flex items-center gap-1 text-gray-700">
                         <span className="truncate max-w-[160px]" title={cred.url}>{cred.url}</span>
-                        <EzButton
-                          variant="tertiary"
-                          size="small"
-                          leftIcon={Copy}
+                        <CopyButton
+                          copied={copiedKey === `${cred.id}:url`}
                           title="Copiar URL"
-                          aria-label={`Copiar URL de ${cred.name}`}
-                          onClick={() => handleCopyUrl(cred.url ?? '')}
+                          label={`Copiar URL de ${cred.name}`}
+                          onClick={() => handleCopyUrl(cred.id, cred.url ?? '')}
                         />
                         <a
                           href={cred.url}
