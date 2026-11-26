@@ -479,7 +479,6 @@ function UsersPageContent() {
                 ) : isError ? (
                   <div className="p-4">
                     <EzEmptyCard
-                      variant="error"
                       title="Erro ao carregar usuários."
                       action={<EzButton variant="secondary" size="small" label="Tentar de novo" onClick={() => void refetch()} />}
                     />
@@ -597,9 +596,8 @@ function UsersAccessGate({ children }: { children: ReactNode }) {
     return (
       <EzPageLayout header={<EzPageHeader title="Usuários" />}>
         <EzEmptyCard
-          variant="error"
           title="Não foi possível verificar suas permissões."
-          onRetry={() => void refetch()}
+          action={<EzButton variant="secondary" size="small" label="Tentar de novo" onClick={() => void refetch()} />}
         />
       </EzPageLayout>
     );
