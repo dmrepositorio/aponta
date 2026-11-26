@@ -2,13 +2,13 @@ import { keepPreviousData, useMutation, useQueryClient, useQuery } from '@tansta
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useEscapeLayer } from '../hooks/useEscapeLayer';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, FileText } from 'lucide-react';
 import { api } from '../lib/api';
 import { useAuthStore } from '../stores/authStore';
 import type { Ticket, TicketPriority } from '../hooks/useTickets';
 import type { TicketFormValues } from '../components/tickets/TicketForm';
 import { TicketForm } from '../components/tickets/TicketForm';
-import { EzCardItem, EzAlert, EzButton, EzSearch, EzSpinner, EzToast } from '../components/ds';
+import { EzCardItem, EzAlert, EzButton, EzDialog, EzSearch, EzSpinner, EzToast } from '../components/ds';
 
 export interface CatalogItem {
   id: string;
@@ -28,6 +28,18 @@ export interface CatalogCategory {
 
 const SAVED_TOAST_MS = 5000;
 
+const GENERIC_SUBMIT_ERROR = 'Falha ao criar o chamado. Verifique os dados e tente novamente.';
+
+/** Texto de erro da API (`response.data.message`, string ou lista do class-validator), se houver. */
+function apiErrorMessage(error: unknown): string | null {
+  const message = (error as { response?: { data?: { message?: unknown } } } | null)?.response?.data?.message;
+  if (Array.isArray(message)) {
+    const joined = message.filter((item): item is string => typeof item === 'string' && !!item.trim()).join('; ');
+    return joined || null;
+  }
+  return typeof message === 'string' && message.trim() ? message : null;
+}
+
 export function CreateTicketPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -37,6 +49,9 @@ export function CreateTicketPage() {
   // inicial). Catálogo e Cliente vivem aqui na página, então sobrevivem ao remontar.
   const [formKey, setFormKey] = useState(0);
   const [savedNotice, setSavedNotice] = useState(false);
+  // Formulário com alterações não enviadas: sair dele (Esc ou Voltar) pede confirmação.
+  const [formDirty, setFormDirty] = useState(false);
+  const [confirmDiscard, setConfirmDiscard] = useState(false);
   // Trava síncrona: isPending só muda no próximo render e dois cliques cabem antes dele.
   const submittingRef = useRef(false);
 
@@ -57,6 +72,7 @@ export function CreateTicketPage() {
     data: catalog = [],
     isPending: catalogLoading,
     isFetching: catalogFetching,
+    isError: catalogError,
   } = useQuery({
     queryKey: ['catalog', organizationId],
     queryFn: async () => {
@@ -107,25 +123,39 @@ export function CreateTicketPage() {
       }
       const { data } = await api.post<Ticket>('/tickets', payload);
 
+      // Só o POST acima pode falhar a mutação: depois dele o chamado já existe, e reenviar o
+      // formulário o duplicaria. Pai e anexos rodam em allSettled e a falha vira aviso por etapa.
+      const steps: { warning: string; run: () => Promise<unknown> }[] = [];
       if (values.parentId) {
-        await api.patch(`/tickets/${data.id}/parent`, { parentTicketId: values.parentId });
+        steps.push({
+          warning: 'O chamado não foi vinculado ao ticket pai.',
+          run: () => api.patch(`/tickets/${data.id}/parent`, { parentTicketId: values.parentId }),
+        });
       }
-      if (values.attachments && values.attachments.length > 0) {
-        await Promise.all(
-          values.attachments.map((file) => {
+      for (const file of values.attachments ?? []) {
+        steps.push({
+          warning: `O anexo "${file.name}" não foi enviado.`,
+          run: () => {
             const form = new FormData();
             form.append('file', file);
             return api.post(`/tickets/${data.id}/attachments`, form, {
               headers: { 'Content-Type': 'multipart/form-data' },
             });
-          }),
-        );
+          },
+        });
       }
+      const results = await Promise.allSettled(steps.map((step) => step.run()));
+      const warnings = steps.filter((_, index) => results[index].status === 'rejected').map((step) => step.warning);
 
-      return data;
+      return { ticket: data, warnings };
     },
-    onSuccess: (data, values) => {
+    onSuccess: ({ ticket: data, warnings }, values) => {
       void queryClient.invalidateQueries({ queryKey: ['tickets'] });
+      if (warnings.length > 0) {
+        // Também em "Salvar e criar novo": o aviso só existe no detalhe do chamado criado.
+        navigate(`/tickets/${data.id}`, { state: { createWarnings: warnings } });
+        return;
+      }
       if (values.saveAndNew) {
         setFormKey((key) => key + 1);
         setSavedNotice(true);
@@ -136,8 +166,8 @@ export function CreateTicketPage() {
     onSettled: () => {
       submittingRef.current = false;
     },
-    onError: () => {
-      setSubmitError('Falha ao criar o chamado. Verifique os dados e tente novamente.');
+    onError: (error) => {
+      setSubmitError(apiErrorMessage(error) ?? GENERIC_SUBMIT_ERROR);
     },
   });
 
@@ -155,11 +185,23 @@ export function CreateTicketPage() {
 
   // Com Cliente escolhido a tela fica no catálogo mesmo vazia (estado vazio + botão em branco).
   const showCatalog = catalog.length > 0 || !!organizationId;
-  useEscapeLayer(() => setSelectedCatalogItem(null), showCatalog && !!selectedCatalogItem, 'page');
+  const leaveForm = () => {
+    setConfirmDiscard(false);
+    setFormDirty(false);
+    setSelectedCatalogItem(null);
+  };
+  // Esc e Voltar compartilham a regra: formulário alterado pede confirmação antes de descartar.
+  const requestLeaveForm = () => (formDirty ? setConfirmDiscard(true) : leaveForm());
+  useEscapeLayer(requestLeaveForm, showCatalog && !!selectedCatalogItem, 'page');
+
+  const catalogUnavailable = catalogError && (
+    <EzAlert variant="warning">Catálogo indisponível; abra um chamado em branco</EzAlert>
+  );
 
   if (catalogLoading) {
     return (
-      <div className="pt-4">
+      <div className="space-y-4 pt-4">
+        <h1 className="text-[20px] font-semibold text-gray-900">Novo Ticket</h1>
         <EzSpinner label="Carregando catálogo…" />
       </div>
     );
@@ -207,14 +249,16 @@ export function CreateTicketPage() {
           </div>
         )}
 
+        {catalogUnavailable}
+
         <div aria-live="polite" aria-busy={catalogFetching}>
-          {categories.length === 0 ? (
+          {categories.length === 0 ? (catalogError ? null : (
             <p className="text-sm text-gray-500">
               {organizationId
                 ? 'Nenhum serviço do catálogo para este Cliente.'
                 : 'Nenhum serviço disponível no catálogo.'}
             </p>
-          ) : (
+          )) : (
             <div data-testid="catalog-columns" className="columns-1 gap-4 sm:columns-2 md:columns-3 xl:columns-4">
               {categories.map((category) => (
                 <EzCardItem
@@ -238,7 +282,12 @@ export function CreateTicketPage() {
                           className="w-full cursor-pointer rounded-card p-2 text-left hover:bg-gray-100 ez-focus"
                         >
                           <span className="block break-words font-medium text-brand-600">
-                            {item.icon || '📄'} {item.title}
+                            {item.icon ? (
+                              <span aria-hidden="true">{item.icon}</span>
+                            ) : (
+                              <FileText aria-hidden="true" className="mr-1 inline h-4 w-4 align-[-2px]" />
+                            )}{' '}
+                            {item.title}
                           </span>
                           {item.description && (
                             <span className="mt-1 block break-words text-xs text-gray-500 line-clamp-3">
@@ -266,7 +315,7 @@ export function CreateTicketPage() {
             variant="tertiary"
             size="small"
             leftIcon={ArrowLeft}
-            onClick={() => setSelectedCatalogItem(null)}
+            onClick={requestLeaveForm}
             aria-label="Voltar para o catálogo"
           />
         )}
@@ -275,10 +324,13 @@ export function CreateTicketPage() {
 
       {selectedCatalogItem && selectedCatalogItem.id !== 'custom' && (
         <EzAlert variant="info" className="mb-4">
-          <span className="font-bold">Serviço Selecionado:</span> {selectedCatalogItem.icon}{' '}
+          <span className="font-bold">Serviço Selecionado:</span>{' '}
+          {selectedCatalogItem.icon && <span aria-hidden="true">{selectedCatalogItem.icon} </span>}
           {selectedCatalogItem.title}
         </EzAlert>
       )}
+
+      {!selectedCatalogItem && catalogUnavailable}
 
       <TicketForm
         key={formKey}
@@ -293,6 +345,18 @@ export function CreateTicketPage() {
         }}
         isSubmitting={mutation.isPending}
         submitError={submitError}
+        onDirtyChange={setFormDirty}
+      />
+
+      <EzDialog
+        open={confirmDiscard}
+        variant="warning"
+        title="Descartar alterações?"
+        message="Há alterações não salvas. Se voltar agora, elas serão perdidas."
+        confirmLabel="Descartar"
+        cancelLabel="Continuar editando"
+        onConfirm={leaveForm}
+        onCancel={() => setConfirmDiscard(false)}
       />
 
       {savedNotice && (

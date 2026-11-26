@@ -246,7 +246,13 @@ describe('TicketForm', () => {
   it('lets the user search and attach a parent ticket', async () => {
     const user = userEvent.setup();
     renderForm();
-    await waitFor(() => expect(api.get).toHaveBeenCalledWith('/tickets'));
+    // GH-444 NEW-06: a lista do pai deixou de carregar a fila inteira; consulta paginada no servidor.
+    await waitFor(() =>
+      expect(api.get).toHaveBeenCalledWith(
+        '/tickets',
+        expect.objectContaining({ params: expect.objectContaining({ limit: '20' }) }),
+      ),
+    );
 
     const parentSearch = screen.getByPlaceholderText(/buscar ticket existente/i) as HTMLInputElement;
     await user.type(parentSearch, 'Issue');
