@@ -139,6 +139,9 @@ export function ContractsPage() {
   // caixas ao mesmo tempo, a grade remonta quando esta chave muda.
   const [gridKey, setGridKey] = useState(0);
   const [deleteDialog, setDeleteDialog] = useState<DeleteDialog | null>(null);
+  // O formulário avisa quando tem alteração não salva; sair dele passa por confirmFormExit.
+  const [formDirty, setFormDirty] = useState(false);
+  const [pendingExit, setPendingExit] = useState<(() => void) | null>(null);
   const contracts = useContracts('');
   const detail = useContract(selectedContractId);
   const organizations = useContractOrganizations(
@@ -288,7 +291,18 @@ export function ContractsPage() {
 
   const retrying = (deleteDialog?.failures.length ?? 0) > 0;
 
+  // Voltar, Cancelar, Anterior/Próximo e Grade trocam ou fecham o registro: com alteração não salva pedem
+  // confirmação antes; sem alteração seguem direto.
+  const confirmFormExit = (leave: () => void) => {
+    if (mode === 'form' && formDirty && (creating || editing)) {
+      setPendingExit(() => leave);
+    } else {
+      leave();
+    }
+  };
+
   const openDetail = (id: string) => {
+    setFormDirty(false);
     const idx = filteredContracts.findIndex((contract) => contract.id === id);
     if (idx !== -1) {
       setFocusedIndex(idx);
@@ -303,6 +317,7 @@ export function ContractsPage() {
   const backToList = () => {
     // openDetail usa a seleção como foco de Anterior/Próximo; ao voltar ela não vale como marcação.
     setSelectedContracts([]);
+    setFormDirty(false);
     setMode('list');
     setSelectedContractId(null);
     setEditing(false);
@@ -310,7 +325,8 @@ export function ContractsPage() {
     save.reset();
   };
 
-  const handleInsert = () => {
+  const insert = () => {
+    setFormDirty(false);
     save.reset();
     setCreating(true);
     setEditing(false);
@@ -318,7 +334,10 @@ export function ContractsPage() {
     setMode('form');
   };
 
-  const handlePrevious = () => {
+  // Já criando, "Novo" mantém o mesmo formulário (a chave não muda): nada a descartar.
+  const handleInsert = () => (creating ? insert() : confirmFormExit(insert));
+
+  const goPrevious = () => {
     if (focusedIndex > 0) {
       const newIdx = focusedIndex - 1;
       setFocusedIndex(newIdx);
@@ -332,7 +351,7 @@ export function ContractsPage() {
     }
   };
 
-  const handleNext = () => {
+  const goNext = () => {
     if (focusedIndex < filteredContracts.length - 1) {
       const newIdx = focusedIndex + 1;
       setFocusedIndex(newIdx);
@@ -345,6 +364,12 @@ export function ContractsPage() {
       }
     }
   };
+
+  // Só navega de verdade (e descarta) quando há um registro aberto; criando, Anterior/Próximo só movem o foco.
+  const handlePrevious = () =>
+    selectedContractId ? confirmFormExit(goPrevious) : goPrevious();
+  const handleNext = () =>
+    selectedContractId ? confirmFormExit(goNext) : goNext();
 
   const saved = () => {
     backToList();
@@ -362,7 +387,7 @@ export function ContractsPage() {
               : 'Contratos'
           }
           showBackButton={mode === 'form'}
-          onBack={backToList}
+          onBack={() => confirmFormExit(backToList)}
         />
       }
     >
@@ -382,7 +407,7 @@ export function ContractsPage() {
                 handleInsert();
               }
             } else {
-              backToList();
+              confirmFormExit(backToList);
             }
           }}
           isFilterOpen={isFilterPanelOpen}
@@ -432,7 +457,8 @@ export function ContractsPage() {
                       )
                     : undefined
                 }
-                onCancel={backToList}
+                onDirtyChange={setFormDirty}
+                onCancel={() => confirmFormExit(backToList)}
                 onSave={(values) =>
                   save.mutate(
                     {
@@ -613,6 +639,22 @@ export function ContractsPage() {
           onRestoreDefaults={restoreDefaults}
           onClose={() => setIsScreenConfigModalOpen(false)}
           initialTab="grid"
+        />
+      )}
+      {pendingExit && (
+        <EzDialog
+          open
+          variant="warning"
+          title="Descartar alterações?"
+          message="As alterações feitas neste contrato ainda não foram salvas e serão perdidas."
+          confirmLabel="Descartar"
+          cancelLabel="Continuar editando"
+          onConfirm={() => {
+            const leave = pendingExit;
+            setPendingExit(null);
+            leave();
+          }}
+          onCancel={() => setPendingExit(null)}
         />
       )}
       {deleteDialog && (

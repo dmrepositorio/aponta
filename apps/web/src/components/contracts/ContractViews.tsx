@@ -360,6 +360,7 @@ export function ContractForm({
   error,
   onSave,
   onCancel,
+  onDirtyChange,
 }: {
   contract?: Contract;
   organizations: ContractOrganization[];
@@ -369,6 +370,8 @@ export function ContractForm({
   error?: string;
   onSave: (values: ContractInput) => void;
   onCancel: () => void;
+  /** Informa se há alteração não salva em relação aos valores com que o formulário abriu. */
+  onDirtyChange?: (dirty: boolean) => void;
 }) {
   const [name, setName] = useState(c?.name || '');
   const [organizationId, setOrganizationId] = useState(c?.organizationId || '');
@@ -410,6 +413,19 @@ export function ContractForm({
       ? ''
       : String(c.excessHourlyRateCents / 100),
   );
+  // Sujo = algum campo difere do que o formulário tinha ao abrir (voltar ao valor original limpa). As mesas
+  // entram ordenadas: marcar, desmarcar e marcar de novo muda a ordem, não o conjunto.
+  const snapshot = JSON.stringify([
+    name, organizationId, type, active, approved, [...serviceDeskIds].sort(), scope, estimate, price, hourly,
+    effectiveDay, startsAt, endsAt, adjustmentDate, hours, monthly, rate,
+  ]);
+  const initialSnapshot = useRef(snapshot);
+  const dirty = snapshot !== initialSnapshot.current;
+  const dirtyCallback = useRef(onDirtyChange);
+  dirtyCallback.current = onDirtyChange;
+  useEffect(() => {
+    dirtyCallback.current?.(dirty);
+  }, [dirty]);
   const [validation, setValidation] = useState('');
   // Cada tentativa que falha conta, mesmo com a mesma mensagem: o alerta fica no topo e o Salvar no fim
   // (a 390 px a 1.500 px dele), então a falha leva o foco e a vista ao alerta.
