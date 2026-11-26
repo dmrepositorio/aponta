@@ -1,6 +1,6 @@
 import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { MyAccountPage } from './MyAccountPage';
@@ -16,14 +16,20 @@ vi.mock('../lib/api', () => ({
   },
 }));
 
-function renderMyAccountPage() {
+function LocationProbe() {
+  const { search } = useLocation();
+  return <output data-testid="search">{search}</output>;
+}
+
+function renderMyAccountPage(initialEntry = '/my-account') {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
   return render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter>
+      <MemoryRouter initialEntries={[initialEntry]}>
         <MyAccountPage />
+        <LocationProbe />
       </MemoryRouter>
     </QueryClientProvider>,
   );
@@ -67,7 +73,58 @@ describe('MyAccountPage', () => {
     expect(screen.queryByLabelText(/senha atual/i)).not.toBeInTheDocument();
   });
 
+  // ACC-08
+  describe('tabs in the URL and ARIA', () => {
+    it('opens the Segurança tab from ?tab=security with a tabpanel tied to its tab', () => {
+      renderMyAccountPage('/my-account?tab=security');
+      const tab = screen.getByRole('tab', { name: /segurança/i });
+      expect(tab).toHaveAttribute('aria-selected', 'true');
+      expect(screen.queryByText('Alterar senha')).toBeInTheDocument();
+      const panel = screen.getByRole('tabpanel');
+      expect(panel).toHaveAttribute('aria-labelledby', tab.id);
+      expect(tab).toHaveAttribute('aria-controls', panel.id);
+    });
+
+    it('falls back to the profile tab when ?tab= is invalid', () => {
+      renderMyAccountPage('/my-account?tab=nope');
+      expect(screen.getByRole('tab', { name: /minha conta/i })).toHaveAttribute('aria-selected', 'true');
+      expect(screen.getByRole('tabpanel')).toBeInTheDocument();
+    });
+
+    it('writes the active tab to ?tab= when the user changes tabs', async () => {
+      const user = userEvent.setup();
+      renderMyAccountPage();
+      await user.click(screen.getByRole('tab', { name: /tokens de api/i }));
+      expect(screen.getByTestId('search')).toHaveTextContent('?tab=tokens');
+    });
+  });
+
   describe('Minha Conta tab (profile)', () => {
+    // ACC-09
+    it('shows an error alert with retry when GET /auth/me fails, and keeps Salvar disabled', async () => {
+      const user = userEvent.setup();
+      let fail = true;
+      vi.mocked(api.get).mockImplementation((url: string) => {
+        if (url === '/auth/me') {
+          return fail
+            ? Promise.reject(new Error('boom'))
+            : Promise.resolve({ data: { id: 'u-1', name: 'Jane Doe', email: 'jane@example.com', role: 'AGENT' } });
+        }
+        return Promise.resolve({ data: [] });
+      });
+      renderMyAccountPage();
+
+      expect(await screen.findByRole('alert')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /salvar/i })).toBeDisabled();
+      expect(screen.queryByRole('button', { name: /tentar novamente/i })).toBeInTheDocument();
+
+      fail = false;
+      await user.click(screen.getByRole('button', { name: /tentar novamente/i }));
+      expect(await screen.findByDisplayValue('Jane Doe')).toBeInTheDocument();
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /salvar/i })).toBeEnabled();
+    });
+
     it('submits updated name and email via PATCH /auth/me', async () => {
       const user = userEvent.setup();
       vi.mocked(api.patch).mockResolvedValueOnce({
@@ -146,10 +203,13 @@ describe('MyAccountPage', () => {
   });
 
   describe('Segurança tab (password)', () => {
+    const STRONG = 'Girafa#Verde-5290';
+
     async function fillAndSubmitPassword(user: ReturnType<typeof userEvent.setup>) {
       await user.click(screen.getByRole('tab', { name: /segurança/i }));
       await user.type(screen.getByLabelText(/senha atual/i), 'old-password');
-      await user.type(screen.getByLabelText(/nova senha/i), 'new-password-123');
+      await user.type(screen.getByLabelText(/^nova senha$/i), STRONG);
+      await user.type(screen.getByLabelText(/^confirmar nova senha$/i), STRONG);
       await user.click(screen.getByRole('button', { name: /trocar senha/i }));
     }
 
@@ -159,7 +219,8 @@ describe('MyAccountPage', () => {
       await user.click(screen.getByRole('tab', { name: /segurança/i }));
 
       expect(screen.getByLabelText(/senha atual/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/nova senha/i)).toBeInTheDocument();
+      expect(screen.getByLabelText(/^nova senha$/i)).toBeInTheDocument();
+      expect(screen.getByLabelText(/^confirmar nova senha$/i)).toBeInTheDocument();
       expect(
         screen.getByRole('button', { name: /trocar senha/i }),
       ).toBeInTheDocument();
@@ -177,12 +238,41 @@ describe('MyAccountPage', () => {
       await waitFor(() => {
         expect(api.post).toHaveBeenCalledWith('/auth/change-password', {
           currentPassword: 'old-password',
-          newPassword: 'new-password-123',
+          newPassword: STRONG,
         });
       });
       expect(
         await screen.findByText(/senha atualizada com sucesso/i),
       ).toBeInTheDocument();
+    });
+
+    // ACC-10
+    it('shows a field error and does not call POST when the confirmation differs', async () => {
+      const user = userEvent.setup();
+      renderMyAccountPage();
+      await user.click(screen.getByRole('tab', { name: /segurança/i }));
+      await user.type(screen.getByLabelText(/senha atual/i), 'old-password');
+      await user.type(screen.getByLabelText(/^nova senha$/i), STRONG);
+      expect(screen.queryByLabelText(/^confirmar nova senha$/i)).toBeInTheDocument();
+      await user.type(screen.getByLabelText(/^confirmar nova senha$/i), 'Outra#Senha-1234');
+      await user.click(screen.getByRole('button', { name: /trocar senha/i }));
+
+      expect(await screen.findByText(/as senhas não coincidem/i)).toBeInTheDocument();
+      expect(api.post).not.toHaveBeenCalled();
+    });
+
+    it('rejects a new password that breaks the visible rules before calling POST', async () => {
+      const user = userEvent.setup();
+      renderMyAccountPage();
+      await user.click(screen.getByRole('tab', { name: /segurança/i }));
+      await user.type(screen.getByLabelText(/senha atual/i), 'old-password');
+      await user.type(screen.getByLabelText(/^nova senha$/i), 'semsimbolo1234');
+      expect(screen.queryByLabelText(/^confirmar nova senha$/i)).toBeInTheDocument();
+      await user.type(screen.getByLabelText(/^confirmar nova senha$/i), 'semsimbolo1234');
+      await user.click(screen.getByRole('button', { name: /trocar senha/i }));
+
+      expect(await screen.findByText(/não atende a todas as regras/i)).toBeInTheDocument();
+      expect(api.post).not.toHaveBeenCalled();
     });
 
     it('shows an error message when the current password is wrong (401)', async () => {
@@ -321,6 +411,19 @@ describe('MyAccountPage', () => {
 
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
       expect(api.delete).not.toHaveBeenCalled();
+    });
+
+    // ACC-13
+    it('Revogar and Copiar use DS variants without "!" overrides', async () => {
+      const user = userEvent.setup();
+      mockTokenList();
+      vi.mocked(api.post).mockResolvedValueOnce({ data: CREATED });
+      renderMyAccountPage();
+      await createToken(user);
+      await screen.findByText('Old Script');
+      for (const name of [/^revogar$/i, /^copiar$/i]) {
+        expect(screen.getByRole('button', { name }).className).not.toContain('!');
+      }
     });
 
     // ACC-03

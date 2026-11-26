@@ -28,7 +28,8 @@ describe('MyAccountPage: sessão depois da troca de senha (DMTE-551)', () => {
     render(<QueryClientProvider client={client}><MemoryRouter><MyAccountPage /></MemoryRouter></QueryClientProvider>);
     await user.click(await screen.findByRole('tab', { name: /segurança/i }));
     await user.type(screen.getByLabelText(/senha atual/i), 'Senha#Antiga1');
-    await user.type(screen.getByLabelText(/nova senha/i), 'Cavalo#Azul-7418');
+    await user.type(screen.getByLabelText(/^nova senha$/i), 'Cavalo#Azul-7418');
+    await user.type(screen.getByLabelText(/^confirmar nova senha$/i), 'Cavalo#Azul-7418');
     await user.click(screen.getByRole('button', { name: /trocar senha/i }));
   };
 
