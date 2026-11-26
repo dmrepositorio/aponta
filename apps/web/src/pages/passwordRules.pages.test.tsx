@@ -94,7 +94,9 @@ describe('Regra de senha nas telas (DMTE-551)', () => {
     await user.click(await screen.findByRole('tab', { name: /segurança/i }));
     expect(rulesList()).toBeInTheDocument();
     await user.type(screen.getByLabelText(/senha atual/i), 'Senha#Antiga1');
-    await user.type(screen.getByLabelText(/nova senha/i), 'curta12345');
+    // Passa pelas regras da tela; quem recusa é o servidor (autoridade).
+    await user.type(screen.getByLabelText(/^nova senha$/i), STRONG);
+    await user.type(screen.getByLabelText(/^confirmar nova senha$/i), STRONG);
     await user.click(screen.getByRole('button', { name: /trocar senha/i }));
 
     await waitFor(() => expect(screen.getByText(serverRules[0])).toBeInTheDocument());
