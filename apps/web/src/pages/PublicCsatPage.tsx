@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useRef, useState, type KeyboardEvent } from 'react';
 import { useParams } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { api } from '../lib/api';
+import { EzAlert, EzButton, EzCardItem, EzClassicTextArea } from '../components/ds';
 
 interface PublicCsatSummary {
   protocol: string;
@@ -23,8 +24,9 @@ export function PublicCsatPage() {
   const { token = '' } = useParams<{ token: string }>();
   const [score, setScore] = useState(5);
   const [comment, setComment] = useState('');
+  const starRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
-  const { data, isLoading, isError, error } = useQuery<PublicCsatSummary>({
+  const { data, isLoading, isError, error, refetch } = useQuery<PublicCsatSummary>({
     queryKey: ['public-csat', token],
     queryFn: async () => {
       const res = await api.get(`/public/csat/${token}`);
@@ -45,7 +47,7 @@ export function PublicCsatPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-90">
+      <div className="min-h-screen flex items-center justify-center bg-gray-80">
         <p className="text-gray-500">Carregando…</p>
       </div>
     );
@@ -55,34 +57,83 @@ export function PublicCsatPage() {
     const isNotFound =
       axios.isAxiosError(error) && error.response?.status === 404;
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-90 px-4">
-        <div className="max-w-md w-full bg-white rounded-lg shadow p-6 text-center">
-          <h1 className="text-lg font-semibold text-gray-900 mb-2">
-            Link inválido
-          </h1>
-          <p className="text-sm text-gray-500">
-            {isNotFound
-              ? 'Este link de avaliação é inválido ou já não existe mais.'
-              : 'Não foi possível carregar sua avaliação agora. Tente novamente mais tarde.'}
-          </p>
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-80 px-4">
+        <EzCardItem className="max-w-md w-full p-6 text-center">
+          <div role="alert">
+            <h1 className="text-lg font-semibold text-gray-900 mb-2">
+              {isNotFound
+                ? 'Link inválido'
+                : 'Não foi possível carregar a avaliação'}
+            </h1>
+            <p className="text-sm text-gray-500">
+              {isNotFound
+                ? 'Este link de avaliação é inválido ou já não existe mais.'
+                : 'Houve um problema de conexão ou do servidor. Tente novamente.'}
+            </p>
+          </div>
+          {!isNotFound && (
+            <EzButton
+              type="button"
+              variant="secondary"
+              className="mt-4"
+              onClick={() => refetch()}
+            >
+              Tentar de novo
+            </EzButton>
+          )}
+        </EzCardItem>
       </div>
     );
   }
 
+  const submitErrorMessage =
+    axios.isAxiosError(mutation.error) &&
+    mutation.error.response?.status === 404
+      ? 'Este link de avaliação é inválido ou já não existe mais.'
+      : 'Falha ao enviar sua avaliação. Verifique sua conexão e tente novamente.';
+
   const alreadyRated = data?.score != null && !mutation.isSuccess;
 
+  const onStarKeyDown = (e: KeyboardEvent<HTMLButtonElement>, star: number) => {
+    const next =
+      e.key === 'ArrowRight' || e.key === 'ArrowDown'
+        ? Math.min(star + 1, 5)
+        : e.key === 'ArrowLeft' || e.key === 'ArrowUp'
+          ? Math.max(star - 1, 1)
+          : e.key === 'Home'
+            ? 1
+            : e.key === 'End'
+              ? 5
+              : null;
+    if (next === null) return;
+    e.preventDefault();
+    setScore(next);
+    starRefs.current[next - 1]?.focus();
+  };
+
   const renderStars = (currentScore: number, interactive: boolean) => (
-    <div className="flex justify-center gap-2 text-3xl">
+    <div
+      role="radiogroup"
+      aria-label="Nota de 1 a 5"
+      aria-readonly={!interactive || undefined}
+      className="flex justify-center gap-2 text-3xl"
+    >
       {[1, 2, 3, 4, 5].map((star) => (
         <button
           key={star}
+          ref={(el) => {
+            starRefs.current[star - 1] = el;
+          }}
           type="button"
+          role="radio"
+          aria-checked={star === currentScore}
           aria-label={`${star} estrela${star > 1 ? 's' : ''}`}
+          tabIndex={interactive && star === currentScore ? 0 : -1}
           disabled={!interactive}
           onClick={() => interactive && setScore(star)}
-          className={`${
-            star <= currentScore ? 'text-blue-500' : 'text-gray-300'
+          onKeyDown={(e) => interactive && onStarKeyDown(e, star)}
+          className={`min-h-11 min-w-11 inline-flex items-center justify-center ${
+            star <= currentScore ? 'text-brand-600' : 'text-gray-300'
           } ${interactive ? 'hover:scale-110 transition-transform' : 'cursor-default'}`}
         >
           ★
@@ -92,8 +143,8 @@ export function PublicCsatPage() {
   );
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-90 px-4">
-      <div className="max-w-md w-full bg-white rounded-lg shadow p-6">
+    <div className="min-h-screen flex items-center justify-center bg-gray-80 px-4">
+      <EzCardItem className="max-w-md w-full p-6">
         <h1 className="text-lg font-semibold text-gray-900 mb-1">
           Chamado {data?.protocol}
         </h1>
@@ -122,41 +173,33 @@ export function PublicCsatPage() {
             </p>
             {renderStars(score, true)}
 
-            <div>
-              <label
-                htmlFor="public-csat-comment"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Comentário (opcional)
-              </label>
-              <textarea
-                id="public-csat-comment"
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                rows={3}
-                maxLength={1000}
-                className="w-full border rounded px-3 py-2 text-sm"
-                placeholder="Conte um pouco sobre sua experiência…"
-              />
-            </div>
+            <EzClassicTextArea
+              id="public-csat-comment"
+              label="Comentário (opcional)"
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              rows={3}
+              maxLength={1000}
+              placeholder="Conte um pouco sobre sua experiência…"
+            />
 
             {mutation.isError && (
-              <p className="text-sm text-red-600 text-center">
-                Falha ao enviar sua avaliação. Tente novamente.
-              </p>
+              <EzAlert variant="error" role="alert">
+                {submitErrorMessage}
+              </EzAlert>
             )}
 
-            <button
+            <EzButton
               type="button"
+              className="w-full"
               disabled={mutation.isPending}
               onClick={() => mutation.mutate()}
-              className="w-full px-4 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 disabled:opacity-50 transition-colors"
             >
               {mutation.isPending ? 'Enviando…' : 'Confirmar avaliação'}
-            </button>
+            </EzButton>
           </div>
         )}
-      </div>
+      </EzCardItem>
     </div>
   );
 }
