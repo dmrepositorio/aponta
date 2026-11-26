@@ -242,9 +242,9 @@ describe('TicketDetailPage', () => {
     expect(screen.getByText('Em Andamento')).toBeInTheDocument();
     expect(screen.getByText('Alta')).toBeInTheDocument();
     expect(screen.getByText(/prazo de resposta/i)).toBeInTheDocument();
-    expect(screen.getByText('2026-09-30 14:00 UTC')).toBeInTheDocument();
+    expect(screen.getByText('30/09/2026 11:00')).toBeInTheDocument();
     expect(screen.getByText(/prazo de resolução/i)).toBeInTheDocument();
-    expect(screen.getByText('2026-10-02 17:30 UTC')).toBeInTheDocument();
+    expect(screen.getByText('02/10/2026 14:30')).toBeInTheDocument();
   });
 
   it('AC-3: Esc volta para a tela inicial', async () => {
@@ -292,13 +292,14 @@ describe('TicketDetailPage', () => {
     expect(screen.getAllByText(/vencido/i).length).toBeGreaterThan(0);
   });
 
-  it('AC-04: ticket em pausa (PENDING_SANKHYA) mostra selo "Dentro do prazo" e "Pausado · Aguardando Sankhya", sem "Vencido há"', async () => {
+  it('AC-04 (GH-446 DET-03): ticket em pausa (PENDING_SANKHYA) mostra o selo "Pausado" no lugar de "Dentro do prazo" e "Pausado · Aguardando Sankhya" na barra, sem "Vencido há"', async () => {
     vi.mocked(api.get).mockImplementation((url: string) => {
       if (url === '/tickets/t-1') {
         return Promise.resolve({
           data: {
             ...ticket,
             status: 'PENDING_SANKHYA',
+            responseSlaStatus: 'ON_TRACK',
             resolveSlaStatus: 'ON_TRACK',
             slaPausedAt: '2026-10-01T10:00:00.000Z',
             slaAccumulatedPauseTime: 60,
@@ -316,11 +317,35 @@ describe('TicketDetailPage', () => {
 
     renderPage();
 
-    expect(await screen.findByText(/dentro do prazo/i)).toBeInTheDocument();
     expect(
-      screen.getByText(/Pausado · Aguardando Sankhya/),
+      await screen.findByText(/Pausado · Aguardando Sankhya/),
     ).toBeInTheDocument();
+    const badges = screen.getAllByText(/SLA:/);
+    expect(badges).toHaveLength(2);
+    badges.forEach((badge) => expect(badge).toHaveTextContent('Pausado'));
+    expect(screen.queryByText(/dentro do prazo/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/vencido há/i)).not.toBeInTheDocument();
+  });
+
+  it('GH-446 DET-06: a aba Comunicação não tem os falsos filtros Cliente, Equipe interna e Chat', async () => {
+    setRole('AGENT');
+    renderPage();
+
+    await screen.findByRole('heading', { name: 'Printer not working' });
+    const panel = screen.getByTestId('tab-panel-comunicacao');
+    expect(within(panel).queryByText('Equipe interna')).not.toBeInTheDocument();
+    expect(within(panel).queryByText('Chat')).not.toBeInTheDocument();
+    expect(within(panel).queryByText('Cliente')).not.toBeInTheDocument();
+  });
+
+  it('GH-446 DET-10: protocolo e título aparecem uma só vez (sem repetir "#protocolo - título" no cabeçalho do cartão)', async () => {
+    renderPage();
+
+    await screen.findByRole('heading', { name: 'Printer not working' });
+    expect(screen.queryByText('#AP-000001 - Printer not working')).not.toBeInTheDocument();
+    expect(screen.getAllByText('AP-000001')).toHaveLength(1);
+    expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
+    expect(document.title).toBe('#AP-000001 - Printer not working');
   });
 
   it('should render the comment timeline with an internal-note indicator only on internal comments', async () => {
