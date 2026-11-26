@@ -35,4 +35,13 @@ describe('PasswordRules', () => {
     rerender(<PasswordRules password="Joao#2026-xyz" name="João Silva" email="joao@exemplo.com" />);
     expect(item(/nome/i)).toHaveTextContent(/pendente/i);
   });
+
+  it('REG-05: anuncia o resumo das regras atendidas numa região aria-live polite', () => {
+    const { container, rerender } = render(<PasswordRules password="" />);
+    const live = () => container.querySelector('[aria-live="polite"]');
+    expect(live()).toHaveTextContent('0 de 5 regras atendidas');
+
+    rerender(<PasswordRules password="Cavalo#Azul-7418" />);
+    expect(live()).toHaveTextContent('5 de 5 regras atendidas');
+  });
 });
