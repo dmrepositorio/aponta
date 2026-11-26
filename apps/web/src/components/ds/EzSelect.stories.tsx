@@ -55,6 +55,11 @@ export const Desabilitado: Story = {
   args: { id: 'sel-disabled', label: 'Status', defaultValue: 'CLOSED', disabled: true, children: statuses },
 };
 
+/** `required` marca o asterisco e expõe `aria-required` no controle visível (leitor de tela anuncia "obrigatório"). */
+export const Obrigatorio: Story = {
+  args: { id: 'sel-required', label: 'Status', required: true, defaultValue: 'OPEN', children: statuses },
+};
+
 export const ComErro: Story = {
   args: {
     id: 'sel-error',

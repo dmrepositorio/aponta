@@ -125,9 +125,12 @@ function Labeled({ id, label, required, children }: { id: string; label: string;
       <label htmlFor={id} className="mb-0.5 text-[14px] font-medium leading-none text-gray-900">
         {label}
         {required && (
-          <span aria-hidden="true" className="ml-1 text-red-600">
-            *
-          </span>
+          <>
+            <span aria-hidden="true" className="ml-1 text-red-600">
+              *
+            </span>
+            <span className="sr-only"> (obrigatório)</span>
+          </>
         )}
       </label>
       {children}
@@ -209,6 +212,7 @@ function GeneralPanel({ user, onCreated }: { user?: UserListItem; onCreated?: (u
     }
   };
 
+  const noChanges = !isNew && !dirty;
   const roleChanged = !isNew && draft.role !== baseline.role;
   const technicalOptions = withCurrent(technicalGroups, user?.technicalGroup ? [user.technicalGroup] : []);
   const permissionOptions = withCurrent(permissionGroups, user?.permissionGroups ?? []);
@@ -251,6 +255,8 @@ function GeneralPanel({ user, onCreated }: { user?: UserListItem; onCreated?: (u
         <Labeled id="user-role" label="Tipo" required>
           <EzComboBox
             id="user-role"
+            aria-label="Tipo"
+            required
             value={draft.role}
             disabled={!isNew && !canChangeRole}
             onChange={(e) => set('role', e.target.value)}
@@ -349,8 +355,18 @@ function GeneralPanel({ user, onCreated }: { user?: UserListItem; onCreated?: (u
 
       {serverError.other && <EzAlert variant="error">{serverError.other}</EzAlert>}
 
-      <div className="flex justify-end">
-        <EzButton type="submit" label="Salvar" disabled={pending || (!isNew && !dirty)} />
+      <div className="flex items-center justify-end gap-3">
+        {noChanges && (
+          <p id="user-save-hint" className="text-xs text-gray-700">
+            Sem alterações
+          </p>
+        )}
+        <EzButton
+          type="submit"
+          label="Salvar"
+          disabled={pending || noChanges}
+          aria-describedby={noChanges ? 'user-save-hint' : undefined}
+        />
       </div>
     </form>
   );

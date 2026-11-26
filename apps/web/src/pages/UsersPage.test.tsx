@@ -512,7 +512,7 @@ describe('UsersPage', () => {
 
       expect(screen.getByLabelText(/^nome/i)).toHaveValue('');
       for (const label of [/^e-mail/i, /^tipo/i, /^telefone/i, /^ramal/i, /^cliente/i, /^grupo de atendentes/i]) {
-        expect(screen.getByLabelText(label)).toBeInTheDocument();
+        expect(screen.getByLabelText(label, { selector: 'input, select' })).toBeInTheDocument();
       }
       expect(screen.getByRole('group', { name: /grupos de permissões/i })).toBeInTheDocument();
       expect(screen.queryByLabelText(/senha/i)).not.toBeInTheDocument();
@@ -545,7 +545,7 @@ describe('UsersPage', () => {
 
       await user.type(screen.getByLabelText(/^nome/i), '  Dora Lima ');
       await user.type(screen.getByLabelText(/^e-mail/i), ' dora@aponta.com ');
-      await user.selectOptions(screen.getByLabelText(/^tipo/i), 'AGENT');
+      await user.selectOptions(screen.getByLabelText(/^tipo/i, { selector: 'select' }), 'AGENT');
       await user.click(save);
 
       await waitFor(() => expect(api.post).toHaveBeenCalledTimes(1));
@@ -566,7 +566,7 @@ describe('UsersPage', () => {
 
       await user.type(screen.getByLabelText(/^nome/i), 'Dora Lima');
       await user.type(screen.getByLabelText(/^e-mail/i), 'dora@aponta.com');
-      await user.selectOptions(screen.getByLabelText(/^tipo/i), 'AGENT');
+      await user.selectOptions(screen.getByLabelText(/^tipo/i, { selector: 'select' }), 'AGENT');
       await user.type(screen.getByLabelText(/^telefone/i), '11999990000');
       await user.type(screen.getByLabelText(/^ramal/i), '123');
       await screen.findByRole('option', { name: 'Acme Ltda', hidden: true });
@@ -598,7 +598,7 @@ describe('UsersPage', () => {
 
       await user.type(screen.getByLabelText(/^nome/i), 'Dora Lima');
       await user.type(screen.getByLabelText(/^e-mail/i), 'ANA@aponta.com');
-      await user.selectOptions(screen.getByLabelText(/^tipo/i), 'AGENT');
+      await user.selectOptions(screen.getByLabelText(/^tipo/i, { selector: 'select' }), 'AGENT');
       await user.click(save);
 
       expect(await screen.findByText('E-mail já cadastrado')).toBeInTheDocument();
@@ -610,7 +610,7 @@ describe('UsersPage', () => {
       const user = userEvent.setup();
       const save = await openNewUser(user);
       await user.type(screen.getByLabelText(/^nome/i), 'Dora Lima');
-      await user.selectOptions(screen.getByLabelText(/^tipo/i), 'AGENT');
+      await user.selectOptions(screen.getByLabelText(/^tipo/i, { selector: 'select' }), 'AGENT');
 
       fireEvent.change(screen.getByLabelText(/^e-mail/i), { target: { value: 'dora@aponta.com\r\nBcc: alvo@example.com' } });
       await user.click(save);
@@ -631,7 +631,7 @@ describe('UsersPage', () => {
 
       await user.type(screen.getByLabelText(/^nome/i), hostile.name);
       await user.type(screen.getByLabelText(/^e-mail/i), 'dora@aponta.com');
-      await user.selectOptions(screen.getByLabelText(/^tipo/i), 'AGENT');
+      await user.selectOptions(screen.getByLabelText(/^tipo/i, { selector: 'select' }), 'AGENT');
       await user.click(save);
 
       await waitFor(() => expect(api.post).toHaveBeenCalledTimes(1));
@@ -652,7 +652,7 @@ describe('UsersPage', () => {
       expect(screen.getByLabelText(/^e-mail/i)).toHaveValue('ana@aponta.com');
       expect(screen.getByLabelText(/^telefone/i)).toHaveValue('1133334444');
       expect(screen.getByLabelText(/^ramal/i)).toHaveValue('210');
-      expect(screen.getByLabelText(/^tipo/i)).toHaveValue('AGENT');
+      expect(screen.getByLabelText(/^tipo/i, { selector: 'select' })).toHaveValue('AGENT');
       expect(await screen.findByLabelText(/^grupo de atendentes/i)).toHaveValue('tg-1');
       expect(await screen.findByRole('checkbox', { name: 'Grupo Atendimento' })).toBeChecked();
       expect(screen.getByRole('checkbox', { name: 'Grupo Gestão' })).not.toBeChecked();
@@ -747,9 +747,9 @@ describe('UsersPage', () => {
       vi.mocked(api.patch).mockResolvedValue({ data: { ...ANA, role: 'AGENT_MASTER' } });
       renderUsersPage();
       await openUser(user, 'Ana Silva');
-      await waitFor(() => expect(screen.getByLabelText(/^tipo/i)).toBeEnabled());
+      await waitFor(() => expect(screen.getByLabelText(/^tipo/i, { selector: 'select' })).toBeEnabled());
 
-      await user.selectOptions(screen.getByLabelText(/^tipo/i), 'AGENT_MASTER');
+      await user.selectOptions(screen.getByLabelText(/^tipo/i, { selector: 'select' }), 'AGENT_MASTER');
 
       expect(screen.getByText(/não troca os grupos de permissões/i)).toBeInTheDocument();
       await user.click(screen.getByRole('button', { name: 'Salvar' }));
@@ -764,7 +764,7 @@ describe('UsersPage', () => {
       await openUser(user, 'Ana Silva');
       await waitFor(() => expect(vi.mocked(api.get)).toHaveBeenCalledWith('/auth/me'));
 
-      expect(screen.getByLabelText(/^tipo/i)).toBeDisabled();
+      expect(screen.getByLabelText(/^tipo/i, { selector: 'select' })).toBeDisabled();
       expect(screen.getByLabelText(/^nome/i)).toBeEnabled();
       expect(screen.getByLabelText(/^e-mail/i)).toBeEnabled();
     });
