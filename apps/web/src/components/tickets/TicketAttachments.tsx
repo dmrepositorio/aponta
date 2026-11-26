@@ -2,7 +2,9 @@ import { useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { useAuthStore } from '../../stores/authStore';
-import { EzAlert, EzButton, EzSpinner } from '../ds';
+import { FileArchive, FileText, Image as ImageIcon, Paperclip, type LucideIcon } from 'lucide-react';
+import { formatDateTime } from '../../lib/formatDateTime';
+import { EzAlert, EzButton, EzDialog, EzSpinner } from '../ds';
 
 export interface TicketAttachment {
   id: string;
@@ -21,11 +23,11 @@ export const attachmentsQueryKey = (ticketId: string) => [
   'attachments',
 ];
 
-function formatBytes(mimeType: string) {
-  if (mimeType.startsWith('image/')) return '🖼️';
-  if (mimeType === 'application/pdf') return '📄';
-  if (mimeType === 'application/zip') return '🗜️';
-  return '📎';
+function attachmentIcon(mimeType: string): LucideIcon {
+  if (mimeType.startsWith('image/')) return ImageIcon;
+  if (mimeType === 'application/pdf') return FileText;
+  if (mimeType === 'application/zip') return FileArchive;
+  return Paperclip;
 }
 
 interface TicketAttachmentsProps {
@@ -42,6 +44,7 @@ export function TicketAttachments({ ticketId }: TicketAttachmentsProps) {
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [pendingRemoval, setPendingRemoval] = useState<TicketAttachment | null>(null);
   const userId = useAuthStore((state) => state.user?.sub);
   const role = useAuthStore((state) => state.user?.role);
   const canDeleteAny = role === 'ADMIN' || role === 'AGENT_MASTER' || role === 'AGENT';
@@ -110,33 +113,41 @@ export function TicketAttachments({ ticketId }: TicketAttachmentsProps) {
 
       {attachments && attachments.length > 0 && (
         <ul className="space-y-2">
-          {attachments.map((attachment) => (
+          {attachments.map((attachment) => {
+            const Icon = attachmentIcon(attachment.mimeType);
+            return (
             <li
               key={attachment.id}
               className="flex items-center justify-between gap-2 rounded-lg border border-gray-200 px-3 py-2 text-sm"
             >
-              <a
-                href={attachment.fileUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="flex min-w-0 items-center gap-2 truncate text-brand-600 hover:underline"
-              >
-                <span aria-hidden="true">{formatBytes(attachment.mimeType)}</span>
-                <span className="truncate">{attachment.originalName}</span>
-              </a>
+              <div className="min-w-0">
+                <a
+                  href={attachment.fileUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex min-w-0 items-center gap-2 truncate text-brand-600 hover:underline"
+                >
+                  <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  <span className="truncate">{attachment.originalName}</span>
+                </a>
+                <p className="mt-0.5 text-xs text-gray-500">
+                  {attachment.uploader?.name ? `${attachment.uploader.name} · ` : ''}
+                  {formatDateTime(attachment.createdAt)}
+                </p>
+              </div>
               {(canDeleteAny || attachment.uploaderId === userId) && (
                 <EzButton
                   type="button"
-                  variant="tertiary"
+                  variant="danger"
                   size="small"
-                  onClick={() => deleteMutation.mutate(attachment.id)}
-                  className="!text-red-600 hover:!text-red-700"
+                  onClick={() => setPendingRemoval(attachment)}
                 >
                   Remover
                 </EzButton>
               )}
             </li>
-          ))}
+            );
+          })}
         </ul>
       )}
 
@@ -166,6 +177,25 @@ export function TicketAttachments({ ticketId }: TicketAttachmentsProps) {
           {uploadMutation.isPending ? 'Enviando…' : 'Anexar arquivo'}
         </EzButton>
       </div>
+
+      {deleteMutation.isError && (
+        <EzAlert variant="error" role="alert">
+          Falha ao remover o anexo. Tente novamente.
+        </EzAlert>
+      )}
+
+      <EzDialog
+        open={pendingRemoval !== null}
+        variant="danger"
+        title="Remover anexo"
+        message={`Remover o anexo "${pendingRemoval?.originalName ?? ''}"? Esta ação não pode ser desfeita.`}
+        confirmLabel="Confirmar"
+        onConfirm={() => {
+          if (pendingRemoval) deleteMutation.mutate(pendingRemoval.id);
+          setPendingRemoval(null);
+        }}
+        onCancel={() => setPendingRemoval(null)}
+      />
 
       {uploadMutation.isError && (
         <EzAlert variant="error" role="alert">

@@ -322,7 +322,7 @@ describe('TicketDetailPage', () => {
     ).toBeInTheDocument();
     const badges = screen.getAllByText(/SLA:/);
     expect(badges).toHaveLength(2);
-    badges.forEach((badge) => expect(badge).toHaveTextContent('Pausado'));
+    badges.forEach((badge) => expect(badge.parentElement).toHaveTextContent('Pausado'));
     expect(screen.queryByText(/dentro do prazo/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/vencido há/i)).not.toBeInTheDocument();
   });

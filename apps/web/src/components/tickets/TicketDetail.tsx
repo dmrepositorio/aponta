@@ -1,5 +1,7 @@
+import { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../lib/api';
+import { formatDateTime } from '../../lib/formatDateTime';
 import { useAuthStore } from '../../stores/authStore';
 import type { Ticket, TicketStatus } from '../../hooks/useTickets';
 import { priorityLabels, statusLabels } from './TicketCard';
@@ -9,16 +11,7 @@ import { SlaProgress } from './SlaProgress';
 import { TicketChecklist } from './TicketChecklist';
 import { TicketParentChild } from './TicketParent';
 import { RichContentView } from './RichContentView';
-import { EzAlert, EzSelect } from '../ds';
-
-/**
- * Renders an ISO 8601 UTC timestamp as a stable, timezone-independent string
- * (e.g. "2026-09-30 14:00 UTC") so displayed SLA deadlines don't shift with
- * the viewer's locale or timezone.
- */
-function formatDeadline(iso: string): string {
-  return `${iso.slice(0, 10)} ${iso.slice(11, 16)} UTC`;
-}
+import { EzAlert, EzSelect, EzToast } from '../ds';
 
 interface TicketAudit {
   id: string;
@@ -96,11 +89,20 @@ export function TicketDetail({ ticket }: TicketDetailProps) {
     enabled: isAgentOrAdmin,
   });
 
+  const [assignedNotice, setAssignedNotice] = useState<string | null>(null);
+  useEffect(() => {
+    if (!assignedNotice) return undefined;
+    const timer = setTimeout(() => setAssignedNotice(null), 5000);
+    return () => clearTimeout(timer);
+  }, [assignedNotice]);
+
   const assignMutation = useMutation({
     mutationFn: (agentId: string) =>
       api.patch(`/tickets/${ticket.id}/assign`, { agentId }),
-    onSuccess: () => {
+    onSuccess: (_data, agentId) => {
       queryClient.invalidateQueries({ queryKey: ['tickets', ticket.id] });
+      const agentName = agents.find((agent) => agent.id === agentId)?.name;
+      if (agentName) setAssignedNotice(`Chamado atribuído a ${agentName}`);
     },
   });
 
@@ -116,6 +118,10 @@ export function TicketDetail({ ticket }: TicketDetailProps) {
   const statusErrorMessage = statusMutation.isError
     ? 'Não foi possível alterar o status deste chamado. Verifique se a transição é permitida (ex.: é preciso passar por "Em Andamento" antes de "Resolvido").'
     : null;
+
+  // Pausa = slaPausedAt definido e chamado não terminal, o mesmo critério do SlaProgress.
+  const slaPaused =
+    !['RESOLVED', 'CLOSED'].includes(ticket.status) && !!ticket.slaPausedAt;
 
   return (
     <div className="space-y-4">
@@ -185,24 +191,36 @@ export function TicketDetail({ ticket }: TicketDetailProps) {
           {statusErrorMessage}
         </EzAlert>
       )}
+      {assignMutation.isError && (
+        <EzAlert variant="error" role="alert">
+          Não foi possível atribuir o chamado. Tente novamente.
+        </EzAlert>
+      )}
+      {assignedNotice && (
+        <div className="pointer-events-none fixed right-4 top-4 z-40 w-[calc(100%-2rem)] max-w-sm">
+          <div>
+            <EzToast variant="success" title={assignedNotice} onClose={() => setAssignedNotice(null)} />
+          </div>
+        </div>
+      )}
 
       <dl className="grid gap-4 text-sm sm:grid-cols-2">
         <div className="space-y-1">
           <dt className="font-medium text-gray-500">Prazo de resposta</dt>
           <dd className="flex items-center gap-2 text-gray-900">
             {ticket.responseDeadline
-              ? formatDeadline(ticket.responseDeadline)
+              ? formatDateTime(ticket.responseDeadline)
               : 'Não definido'}
-            <SlaBadge status={ticket.responseSlaStatus} label="SLA" />
+            <SlaBadge status={ticket.responseSlaStatus} label="SLA" paused={slaPaused} />
           </dd>
         </div>
         <div className="space-y-1">
           <dt className="font-medium text-gray-500">Prazo de resolução</dt>
           <dd className="flex items-center gap-2 text-gray-900">
             {ticket.resolveDeadline
-              ? formatDeadline(ticket.resolveDeadline)
+              ? formatDateTime(ticket.resolveDeadline)
               : 'Não definido'}
-            <SlaBadge status={ticket.resolveSlaStatus} label="SLA" />
+            <SlaBadge status={ticket.resolveSlaStatus} label="SLA" paused={slaPaused} />
           </dd>
         </div>
       </dl>
@@ -230,7 +248,7 @@ export function TicketDetail({ ticket }: TicketDetailProps) {
                     <span className="shrink-0 text-right text-xs text-gray-500">
                       {audit.user?.name ?? 'Sistema'}
                       <br />
-                      {formatDeadline(audit.createdAt)}
+                      {formatDateTime(audit.createdAt)}
                     </span>
                   </li>
                 ))}

@@ -108,7 +108,7 @@ describe('TicketDetail', () => {
     renderDetail();
 
     await waitFor(() => expect(screen.getAllByText(/Agent Smith/).length).toBeGreaterThan(0));
-    expect(await screen.findByText(/30\/09\/2026 11:00/)).toBeInTheDocument();
+    expect(await screen.findByText(/30\/09\/2026 11:00/, { selector: 'li span' })).toBeInTheDocument();
     expect(screen.queryByText(/UTC/)).not.toBeInTheDocument();
   });
 
