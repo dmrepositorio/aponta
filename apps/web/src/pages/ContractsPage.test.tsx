@@ -995,3 +995,108 @@ describe('ContractsPage form errors (DMTE-539)', () => {
     expect(scrollIntoView).toHaveBeenCalledTimes(2);
   });
 });
+
+// Auditoria de design F3-34 (Contratos, parte 1): seleção, busca, descarte, rótulo da exclusão e horas.
+describe('ContractsPage F3-34', () => {
+  const named = (count: number) =>
+    Array.from({ length: count }, (_, i) => ({
+      id: `c${i + 1}`,
+      organizationId: `org-${i + 1}`,
+      organization: { name: `Empresa ${i + 1}` },
+      name: `Contrato ${i + 1}`,
+      type: 'COVERAGE',
+      active: i !== 1,
+      createdAt: `2025-0${(i % 9) + 1}-01T00:00:00.000Z`,
+    }));
+
+  const mockList = (list: ReturnType<typeof named>) => {
+    vi.mocked(api.get).mockImplementation(async (url: string) => ({
+      data:
+        url === '/organizations'
+          ? list.map((c) => ({ id: c.organizationId, name: c.organization.name }))
+          : (list.find((c) => url === `/contracts/${c.id}`) ?? list),
+    }));
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    useAuthStore.setState({ token: null, user: null });
+    localStorage.clear();
+  });
+
+  describe('CTR-01 seleção da barra', () => {
+    it('clears the selection when going back from the detail, so Excluir stays disabled', async () => {
+      mockList(named(2));
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      renderPage();
+
+      await user.click(await screen.findByRole('button', { name: 'Ver detalhes Contrato 1' }));
+      await waitFor(() =>
+        expect(screen.getByTestId('ez-toolbar-record-count')).toHaveTextContent('1 de 2'),
+      );
+      await user.click(screen.getByTitle('Voltar'));
+
+      await screen.findByText('Empresa 2');
+      expect(screen.getByTestId('ez-toolbar-delete-button')).toBeDisabled();
+      screen.getAllByRole('checkbox').forEach((box) => expect(box).not.toBeChecked());
+    });
+
+    it('drops a marked row that a new search hides and leaves no stale mark on the remaining rows', async () => {
+      mockList(named(2));
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      renderPage();
+
+      await screen.findByText('Empresa 1');
+      await user.click(screen.getAllByRole('checkbox')[1]);
+      expect(screen.getByTestId('ez-toolbar-delete-button')).toBeEnabled();
+
+      await user.click(screen.getByTestId('ez-toolbar-filter-panel-button'));
+      await user.type(
+        within(screen.getByTestId('ez-filter-drawer')).getByLabelText(/buscar contrato\/empresa/i),
+        'Empresa 2',
+      );
+
+      expect(screen.queryByText('Empresa 1')).not.toBeInTheDocument();
+      expect(screen.getByTestId('ez-toolbar-delete-button')).toBeDisabled();
+      screen.getAllByRole('checkbox').forEach((box) => expect(box).not.toBeChecked());
+    });
+
+    it('also clears the selection when the status filter changes', async () => {
+      mockList(named(2));
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      renderPage();
+
+      await screen.findByText('Empresa 1');
+      await user.click(screen.getAllByRole('checkbox')[1]);
+      expect(screen.getByTestId('ez-toolbar-delete-button')).toBeEnabled();
+
+      await user.click(screen.getByTestId('ez-toolbar-filter-panel-button'));
+      await user.selectOptions(
+        within(screen.getByTestId('ez-filter-drawer')).getByLabelText('Status'),
+        'INACTIVE',
+      );
+
+      expect(screen.getByTestId('ez-toolbar-delete-button')).toBeDisabled();
+    });
+
+    it('keeps Anterior/Próximo working after the change (the focus is not the selection)', async () => {
+      mockList(named(2));
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      renderPage();
+
+      await user.click(await screen.findByRole('button', { name: 'Ver detalhes Contrato 1' }));
+      await waitFor(() =>
+        expect(screen.getByTestId('ez-toolbar-record-count')).toHaveTextContent('1 de 2'),
+      );
+      await user.click(screen.getByTestId('ez-toolbar-next-button'));
+      await waitFor(() =>
+        expect(screen.getByTestId('ez-toolbar-record-count')).toHaveTextContent('2 de 2'),
+      );
+      expect(screen.getByText('Empresa 2')).toBeInTheDocument();
+    });
+  });
+});
