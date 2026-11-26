@@ -47,6 +47,7 @@ test.describe('grupo de permissões concede MANAGE_USERS e a mudança reflete nu
       await page.fill('[name="name"]', targetName);
       await page.fill('[name="email"]', targetEmail);
       await page.fill('[name="password"]', 'Password123!');
+      await page.fill('[name="confirmPassword"]', 'Password123!');
       await page.click('button[type="submit"]');
       await expect(page).toHaveURL('/', { timeout: 10_000 });
 

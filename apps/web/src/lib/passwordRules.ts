@@ -41,6 +41,11 @@ export function passwordRules(password: string, owner: PasswordOwner = {}): Pass
   return rules;
 }
 
+/** Verdadeiro quando a senha cumpre todas as regras mostradas na tela (o servidor continua sendo a autoridade). */
+export function allRulesMet(password: string, owner: PasswordOwner = {}): boolean {
+  return passwordRules(password, owner).every(({ met }) => met);
+}
+
 /** Mensagens de regra de senha devolvidas pelo servidor (400 com lista), ou `null` para qualquer outro erro. */
 export function policyMessages(error: unknown): string[] | null {
   const response = (error as { response?: { status?: number; data?: { message?: unknown } } } | null)?.response;

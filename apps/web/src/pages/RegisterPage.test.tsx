@@ -20,10 +20,13 @@ function renderRegisterPage() {
   );
 }
 
+const VALID_PASSWORD = 'Cavalo#Azul-7418';
+
 async function fillAndSubmit(user: ReturnType<typeof userEvent.setup>) {
   await user.type(screen.getByLabelText(/nome/i), 'Jane Doe');
   await user.type(screen.getByLabelText(/e-mail/i), 'jane@example.com');
-  await user.type(screen.getByLabelText(/^senha$/i), 'password123');
+  await user.type(screen.getByLabelText(/^senha$/i), VALID_PASSWORD);
+  await user.type(screen.getByLabelText(/confirmar senha/i), VALID_PASSWORD);
   await user.click(screen.getByRole('button', { name: /criar conta/i }));
 }
 
@@ -38,6 +41,7 @@ describe('RegisterPage', () => {
     expect(screen.getByLabelText(/nome/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/e-mail/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/^senha$/i)).toBeInTheDocument();
+    expect(screen.queryByLabelText(/confirmar senha/i)).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: /criar conta/i }),
     ).toBeInTheDocument();
@@ -64,13 +68,13 @@ describe('RegisterPage', () => {
       expect(api.post).toHaveBeenCalledWith('/auth/register', {
         name: 'Jane Doe',
         email: 'jane@example.com',
-        password: 'password123',
+        password: VALID_PASSWORD,
       });
     });
     await waitFor(() => {
       expect(api.post).toHaveBeenCalledWith('/auth/login', {
         email: 'jane@example.com',
-        password: 'password123',
+        password: VALID_PASSWORD,
       });
     });
     await waitFor(() => {
@@ -97,7 +101,7 @@ describe('RegisterPage', () => {
     expect(api.post).toHaveBeenCalledWith('/auth/register', {
       name: 'Jane Doe',
       email: 'jane@example.com',
-      password: 'password123',
+      password: VALID_PASSWORD,
     });
   });
 
@@ -124,7 +128,7 @@ describe('RegisterPage', () => {
     await waitFor(() => {
       expect(api.post).toHaveBeenCalledWith('/auth/login', {
         email: 'jane@example.com',
-        password: 'password123',
+        password: VALID_PASSWORD,
       });
     });
 
@@ -146,5 +150,52 @@ describe('RegisterPage', () => {
 
     // The user should never have been logged in with a token.
     expect(useAuthStore.getState().token).toBeNull();
+
+    // REG-03: sucesso parcial é aviso (não erro) e o formulário some, para
+    // não permitir um reenvio que daria 409.
+    const alert = screen.getByRole('alert');
+    expect(alert).toHaveClass('bg-yellow-100');
+    expect(alert).not.toHaveClass('bg-red-100');
+    expect(screen.queryByLabelText(/^senha$/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /criar conta/i })).not.toBeInTheDocument();
+  });
+
+  it('REG-02: não envia senha que cumpre só o tamanho e mostra erro no campo', async () => {
+    const user = userEvent.setup();
+    renderRegisterPage();
+    await user.type(screen.getByLabelText(/nome/i), 'Jane Doe');
+    await user.type(screen.getByLabelText(/e-mail/i), 'jane@example.com');
+    await user.type(screen.getByLabelText(/^senha$/i), 'aaaaaaaaaa');
+    await user.type(screen.getByLabelText(/confirmar senha/i), 'aaaaaaaaaa');
+    await user.click(screen.getByRole('button', { name: /criar conta/i }));
+
+    expect(await screen.findByText(/senha não atende a todas as regras/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^senha$/i)).toHaveAttribute('aria-invalid', 'true');
+    expect(api.post).not.toHaveBeenCalled();
+  });
+
+  it('REG-04: não envia quando a confirmação difere da senha e mostra erro no campo', async () => {
+    const user = userEvent.setup();
+    renderRegisterPage();
+    await user.type(screen.getByLabelText(/nome/i), 'Jane Doe');
+    await user.type(screen.getByLabelText(/e-mail/i), 'jane@example.com');
+    await user.type(screen.getByLabelText(/^senha$/i), VALID_PASSWORD);
+    expect(screen.queryByLabelText(/confirmar senha/i)).toBeInTheDocument();
+    const confirm = screen.getByLabelText(/confirmar senha/i);
+    await user.type(confirm, 'Outra#Senha-9999');
+    await user.click(screen.getByRole('button', { name: /criar conta/i }));
+
+    expect(await screen.findByText(/as senhas não coincidem/i)).toBeInTheDocument();
+    expect(confirm).toHaveAttribute('aria-invalid', 'true');
+    expect(api.post).not.toHaveBeenCalled();
+  });
+
+  it('REG-04: o envio não leva o campo de confirmação ao servidor', async () => {
+    const user = userEvent.setup();
+    vi.mocked(api.post).mockResolvedValue({ data: { access_token: 't' } });
+    renderRegisterPage();
+    await fillAndSubmit(user);
+    expect(screen.queryByLabelText(/confirmar senha/i)).toBeInTheDocument();
+    await waitFor(() => expect(api.post).toHaveBeenCalledWith('/auth/register', expect.not.objectContaining({ confirmPassword: expect.anything() })));
   });
 });
