@@ -48,10 +48,11 @@ describe('achados do code-review do T5 na tela (DMTE-462)', () => {
       </QueryClientProvider>,
     );
 
-    it('sem a permissão, volta para o início sem carregar a lista', async () => {
+    it('REL-07: sem a permissão, mostra "Sem permissão" em vez de redirecionar, e não carrega a lista', async () => {
       vi.mocked(api.get).mockImplementation(async (url: string) => ({ data: url === '/auth/me' ? { id: 'u-1', isAdmin: true, permissions: [], canReleaseWorklogs: false } : [] }));
       renderRoute();
-      expect(await screen.findByText('Início')).toBeInTheDocument();
+      expect(await screen.findByText('Sem permissão')).toBeInTheDocument();
+      expect(screen.queryByText('Início')).not.toBeInTheDocument();
       expect(api.get).not.toHaveBeenCalledWith('/worklog-approvals');
     });
 
