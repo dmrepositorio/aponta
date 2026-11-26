@@ -50,6 +50,8 @@ export interface EzEntityToolbarProps extends Omit<HTMLAttributes<HTMLDivElement
   onDelete?: () => void;
   /** Fired when the user clicks "Duplicar". */
   onClone?: () => void;
+  /** Tooltip do botão Duplicar com linha selecionada (ex.: avisar que só parte do registro é copiada). @default 'Duplicar registro selecionado' */
+  cloneTooltip?: string;
   /** Number of currently selected records. If 0, Delete and Clone are disabled. */
   selectedCount?: number;
   /** Fired when the user clicks "Recarregar". */
@@ -97,6 +99,7 @@ export const EzEntityToolbar = forwardRef<HTMLDivElement, EzEntityToolbarProps>(
       hasNext = false,
       onDelete,
       onClone,
+      cloneTooltip,
       selectedCount = 0,
       onRefresh,
       onOpenGridConfig,
@@ -373,7 +376,7 @@ export const EzEntityToolbar = forwardRef<HTMLDivElement, EzEntityToolbarProps>(
               type="button"
               data-testid="ez-toolbar-clone-button"
               aria-label="Duplicar"
-              title={hasSelection ? 'Duplicar registro selecionado' : 'Selecione um registro para duplicar'}
+              title={hasSelection ? (cloneTooltip ?? 'Duplicar registro selecionado') : 'Selecione um registro para duplicar'}
               disabled={!hasSelection}
               onClick={onClone}
               className={cn(

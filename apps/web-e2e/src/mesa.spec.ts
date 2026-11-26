@@ -24,8 +24,8 @@ test.describe('admin Mesa screen', () => {
     await page.locator('#service-desk-name').fill(uniqueName);
     await page.getByRole('button', { name: /criar/i }).click();
 
-    await expect(page.getByText(uniqueName)).toBeVisible({ timeout: 10_000 });
-    await page.getByText(uniqueName).click();
+    // F3-23 MSA-09: depois de criar, a tela já abre o detalhe da mesa nova (sem voltar à lista).
+    await expect(page.getByRole('heading', { name: uniqueName })).toBeVisible({ timeout: 10_000 });
 
     await expect(page.getByRole('tab', { name: 'Informações básicas' })).toBeVisible();
     await expect(page.getByRole('tab', { name: 'Parâmetros' })).toBeVisible();

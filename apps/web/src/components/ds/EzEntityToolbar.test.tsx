@@ -210,4 +210,17 @@ describe('EzEntityToolbar record count on phones (DMTE-531 AC-01, AC-02)', () =>
     expect(screen.queryByTestId('ez-toolbar-record-count')).not.toBeInTheDocument();
     expect(screen.getByTestId('ez-entity-toolbar').children).toHaveLength(1);
   });
+
+  it('MSA-09: cloneTooltip troca o tooltip do Duplicar só com linha selecionada', () => {
+    const { rerender } = render(
+      <EzEntityToolbar viewMode="GRID" onToggleViewMode={vi.fn()} onClone={vi.fn()} selectedCount={1} cloneTooltip="Duplicar (copia só o nome)" />
+    );
+    expect(screen.getByTestId('ez-toolbar-clone-button')).toHaveAttribute('title', 'Duplicar (copia só o nome)');
+
+    rerender(<EzEntityToolbar viewMode="GRID" onToggleViewMode={vi.fn()} onClone={vi.fn()} selectedCount={0} cloneTooltip="Duplicar (copia só o nome)" />);
+    expect(screen.getByTestId('ez-toolbar-clone-button')).toHaveAttribute('title', 'Selecione um registro para duplicar');
+
+    rerender(<EzEntityToolbar viewMode="GRID" onToggleViewMode={vi.fn()} onClone={vi.fn()} selectedCount={1} />);
+    expect(screen.getByTestId('ez-toolbar-clone-button')).toHaveAttribute('title', 'Duplicar registro selecionado');
+  });
 });

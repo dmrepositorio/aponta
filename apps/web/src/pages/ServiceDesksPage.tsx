@@ -1,5 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import axios from 'axios';
 import { useForm } from 'react-hook-form';
 import { useMemo, useState } from 'react';
 import { ColumnDef } from '@tanstack/react-table';
@@ -40,10 +41,13 @@ import {
   ezTabPanelId,
 } from '../components/ds';
 import { EzEntityGrid } from '../components/ds/EzEntityGrid';
+// O EzEmptyCard do barrel (EzCardItem) não tem variant de erro; o standalone tem (ícone vermelho).
+import { EzEmptyCard as EzErrorCard } from '../components/ds/EzEmptyCard';
 import { applyDynamicFilters } from '../components/ds/EzDynamicFilter';
 import type { EzDynamicFilterField, EzDynamicFilterRule } from '../components/ds/EzDynamicFilter';
 import { useUserScreenConfig } from '../hooks/useUserScreenConfig';
 import { ticketSectionLabel } from '../lib/mesaLabels';
+import { apiErrorMessage } from '../hooks/useUsers';
 
 const MESA_TABS_ID = 'mesa-tabs';
 
@@ -72,6 +76,20 @@ interface ServiceDesk {
   priorities?: { id: string; ticketPriority: string; label: string; enabled: boolean }[];
   ticketSections?: { id: string; key: string; enabled: boolean; sortOrder: number }[];
   createdAt: string;
+}
+
+const CREATE_ERROR_FALLBACK = 'Falha ao criar a mesa. Tente novamente.';
+
+interface DeleteSummary {
+  deleted: number;
+  failures: { id: string; name: string; message: string }[];
+}
+
+/** MSA-02: resumo do lote ('1 excluída, 1 falhou'); o motivo de cada falha vem da API. */
+function deleteSummaryText({ deleted, failures }: DeleteSummary): string {
+  const done = `${deleted} ${deleted === 1 ? 'excluída' : 'excluídas'}`;
+  const failed = `${failures.length} ${failures.length === 1 ? 'falhou' : 'falharam'}`;
+  return `${done}, ${failed}`;
 }
 
 const serviceDeskFormSchema = z.object({
@@ -224,6 +242,15 @@ function ServiceDesksPageContent() {
   const [selectedDesks, setSelectedDesks] = useState<ServiceDesk[]>([]);
   const [isScreenConfigModalOpen, setIsScreenConfigModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('basics');
+  // MSA-01/02: exclusão em lote passa por dialog; o resultado do lote fica num alerta.
+  const [deleteTargets, setDeleteTargets] = useState<ServiceDesk[] | null>(null);
+  const [deleteRunning, setDeleteRunning] = useState(false);
+  const [deleteSummary, setDeleteSummary] = useState<DeleteSummary | null>(null);
+  // MSA-05: faixa e total filtrado informados pela grade (mesma conta do rodapé dela).
+  const [pageInfo, setPageInfo] = useState({ inicio: 0, fim: 0, total: 0 });
+  // MSA-08: nome repetido (409) marca o campo Nome. MSA-09: aviso do que o Duplicar copia.
+  const [nameConflict, setNameConflict] = useState(false);
+  const [cloneSource, setCloneSource] = useState<string | null>(null);
 
   // DMTE-533: alteração não salva pede confirmação antes de trocar de aba, voltar ou abrir outra mesa.
   const hasPending = useMesaPending();
@@ -272,7 +299,13 @@ function ServiceDesksPageContent() {
     viewMode: 'GRID',
   });
 
-  const { data: serviceDesks, isLoading } = useQuery({
+  const {
+    data: serviceDesks,
+    isLoading,
+    isError: isLoadError,
+    isFetching,
+    refetch,
+  } = useQuery({
     queryKey: ['service-desks'],
     queryFn: async () => {
       const { data } = await api.get<ServiceDesk[]>('/service-desks');
@@ -311,20 +344,19 @@ function ServiceDesksPageContent() {
       const { data } = await api.post<ServiceDesk>('/service-desks', payload);
       return data;
     },
-    onSuccess: () => {
+    onMutate: () => setNameConflict(false),
+    onSuccess: (created) => {
+      // MSA-09: abre a mesa nova nas abas de configuração; o cache já a inclui para o detalhe achar a mesa.
+      queryClient.setQueryData<ServiceDesk[]>(['service-desks'], (old) => [
+        ...(old ?? []).filter((desk) => desk.id !== created.id),
+        created,
+      ]);
       void queryClient.invalidateQueries({ queryKey: ['service-desks'] });
       reset();
-      setMode('list');
+      setCloneSource(null);
+      openDetail(created.id);
     },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: async (deskId: string) => {
-      await api.delete(`/service-desks/${deskId}`);
-    },
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['service-desks'] });
-    },
+    onError: (error) => setNameConflict(axios.isAxiosError(error) && error.response?.status === 409),
   });
 
   const openDetail = (deskId: string) => {
@@ -340,6 +372,9 @@ function ServiceDesksPageContent() {
 
   const handleInsert = () => {
     reset();
+    createMutation.reset();
+    setNameConflict(false);
+    setCloneSource(null);
     setSelectedDeskId(null);
     setMode('form');
   };
@@ -348,6 +383,9 @@ function ServiceDesksPageContent() {
     const active = selectedDesks[0];
     if (!active) return;
     reset();
+    createMutation.reset();
+    setNameConflict(false);
+    setCloneSource(active.name);
     setValue('name', `${active.name} (Cópia)`);
     setSelectedDeskId(null);
     setMode('form');
@@ -355,11 +393,39 @@ function ServiceDesksPageContent() {
 
   const handleDelete = () => {
     if (selectedDesks.length === 0) return;
-    const confirmMsg = `Deseja excluir ${selectedDesks.length} mesa(s) selecionada(s)?`;
-    if (window.confirm(confirmMsg)) {
-      selectedDesks.forEach((desk) => deleteMutation.mutate(desk.id));
-      setSelectedDesks([]);
-    }
+    setDeleteSummary(null);
+    setDeleteTargets(selectedDesks);
+  };
+
+  // MSA-01/02: só o Confirmar do dialog dispara as exclusões; allSettled junta o resultado do lote
+  // e a seleção só muda depois dele (ficam selecionadas as mesas que falharam).
+  const confirmDelete = async () => {
+    if (!deleteTargets) return;
+    setDeleteRunning(true);
+    const results = await Promise.allSettled(deleteTargets.map((desk) => api.delete(`/service-desks/${desk.id}`)));
+    const failures = results.flatMap((result, index) =>
+      result.status === 'rejected'
+        ? [
+            {
+              id: deleteTargets[index].id,
+              name: deleteTargets[index].name,
+              message: apiErrorMessage(result.reason, 'Não foi possível excluir a mesa.'),
+            },
+          ]
+        : [],
+    );
+    setDeleteSummary(failures.length > 0 ? { deleted: deleteTargets.length - failures.length, failures } : null);
+    setSelectedDesks((current) => current.filter((desk) => failures.some((failure) => failure.id === desk.id)));
+    void queryClient.invalidateQueries({ queryKey: ['service-desks'] });
+    setDeleteRunning(false);
+    setDeleteTargets(null);
+  };
+
+  const clearFilters = () => {
+    setFilterSearch('');
+    setFilterStatus('ALL');
+    setDynamicRules([]);
+    setActiveSavedFilterId(null);
   };
 
   // Sankhya parity: mesmo pipeline de filtragem de OrganizationsPage.tsx
@@ -380,14 +446,14 @@ function ServiceDesksPageContent() {
   }, [serviceDesks, filterStatus, filterSearch, dynamicRules]);
 
   if (!isAdmin) {
+    // MSA-06: o guard é só UX (a autorização é do backend); mantém o layout e o cabeçalho do DS.
     return (
-      <div className="space-y-2">
-        <h1 className="text-[20px] font-semibold text-gray-900">Mesa</h1>
-        <p className="text-sm text-gray-500">
-          Você não tem permissão para ver esta página. Somente
-          administradores podem gerenciar mesas.
-        </p>
-      </div>
+      <EzPageLayout header={<EzPageHeader title="Mesa" />}>
+        <EzEmptyCard
+          title="Acesso restrito"
+          description="Você não tem permissão para ver esta página. Somente administradores podem gerenciar mesas. Procure um administrador."
+        />
+      </EzPageLayout>
     );
   }
 
@@ -404,7 +470,9 @@ function ServiceDesksPageContent() {
   const recordCountText =
     mode === 'form' && selectedDeskId
       ? `1 de ${totalCount}`
-      : `${totalCount === 0 ? 0 : 1} - ${totalCount} de ${totalCount}`;
+      : filteredDesks.length === 0
+        ? '0 - 0 de 0'
+        : `${pageInfo.inicio} - ${pageInfo.fim} de ${pageInfo.total}`;
 
   return (
     <EzPageLayout
@@ -445,11 +513,23 @@ function ServiceDesksPageContent() {
             selectedCount={selectedDesks.length}
             onDelete={handleDelete}
             onClone={() => guard(handleClone)}
+            cloneTooltip="Duplicar (copia só o nome; as configurações não são copiadas)"
             onRefresh={() => void queryClient.invalidateQueries({ queryKey: ['service-desks'] })}
             onOpenGridConfig={() => setIsScreenConfigModalOpen(true)}
             onOpenScreenConfig={() => setIsScreenConfigModalOpen(true)}
             recordCountText={recordCountText}
           />
+
+          {deleteSummary && (
+            <EzAlert variant="error" onClose={() => setDeleteSummary(null)}>
+              <p className="font-medium">{deleteSummaryText(deleteSummary)}</p>
+              <ul className="mt-1 list-disc pl-5">
+                {deleteSummary.failures.map((failure) => (
+                  <li key={failure.id}>{`${failure.name}: ${failure.message}`}</li>
+                ))}
+              </ul>
+            </EzAlert>
+          )}
 
           {mode === 'form' && (
             <div className="p-4 md:p-6">
@@ -462,14 +542,19 @@ function ServiceDesksPageContent() {
                   <p className="text-sm text-gray-500">
                     Cadastre a mesa com o nome interno e, se quiser, um nome de exibição para o cliente.
                   </p>
+                  {cloneSource && (
+                    <p className="text-sm text-gray-700">
+                      {`Duplicando "${cloneSource}": só o nome é copiado. Ajuste as configurações da mesa nova depois de criar.`}
+                    </p>
+                  )}
                   <EzCardItem flat className="space-y-4 p-5">
                     <EzTextInput
                       id="service-desk-name"
                       label="Nome"
                       required
-                      hasError={!!errors.name}
+                      hasError={!!errors.name || nameConflict}
                       message={errors.name?.message}
-                      {...register('name')}
+                      {...register('name', { onChange: () => setNameConflict(false) })}
                     />
                     <EzTextInput
                       id="service-desk-display-name"
@@ -483,13 +568,13 @@ function ServiceDesksPageContent() {
                       {...register('description')}
                     />
                     <div className="flex justify-end">
-                      <EzButton type="submit" disabled={createMutation.isPending}>
+                      <EzButton type="submit" loading={createMutation.isPending}>
                         Criar
                       </EzButton>
                     </div>
                   </EzCardItem>
                   {createMutation.isError && (
-                    <EzAlert variant="error">Falha ao criar a mesa. Tente novamente.</EzAlert>
+                    <EzAlert variant="error">{apiErrorMessage(createMutation.error, CREATE_ERROR_FALLBACK)}</EzAlert>
                   )}
                 </form>
               ) : activeDesk ? (
@@ -679,12 +764,7 @@ function ServiceDesksPageContent() {
               <EzFilterDrawer
                 isOpen={isFilterPanelOpen}
                 onClose={() => setIsFilterPanelOpen(false)}
-                onClear={() => {
-                  setFilterSearch('');
-                  setFilterStatus('ALL');
-                  setDynamicRules([]);
-                  setActiveSavedFilterId(null);
-                }}
+                onClear={clearFilters}
                 title="Filtros de Mesas"
                 savedFilters={screenConfig.savedFilters}
                 activeSavedFilterId={activeSavedFilterId}
@@ -745,9 +825,37 @@ function ServiceDesksPageContent() {
               {/* Grid Content */}
               <div data-testid="service-desks-grid-content"
 className="isolate flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll-x-contain min-w-0 flex flex-col">
-                {filteredDesks.length === 0 ? (
+                {isLoadError && !serviceDesks ? (
                   <div className="p-4">
-                    <EzEmptyCard title="Nenhuma mesa cadastrada ainda." />
+                    <EzErrorCard
+                      variant="error"
+                      title="Não foi possível carregar as mesas."
+                      description="Verifique a conexão e tente de novo."
+                      action={
+                        <EzButton variant="secondary" size="small" loading={isFetching} onClick={() => void refetch()}>
+                          Tentar de novo
+                        </EzButton>
+                      }
+                    />
+                  </div>
+                ) : filteredDesks.length === 0 ? (
+                  <div className="p-4">
+                    {totalCount === 0 ? (
+                      <EzEmptyCard
+                        title="Nenhuma mesa cadastrada ainda."
+                        action={<EzButton onClick={() => guard(handleInsert)}>Nova mesa</EzButton>}
+                      />
+                    ) : (
+                      <EzEmptyCard
+                        title="Nenhuma mesa encontrada"
+                        description="Nenhuma mesa combina com os filtros aplicados."
+                        action={
+                          <EzButton variant="secondary" onClick={clearFilters}>
+                            Limpar filtros
+                          </EzButton>
+                        }
+                      />
+                    )}
                   </div>
                 ) : (
                   <EzEntityGrid
@@ -762,6 +870,7 @@ className="isolate flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll
                     density={screenConfig.grid.density}
                     initialColumnVisibility={screenConfig.grid.columnVisibility}
                     onSelectionChange={setSelectedDesks}
+                    onPaginationInfoChange={setPageInfo}
                     pageSize={10}
                   />
                 )}
@@ -783,6 +892,27 @@ className="isolate flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll
           action?.();
         }}
       />
+
+      {deleteTargets && (
+        <EzDialog
+          open
+          variant="danger"
+          title={deleteTargets.length === 1 ? 'Excluir mesa' : `Excluir ${deleteTargets.length} mesas`}
+          message="Esta ação não pode ser desfeita."
+          confirmLabel="Confirmar"
+          confirmLoading={deleteRunning}
+          onConfirm={() => void confirmDelete()}
+          onCancel={() => {
+            if (!deleteRunning) setDeleteTargets(null);
+          }}
+        >
+          <ul className="mt-3 max-h-[50vh] list-disc space-y-1 overflow-y-auto pl-5">
+            {deleteTargets.map((desk) => (
+              <li key={desk.id}>{desk.name}</li>
+            ))}
+          </ul>
+        </EzDialog>
+      )}
 
       {isScreenConfigModalOpen && (
         <EzEntityScreenConfigModal

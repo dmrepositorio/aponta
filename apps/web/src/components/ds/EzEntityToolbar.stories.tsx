@@ -38,3 +38,16 @@ function Demo() {
 }
 
 export const Default: Story = { render: () => <Demo /> };
+
+/** MSA-09: `cloneTooltip` avisa o que o Duplicar copia (aqui, só o nome). Selecione uma linha para o tooltip aparecer. */
+export const CloneTooltip: Story = {
+  render: () => (
+    <EzEntityToolbar
+      viewMode="GRID"
+      onToggleViewMode={() => undefined}
+      onClone={() => undefined}
+      selectedCount={1}
+      cloneTooltip="Duplicar (copia só o nome)"
+    />
+  ),
+};
