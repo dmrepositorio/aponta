@@ -8,6 +8,17 @@ describe('EzDialog', () => {
     expect(screen.queryByText('T')).not.toBeInTheDocument();
   });
 
+  it('close button has a 3:1 icon color and 44px/36px targets', () => {
+    render(<EzDialog open title="T" message="M" onConfirm={() => undefined} onCancel={() => undefined} />);
+    const btn = screen.getByLabelText('Fechar diálogo');
+    expect(btn).toHaveClass('text-gray-600');
+    expect(btn).not.toHaveClass('text-gray-400');
+    expect(btn).toHaveClass('min-h-11');
+    expect(btn).toHaveClass('min-w-11');
+    expect(btn).toHaveClass('sm:min-h-9');
+    expect(btn).toHaveClass('sm:min-w-9');
+  });
+
   it('calls onConfirm when confirm button clicked', () => {
     const onConfirm = vi.fn();
     render(<EzDialog open title="Excluir" message="Tem certeza?" onConfirm={onConfirm} onCancel={() => undefined} />);

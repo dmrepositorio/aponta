@@ -34,15 +34,40 @@ describe('EzToast', () => {
     const mockOnClose = vi.fn();
     render(<EzToast title="Alert" onClose={mockOnClose} />);
     
-    // The close button has accessible text "Close"
-    const closeBtn = screen.getByText('Close').closest('button');
-    expect(closeBtn).not.toBeNull();
-    await user.click(closeBtn as HTMLButtonElement);
+    await user.click(screen.getByRole('button', { name: 'Fechar' }));
     expect(mockOnClose).toHaveBeenCalled();
   });
 
   it('hides close button if onClose is omitted', () => {
     render(<EzToast title="Alert" />);
-    expect(screen.queryByText('Close')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Fechar' })).not.toBeInTheDocument();
+  });
+
+  it('exposes role=alert for error and warning variants', () => {
+    const { rerender } = render(<EzToast title="Falha" variant="error" />);
+    expect(screen.getByRole('alert')).toHaveTextContent('Falha');
+    rerender(<EzToast title="Atencao" variant="warning" />);
+    expect(screen.getByRole('alert')).toHaveTextContent('Atencao');
+  });
+
+  it('exposes role=status (polite) for info and success variants', () => {
+    const { rerender } = render(<EzToast title="Info" />);
+    expect(screen.getByRole('status')).toHaveTextContent('Info');
+    expect(screen.queryByRole('alert')).toBeNull();
+    rerender(<EzToast title="Ok" variant="success" />);
+    expect(screen.getByRole('status')).toHaveTextContent('Ok');
+    expect(screen.getByRole('status')).toHaveAttribute('aria-live', 'polite');
+  });
+
+  it('keeps the role overridable by prop', () => {
+    render(<EzToast title="Info" role="alert" />);
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+  });
+
+  it('gives the close button a 32px minimum target', () => {
+    render(<EzToast title="Alert" onClose={() => undefined} />);
+    const btn = screen.getByRole('button', { name: 'Fechar' });
+    expect(btn).toHaveClass('min-h-8');
+    expect(btn).toHaveClass('min-w-8');
   });
 });

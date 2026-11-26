@@ -28,6 +28,41 @@ describe('EzAlert', () => {
     expect(container.firstChild).toHaveClass('text-red-800');
   });
 
+  it('uses role=status for info and success, without role=alert', () => {
+    const { rerender } = render(<EzAlert>Info</EzAlert>);
+    expect(screen.getByRole('status')).toHaveTextContent('Info');
+    expect(screen.queryByRole('alert')).toBeNull();
+    rerender(<EzAlert variant="success">Ok</EzAlert>);
+    expect(screen.getByRole('status')).toHaveTextContent('Ok');
+    expect(screen.queryByRole('alert')).toBeNull();
+  });
+
+  it('uses role=alert for error and warning', () => {
+    const { rerender } = render(<EzAlert variant="error">Erro</EzAlert>);
+    expect(screen.getByRole('alert')).toHaveTextContent('Erro');
+    rerender(<EzAlert variant="warning">Aviso</EzAlert>);
+    expect(screen.getByRole('alert')).toHaveTextContent('Aviso');
+  });
+
+  it('keeps the role overridable by prop', () => {
+    render(<EzAlert role="alert">Forcado</EzAlert>);
+    expect(screen.getByRole('alert')).toHaveTextContent('Forcado');
+  });
+
+  it('does not render the title as a heading', () => {
+    render(<EzAlert title="Titulo">Corpo</EzAlert>);
+    expect(screen.getByText('Titulo')).toBeInTheDocument();
+    expect(screen.queryByRole('heading')).toBeNull();
+  });
+
+  it('close button uses the DS focus class and a 32px minimum target', () => {
+    render(<EzAlert onClose={() => undefined}>Closable</EzAlert>);
+    const btn = screen.getByRole('button', { name: 'Fechar' });
+    expect(btn).toHaveClass('ez-focus');
+    expect(btn).toHaveClass('min-h-8');
+    expect(btn).toHaveClass('min-w-8');
+  });
+
   it('renders action element if provided', () => {
     render(<EzAlert action={<button>Do Something</button>}>Has Action</EzAlert>);
     expect(screen.getByRole('button', { name: 'Do Something' })).toBeInTheDocument();
