@@ -26,8 +26,7 @@ async function fillAndSubmit(user: ReturnType<typeof userEvent.setup>) {
   await user.type(screen.getByLabelText(/nome/i), 'Jane Doe');
   await user.type(screen.getByLabelText(/e-mail/i), 'jane@example.com');
   await user.type(screen.getByLabelText(/^senha$/i), VALID_PASSWORD);
-  const confirm = screen.queryByLabelText(/confirmar senha/i);
-  if (confirm) await user.type(confirm, VALID_PASSWORD);
+  await user.type(screen.getByLabelText(/confirmar senha/i), VALID_PASSWORD);
   await user.click(screen.getByRole('button', { name: /criar conta/i }));
 }
 
@@ -167,8 +166,7 @@ describe('RegisterPage', () => {
     await user.type(screen.getByLabelText(/nome/i), 'Jane Doe');
     await user.type(screen.getByLabelText(/e-mail/i), 'jane@example.com');
     await user.type(screen.getByLabelText(/^senha$/i), 'aaaaaaaaaa');
-    const confirm = screen.queryByLabelText(/confirmar senha/i);
-    if (confirm) await user.type(confirm, 'aaaaaaaaaa');
+    await user.type(screen.getByLabelText(/confirmar senha/i), 'aaaaaaaaaa');
     await user.click(screen.getByRole('button', { name: /criar conta/i }));
 
     expect(await screen.findByText(/senha não atende a todas as regras/i)).toBeInTheDocument();

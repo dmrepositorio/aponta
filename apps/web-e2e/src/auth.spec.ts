@@ -19,6 +19,7 @@ test.describe('authentication', () => {
     await page.fill('[name="name"]', 'E2E Register User');
     await page.fill('[name="email"]', uniqueEmail);
     await page.fill('[name="password"]', 'Password123!');
+    await page.fill('[name="confirmPassword"]', 'Password123!');
     await page.click('button[type="submit"]');
 
     // Registration triggers two sequential requests (register, then
@@ -69,6 +70,7 @@ test.describe('authentication', () => {
     await page.fill('[name="name"]', 'E2E Change Password User');
     await page.fill('[name="email"]', uniqueEmail);
     await page.fill('[name="password"]', 'Cavalo#Azul-7418');
+    await page.fill('[name="confirmPassword"]', 'Cavalo#Azul-7418');
     await page.click('button[type="submit"]');
     await expect(page).toHaveURL('/', { timeout: 10_000 });
 
@@ -111,6 +113,7 @@ test.describe('authentication', () => {
     await page.fill('[name="name"]', 'E2E Update Profile User');
     await page.fill('[name="email"]', uniqueEmail);
     await page.fill('[name="password"]', 'Password123!');
+    await page.fill('[name="confirmPassword"]', 'Password123!');
     await page.click('button[type="submit"]');
     await expect(page).toHaveURL('/', { timeout: 10_000 });
 
@@ -153,6 +156,7 @@ test.describe('authentication', () => {
     await page.fill('[name="name"]', 'E2E Late Profile User');
     await page.fill('[name="email"]', uniqueEmail);
     await page.fill('[name="password"]', 'Password123!');
+    await page.fill('[name="confirmPassword"]', 'Password123!');
     await page.click('button[type="submit"]');
     await expect(page).toHaveURL('/', { timeout: 10_000 });
 

@@ -3,9 +3,15 @@ import { passwordRules, type PasswordOwner } from '../lib/passwordRules';
 
 /** Lista a regra da senha e marca o que a senha digitada já cumpre. */
 export function PasswordRules({ password, name, email }: { password: string } & PasswordOwner) {
+  const rules = passwordRules(password, { name, email });
+  const metCount = rules.filter(({ met }) => met).length;
   return (
-    <ul aria-label="Regras da senha" className="space-y-1 text-sm">
-      {passwordRules(password, { name, email }).map(({ id, label, met }) => (
+    <>
+      <p aria-live="polite" className="sr-only">
+        {metCount} de {rules.length} regras atendidas
+      </p>
+      <ul aria-label="Regras da senha" className="space-y-1 text-sm">
+      {rules.map(({ id, label, met }) => (
         <li key={id} className={`flex items-center gap-2 ${met ? 'text-green-700' : 'text-gray-700'}`}>
           {met ? <CheckCircle2 aria-hidden="true" className="h-4 w-4 shrink-0" /> : <Circle aria-hidden="true" className="h-4 w-4 shrink-0" />}
           <span>
@@ -14,7 +20,8 @@ export function PasswordRules({ password, name, email }: { password: string } & 
           </span>
         </li>
       ))}
-    </ul>
+      </ul>
+    </>
   );
 }
 

@@ -44,7 +44,8 @@ describe('Regra de senha nas telas (DMTE-551)', () => {
 
     await user.type(screen.getByLabelText(/nome/i), 'Jane Doe');
     await user.type(screen.getByLabelText(/e-mail/i), 'jane@example.com');
-    await user.type(screen.getByLabelText(/^senha$/i), 'senha12345');
+    await user.type(screen.getByLabelText(/^senha$/i), STRONG);
+    await user.type(screen.getByLabelText(/confirmar senha/i), STRONG);
     await user.click(screen.getByRole('button', { name: /criar conta/i }));
 
     expect(await screen.findByText(serverRules[0])).toBeInTheDocument();

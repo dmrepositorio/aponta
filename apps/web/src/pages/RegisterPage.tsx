@@ -8,18 +8,28 @@ import { api } from '../lib/api';
 import { useAuthStore } from '../stores/authStore';
 import { EzAlert, EzButton, EzCardItem, EzTextInput } from '../components/ds';
 import { PasswordRules, PolicyErrors } from '../components/PasswordRules';
-import { policyMessages } from '../lib/passwordRules';
+import { allRulesMet, policyMessages } from '../lib/passwordRules';
 
 /**
  * No `role` field here by design: the API's RegisterDto deliberately omits
  * it (POST /api/auth/register always assigns Role.CLIENT server-side) as a
  * security hardening measure — do not add a role selector to this form.
  */
-const registerSchema = z.object({
-  name: z.string().min(1, 'Nome é obrigatório'),
-  email: z.string().email('E-mail inválido'),
-  password: z.string().min(10, 'A senha deve ter pelo menos 10 caracteres'),
-});
+const registerSchema = z
+  .object({
+    name: z.string().min(1, 'Nome é obrigatório'),
+    email: z.string().email('E-mail inválido'),
+    password: z.string().min(1, 'Senha é obrigatória'),
+    confirmPassword: z.string(),
+  })
+  .superRefine(({ name, email, password, confirmPassword }, ctx) => {
+    if (password && !allRulesMet(password, { name, email })) {
+      ctx.addIssue({ code: 'custom', path: ['password'], message: 'A senha não atende a todas as regras da lista.' });
+    }
+    if (confirmPassword !== password) {
+      ctx.addIssue({ code: 'custom', path: ['confirmPassword'], message: 'As senhas não coincidem.' });
+    }
+  });
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
@@ -40,10 +50,9 @@ export function RegisterPage() {
 
   const onSubmit = async (values: RegisterFormValues) => {
     setSubmitError(null);
-    setRegisteredButLoginFailed(false);
-
     try {
-      await api.post('/auth/register', values);
+      const { confirmPassword: _confirmPassword, ...payload } = values;
+      await api.post('/auth/register', payload);
     } catch (error) {
       const rules = policyMessages(error);
       if (rules) {
@@ -70,6 +79,24 @@ export function RegisterPage() {
       setRegisteredButLoginFailed(true);
     }
   };
+
+  if (registeredButLoginFailed) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-80 text-gray-900">
+        <EzCardItem className="w-full max-w-sm space-y-4 p-6">
+          <h1 className="text-[20px] font-semibold text-gray-900">Cadastro realizado</h1>
+          <EzAlert variant="warning">
+            Conta criada com sucesso! Houve um problema ao fazer login
+            automaticamente — por favor{' '}
+            <Link to="/login" className="underline">
+              entre com sua conta
+            </Link>
+            .
+          </EzAlert>
+        </EzCardItem>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-80 text-gray-900">
@@ -108,18 +135,17 @@ export function RegisterPage() {
           />
           <PasswordRules password={watch('password') ?? ''} name={watch('name')} email={watch('email')} />
 
-          {submitError && <EzAlert variant="error">{submitError}</EzAlert>}
+          <EzTextInput
+            id="confirmPassword"
+            label="Confirmar senha"
+            type="password"
+            autoComplete="new-password"
+            hasError={!!errors.confirmPassword}
+            message={errors.confirmPassword?.message}
+            {...register('confirmPassword')}
+          />
 
-          {registeredButLoginFailed && (
-            <EzAlert variant="error">
-              Conta criada com sucesso! Houve um problema ao fazer login
-              automaticamente — por favor{' '}
-              <Link to="/login" className="underline">
-                entre com sua conta
-              </Link>
-              .
-            </EzAlert>
-          )}
+          {submitError && <EzAlert variant="error">{submitError}</EzAlert>}
 
           <EzButton type="submit" disabled={isSubmitting} className="w-full">
             Criar conta
