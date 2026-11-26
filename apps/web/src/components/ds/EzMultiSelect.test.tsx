@@ -19,7 +19,7 @@ describe('EzMultiSelect', () => {
     const user = userEvent.setup();
     render(<EzMultiSelect options={defaultOptions} />);
     
-    const input = screen.getByRole('textbox');
+    const input = screen.getByRole('combobox');
     await user.click(input);
     
     expect(screen.getByText('Apple')).toBeInTheDocument();
@@ -31,7 +31,7 @@ describe('EzMultiSelect', () => {
     const user = userEvent.setup();
     render(<EzMultiSelect options={defaultOptions} value={[]} onChange={mockChange} />);
     
-    await user.click(screen.getByRole('textbox'));
+    await user.click(screen.getByRole('combobox'));
     await user.click(screen.getByText('Banana'));
     
     expect(mockChange).toHaveBeenCalledWith(['banana']);
@@ -64,7 +64,7 @@ describe('EzMultiSelect', () => {
     const user = userEvent.setup();
     render(<EzMultiSelect options={defaultOptions} />);
     
-    const input = screen.getByRole('textbox');
+    const input = screen.getByRole('combobox');
     await user.click(input);
     await user.type(input, 'app');
     
@@ -75,7 +75,7 @@ describe('EzMultiSelect', () => {
   it('disables properly', () => {
     render(<EzMultiSelect options={defaultOptions} disabled />);
     
-    const input = screen.queryByRole('textbox');
+    const input = screen.queryByRole('combobox');
     expect(input).toBeDisabled();
   });
 
@@ -111,5 +111,90 @@ describe('EzMultiSelect rótulo e obrigatório (DS-09)', () => {
   it('mantém o id informado pelo consumidor', () => {
     render(<EzMultiSelect label="Nome" id="nome-fixo" options={[]} />);
     expect(screen.getByLabelText('Nome')).toHaveAttribute('id', 'nome-fixo');
+  });
+});
+
+describe('EzMultiSelect combobox, listbox e teclado (DS-14)', () => {
+  const opcoes = [
+    { label: 'Apple', value: 'apple' },
+    { label: 'Banana', value: 'banana' },
+    { label: 'Cherry', value: 'cherry' },
+  ];
+
+  it('expõe o input como combobox com aria-expanded e aria-controls', async () => {
+    const user = userEvent.setup();
+    render(<EzMultiSelect label="Frutas" options={opcoes} />);
+    const combo = screen.getByRole('combobox', { name: 'Frutas' });
+    expect(combo).toHaveAttribute('aria-expanded', 'false');
+    await user.click(combo);
+    expect(combo).toHaveAttribute('aria-expanded', 'true');
+    const lista = screen.getByRole('listbox');
+    expect(combo).toHaveAttribute('aria-controls', lista.id);
+    expect(lista).toHaveAttribute('aria-multiselectable', 'true');
+  });
+
+  it('lista as opções como option com aria-selected', async () => {
+    const user = userEvent.setup();
+    render(<EzMultiSelect label="Frutas" options={opcoes} value={['banana']} />);
+    await user.click(screen.getByRole('combobox'));
+    const itens = screen.getAllByRole('option');
+    expect(itens).toHaveLength(3);
+    expect(screen.getByRole('option', { name: 'Banana' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('option', { name: 'Apple' })).toHaveAttribute('aria-selected', 'false');
+  });
+
+  it('ArrowDown move o ativo e Enter alterna a opção', async () => {
+    const onChange = vi.fn();
+    const user = userEvent.setup();
+    render(<EzMultiSelect label="Frutas" options={opcoes} value={[]} onChange={onChange} />);
+    await user.click(screen.getByRole('combobox'));
+    await user.keyboard('{ArrowDown}{Enter}');
+    expect(onChange).toHaveBeenCalledWith(['apple']);
+    await user.keyboard('{ArrowDown}{Enter}');
+    expect(onChange).toHaveBeenLastCalledWith(['banana']);
+  });
+
+  it('aria-activedescendant aponta para a opção ativa', async () => {
+    const user = userEvent.setup();
+    render(<EzMultiSelect label="Frutas" options={opcoes} />);
+    const combo = screen.getByRole('combobox');
+    await user.click(combo);
+    await user.keyboard('{ArrowDown}{ArrowDown}');
+    expect(combo.getAttribute('aria-activedescendant')).toBe(screen.getByRole('option', { name: 'Banana' }).id);
+  });
+
+  it('Enter em opção já selecionada remove o valor', async () => {
+    const onChange = vi.fn();
+    const user = userEvent.setup();
+    render(<EzMultiSelect label="Frutas" options={opcoes} value={['apple']} onChange={onChange} />);
+    await user.click(screen.getByRole('combobox'));
+    await user.keyboard('{ArrowDown}{Enter}');
+    expect(onChange).toHaveBeenCalledWith([]);
+  });
+
+  it('Escape fecha a lista', async () => {
+    const user = userEvent.setup();
+    render(<EzMultiSelect label="Frutas" options={opcoes} />);
+    const combo = screen.getByRole('combobox');
+    await user.click(combo);
+    expect(screen.getByRole('listbox')).toBeInTheDocument();
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+    expect(combo).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  it('o botão de remover a etiqueta tem aria-label e remove o valor', async () => {
+    const onChange = vi.fn();
+    const user = userEvent.setup();
+    render(<EzMultiSelect label="Frutas" options={opcoes} value={['apple', 'cherry']} onChange={onChange} />);
+    await user.click(screen.getByRole('button', { name: 'Remover Apple' }));
+    expect(onChange).toHaveBeenCalledWith(['cherry']);
+  });
+
+  it('erro: aria-invalid e mensagem associada por aria-describedby', () => {
+    render(<EzMultiSelect label="Frutas" options={opcoes} hasError message="Escolha uma fruta" />);
+    const combo = screen.getByRole('combobox');
+    expect(combo).toHaveAttribute('aria-invalid', 'true');
+    expect(combo).toHaveAccessibleDescription('Escolha uma fruta');
   });
 });
