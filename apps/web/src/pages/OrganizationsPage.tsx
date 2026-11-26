@@ -1239,7 +1239,7 @@ className="isolate flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll
                   <div className="border-b border-gray-100 pb-2.5 flex items-center justify-between">
                     <div>
                       <h2 className="text-sm font-semibold text-gray-900">Nova Empresa</h2>
-                      <p className="text-xs text-gray-500">Preencha os campos cadastrais conforme padrão Sankhya ERP.</p>
+                      <p className="text-xs text-gray-500">Preencha os dados cadastrais do cliente.</p>
                     </div>
                   </div>
 
@@ -1403,7 +1403,7 @@ className="isolate flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll
                     <div className="border-b border-gray-100 pb-2.5 flex items-center justify-between">
                       <div>
                         <h3 className="text-sm font-semibold text-gray-900">Dados do Parceiro / Cliente</h3>
-                        <p className="text-xs text-gray-500">Campos cadastrais principais padronizados no padrão Sankhya ERP.</p>
+                        <p className="text-xs text-gray-500">Dados cadastrais principais do cliente.</p>
                       </div>
                       <div className="text-xs text-gray-400 font-mono">
                         ID: {orgDetail.id}
@@ -1726,7 +1726,7 @@ className="isolate flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll
               {detailTab === 'resources' && (
                 <EzEmptyCard
                   title="Nenhum recurso cadastrado"
-                  description="O Aponta ainda não possui um módulo de Recursos (ativos/equipamentos) por cliente. Esta aba existe no Tiflux real mas não tem funcionalidade implementada no Aponta ainda."
+                  description="O Aponta ainda não possui um módulo de Recursos (ativos/equipamentos) por cliente. Esta aba ainda não tem funcionalidade."
                 />
               )}
 
@@ -1781,7 +1781,7 @@ className="isolate flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll
 
                   <div>
                     <h4 className="text-sm font-semibold text-gray-900 mb-2">
-                      Grupo de atendentes (entidade por cliente, Tiflux-parity)
+                      Grupos de atendentes do cliente
                     </h4>
                     <ul className="divide-y divide-gray-100 border border-gray-200 rounded-[12px]">
                       {(orgDetail.agentGroups ?? []).map((group) => (
@@ -1850,7 +1850,7 @@ className="isolate flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll
                         <CreditCard className="w-5 h-5 text-brand-600" />
                         <div>
                           <h4 className="text-sm font-semibold text-gray-900">
-                            Preferências de Faturamento & Cobrança (Tiflux-parity)
+                            Preferências de Faturamento & Cobrança
                           </h4>
                           <p className="text-xs text-gray-500">
                             Configurações de regime financeiro, faturamento quarteirizado e canais de cobrança.
