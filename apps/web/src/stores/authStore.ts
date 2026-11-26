@@ -9,6 +9,8 @@ export interface AuthUser {
   email: string;
   role: Role;
   organizationId?: string | null;
+  /** Display name, only when the token carries a `name` claim. */
+  name?: string;
 }
 
 interface AuthState {
@@ -36,7 +38,14 @@ function decodeJwtPayload(token: string): AuthUser | null {
     if (!parsed.sub || !parsed.email || !parsed.role) {
       return null;
     }
-    return { sub: parsed.sub, email: parsed.email, role: parsed.role, organizationId: parsed.organizationId ?? null };
+    const name = typeof parsed.name === 'string' ? parsed.name.trim() : '';
+    return {
+      sub: parsed.sub,
+      email: parsed.email,
+      role: parsed.role,
+      organizationId: parsed.organizationId ?? null,
+      ...(name && { name }),
+    };
   } catch {
     return null;
   }

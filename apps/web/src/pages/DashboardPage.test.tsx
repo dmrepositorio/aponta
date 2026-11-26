@@ -3,8 +3,9 @@ import { render, screen, within } from '@testing-library/react';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { api } from '../lib/api';
+import { useAuthStore } from '../stores/authStore';
 import { DashboardPage } from './DashboardPage';
 
 vi.mock('../lib/api', () => ({
@@ -419,9 +420,10 @@ describe('DashboardPage', () => {
     const horasCard = within(screen.getByTestId('card-minhas-horas-apontadas'));
     expect(horasCard.getByText('Ontem')).toBeInTheDocument();
     expect(horasCard.getByText('Hoje')).toBeInTheDocument();
-    expect(horasCard.getByText('40H')).toBeInTheDocument();
-    expect(horasCard.getByText('120H')).toBeInTheDocument();
-    expect(horasCard.getByText('160H')).toBeInTheDocument();
+    // DSH-12: the monthly totals use the same HH:MM clock as Ontem/Hoje.
+    expect(horasCard.getByText('40:00')).toBeInTheDocument();
+    expect(horasCard.getByText('120:00')).toBeInTheDocument();
+    expect(horasCard.getByText('160:00')).toBeInTheDocument();
     expect(horasCard.getByRole('group', { name: /horas apontadas por dia/i })).toBeInTheDocument();
   });
 
@@ -703,7 +705,7 @@ describe('DashboardPage', () => {
     }
     const ontem = horas.getByText('Ontem').parentElement as HTMLElement;
     expect(ontem.parentElement).toHaveClass('items-baseline', 'flex-wrap');
-    expect(horas.getByText('40H')).toBeInTheDocument();
+    expect(horas.getByText('40:00')).toBeInTheDocument();
   });
 
   it('AC-11: read-only KPIs have no link, hover or pointer cursor; linked KPIs share the focus ring of the Ações button', async () => {
@@ -761,5 +763,183 @@ describe('DashboardPage', () => {
       expect(agents.getByText(label)).toBeInTheDocument();
     }
     expect(agents.queryByText('busy')).not.toBeInTheDocument();
+  });
+
+  // ---- F3-16 (#452): DSH-01, 03, 07, 09, 10, 11, 12 ----
+
+  it('DSH-01: a failed summary request shows an alert with the cause and hides the tabs', async () => {
+    vi.mocked(api.get).mockRejectedValue(new Error('Network Error'));
+    renderDashboard();
+
+    await screen.findByText(/falha ao carregar as métricas/i);
+    const alert = screen.queryByRole('alert');
+    expect(alert).toBeInTheDocument();
+    expect(alert).toHaveTextContent(/não carregaram/i);
+    expect(screen.queryByRole('button', { name: /tentar novamente/i })).toBeInTheDocument();
+    expect(screen.queryByRole('tablist')).not.toBeInTheDocument();
+  });
+
+  it('DSH-01: "Tentar novamente" requests the summary again and brings the dashboard back', async () => {
+    vi.mocked(api.get).mockRejectedValueOnce(new Error('Network Error')).mockResolvedValue({ data: fullSummary() });
+    const { userEvent } = await import('@testing-library/user-event');
+    const user = userEvent.setup();
+    renderDashboard();
+
+    await screen.findByText(/falha ao carregar as métricas/i);
+    expect(vi.mocked(api.get)).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole('button', { name: /tentar novamente/i })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /tentar novamente/i }));
+
+    expect(await screen.findByTestId('card-resumo-de-tickets')).toBeInTheDocument();
+    expect(vi.mocked(api.get)).toHaveBeenCalledTimes(2);
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Chats' })).toBeInTheDocument();
+  });
+
+  it('DSH-03: the pie is named with every category, its count and percent, and same-initial rows get distinct markers', async () => {
+    vi.mocked(api.get).mockResolvedValue({
+      data: {
+        ...fullSummary(),
+        inProgressBreakdown: {
+          byAssignee: [{ name: 'Ana', count: 5 }, { name: 'Alice', count: 3 }, { name: 'Bia', count: 2 }],
+          byServiceDesk: [],
+          byOrganization: [],
+          byResource: [],
+        },
+      },
+    });
+    renderDashboard();
+
+    const pieCard = within(await screen.findByTestId('card-tickets-em-andamento'));
+    const svg = pieCard.getByRole('img', { name: /tickets em andamento/i });
+    const name = svg.getAttribute('aria-label') ?? '';
+    expect(name).toContain('Ana 5 (50%)');
+    expect(name).toContain('Alice 3 (30%)');
+    expect(name).toContain('Bia 2 (20%)');
+
+    const marker = (label: string) => (pieCard.getByText(label).closest('div[class*="flex"]') as HTMLElement).firstElementChild?.textContent;
+    const markers = ['Ana', 'Alice', 'Bia'].map(marker);
+    expect(new Set(markers).size).toBe(3);
+    expect(markers).not.toContain('A');
+  });
+
+  it('DSH-07: KPI labels are 13px gray-600 and the "Ausente" dot and the empty icon reach 3:1', async () => {
+    vi.mocked(api.get).mockResolvedValue({
+      data: {
+        ...fullSummary(),
+        chatsByDepartment: [],
+        chatsByAgent: [{ name: 'A3', status: 'away', inProgress: 1, group: 'N1' }],
+      },
+    });
+    renderDashboard();
+
+    await screen.findByTestId('card-resumo-de-tickets');
+    const label = card('card-resumo-de-tickets').getByText('Vencidos', { selector: 'span' });
+    expect(label).toHaveClass('text-[13px]', 'text-gray-600');
+
+    await openTab('Chats');
+    const dot = within(screen.getByTestId('card-chats-por-atendentes')).getByText('Ausente').previousElementSibling as HTMLElement;
+    const dotToken = dot.className.match(/\bbg-(gray-\d+)\b/)?.[1] ?? '';
+    expect(dotToken).not.toBe('');
+    expect(contrast(dotToken, 'gray-70')).toBeGreaterThanOrEqual(3);
+
+    const icon = within(screen.getByTestId('card-chats-por-departamentos')).getByText('Não há dados').previousElementSibling as Element;
+    const iconToken = icon.getAttribute('class')?.match(/\btext-(gray-\d+)\b/)?.[1] ?? '';
+    expect(iconToken).not.toBe('');
+    expect(contrast(iconToken, 'gray-70')).toBeGreaterThanOrEqual(3);
+  });
+
+  it('DSH-09: each tab row owns a tabpanel named by its active tab and the tab points at it', async () => {
+    vi.mocked(api.get).mockResolvedValue({ data: fullSummary() });
+    renderDashboard();
+
+    await screen.findByTestId('card-resumo-de-tickets');
+    const main = screen.queryByRole('tabpanel', { name: 'Tickets' });
+    expect(main).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Tickets' })).toHaveAttribute('aria-controls', main?.id);
+
+    const pie = screen.queryByRole('tabpanel', { name: 'Por responsável' });
+    expect(pie).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Por responsável' })).toHaveAttribute('aria-controls', pie?.id);
+    expect(pie?.id).not.toBe(main?.id);
+
+    await openTab('Chats');
+    const chats = screen.queryByRole('tabpanel', { name: 'Chats' });
+    expect(chats).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Chats' })).toHaveAttribute('aria-controls', chats?.id);
+  });
+
+  describe('DSH-10 headings and greeting', () => {
+    beforeEach(() => {
+      useAuthStore.setState({ token: null, user: null });
+    });
+    afterEach(() => {
+      useAuthStore.setState({ token: null, user: null });
+    });
+
+    it('the h1 is the page title "Painel", the greeting is a paragraph and card titles are h2', async () => {
+      vi.mocked(api.get).mockResolvedValue({ data: fullSummary() });
+      renderDashboard();
+
+      await screen.findByTestId('card-resumo-de-tickets');
+      expect(screen.queryByRole('heading', { level: 1, name: 'Painel' })).toBeInTheDocument();
+      expect(screen.queryByRole('heading', { name: /bom te ver/i })).not.toBeInTheDocument();
+      expect(screen.getByText(/bom te ver de volta/i).tagName).toBe('P');
+      expect(card('card-prazos').queryByRole('heading', { level: 2, name: 'Prazos' })).toBeInTheDocument();
+      expect(card('card-tickets-em-andamento').queryByRole('heading', { level: 2, name: 'Tickets em andamento' })).toBeInTheDocument();
+    });
+
+    it('greets by the user name when the token carries one', async () => {
+      useAuthStore.setState({ user: { sub: 'u1', email: 'joao.silva@aponta.com', role: 'AGENT', name: 'João da Silva' } });
+      vi.mocked(api.get).mockResolvedValue({ data: fullSummary() });
+      renderDashboard();
+
+      expect(await screen.findByText('Bom te ver de volta, João da Silva')).toBeInTheDocument();
+    });
+
+    it('falls back to the e-mail prefix when there is no name', async () => {
+      useAuthStore.setState({ user: { sub: 'u1', email: 'joao.silva@aponta.com', role: 'AGENT' } });
+      vi.mocked(api.get).mockResolvedValue({ data: fullSummary() });
+      renderDashboard();
+
+      expect(await screen.findByText('Bom te ver de volta, Joao.silva')).toBeInTheDocument();
+    });
+  });
+
+  it('DSH-11: the Recurso rating cards show the big average and the satisfied percent, and never "undefined"', async () => {
+    vi.mocked(api.get).mockResolvedValue({
+      data: { ...fullSummary(), csatMine30d: { avg: null, count: 3, satisfactionRate: null } },
+    });
+    renderDashboard();
+
+    await openTab('Recurso');
+    const geral = card('card-avaliacao-geral-de-tickets-30-dias');
+    expect(geral.queryByText('4.5')).toBeInTheDocument();
+    expect(geral.queryByText(/90% satisfeitos/)).toBeInTheDocument();
+    const minhas = card('card-avaliacao-dos-meus-tickets-30-dias');
+    expect(minhas.queryByText('—')).toBeInTheDocument();
+    expect(minhas.queryByText(/% satisfeitos/)).toBeInTheDocument();
+    expect(minhas.queryByText(/undefined/)).not.toBeInTheDocument();
+    expect(minhas.queryByText(/de média em/)).not.toBeInTheDocument();
+  });
+
+  it('DSH-12: the monthly totals read as HH:MM and a progress bar shows logged versus target', async () => {
+    vi.mocked(api.get).mockResolvedValue({
+      data: {
+        ...fullSummary(),
+        monthlyHours: { targetHoursTotal: 160, loggedHoursTotal: 7.5, remainingHoursTotal: 152.5, days: [] },
+      },
+    });
+    renderDashboard();
+
+    await openTab('Horas');
+    const horas = card('card-minhas-horas-apontadas');
+    expect(horas.getByText('Apontadas').parentElement).toHaveTextContent('07:30');
+    expect(horas.getByText('Faltantes').parentElement).toHaveTextContent('152:30');
+    expect(horas.getByText('Meta').parentElement).toHaveTextContent('160:00');
+    const bar = horas.queryByRole('progressbar');
+    expect(bar).toBeInTheDocument();
+    expect(bar).toHaveAttribute('aria-valuenow', '5');
+    expect(horas.queryByText(/\dH\b/)).not.toBeInTheDocument();
   });
 });

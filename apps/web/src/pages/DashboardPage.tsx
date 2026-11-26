@@ -23,7 +23,17 @@ import {
 } from 'lucide-react';
 import { useDashboardSummary } from '../hooks/useReports';
 import { useAuthStore } from '../stores/authStore';
-import { EzSpinner, EzTabs, EzActionsButton, EzLineChart } from '../components/ds';
+import {
+  EzSpinner,
+  EzTabs,
+  EzActionsButton,
+  EzLineChart,
+  EzAlert,
+  EzButton,
+  EzProgressBar,
+  ezTabId,
+  ezTabPanelId,
+} from '../components/ds';
 import { cn } from '../components/ds/utils';
 import { statusLabels } from '../components/tickets/TicketCard';
 
@@ -46,7 +56,7 @@ const MAX_PIE_SLICES = 6;
 const AGENT_STATUS: Record<string, { label: string; dot: string }> = {
   online: { label: 'Online', dot: 'bg-green-500' },
   busy: { label: 'Ocupado', dot: 'bg-yellow-600' },
-  away: { label: 'Ausente', dot: 'bg-gray-300' },
+  away: { label: 'Ausente', dot: 'bg-gray-400' },
   offline: { label: 'Offline', dot: 'bg-gray-500' },
 };
 
@@ -67,6 +77,9 @@ function formatDateLabel(dateStr: string) {
 }
 
 type DashboardTab = 'tickets' | 'chats' | 'recurso' | 'horas';
+/** Distinct id prefixes: the page has two tab rows, and their ids must not collide. */
+const MAIN_TABS_PREFIX = 'dashboard';
+const PIE_TABS_PREFIX = 'dashboard-pie';
 type PieGrouping = 'byAssignee' | 'byServiceDesk' | 'byOrganization' | 'byResource';
 
 /**
@@ -96,7 +109,7 @@ function TiFluxCard({ title, tabs, children, className, bodyClassName }: TiFluxC
   return (
     <div className={cn('bg-white rounded-xl border border-gray-200', className)} data-testid={`card-${slugify(title)}`}>
       <div className={cn('px-5 pt-4', !tabs && 'pb-3 border-b border-gray-100')}>
-        <h3 className="text-[15px] font-bold text-gray-700">{title}</h3>
+        <h2 className="text-[15px] font-bold text-gray-700">{title}</h2>
       </div>
       {tabs && <div className="px-5">{tabs}</div>}
       <div className={cn('p-5', bodyClassName)}>{children}</div>
@@ -131,7 +144,7 @@ function KpiRow({ items, layout = 'wrap' }: { items: KpiItem[]; layout?: keyof t
       {items.map((item) => {
         const body = (
           <>
-            <span className="text-[12px] text-gray-500 font-medium">{item.label}</span>
+            <span className="text-[13px] text-gray-600 font-medium">{item.label}</span>
             <span
               className={cn(
                 'flex items-center gap-1.5 font-bold leading-none tabular-nums',
@@ -177,7 +190,7 @@ const ICON = 'w-[18px] h-[18px]';
 function DeadlineRow({ name, data }: { name: string; data?: { total: number; today: number; tomorrow: number; later: number } }) {
   return (
     <div role="group" aria-label={name} className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-6">
-      <h4 className="text-[13px] font-bold text-gray-700 sm:w-24 sm:shrink-0">{name}</h4>
+      <h3 className="text-[13px] font-bold text-gray-700 sm:w-24 sm:shrink-0">{name}</h3>
       <KpiRow
         layout="quad"
         items={[
@@ -195,7 +208,7 @@ function DeadlineRow({ name, data }: { name: string; data?: { total: number; tod
 function EmptyState({ label = 'Não há dados' }: { label?: string }) {
   return (
     <div className="flex flex-col items-center justify-center py-10 text-center">
-      <Inbox className="w-9 h-9 mb-2 text-gray-200" strokeWidth={1.25} />
+      <Inbox className="w-9 h-9 mb-2 text-gray-400" strokeWidth={1.25} />
       <p className="text-[13px] text-gray-500 font-medium">{label}</p>
     </div>
   );
@@ -257,7 +270,12 @@ function TicketsPieChart({ data }: { data: { name: string; count: number }[] }) 
           stacked on mobile, up to ~45% of the row (capped so it doesn't
           dwarf the legend) once there's room beside it. */}
       <div className="w-full sm:w-2/5 sm:max-w-sm aspect-square shrink-0">
-        <svg viewBox="0 0 100 100" className="w-full h-full" role="img" aria-label="Tickets em andamento por categoria">
+        <svg
+          viewBox="0 0 100 100"
+          className="w-full h-full"
+          role="img"
+          aria-label={`Tickets em andamento por categoria: ${slices.map((s) => `${s.name} ${s.count} (${formatPercent(s.percent)})`).join(', ')}`}
+        >
           {slices.length === 1 ? (
             <circle cx="50" cy="50" r="46" className={slices[0].color.fill} />
           ) : (
@@ -287,10 +305,11 @@ function TicketsPieChart({ data }: { data: { name: string; count: number }[] }) 
       </div>
 
       <div className="flex flex-col divide-y divide-gray-100 w-full sm:flex-1">
-        {slices.map((s) => (
+        {slices.map((s, index) => (
           <div key={s.name} className="flex items-center gap-3 py-2.5">
-            <span className={cn('w-8 h-8 rounded-full flex items-center justify-center text-[13px] font-bold shrink-0', s.color.bg, s.color.text)}>
-              {s.name.charAt(0).toUpperCase()}
+            {/* Position, not the initial: two names with the same letter stay apart. */}
+            <span className={cn('w-8 h-8 rounded-full flex items-center justify-center text-[13px] font-bold tabular-nums shrink-0', s.color.bg, s.color.text)}>
+              {index + 1}
             </span>
             <div className="min-w-0">
               <p className="text-[13px] font-semibold text-gray-900 break-words">{s.name}</p>
@@ -343,7 +362,7 @@ function RatingCard({ title, rating, className }: { title: string; rating?: { av
 }
 
 export function DashboardPage() {
-  const { data, isLoading, isError } = useDashboardSummary();
+  const { data, isLoading, isError, isFetching, refetch } = useDashboardSummary();
   const user = useAuthStore((state) => state.user);
   const navigate = useNavigate();
 
@@ -351,9 +370,17 @@ export function DashboardPage() {
   const [pieGrouping, setPieGrouping] = useState<PieGrouping>('byAssignee');
 
   const greetingName = useMemo(() => {
+    // The token only carries `name` when the backend issues it; otherwise the e-mail prefix.
+    if (user?.name) return user.name;
     const raw = user?.email ? user.email.split('@')[0] : 'Usuário';
     return raw.charAt(0).toUpperCase() + raw.slice(1);
-  }, [user?.email]);
+  }, [user?.name, user?.email]);
+
+  const panelProps = (tab: DashboardTab) => ({
+    role: 'tabpanel' as const,
+    id: ezTabPanelId(MAIN_TABS_PREFIX, tab),
+    'aria-labelledby': ezTabId(MAIN_TABS_PREFIX, tab),
+  });
 
   const tabsConfig = useMemo(
     () => [
@@ -390,9 +417,10 @@ export function DashboardPage() {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-2">
           <Headset className="w-5 h-5 text-gray-700" />
-          <h1 className="text-[15px] text-gray-700 font-medium">
-            Bom te ver de volta, {greetingName}
-          </h1>
+          <div>
+            <h1 className="text-[18px] font-bold leading-tight text-gray-700">Painel</h1>
+            <p className="text-[13px] text-gray-600">Bom te ver de volta, {greetingName}</p>
+          </div>
         </div>
         <div className="flex items-center gap-3">
           <button
@@ -415,7 +443,15 @@ export function DashboardPage() {
       </div>
 
       {/* Plain-text tab row, brand underline on the active tab */}
-      <EzTabs tabs={tabsConfig} activeTab={activeTab} onChange={(tabId) => setActiveTab(tabId as DashboardTab)} variant="line" />
+      {!isError && (
+        <EzTabs
+          tabs={tabsConfig}
+          activeTab={activeTab}
+          onChange={(tabId) => setActiveTab(tabId as DashboardTab)}
+          variant="line"
+          idPrefix={MAIN_TABS_PREFIX}
+        />
+      )}
 
       {isLoading && (
         <div className="flex justify-center p-12 bg-white rounded-xl border border-gray-200">
@@ -424,12 +460,16 @@ export function DashboardPage() {
       )}
 
       {isError && (
-        <p className="text-sm text-red-600 bg-red-100 p-4 rounded-xl border border-red-200">
-          Falha ao carregar as métricas do dashboard.
-        </p>
+        <EzAlert
+          variant="error"
+          title="Falha ao carregar as métricas do dashboard"
+          action={<EzButton variant="secondary" size="small" label="Tentar novamente" loading={isFetching} onClick={() => void refetch()} />}
+        >
+          As métricas não carregaram. Verifique a conexão e tente novamente.
+        </EzAlert>
       )}
 
-      {data && (
+      {data && !isError && (
         <>
           {/* TAB: TICKETS */}
           {/*
@@ -440,7 +480,7 @@ export function DashboardPage() {
             Tickets em andamento, 30 dias, Notificações.
           */}
           {activeTab === 'tickets' && (
-            <div className="flex flex-col gap-5">
+            <div className="flex flex-col gap-5" {...panelProps('tickets')}>
               <TiFluxCard title="Resumo de tickets">
                 <KpiRow
                   layout="strip"
@@ -538,10 +578,17 @@ export function DashboardPage() {
                         activeTab={pieGrouping}
                         onChange={(val) => setPieGrouping(val as PieGrouping)}
                         variant="line"
+                        idPrefix={PIE_TABS_PREFIX}
                       />
                     }
                   >
-                    <TicketsPieChart data={pieData} />
+                    <div
+                      role="tabpanel"
+                      id={ezTabPanelId(PIE_TABS_PREFIX, pieGrouping)}
+                      aria-labelledby={ezTabId(PIE_TABS_PREFIX, pieGrouping)}
+                    >
+                      <TicketsPieChart data={pieData} />
+                    </div>
                   </TiFluxCard>
 
                   <TiFluxCard title="Tickets nos últimos 30 dias" className="order-4 lg:order-none">
@@ -582,7 +629,7 @@ export function DashboardPage() {
 
           {/* TAB: CHATS */}
           {activeTab === 'chats' && (
-            <div className="space-y-5">
+            <div className="space-y-5" {...panelProps('chats')}>
               <div className="flex flex-col md:flex-row gap-5">
                 <TiFluxCard title="Meus chats" className="md:flex-1 min-w-0">
                   <KpiRow
@@ -710,7 +757,7 @@ export function DashboardPage() {
                               <td className="py-3 px-4 font-semibold text-gray-900">{ag.name}</td>
                               <td className="py-3 px-4">
                                 <span className="inline-flex items-center gap-1.5">
-                                  <span className={cn('w-2 h-2 rounded-full', status?.dot ?? 'bg-gray-200')} />
+                                  <span className={cn('w-2 h-2 rounded-full', status?.dot ?? 'bg-gray-400')} />
                                   <span className="text-gray-700">{status?.label ?? ag.status ?? '—'}</span>
                                 </span>
                               </td>
@@ -733,7 +780,7 @@ export function DashboardPage() {
               instead of both columns being stretched to a shared row
               height. */}
           {activeTab === 'recurso' && (
-            <div className="flex flex-col md:flex-row gap-5">
+            <div className="flex flex-col md:flex-row gap-5" {...panelProps('recurso')}>
               <div className="flex flex-col gap-5 md:flex-1 min-w-0">
                 <TiFluxCard title="Meus compromissos">
                   <KpiRow
@@ -746,15 +793,7 @@ export function DashboardPage() {
                   />
                 </TiFluxCard>
 
-                <TiFluxCard title="Avaliação geral de tickets (30 dias)">
-                  {!data.csatGeneral30d || data.csatGeneral30d.count === 0 ? (
-                    <EmptyState />
-                  ) : (
-                    <p className="text-[13px] text-gray-600">
-                      {data.csatGeneral30d.avg?.toFixed(1)} de média em {data.csatGeneral30d.count} avaliações.
-                    </p>
-                  )}
-                </TiFluxCard>
+                <RatingCard title="Avaliação geral de tickets (30 dias)" rating={data.csatGeneral30d} />
               </div>
 
               <div className="flex flex-col gap-5 md:flex-1 min-w-0">
@@ -769,22 +808,14 @@ export function DashboardPage() {
                   />
                 </TiFluxCard>
 
-                <TiFluxCard title="Avaliação dos meus tickets (30 dias)">
-                  {!data.csatMine30d || data.csatMine30d.count === 0 ? (
-                    <EmptyState />
-                  ) : (
-                    <p className="text-[13px] text-gray-600">
-                      {data.csatMine30d.avg?.toFixed(1)} de média em {data.csatMine30d.count} avaliações.
-                    </p>
-                  )}
-                </TiFluxCard>
+                <RatingCard title="Avaliação dos meus tickets (30 dias)" rating={data.csatMine30d} />
               </div>
             </div>
           )}
 
           {/* TAB: HORAS — only the hours; the 30-day ticket chart and the notifications live in Tickets. */}
           {activeTab === 'horas' && (
-            <div className="max-w-4xl">
+            <div className="max-w-4xl" {...panelProps('horas')}>
               <TiFluxCard title="Minhas horas apontadas">
                 <div className="mb-5 flex flex-wrap items-baseline gap-x-8 gap-y-2">
                   <div className="flex items-baseline gap-2 text-[13px]">
@@ -803,17 +834,27 @@ export function DashboardPage() {
                   </div>
                   <div className="flex items-baseline gap-1.5 text-[13px] text-gray-500">
                     <span>Apontadas</span>
-                    <strong className="text-gray-700">{hoursLoggedTotal}H</strong>
+                    <strong className="text-gray-700 tabular-nums">{formatHoursAsClock(hoursLoggedTotal)}</strong>
                   </div>
                   <div className="flex items-baseline gap-1.5 text-[13px] text-gray-500">
                     <span>Faltantes</span>
-                    <strong className="text-gray-700">{hoursRemainingTotal}H</strong>
+                    <strong className="text-gray-700 tabular-nums">{formatHoursAsClock(hoursRemainingTotal)}</strong>
                   </div>
                   <div className="flex items-baseline gap-1.5 text-[13px] text-gray-500">
                     <span>Meta</span>
-                    <strong className="text-gray-700">{hoursTargetTotal}H</strong>
+                    <strong className="text-gray-700 tabular-nums">{formatHoursAsClock(hoursTargetTotal)}</strong>
                   </div>
                 </div>
+
+                {hoursTargetTotal > 0 && (
+                  <EzProgressBar
+                    className="mb-5"
+                    value={(hoursLoggedTotal / hoursTargetTotal) * 100}
+                    showLabel
+                    aria-label="Horas apontadas no mês em relação à meta"
+                    aria-valuetext={`${formatHoursAsClock(hoursLoggedTotal)} de ${formatHoursAsClock(hoursTargetTotal)}`}
+                  />
+                )}
 
                 {weekDays.length === 0 ? (
                   <EmptyState />

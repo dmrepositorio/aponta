@@ -67,6 +67,17 @@ describe('authStore', () => {
     expect(useAuthStore.getState().user).toBeNull();
   });
 
+  it('login() keeps the optional display name claim and ignores a blank or non-string one', () => {
+    useAuthStore.getState().login(makeJwt({ sub: 'u1', email: 'a@aponta.com', role: 'AGENT', name: 'Ana Souza' }));
+    expect(useAuthStore.getState().user?.name).toBe('Ana Souza');
+
+    useAuthStore.getState().login(makeJwt({ sub: 'u1', email: 'a@aponta.com', role: 'AGENT', name: '   ' }));
+    expect(useAuthStore.getState().user?.name).toBeUndefined();
+
+    useAuthStore.getState().login(makeJwt({ sub: 'u1', email: 'a@aponta.com', role: 'AGENT', name: 42 }));
+    expect(useAuthStore.getState().user?.name).toBeUndefined();
+  });
+
   it('logout() clears both token and user', () => {
     const token = makeJwt({ sub: 'u1', email: 'agent@aponta.com', role: 'AGENT' });
     useAuthStore.getState().login(token);
