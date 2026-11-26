@@ -2,6 +2,7 @@ import { FormEvent, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { EzAlert, EzButton, EzCardItem, EzDialog, EzEmptyCard, EzSpinner, EzTextInput } from '../ds';
+import { knowledgeApiError } from './knowledgeApiError';
 import { KNOWLEDGE_PRIMARY } from './knowledgeStyles';
 
 export interface KnowledgeFolder {
@@ -69,9 +70,6 @@ export function KnowledgeFoldersGrid({ onOpenFolder, canAuthor }: KnowledgeFolde
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       await api.delete(`/knowledge-folders/${id}`);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['knowledge-folders'] });
     },
   });
 
@@ -181,7 +179,10 @@ export function KnowledgeFoldersGrid({ onOpenFolder, canAuthor }: KnowledgeFolde
                     variant="tertiary"
                     size="small"
                     className="px-0 text-red-600 hover:text-red-700"
-                    onClick={() => setFolderToDelete(folder)}
+                    onClick={() => {
+                      deleteMutation.reset();
+                      setFolderToDelete(folder);
+                    }}
                   >
                     Excluir
                   </EzButton>
@@ -199,12 +200,28 @@ export function KnowledgeFoldersGrid({ onOpenFolder, canAuthor }: KnowledgeFolde
         variant="danger"
         title="Excluir pasta"
         message={`Excluir a pasta "${folderToDelete?.name ?? ''}"?`}
-        onCancel={() => setFolderToDelete(null)}
-        onConfirm={() => {
-          if (folderToDelete) deleteMutation.mutate(folderToDelete.id);
+        confirmLoading={deleteMutation.isPending}
+        onCancel={() => {
           setFolderToDelete(null);
+          deleteMutation.reset();
         }}
-      />
+        onConfirm={() => {
+          if (!folderToDelete || deleteMutation.isPending) return;
+          // O diálogo fecha só no sucesso; a recusa da API aparece nele.
+          deleteMutation.mutate(folderToDelete.id, {
+            onSuccess: () => {
+              queryClient.invalidateQueries({ queryKey: ['knowledge-folders'] });
+              setFolderToDelete(null);
+            },
+          });
+        }}
+      >
+        {deleteMutation.isError && (
+          <EzAlert variant="error" className="mt-3">
+            {knowledgeApiError(deleteMutation.error, 'Não foi possível excluir a pasta.')}
+          </EzAlert>
+        )}
+      </EzDialog>
     </div>
   );
 }

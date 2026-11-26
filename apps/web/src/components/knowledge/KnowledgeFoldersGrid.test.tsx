@@ -172,4 +172,72 @@ describe('KnowledgeFoldersGrid', () => {
       expect(screen.getByText(/nenhuma pasta/i)).toBeInTheDocument();
     });
   });
+
+  describe('exclusão de pasta (F3-29, KNW-01)', () => {
+    async function askToDelete() {
+      const user = userEvent.setup();
+      renderGrid({ canAuthor: true });
+      await waitFor(() => expect(screen.getByText('Financeiro')).toBeInTheDocument());
+      await user.click(screen.getAllByRole('button', { name: /excluir/i })[0]);
+      const dialog = await screen.findByRole('dialog');
+      return { user, dialog };
+    }
+
+    it('keeps the dialog open with the API message and the folder listed when the API refuses', async () => {
+      vi.mocked(api.delete).mockRejectedValueOnce({
+        response: { status: 409, data: { message: 'A pasta ainda tem artigos.' } },
+      });
+      const { user, dialog } = await askToDelete();
+
+      await user.click(within(dialog).getByRole('button', { name: 'Confirmar' }));
+
+      await waitFor(() => {
+        expect(within(screen.getByRole('dialog')).getByText('A pasta ainda tem artigos.')).toBeInTheDocument();
+      });
+      expect(screen.getByText('Financeiro')).toBeInTheDocument();
+    });
+
+    it('shows a generic message when the refusal carries none', async () => {
+      vi.mocked(api.delete).mockRejectedValueOnce(new Error('Network Error'));
+      const { user, dialog } = await askToDelete();
+
+      await user.click(within(dialog).getByRole('button', { name: 'Confirmar' }));
+
+      expect(await within(await screen.findByRole('dialog')).findByText('Não foi possível excluir a pasta.')).toBeInTheDocument();
+    });
+
+    it('keeps the dialog open with the confirm button busy while pending, and closes on success', async () => {
+      let finish: (value: unknown) => void = () => undefined;
+      vi.mocked(api.delete).mockImplementationOnce(() => new Promise((resolve) => { finish = resolve; }));
+      const { user, dialog } = await askToDelete();
+
+      await user.click(within(dialog).getByRole('button', { name: 'Confirmar' }));
+
+      expect(within(screen.getByRole('dialog')).getByRole('button', { name: /Confirmar/ })).toHaveAttribute('aria-busy', 'true');
+
+      finish({ data: {} });
+      await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+      expect(api.delete).toHaveBeenCalledWith('/knowledge-folders/folder-1');
+    });
+
+    it('clears the previous error when the dialog is opened again', async () => {
+      vi.mocked(api.delete).mockRejectedValueOnce({ response: { status: 403, data: { message: 'Sem permissão.' } } });
+      const { user, dialog } = await askToDelete();
+      await user.click(within(dialog).getByRole('button', { name: 'Confirmar' }));
+      await screen.findByText('Sem permissão.');
+      await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Cancelar' }));
+
+      await user.click(screen.getAllByRole('button', { name: /excluir/i })[0]);
+
+      expect(await screen.findByRole('dialog')).toBeInTheDocument();
+      expect(screen.queryByText('Sem permissão.')).not.toBeInTheDocument();
+    });
+
+    it('offers no Excluir to a reader', async () => {
+      renderGrid({ canAuthor: false });
+      await waitFor(() => expect(screen.getByText('Financeiro')).toBeInTheDocument());
+
+      expect(screen.queryByRole('button', { name: /excluir/i })).not.toBeInTheDocument();
+    });
+  });
 });
