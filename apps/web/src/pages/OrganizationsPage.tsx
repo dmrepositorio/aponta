@@ -430,6 +430,10 @@ export function OrganizationsPage() {
     onError: (err) => setInlineError(apiErrorMessage(err, 'Não foi possível salvar a alteração.')),
   });
 
+  // ORG-02 (#463): mutações do detalhe do cliente mostram a mensagem da API no alerta da página.
+  const showOperationError = (err: unknown) =>
+    setInlineError(apiErrorMessage(err, 'Não foi possível concluir a operação. Tente novamente.'));
+
   const attachUserMutation = useMutation({
     mutationFn: async ({ userId, orgId }: { userId: string; orgId: string | null }) => {
       await api.patch(`/users/${userId}`, { organizationId: orgId });
@@ -438,7 +442,8 @@ export function OrganizationsPage() {
       void queryClient.invalidateQueries({ queryKey: ['organizations'] });
       void queryClient.invalidateQueries({ queryKey: ['users'] });
       void queryClient.invalidateQueries({ queryKey: ['organizations', detailOrgId] });
-    }
+    },
+    onError: showOperationError,
   });
 
   const cnpjLookupMutation = useMutation({
@@ -542,6 +547,7 @@ export function OrganizationsPage() {
       void queryClient.invalidateQueries({ queryKey: ['organizations', detailOrgId] });
       resetAddressForm();
     },
+    onError: showOperationError,
   });
 
   const removeAddressMutation = useMutation({
@@ -551,6 +557,7 @@ export function OrganizationsPage() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['organizations', detailOrgId] });
     },
+    onError: showOperationError,
   });
 
   const addContactMutation = useMutation({
@@ -562,6 +569,7 @@ export function OrganizationsPage() {
       void queryClient.invalidateQueries({ queryKey: ['organizations', detailOrgId] });
       resetContactForm();
     },
+    onError: showOperationError,
   });
 
   const removeContactMutation = useMutation({
@@ -571,6 +579,7 @@ export function OrganizationsPage() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['organizations', detailOrgId] });
     },
+    onError: showOperationError,
   });
 
   // Tiflux-parity (#57): aba "Relacionamentos" — Mesa<->Cliente N:N.
@@ -582,6 +591,7 @@ export function OrganizationsPage() {
       void queryClient.invalidateQueries({ queryKey: ['organizations', detailOrgId] });
       setLinkDeskId('');
     },
+    onError: showOperationError,
   });
 
   const unlinkDeskMutation = useMutation({
@@ -591,6 +601,7 @@ export function OrganizationsPage() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['organizations', detailOrgId] });
     },
+    onError: showOperationError,
   });
 
   // Tiflux-parity (#57): Grupo de Atendentes — entidade por cliente.
@@ -607,6 +618,7 @@ export function OrganizationsPage() {
       resetAgentGroupForm();
       setNewGroupMemberIds([]);
     },
+    onError: showOperationError,
   });
 
   const removeAgentGroupMutation = useMutation({
@@ -616,6 +628,7 @@ export function OrganizationsPage() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['organizations', detailOrgId] });
     },
+    onError: showOperationError,
   });
 
   const openDetail = (orgId: string) => {
