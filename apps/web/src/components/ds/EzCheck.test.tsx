@@ -57,4 +57,35 @@ describe('EzCheck', () => {
     expect(checkbox.className).not.toContain('focus:outline-none');
     expect(checkbox.className).not.toContain('ring-brand-200');
   });
+
+  it('define a propriedade indeterminate do input (selecionar todos)', () => {
+    render(<EzCheck data-testid="check" indeterminate label="Todos" />);
+    const checkbox = screen.getByTestId('check') as HTMLInputElement;
+    expect(checkbox.indeterminate).toBe(true);
+    expect(checkbox).toHaveAttribute('aria-checked', 'mixed');
+  });
+
+  it('limpa indeterminate quando a prop volta a false', () => {
+    const { rerender } = render(<EzCheck data-testid="check" indeterminate readOnly />);
+    rerender(<EzCheck data-testid="check" indeterminate={false} readOnly />);
+    expect((screen.getByTestId('check') as HTMLInputElement).indeterminate).toBe(false);
+  });
+
+  it('associa a mensagem de erro por aria-describedby com ícone e aria-invalid', () => {
+    render(<EzCheck id="aceite" label="Aceito" hasError message="Aceite os termos" />);
+    const checkbox = screen.getByRole('checkbox');
+    expect(checkbox).toHaveAccessibleDescription('Aceite os termos');
+    expect(checkbox).toHaveAttribute('aria-invalid', 'true');
+    expect(screen.getByText('Aceite os termos').parentElement?.querySelector('svg')).not.toBeNull();
+  });
+
+  it('mantém o aria-describedby do consumidor junto da mensagem', () => {
+    render(
+      <>
+        <span id="dica">Dica extra</span>
+        <EzCheck label="Aceito" hasError message="Erro" aria-describedby="dica" />
+      </>
+    );
+    expect(screen.getByRole('checkbox')).toHaveAccessibleDescription('Dica extra Erro');
+  });
 });
