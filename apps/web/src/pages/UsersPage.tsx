@@ -1,4 +1,4 @@
-import { ReactNode, useMemo, useState } from 'react';
+import { ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { ColumnDef } from '@tanstack/react-table';
 import { ActiveTag } from '../components/ActiveTag';
@@ -169,6 +169,21 @@ function UsersPageContent() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [activeSavedFilterId, setActiveSavedFilterId] = useState<string | null>(null);
   const [isConfigOpen, setIsConfigOpen] = useState(false);
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  // Atalho "/": foca a busca, exceto quando a tecla é texto de outro campo, combinada com Ctrl/Meta/Alt ou com diálogo aberto.
+  useEffect(() => {
+    if (mode !== 'list') return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== '/' || event.ctrlKey || event.metaKey || event.altKey || event.defaultPrevented) return;
+      const target = event.target as HTMLElement | null;
+      if (target?.closest('input, textarea, select, [contenteditable=""], [contenteditable="true"], [role="dialog"]')) return;
+      event.preventDefault();
+      searchRef.current?.focus();
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [mode]);
 
   // Alteração não salva pede confirmação antes de sair do formulário.
   const hasPending = useMesaPending();
@@ -307,6 +322,17 @@ function UsersPageContent() {
 
         {mode === 'list' && (
           <>
+            <div className="border-b border-gray-200 px-3 py-2">
+              <EzTextInput
+                ref={searchRef}
+                id="users-search-input"
+                aria-label="Buscar usuário"
+                placeholder="Buscar por nome ou e-mail… (/)"
+                autoComplete="off"
+                value={filters.search}
+                onChange={(e) => change({ search: e.target.value })}
+              />
+            </div>
             {canToggleActive && (
               <div className="flex items-center gap-2 border-b border-gray-200 px-3 py-1.5 max-sm:hidden">
                 <EzButton
@@ -358,14 +384,6 @@ function UsersPageContent() {
                 }}
               >
                 <div className="space-y-4">
-                  <EzTextInput
-                    id="filter-search-input"
-                    label="Buscar usuário"
-                    placeholder="Nome ou e-mail…"
-                    value={filters.search}
-                    onChange={(e) => change({ search: e.target.value })}
-                  />
-
                   <fieldset className="space-y-1.5">
                     <legend className="mb-1 text-xs font-medium text-gray-700">Tipo</legend>
                     {Object.entries(ROLE_LABELS).map(([role, text]) => (

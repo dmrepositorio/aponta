@@ -110,10 +110,8 @@ test.describe('grupo de permissões concede MANAGE_USERS e a mudança reflete nu
       await page.getByRole('link', { name: 'Usuários', exact: true }).click();
       await expect(page).toHaveURL('/settings/users');
 
-      // A busca fica no painel de filtros (DMTE-550). Fecha o painel para a grade não ficar coberta.
-      await page.getByRole('button', { name: 'Filtros' }).click();
-      await page.getByLabel('Buscar usuário').fill(targetName);
-      await page.keyboard.press('Escape');
+      // A busca fica sempre visível acima da grade (F3-26 USR-02).
+      await page.getByRole('textbox', { name: 'Buscar usuário' }).fill(targetName);
       await page.getByRole('button', { name: targetName }).click();
 
       // MANAGE_USERS edita os dados do usuário: um Salvar só, resposta 200.
