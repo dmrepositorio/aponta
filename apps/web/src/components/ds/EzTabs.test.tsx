@@ -238,10 +238,17 @@ describe('EzTabs', () => {
       expect(screen.queryByTestId('ez-tabs-overflow-end')).not.toBeInTheDocument();
     });
 
-    it('scrolls the active tab into view on mount and when it changes', () => {
+    it('scrolls the active tab into view on mount and when it changes, only when the list overflows', () => {
       const scrollIntoView = vi.fn();
       Element.prototype.scrollIntoView = scrollIntoView;
       try {
+        // sem overflow nada rola (evita mexer na página à toa)
+        const fits = render(<EzTabs tabs={many} activeTab="t0" onChange={vi.fn()} />);
+        expect(scrollIntoView).not.toHaveBeenCalled();
+        fits.unmount();
+
+        Object.defineProperty(HTMLElement.prototype, 'scrollWidth', { configurable: true, value: 900 });
+        Object.defineProperty(HTMLElement.prototype, 'clientWidth', { configurable: true, value: 390 });
         const { rerender } = render(<EzTabs tabs={many} activeTab="t0" onChange={vi.fn()} />);
         expect(scrollIntoView).toHaveBeenCalledWith({ block: 'nearest', inline: 'nearest' });
         scrollIntoView.mockClear();
@@ -250,6 +257,8 @@ describe('EzTabs', () => {
         expect(scrollIntoView.mock.contexts[0]).toBe(screen.getByRole('tab', { name: 'Aba 5' }));
       } finally {
         delete (Element.prototype as { scrollIntoView?: unknown }).scrollIntoView;
+        delete (HTMLElement.prototype as { scrollWidth?: unknown }).scrollWidth;
+        delete (HTMLElement.prototype as { clientWidth?: unknown }).clientWidth;
       }
     });
 

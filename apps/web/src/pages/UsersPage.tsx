@@ -468,7 +468,7 @@ function UsersPageContent() {
                 )}
                 {meta && meta.totalPages > 1 && (
                   <div className="px-1 pt-3">
-                    <EzPagination currentPage={page} totalPages={meta.totalPages} onChange={setPage} />
+                    <EzPagination currentPage={page} totalPages={meta.totalPages} totalItems={meta.total} pageSize={meta.pageSize} onChange={setPage} />
                   </div>
                 )}
               </div>

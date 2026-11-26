@@ -979,7 +979,7 @@ describe('TicketWorklogs', () => {
     await waitFor(() => expect(screen.getAllByTestId('worklog-pre-appointment-row')).toHaveLength(5));
     expect(screen.getByTestId('worklog-pre-pagination')).toBeInTheDocument();
 
-    await user.click(screen.getByTitle('Próxima Página'));
+    await user.click(screen.getByRole('button', { name: 'Próxima página' }));
     await waitFor(() => expect(screen.getAllByTestId('worklog-pre-appointment-row')).toHaveLength(1));
   });
 
@@ -1001,7 +1001,7 @@ describe('TicketWorklogs', () => {
     renderComponent('t-1', false);
 
     await waitFor(() => expect(screen.getAllByTestId('worklog-pre-appointment-row')).toHaveLength(5));
-    await user.click(screen.getByTitle('Próxima Página'));
+    await user.click(screen.getByRole('button', { name: 'Próxima página' }));
     await waitFor(() => expect(screen.getAllByTestId('worklog-pre-appointment-row')).toHaveLength(1));
 
     await user.click(screen.getByTestId('worklog-pre-delete-btn'));

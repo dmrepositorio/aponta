@@ -81,3 +81,34 @@ export const WithPanelAndKeyboard: Story = {
     return <Demo />;
   },
 };
+
+/**
+ * DS-26: quando a lista excede a largura (390px) as bordas com abas escondidas mostram
+ * um gradiente e a aba ativa rola para a vista. Aba desabilitada usa `text-gray-400`
+ * (contraste acima de 3:1) em vez de `opacity-50`. O gradiente é visual: confira no
+ * viewport estreito do Storybook (mobile).
+ */
+export const OverflowEmTelaEstreita: Story = {
+  parameters: { viewport: { defaultViewport: 'mobile1' } },
+  render: () => {
+    const tabs = [
+      { id: 'geral', label: 'Visão geral' },
+      { id: 'apontamentos', label: 'Apontamentos' },
+      { id: 'anexos', label: 'Anexos' },
+      { id: 'historico', label: 'Histórico' },
+      { id: 'sla', label: 'SLA e prazos' },
+      { id: 'cofre', label: 'Cofre', disabled: true },
+      { id: 'auditoria', label: 'Auditoria' },
+    ];
+    function Demo() {
+      const [active, setActive] = useState<string | number>('geral');
+      return (
+        <div style={{ width: 390 }}>
+          <EzTabs tabs={tabs} activeTab={active} onChange={setActive} />
+        </div>
+      );
+    }
+    return <Demo />;
+  },
+};
+

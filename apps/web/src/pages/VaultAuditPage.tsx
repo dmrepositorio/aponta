@@ -167,7 +167,7 @@ export function VaultAuditPage() {
 
           {meta && meta.totalPages > 1 && (
             <div className="flex justify-end border-t border-gray-100 px-4 py-3">
-              <EzPagination currentPage={meta.page} totalPages={meta.totalPages} onChange={setPage} />
+              <EzPagination currentPage={meta.page} totalPages={meta.totalPages} totalItems={meta.total} pageSize={meta.limit} onChange={setPage} />
             </div>
           )}
         </EzCardItem>
