@@ -63,9 +63,12 @@ export function TabsProvider({ children }: { children: ReactNode }) {
 
   const openTab = useCallback(
     (path: string, title: string) => {
+      // A aba é identificada pelo pathname (é ele que a barra compara com a rota
+      // ativa); a query string só acompanha a navegação, ex.: filtros da busca avançada.
+      const tabPath = path.split('?')[0];
       setTabs((prev) => {
-        if (prev.some((tab) => tab.path === path)) return prev;
-        return [...prev, { id: path, path, title }];
+        if (prev.some((tab) => tab.path === tabPath)) return prev;
+        return [...prev, { id: tabPath, path: tabPath, title }];
       });
       navigate(path);
     },
