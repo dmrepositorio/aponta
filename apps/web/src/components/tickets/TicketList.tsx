@@ -2,9 +2,10 @@ import { Fragment, useState, type MouseEvent, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowDown, ArrowUp, ChevronDown, ChevronRight } from 'lucide-react';
 import type { Ticket } from '../../hooks/useTickets';
-import { EzAlert, EzEmptyCard, EzSelect, EzSpinner } from '../ds';
+import { EzButton, EzEmptyCard, EzSelect, EzSlaChip, EzSpinner, EzTag } from '../ds';
 import { priorityLabels, statusLabels } from './TicketCard';
 import { TicketPriorityTag, TicketStatusTag } from './TicketTags';
+import { effectiveDeadline } from './TicketKanbanCard';
 import { useUserScreenConfig } from '../../hooks/useUserScreenConfig';
 import { useOpenInTab } from '../../contexts/TabsContext';
 import { useAuthStore } from '../../stores/authStore';
@@ -45,6 +46,30 @@ function TicketNumberLink({ ticket }: { ticket: Ticket }) {
     >
       {ticket.protocol}
     </Link>
+  );
+}
+
+/** Selos de prazo da linha (mesmos do Kanban) e "Pausado" quando o relógio do SLA está parado. */
+function TicketSlaCell({ ticket }: { ticket: Ticket }) {
+  const now = new Date();
+  const hasChips = Boolean(ticket.responseSlaStatus || ticket.resolveSlaStatus);
+  if (!hasChips && !ticket.slaPausedAt) return <span className="text-gray-400">—</span>;
+  return (
+    <div className="flex flex-wrap items-center gap-1">
+      <EzSlaChip
+        kind="response"
+        status={ticket.responseSlaStatus}
+        deadline={effectiveDeadline(ticket.responseDeadline, ticket, now)}
+        now={now}
+      />
+      <EzSlaChip
+        kind="resolve"
+        status={ticket.resolveSlaStatus}
+        deadline={effectiveDeadline(ticket.resolveDeadline, ticket, now)}
+        now={now}
+      />
+      {ticket.slaPausedAt && <EzTag label="Pausado" variant="gray" className="whitespace-nowrap" />}
+    </div>
   );
 }
 
@@ -105,6 +130,12 @@ const COLUMNS: ColumnDef[] = [
     label: 'Estágio',
     defaultVisible: true,
     render: (t) => <span>{t.stage?.name ?? '—'}</span>,
+  },
+  {
+    id: 'sla',
+    label: 'SLA',
+    defaultVisible: true,
+    render: (t) => <TicketSlaCell ticket={t} />,
   },
   {
     id: 'serviceDesk',
@@ -206,22 +237,25 @@ const GROUP_OPTIONS: GroupOption[] = [
 interface TicketListProps {
   tickets: Ticket[];
   isLoading: boolean;
-  isError: boolean;
   /** Used only to render the R1 grouping-caveat note (grouping only sees the current page). */
   totalPages?: number;
   sortBy?: string;
   sortDir?: 'asc' | 'desc';
   onSortChange?: (sortBy: string, sortDir: 'asc' | 'desc') => void;
+  /** Há filtro ativo na tela: o vazio vira "nenhum resultado" com "Redefinir filtros", em vez de "nenhum chamado ainda". */
+  hasFilters?: boolean;
+  onResetFilters?: () => void;
 }
 
 export function TicketList({
   tickets,
   isLoading,
-  isError,
   totalPages,
   sortBy: initialSortBy,
   sortDir: initialSortDir,
   onSortChange,
+  hasFilters = false,
+  onResetFilters,
 }: TicketListProps) {
   const openInTab = useOpenInTab();
   const role = useAuthStore((state) => state.user?.role);
@@ -254,19 +288,11 @@ export function TicketList({
   };
 
   // O "Agrupar por" mudaria a lista já desenhada: espera a leitura da preferência.
-  if (isLoading || (isConfigLoading && !isError)) {
+  if (isLoading || isConfigLoading) {
     return (
       <div className="flex justify-center py-8">
         <EzSpinner label="Carregando chamados…" />
       </div>
-    );
-  }
-
-  if (isError) {
-    return (
-      <EzAlert variant="error">
-        Falha ao carregar os chamados. Tente novamente.
-      </EzAlert>
     );
   }
 
@@ -287,7 +313,15 @@ export function TicketList({
   const renderRow = (ticket: Ticket) => (
     <tr
       key={ticket.id}
-      className="border-b border-gray-100 last:border-0 hover:bg-grid-row-hover focus-within:bg-grid-row-hover cursor-pointer"
+      tabIndex={0}
+      aria-keyshortcuts="Enter"
+      className="cursor-pointer border-b border-gray-100 last:border-0 hover:bg-grid-row-hover focus-within:bg-grid-row-hover focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-500"
+      onKeyDown={(event) => {
+        // Só a própria linha: Enter no link do número já abre pelo link.
+        if (event.key !== 'Enter' || event.target !== event.currentTarget) return;
+        event.preventDefault();
+        openInTab(ticketPath(ticket), ticketTabTitle(ticket));
+      }}
       onClick={(event) => {
         // The number link and any button handle their own click.
         if ((event.target as HTMLElement).closest('a, button')) return;
@@ -357,10 +391,30 @@ export function TicketList({
       </div>
 
       {tickets.length === 0 ? (
-        <EzEmptyCard
-          title="Nenhum chamado encontrado"
-          description="Tente ajustar os filtros."
-        />
+        hasFilters ? (
+          <EzEmptyCard
+            title="Nenhum chamado encontrado"
+            description="Nenhum chamado corresponde aos filtros ativos."
+            action={
+              onResetFilters && (
+                <EzButton variant="secondary" size="small" label="Redefinir filtros" onClick={onResetFilters} />
+              )
+            }
+          />
+        ) : (
+          <EzEmptyCard
+            title="Nenhum chamado ainda"
+            description="Quando um chamado for aberto, ele aparece aqui."
+            action={
+              <EzButton
+                variant="primary"
+                size="small"
+                label="Abrir chamado"
+                onClick={() => openInTab('/tickets/new', 'Novo ticket')}
+              />
+            }
+          />
+        )
       ) : (
         <div
           role="region"
