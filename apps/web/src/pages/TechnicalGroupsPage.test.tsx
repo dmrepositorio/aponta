@@ -573,3 +573,93 @@ describe('TechnicalGroupsPage: estados de erro e vazio (TG-07)', () => {
     expect(screen.queryByText('Não foi possível carregar os usuários.')).not.toBeInTheDocument();
   });
 });
+
+describe('TechnicalGroupsPage: excluir grupo (TG-03)', () => {
+  const DETAIL_WITH_LINKS = {
+    ...GROUP_DETAIL,
+    serviceDeskLinks: [
+      { serviceDesk: { id: 'desk-1', name: 'Mesa Principal' } },
+      { serviceDesk: { id: 'desk-2', name: 'Mesa Suporte' } },
+    ],
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(api.get).mockImplementation((url: string) => {
+      if (url === '/technical-groups') return Promise.resolve({ data: GROUP_LIST });
+      if (url === '/technical-groups/tg-1') return Promise.resolve({ data: DETAIL_WITH_LINKS });
+      if (url === '/users') return Promise.resolve({ data: ALL_USERS });
+      if (url === '/organizations') return Promise.resolve({ data: ALL_ORGS });
+      if (url === '/service-desks') return Promise.resolve({ data: ALL_DESKS });
+      return Promise.reject(new Error(`Unexpected GET ${url}`));
+    });
+    vi.mocked(api.delete).mockResolvedValue({ data: {} });
+  });
+
+  async function openDelete() {
+    renderPage();
+    await openGroup();
+    await expectButton('Excluir grupo');
+    await userEvent.click(screen.getByRole('button', { name: 'Excluir grupo' }));
+    return expectDialog('Excluir grupo');
+  }
+
+  it('o diálogo avisa quantos membros e vínculos serão afetados', async () => {
+    const dialog = await openDelete();
+
+    expect(dialog).toHaveTextContent('1 membro');
+    expect(dialog).toHaveTextContent('1 cliente');
+    expect(dialog).toHaveTextContent('2 mesas');
+  });
+
+  it('Cancelar fecha o diálogo sem chamar a API', async () => {
+    const dialog = await openDelete();
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Cancelar' }));
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(api.delete).not.toHaveBeenCalled();
+  });
+
+  it('confirmar chama DELETE /technical-groups/tg-1, volta à lista e mostra "Grupo excluído"', async () => {
+    const dialog = await openDelete();
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Excluir' }));
+
+    await waitFor(() => expect(api.delete).toHaveBeenCalledWith('/technical-groups/tg-1'));
+    await expectText('Grupo excluído');
+    await expectButton('Novo grupo');
+    expect(screen.queryByRole('tablist')).not.toBeInTheDocument();
+  });
+
+  it('depois de excluir não refaz GET do detalhe removido', async () => {
+    const dialog = await openDelete();
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Excluir' }));
+    await expectText('Grupo excluído');
+
+    const detailGets = vi.mocked(api.get).mock.calls.filter(([url]) => url === '/technical-groups/tg-1');
+    expect(detailGets).toHaveLength(1);
+  });
+
+  it('falha na exclusão mostra a mensagem da API e mantém o grupo aberto', async () => {
+    vi.mocked(api.delete).mockRejectedValue(apiError('Grupo em uso'));
+    const dialog = await openDelete();
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Excluir' }));
+
+    await expectText('Grupo em uso');
+    expect(screen.getByRole('tablist')).toBeInTheDocument();
+    expect(screen.queryByText('Grupo excluído')).not.toBeInTheDocument();
+  });
+
+  it('excluir com edição pendente não pede descarte: a exclusão já descarta o rascunho', async () => {
+    renderPage();
+    await openGroup();
+    await userEvent.type(screen.getByLabelText('Nome'), ' B');
+    await expectButton('Excluir grupo');
+    await userEvent.click(screen.getByRole('button', { name: 'Excluir grupo' }));
+    const dialog = await expectDialog('Excluir grupo');
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Excluir' }));
+
+    await expectText('Grupo excluído');
+    await expectButton('Novo grupo');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+});
