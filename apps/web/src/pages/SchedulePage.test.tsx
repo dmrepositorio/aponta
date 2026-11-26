@@ -235,8 +235,14 @@ describe('SchedulePage', () => {
   describe('falha e carregamento (SCH-04)', () => {
     it('mostra alerta com Tentar novamente quando a consulta falha e refaz a busca', async () => {
       const user = userEvent.setup();
-      vi.mocked(api.get).mockRejectedValueOnce(new Error('500'));
-      vi.mocked(api.get).mockResolvedValue({ data: [] });
+      let appointmentCalls = 0;
+      vi.mocked(api.get).mockImplementation(async (url: string) => {
+        if (url === '/appointments') {
+          appointmentCalls += 1;
+          if (appointmentCalls === 1) throw new Error('500');
+        }
+        return { data: [] };
+      });
       loginAs('AGENT');
       renderPage();
 
@@ -247,7 +253,7 @@ describe('SchedulePage', () => {
       await user.click(within(alert).getByRole('button', { name: 'Tentar novamente' }));
 
       await waitFor(() => expect(screen.queryByRole('alert')).not.toBeInTheDocument());
-      expect(api.get).toHaveBeenCalledTimes(2);
+      expect(appointmentCalls).toBe(2);
     });
 
     it('rotula o indicador de carregamento como Carregando agenda', () => {
