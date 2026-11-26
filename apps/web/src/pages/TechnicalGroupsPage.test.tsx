@@ -480,3 +480,96 @@ describe('TechnicalGroupsPage: modal de criação (TG-06)', () => {
     expect(api.post).not.toHaveBeenCalled();
   });
 });
+
+describe('TechnicalGroupsPage: estados de erro e vazio (TG-07)', () => {
+  function mockGets(overrides: Record<string, () => Promise<unknown>>) {
+    const defaults: Record<string, () => Promise<unknown>> = {
+      '/technical-groups': () => Promise.resolve({ data: GROUP_LIST }),
+      '/technical-groups/tg-1': () => Promise.resolve({ data: GROUP_DETAIL }),
+      '/users': () => Promise.resolve({ data: ALL_USERS }),
+      '/organizations': () => Promise.resolve({ data: ALL_ORGS }),
+      '/service-desks': () => Promise.resolve({ data: ALL_DESKS }),
+    };
+    vi.mocked(api.get).mockImplementation(((url: string) => ({ ...defaults, ...overrides }[url]?.() ?? Promise.reject(new Error(url)))) as never);
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(api.post).mockResolvedValue({ data: {} });
+  });
+
+  it('falha em GET /technical-groups mostra erro com "Tentar novamente" que refaz a consulta', async () => {
+    let calls = 0;
+    mockGets({
+      '/technical-groups': () => (++calls === 1 ? Promise.reject(new Error('boom')) : Promise.resolve({ data: GROUP_LIST })),
+    });
+    renderPage();
+
+    await expectText('Não foi possível carregar os grupos.');
+    expect(screen.queryByText('Nenhum grupo de atendentes cadastrado.')).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Tentar novamente' }));
+
+    await expectText('Suporte N1');
+    expect(screen.queryByText('Não foi possível carregar os grupos.')).not.toBeInTheDocument();
+  });
+
+  it('lista vazia oferece "Novo grupo" dentro do próprio vazio, que abre o modal', async () => {
+    mockGets({ '/technical-groups': () => Promise.resolve({ data: [] }) });
+    renderPage();
+
+    const title = await screen.findByText('Nenhum grupo de atendentes cadastrado.');
+    const emptyCard = title.parentElement as HTMLElement;
+    await waitFor(() => expect(within(emptyCard).queryByRole('button', { name: 'Novo grupo' })).toBeInTheDocument());
+    await userEvent.click(within(emptyCard).getByRole('button', { name: 'Novo grupo' }));
+
+    await expectDialog('Novo grupo de atendentes');
+  });
+
+  it('falha em GET /technical-groups/:id mostra erro com "Tentar novamente"', async () => {
+    let calls = 0;
+    mockGets({
+      '/technical-groups/tg-1': () => (++calls === 1 ? Promise.reject(new Error('boom')) : Promise.resolve({ data: GROUP_DETAIL })),
+    });
+    renderPage();
+    await userEvent.click(await screen.findByText('Suporte N1'));
+
+    await expectText('Não foi possível carregar o grupo.');
+    await userEvent.click(screen.getByRole('button', { name: 'Tentar novamente' }));
+    await screen.findByRole('tablist');
+  });
+
+  it.each([
+    ['/users', 'Equipe', 'Não foi possível carregar os usuários.'],
+    ['/organizations', 'Acessos', 'Não foi possível carregar os clientes.'],
+    ['/service-desks', 'Acessos', 'Não foi possível carregar as mesas de serviço.'],
+  ] as const)('falha em GET %s avisa na aba %s', async (url, tab, message) => {
+    mockGets({ [url]: () => Promise.reject(new Error('boom')) });
+    renderPage();
+    await openGroup(tab);
+
+    await expectText(message);
+  });
+
+  it('o aviso da aba some quando a consulta volta a funcionar pelo "Tentar novamente"', async () => {
+    let calls = 0;
+    mockGets({
+      '/users': () => (++calls === 1 ? Promise.reject(new Error('boom')) : Promise.resolve({ data: ALL_USERS })),
+    });
+    renderPage();
+    await openGroup('Equipe');
+    await expectText('Não foi possível carregar os usuários.');
+    await userEvent.click(screen.getByRole('button', { name: 'Tentar novamente' }));
+
+    await expectButton('Adicionar Carlos Dias');
+    expect(screen.queryByText('Não foi possível carregar os usuários.')).not.toBeInTheDocument();
+  });
+
+  it('um erro de /users não aparece na aba Acessos', async () => {
+    mockGets({ '/users': () => Promise.reject(new Error('boom')) });
+    renderPage();
+    await openGroup('Acessos');
+    await screen.findByText('Clientes disponíveis');
+
+    expect(screen.queryByText('Não foi possível carregar os usuários.')).not.toBeInTheDocument();
+  });
+});
