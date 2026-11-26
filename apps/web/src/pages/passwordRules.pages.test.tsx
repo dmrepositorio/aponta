@@ -59,8 +59,8 @@ describe('Regra de senha nas telas (DMTE-551)', () => {
     render(<BrowserRouter><SetPasswordPage /></BrowserRouter>);
     expect(rulesList()).toBeInTheDocument();
 
-    await user.type(screen.getByLabelText(/^nova senha/i), 'Abcdefghij');
-    await user.type(screen.getByLabelText(/^confirmar senha/i), 'Abcdefghij');
+    await user.type(screen.getByLabelText(/^nova senha/i), STRONG);
+    await user.type(screen.getByLabelText(/^confirmar senha/i), STRONG);
     await user.click(screen.getByRole('button', { name: 'Definir senha' }));
 
     expect(await screen.findByText(serverRules[1])).toBeInTheDocument();

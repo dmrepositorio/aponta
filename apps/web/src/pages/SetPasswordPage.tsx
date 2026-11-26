@@ -4,7 +4,7 @@ import axios from 'axios';
 import { api } from '../lib/api';
 import { EzAlert, EzButton, EzCardItem, EzTextInput } from '../components/ds';
 import { PasswordRules, PolicyErrors } from '../components/PasswordRules';
-import { policyMessages } from '../lib/passwordRules';
+import { allRulesMet, policyMessages } from '../lib/passwordRules';
 
 /**
  * Página pública do link de convite e de redefinição (DMTE-550 D12/AC-19). O token vem no fragmento
@@ -13,19 +13,24 @@ import { policyMessages } from '../lib/passwordRules';
  */
 const TOKEN_FORMAT = /^[0-9a-f]{64}$/i;
 const PASSWORD_ERROR = 'A senha deve ter de 10 a 128 caracteres.';
+const RULES_ERROR = 'A senha não atende a todas as regras listadas abaixo.';
 
-type Phase = 'checking' | 'form' | 'invalid' | 'done';
+type Phase = 'checking' | 'form' | 'invalid' | 'missing' | 'done';
 
-/** Lê o token do fragmento e o apaga da barra de endereço; `null` se faltar ou estiver mal formado. */
-function consumeToken(): string | null {
+/**
+ * Lê o token do fragmento e o apaga da barra de endereço. `missing` = não havia token (F5, link aberto sem
+ * fragmento): o token nunca é guardado fora da memória, então a orientação é reabrir o link do e-mail.
+ */
+function consumeToken(): { token: string | null; missing: boolean } {
   const token = new URLSearchParams(window.location.hash.slice(1)).get('t');
   window.history.replaceState(null, '', window.location.pathname + window.location.search);
-  return token && TOKEN_FORMAT.test(token) ? token : null;
+  return { token: token && TOKEN_FORMAT.test(token) ? token : null, missing: token === null };
 }
 
 export function SetPasswordPage() {
   // `undefined` = ainda não lido. Ref, não state: o StrictMode roda o efeito duas vezes e o fragmento só existe na primeira.
   const token = useRef<string | null | undefined>(undefined);
+  const missing = useRef(false);
   const [phase, setPhase] = useState<Phase>('checking');
   const [password, setPassword] = useState('');
   const [confirmation, setConfirmation] = useState('');
@@ -36,8 +41,8 @@ export function SetPasswordPage() {
   const confirmationInput = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (token.current === undefined) token.current = consumeToken();
-    setPhase(token.current ? 'form' : 'invalid');
+    if (token.current === undefined) ({ token: token.current, missing: missing.current } = consumeToken());
+    setPhase(token.current ? 'form' : missing.current ? 'missing' : 'invalid');
     // A página nunca manda o endereço completo adiante (a barra já está sem o token, mas o caminho é o do convite).
     const meta = document.createElement('meta');
     meta.name = 'referrer';
@@ -51,6 +56,7 @@ export function SetPasswordPage() {
     if (sending || !token.current) return;
     const next: typeof errors = {};
     if (password.length < 10 || password.length > 128) next.password = PASSWORD_ERROR;
+    else if (!allRulesMet(password)) next.password = RULES_ERROR;
     else if (confirmation !== password) next.confirmation = 'As senhas não conferem.';
     setErrors(next);
     if (next.password) return passwordInput.current?.focus();
@@ -83,7 +89,7 @@ export function SetPasswordPage() {
 
         {phase === 'form' && (
           <form onSubmit={submit} noValidate className="space-y-4">
-            <div aria-live="polite" className="space-y-4">
+            <div className="space-y-4">
               <EzTextInput
                 ref={passwordInput}
                 id="new-password"
@@ -120,6 +126,19 @@ export function SetPasswordPage() {
             <p className="font-medium text-red-700">Link inválido ou expirado.</p>
             <p className="text-sm text-gray-700">
               Peça outro: na tela de entrada, use Esqueci minha senha, ou peça um novo convite ao administrador.
+            </p>
+            <Link to="/login" className="text-sm font-medium text-brand-700 hover:underline">
+              Voltar para o login
+            </Link>
+          </div>
+        )}
+
+        {phase === 'missing' && (
+          <div className="space-y-3">
+            <p className="font-medium text-red-700">Abra de novo o link recebido por e-mail.</p>
+            <p className="text-sm text-gray-700">
+              Por segurança, esta página não guarda o link: ao recarregar, é preciso abri-lo outra vez. Se ele não funcionar mais, peça outro na tela de
+              entrada, em Esqueci minha senha, ou peça um novo convite ao administrador.
             </p>
             <Link to="/login" className="text-sm font-medium text-brand-700 hover:underline">
               Voltar para o login
