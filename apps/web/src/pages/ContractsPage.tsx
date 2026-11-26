@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { Search } from 'lucide-react';
 import {
   Contract,
   useContract,
@@ -198,6 +199,17 @@ export function ContractsPage() {
     return applyDynamicFilters(base, dynamicRules, CONTRACT_FILTER_FIELDS);
   }, [contracts.data, filterStatus, filterSearch, dynamicRules]);
 
+  // Busca, status e cada regra completa contam como um filtro (a regra vazia não filtra nada).
+  const activeFilterCount =
+    (filterSearch.trim() ? 1 : 0) +
+    (filterStatus !== 'ALL' ? 1 : 0) +
+    dynamicRules.filter(
+      (rule) =>
+        rule.operator === 'empty' ||
+        rule.operator === 'notEmpty' ||
+        rule.value.trim() !== '',
+    ).length;
+
   const screenConfigColumns = useMemo(() => {
     const base = showFinancial
       ? [
@@ -223,6 +235,14 @@ export function ContractsPage() {
     apply();
     clearSelection();
   };
+
+  const clearFilters = () =>
+    changeFilter(() => {
+      setFilterSearch('');
+      setFilterStatus('ALL');
+      setDynamicRules([]);
+      setActiveSavedFilterId(null);
+    });
 
   const handleDelete = () => {
     if (selectedContracts.length === 0) return;
@@ -450,14 +470,7 @@ export function ContractsPage() {
           <EzFilterDrawer
             isOpen={isFilterPanelOpen}
             onClose={() => setIsFilterPanelOpen(false)}
-            onClear={() =>
-              changeFilter(() => {
-                setFilterSearch('');
-                setFilterStatus('ALL');
-                setDynamicRules([]);
-                setActiveSavedFilterId(null);
-              })
-            }
+            onClear={clearFilters}
             title="Filtros de Contratos"
             savedFilters={screenConfig.savedFilters}
             activeSavedFilterId={activeSavedFilterId}
@@ -536,6 +549,38 @@ export function ContractsPage() {
           </EzFilterDrawer>
 
           <div className="isolate flex-1 p-3 overflow-x-auto min-w-0 flex flex-col">
+            <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+              <div className="w-full sm:max-w-sm">
+                <EzTextInput
+                  aria-label="Buscar contrato ou empresa"
+                  placeholder="Buscar contrato ou empresa…"
+                  size="slim"
+                  leftIcon={<Search className="h-4 w-4" aria-hidden="true" />}
+                  value={filterSearch}
+                  onChange={(e) =>
+                    changeFilter(() => setFilterSearch(e.target.value))
+                  }
+                />
+              </div>
+              {activeFilterCount > 0 && (
+                <div className="flex items-center gap-2">
+                  <span
+                    aria-live="polite"
+                    className="text-sm font-medium text-gray-700"
+                  >
+                    {activeFilterCount === 1
+                      ? '1 filtro ativo'
+                      : `${activeFilterCount} filtros ativos`}
+                  </span>
+                  <EzButton
+                    variant="tertiary"
+                    size="small"
+                    label="Limpar filtros"
+                    onClick={clearFilters}
+                  />
+                </div>
+              )}
+            </div>
             <ContractList
               key={gridKey}
               contracts={filteredContracts}
