@@ -1133,4 +1133,17 @@ describe('UsersPage', () => {
       expect(screen.queryByText(/nesta página/i)).not.toBeInTheDocument();
     });
   });
+
+  describe('F3-26 USR-05: ativar e inativar em lote no celular', () => {
+    it('USR-05: the batch bar is not hidden below sm and can wrap', async () => {
+      renderUsersPage();
+      const inativar = await screen.findByRole('button', { name: 'Inativar' });
+
+      const bar = inativar.closest('div.border-b') as HTMLElement;
+      expect(bar).not.toBeNull();
+      expect(bar.className).not.toMatch(/max-sm:hidden|(^|\s)hidden(\s|$)/);
+      expect(bar).toHaveClass('flex-wrap');
+      expect(within(bar).getByRole('button', { name: 'Ativar' })).toBeInTheDocument();
+    });
+  });
 });
