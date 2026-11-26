@@ -7,6 +7,10 @@ import { EzMultiSelect } from './EzMultiSelect';
  * de uma lista, exibindo os valores escolhidos como tags removíveis dentro
  * do próprio campo. Suporta busca local (filtro no `label`) ou busca remota
  * via `onSearchChange`, além dos estados de erro e desabilitado.
+ *
+ * Teclado: o input é `combobox`; ArrowDown/ArrowUp abrem a lista e movem a opção ativa,
+ * Enter alterna a opção ativa, Esc fecha e Tab sai. Cada etiqueta tem um botão
+ * "Remover <opção>". A lista é `listbox` com `aria-multiselectable` e itens `option`.
  */
 const meta: Meta<typeof EzMultiSelect> = {
   title: 'DS/EzMultiSelect',
@@ -77,6 +81,27 @@ export const Interativo: Story = {
             value={value}
             onChange={setValue}
             message={`${value.length} categoria(s) selecionada(s)`}
+          />
+        </div>
+      );
+    }
+    return <Demo />;
+  },
+};
+
+/** Use Tab para focar o campo, setas para escolher, Enter para marcar/desmarcar e Esc para fechar. */
+export const NavegacaoPorTeclado: Story = {
+  render: () => {
+    function Demo() {
+      const [value, setValue] = useState<(string | number)[]>([]);
+      return (
+        <div className="w-[360px]">
+          <EzMultiSelect
+            label="Categorias do chamado"
+            options={categoriasDeChamado}
+            value={value}
+            onChange={setValue}
+            message="Setas movem, Enter alterna, Esc fecha."
           />
         </div>
       );

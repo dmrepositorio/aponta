@@ -19,7 +19,7 @@ describe('EzMultiSelect', () => {
     const user = userEvent.setup();
     render(<EzMultiSelect options={defaultOptions} />);
     
-    const input = screen.getByRole('textbox');
+    const input = screen.getByRole('combobox');
     await user.click(input);
     
     expect(screen.getByText('Apple')).toBeInTheDocument();
@@ -31,7 +31,7 @@ describe('EzMultiSelect', () => {
     const user = userEvent.setup();
     render(<EzMultiSelect options={defaultOptions} value={[]} onChange={mockChange} />);
     
-    await user.click(screen.getByRole('textbox'));
+    await user.click(screen.getByRole('combobox'));
     await user.click(screen.getByText('Banana'));
     
     expect(mockChange).toHaveBeenCalledWith(['banana']);
@@ -64,7 +64,7 @@ describe('EzMultiSelect', () => {
     const user = userEvent.setup();
     render(<EzMultiSelect options={defaultOptions} />);
     
-    const input = screen.getByRole('textbox');
+    const input = screen.getByRole('combobox');
     await user.click(input);
     await user.type(input, 'app');
     
@@ -75,7 +75,7 @@ describe('EzMultiSelect', () => {
   it('disables properly', () => {
     render(<EzMultiSelect options={defaultOptions} disabled />);
     
-    const input = screen.queryByRole('textbox');
+    const input = screen.queryByRole('combobox');
     expect(input).toBeDisabled();
   });
 

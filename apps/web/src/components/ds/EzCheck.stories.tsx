@@ -52,3 +52,54 @@ export const Interactive: Story = {
 export const KeyboardFocus: Story = {
   args: { id: 'check-focus', label: 'Use Tab para focar' },
 };
+
+/**
+ * Estado indeterminado ("selecionar todos" com seleção parcial): traço no lugar do check,
+ * `input.indeterminate` e `aria-checked="mixed"`. O clique do usuário o resolve para marcado.
+ */
+export const Indeterminate: Story = {
+  render: () => {
+    function Demo() {
+      const itens = ['Chamados abertos', 'Chamados em andamento', 'Chamados resolvidos'];
+      const [marcados, setMarcados] = useState<string[]>([itens[0]]);
+      const todos = marcados.length === itens.length;
+      return (
+        <div className="flex flex-col gap-2">
+          <EzCheck
+            id="check-todos"
+            label="Selecionar todos"
+            indeterminate={marcados.length > 0 && !todos}
+            checked={todos}
+            onChange={() => setMarcados(todos ? [] : itens)}
+          />
+          {itens.map((item) => (
+            <EzCheck
+              key={item}
+              id={`check-${item}`}
+              className="ml-6"
+              label={item}
+              checked={marcados.includes(item)}
+              onChange={() =>
+                setMarcados((atual) => (atual.includes(item) ? atual.filter((i) => i !== item) : [...atual, item]))
+              }
+            />
+          ))}
+        </div>
+      );
+    }
+    return <Demo />;
+  },
+};
+
+/**
+ * Erro com mensagem: ícone e texto (não só a cor), `aria-invalid` e a mensagem associada
+ * ao checkbox por `aria-describedby`.
+ */
+export const ComErro: Story = {
+  args: {
+    id: 'check-erro',
+    label: 'Li e aceito os termos de uso',
+    hasError: true,
+    message: 'Aceite os termos para continuar.',
+  },
+};
