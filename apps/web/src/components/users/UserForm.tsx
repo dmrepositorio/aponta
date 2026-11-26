@@ -2,6 +2,7 @@ import { FormEvent, ReactNode, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { z } from 'zod';
 import { api } from '../../lib/api';
+import { useAuthStore } from '../../stores/authStore';
 import { useFeatureFlag } from '../../hooks/useFeatureFlag';
 import { useHasPermission } from '../../hooks/usePermissions';
 import { usePermissionGroups } from '../../hooks/usePermissionGroups';
@@ -365,6 +366,9 @@ function SecurityPanel({ user }: { user: UserListItem }) {
   const [confirmingTwoFactor, setConfirmingTwoFactor] = useState(false);
   const [twoFactorResult, setTwoFactorResult] = useState<{ ok: boolean; text: string } | null>(null);
   const setActive = useSetUserActive();
+  // O servidor já recusa inativar a si mesmo (409); aqui é só prevenção de UX.
+  const isSelf = useAuthStore((state) => state.user?.sub === user.id);
+  const selfBlocked = user.active && isSelf;
   const kind = user.pending ? 'invite' : 'password-reset';
   const send = useSendUserLink(user.id, kind);
   const [confirming, setConfirming] = useState(false);
@@ -423,7 +427,8 @@ function SecurityPanel({ user }: { user: UserListItem }) {
             variant="secondary"
             size="small"
             label={verb}
-            disabled={!canToggle || setActive.isPending}
+            disabled={!canToggle || selfBlocked || setActive.isPending}
+            disabledReason={canToggle && selfBlocked ? 'Você não pode inativar a si mesmo.' : undefined}
             onClick={() => setConfirming(true)}
           />
         </div>

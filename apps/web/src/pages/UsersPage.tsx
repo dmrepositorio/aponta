@@ -29,6 +29,7 @@ import { useEffectivePermissions, useHasPermission } from '../hooks/usePermissio
 import { usePermissionGroups } from '../hooks/usePermissionGroups';
 import { useTechnicalGroups } from '../hooks/useTechnicalGroups';
 import { useUserScreenConfig } from '../hooks/useUserScreenConfig';
+import { useAuthStore } from '../stores/authStore';
 import {
   UserListItem,
   apiErrorMessage,
@@ -161,6 +162,7 @@ function UsersPageContent() {
   const queryClient = useQueryClient();
   const canCreate = useHasPermission('CREATE_USERS');
   const canToggleActive = useHasPermission('ACTIVATE_DEACTIVATE_USERS');
+  const currentUserId = useAuthStore((state) => state.user?.sub);
 
   const [mode, setMode] = useState<'list' | 'form'>('list');
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
@@ -232,6 +234,9 @@ function UsersPageContent() {
   const selected = selection.key === gridKey ? selection.rows : [];
 
   const [batch, setBatch] = useState<boolean | null>(null); // active a aplicar, quando há confirmação aberta
+  // Avisos preventivos do lote; o servidor continua recusando (ConflictException) e a mensagem dele é exibida.
+  const includesSelf = selected.some((u) => u.id === currentUserId);
+  const includesAdmin = selected.some((u) => u.role === 'ADMIN');
   const [batchError, setBatchError] = useState<string | null>(null);
   const setUsersActive = useSetUsersActive();
   const confirmBatch = () => {
@@ -551,7 +556,18 @@ function UsersPageContent() {
         }`}
         onCancel={() => setBatch(null)}
         onConfirm={confirmBatch}
-      />
+      >
+        {batch === false && includesSelf && (
+          <EzAlert variant="warning" className="mt-3">
+            Você não pode inativar a si mesmo.
+          </EzAlert>
+        )}
+        {batch === false && includesAdmin && (
+          <EzAlert variant="warning" className="mt-3">
+            A seleção inclui administradores. O último administrador ativo não pode ser inativado.
+          </EzAlert>
+        )}
+      </EzDialog>
 
       {isConfigOpen && (
         <EzEntityScreenConfigModal
