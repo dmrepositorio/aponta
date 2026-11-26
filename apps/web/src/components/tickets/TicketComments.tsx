@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { EzAlert, EzSpinner, EzTag } from '../ds';
+import { formatDateTime } from '../../lib/formatDateTime';
 import { RichContentView } from './RichContentView';
 
 export interface TicketComment {
@@ -14,11 +15,6 @@ export interface TicketComment {
 
 export const commentsQueryKey = (ticketId: string) =>
   ['tickets', ticketId, 'comments'] as const;
-
-/** Same UTC-stable rendering as TicketDetail's deadline formatter. */
-function formatTimestamp(iso: string): string {
-  return `${iso.slice(0, 10)} ${iso.slice(11, 16)} UTC`;
-}
 
 interface TicketCommentsProps {
   ticketId: string;
@@ -71,7 +67,7 @@ export function TicketComments({ ticketId }: TicketCommentsProps) {
         >
           <div className="flex items-center justify-between gap-2">
             <span className="text-xs text-gray-500">
-              {formatTimestamp(comment.createdAt)}
+              {formatDateTime(comment.createdAt)}
             </span>
             {comment.isInternal && (
               <EzTag label="Nota interna" variant="petroleum" />

@@ -48,4 +48,24 @@ describe('TicketComments', () => {
     expect(screen.getByAltText('Print da correção')).toBeInTheDocument();
     expect(screen.queryByText(/<img/i)).not.toBeInTheDocument();
   });
+
+  it('GH-446 DET-02: mostra a data do comentário em dd/mm/aaaa HH:mm no fuso de Brasília, sem UTC', async () => {
+    vi.mocked(api.get).mockResolvedValueOnce({
+      data: [
+        {
+          id: 'c-2',
+          content: 'Comentário simples',
+          isInternal: false,
+          ticketId: 't-1',
+          authorId: 'agent-1',
+          createdAt: '2026-10-14T11:00:00.000Z',
+        },
+      ],
+    });
+
+    renderComments();
+
+    expect(await screen.findByText('14/10/2026 08:00')).toBeInTheDocument();
+    expect(screen.queryByText(/UTC/)).not.toBeInTheDocument();
+  });
 });

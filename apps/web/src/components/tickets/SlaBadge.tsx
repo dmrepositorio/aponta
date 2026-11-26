@@ -18,6 +18,11 @@ const STATUS_CONFIG: Record<
   },
 };
 
+const PAUSED_CONFIG = {
+  text: 'Pausado',
+  className: 'bg-gray-100 text-gray-700',
+};
+
 /**
  * Small pill badge showing the SLA status (response or resolve) for a
  * ticket, driven by `responseSlaStatus`/`resolveSlaStatus` computed on the
@@ -28,15 +33,18 @@ const STATUS_CONFIG: Record<
 export function SlaBadge({
   status,
   label,
+  paused = false,
 }: {
   status: SlaStatus | null | undefined;
   label: string;
+  /** Relógio do SLA parado (slaPausedAt definido e chamado não terminal): o selo fica neutro. */
+  paused?: boolean;
 }) {
   if (!status) {
     return null;
   }
 
-  const { text, className } = STATUS_CONFIG[status];
+  const { text, className } = paused ? PAUSED_CONFIG : STATUS_CONFIG[status];
 
   return (
     <span

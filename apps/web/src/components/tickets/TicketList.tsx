@@ -11,6 +11,7 @@ import { useOpenInTab } from '../../contexts/TabsContext';
 import { useAuthStore } from '../../stores/authStore';
 import { useEscapeLayer } from '../../hooks/useEscapeLayer';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
+import { formatDateTime } from '../../lib/formatDateTime';
 
 /** Abaixo de 640 px (breakpoint `sm`) a Lista troca a tabela de colunas por cartões. */
 const NARROW_QUERY = '(max-width: 639px)';
@@ -78,15 +79,9 @@ function TicketSlaCell({ ticket }: { ticket: Ticket }) {
   );
 }
 
-function formatDateTime(value: string | null | undefined): ReactNode {
+function renderDateTime(value: string | null | undefined): ReactNode {
   if (!value) return <span className="text-gray-400">—</span>;
-  const date = new Date(value);
-  return (
-    <span>
-      {date.toLocaleDateString('pt-BR')}{' '}
-      {date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-    </span>
-  );
+  return <span>{formatDateTime(value)}</span>;
 }
 
 const COLUMNS: ColumnDef[] = [
@@ -192,28 +187,28 @@ const COLUMNS: ColumnDef[] = [
     label: 'Criado em',
     sortField: 'createdAt',
     defaultVisible: false,
-    render: (t) => formatDateTime(t.createdAt),
+    render: (t) => renderDateTime(t.createdAt),
   },
   {
     id: 'updatedAt',
     label: 'Atualizado em',
     sortField: 'updatedAt',
     defaultVisible: false,
-    render: (t) => formatDateTime(t.updatedAt),
+    render: (t) => renderDateTime(t.updatedAt),
   },
   {
     id: 'responseDeadline',
     label: 'Vencimento de atendimento',
     sortField: 'responseDeadline',
     defaultVisible: false,
-    render: (t) => formatDateTime(t.responseDeadline),
+    render: (t) => renderDateTime(t.responseDeadline),
   },
   {
     id: 'resolveDeadline',
     label: 'Vencimento de solução',
     sortField: 'resolveDeadline',
     defaultVisible: false,
-    render: (t) => formatDateTime(t.resolveDeadline),
+    render: (t) => renderDateTime(t.resolveDeadline),
   },
 ];
 

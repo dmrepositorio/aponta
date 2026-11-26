@@ -214,6 +214,23 @@ describe('TicketList (D5: Lista agrupável)', () => {
     );
   });
 
+  it('GH-446 DET-02: as colunas de data usam o mesmo formato e fuso de Brasília do detalhe, não o fuso do navegador', async () => {
+    const originalTz = process.env.TZ;
+    process.env.TZ = 'Pacific/Auckland';
+    try {
+      const user = userEvent.setup();
+      await renderList({ tickets: [ticketA] });
+
+      await user.click(screen.getByRole('button', { name: /exibir colunas/i }));
+      await user.click(screen.getByRole('checkbox', { name: /criado em|criação/i }));
+
+      expect(screen.getByText('31/12/2025 21:00')).toBeInTheDocument();
+    } finally {
+      if (originalTz === undefined) delete process.env.TZ;
+      else process.env.TZ = originalTz;
+    }
+  });
+
   it('shows the R1 warning when grouping with more than one page of results', async () => {
     const user = userEvent.setup();
     await renderList({ totalPages: 3 });

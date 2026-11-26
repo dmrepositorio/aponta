@@ -158,14 +158,8 @@ export function TicketDetailPage() {
       </Link>
 
       <div className="bg-white rounded-control border border-gray-200 overflow-hidden shadow-xs">
-        {/* Card Header with Protocol, Title, Status, and Actions (TiFlux Parity) */}
-        <div className="flex flex-wrap items-center justify-between gap-3 px-6 py-4 border-b border-gray-200 bg-white">
-          <div className="flex items-center gap-3">
-            <span className="font-mono text-[15px] font-bold text-gray-800">
-              #{ticket.protocol} - {ticket.title}
-            </span>
-          </div>
-
+        {/* Card Header com as ações (cronômetro, apontar, excluir). Protocolo e título ficam só no h1 de TicketDetail (GH-446 DET-10). */}
+        <div className="flex flex-wrap items-center justify-end gap-3 px-6 py-4 border-b border-gray-200 bg-white">
           <div className="flex items-center gap-2">
             {!isClient && (
               <div
@@ -336,17 +330,6 @@ export function TicketDetailPage() {
               className={activeTab === 'comunicacao' ? 'space-y-6' : 'hidden'}
               data-testid="tab-panel-comunicacao"
             >
-              <div className="flex items-center gap-2 border-b border-gray-100 pb-3">
-                <span className="px-3 py-1 text-[13px] font-medium bg-brand-50 text-brand-700 rounded-full border border-brand-200">
-                  Cliente
-                </span>
-                <span className="px-3 py-1 text-[13px] font-medium text-gray-600 hover:bg-gray-100 rounded-full cursor-pointer">
-                  Equipe interna
-                </span>
-                <span className="px-3 py-1 text-[13px] font-medium text-gray-600 hover:bg-gray-100 rounded-full cursor-pointer">
-                  Chat
-                </span>
-              </div>
               <div className="space-y-4">
                 <h3 className="text-[15px] font-semibold text-gray-900">
                   Enviar resposta para o cliente
