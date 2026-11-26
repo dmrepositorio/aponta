@@ -8,7 +8,6 @@ import {
   EzCheck,
   EzDialog,
   EzDoubleList,
-  EzEmptyCard,
   EzListItem,
   EzModal,
   EzPageHeader,
@@ -19,6 +18,8 @@ import {
   EzTextInput,
   EzToast,
 } from '../components/ds';
+// O EzEmptyCard do barrel (EzCardItem) não tem variant de erro nem onRetry; o standalone tem.
+import { EzEmptyCard } from '../components/ds/EzEmptyCard';
 import { api } from '../lib/api';
 import { apiErrorMessage } from '../hooks/useUsers';
 import {
@@ -88,6 +89,17 @@ function useAllServiceDesks() {
       return data;
     },
   });
+}
+
+function LoadErrorAlert({ message, onRetry }: { message: string; onRetry: () => void }) {
+  return (
+    <EzAlert
+      variant="error"
+      action={<EzButton variant="secondary" size="small" label="Tentar novamente" onClick={onRetry} />}
+    >
+      {message}
+    </EzAlert>
+  );
 }
 
 function CreateGroupModal({ onClose, onNotify }: { onClose: () => void; onNotify: (message: string) => void }) {
@@ -163,16 +175,16 @@ function GroupDetail({
   onNotify: (message: string) => void;
   onDirtyChange: (dirty: boolean) => void;
 }) {
-  const { data: group, isLoading } = useTechnicalGroup(groupId);
+  const { data: group, isLoading, isError: isGroupError, refetch: refetchGroup } = useTechnicalGroup(groupId);
   const [tab, setTab] = useState<DetailTab>('info');
   const updateMutation = useUpdateTechnicalGroup(groupId);
   const { addMember, removeMember } = useTechnicalGroupMemberMutations(groupId);
   const { addOrganization, removeOrganization } = useTechnicalGroupOrganizationMutations(groupId);
   const { addServiceDesk, removeServiceDesk } = useTechnicalGroupServiceDeskMutations(groupId);
 
-  const { data: allUsers } = useAllUsers();
-  const { data: allOrganizations } = useAllOrganizations();
-  const { data: allServiceDesks } = useAllServiceDesks();
+  const { data: allUsers, isError: isUsersError, refetch: refetchUsers } = useAllUsers();
+  const { data: allOrganizations, isError: isOrganizationsError, refetch: refetchOrganizations } = useAllOrganizations();
+  const { data: allServiceDesks, isError: isServiceDesksError, refetch: refetchServiceDesks } = useAllServiceDesks();
 
   const [actionError, setActionError] = useState<string | null>(null);
   // Roda a mutação e mostra o resultado: toast de sucesso, ou o erro da API no alerta da seção.
@@ -212,6 +224,14 @@ function GroupDetail({
     onDirtyChange(dirty);
     return () => onDirtyChange(false);
   }, [dirty, onDirtyChange]);
+
+  if (isGroupError && !group) {
+    return (
+      <div className="p-5">
+        <EzEmptyCard variant="error" title="Não foi possível carregar o grupo." onRetry={() => void refetchGroup()} />
+      </div>
+    );
+  }
 
   if (isLoading || !group || !draft) {
     return (
@@ -290,6 +310,9 @@ function GroupDetail({
         </div>
       )}
 
+      {tab === 'team' && isUsersError && (
+        <LoadErrorAlert message="Não foi possível carregar os usuários." onRetry={() => void refetchUsers()} />
+      )}
       {tab === 'team' && (
         <EzDoubleList
           availableLabel="Usuários disponíveis"
@@ -305,6 +328,12 @@ function GroupDetail({
         <div className="space-y-6">
           <div className="space-y-2">
             <h3 className="text-sm font-semibold text-gray-900">Clientes</h3>
+            {isOrganizationsError && (
+              <LoadErrorAlert
+                message="Não foi possível carregar os clientes."
+                onRetry={() => void refetchOrganizations()}
+              />
+            )}
             <EzDoubleList
               availableLabel="Clientes disponíveis"
               selectedLabel="Clientes vinculados"
@@ -319,6 +348,12 @@ function GroupDetail({
           </div>
           <div className="space-y-2">
             <h3 className="text-sm font-semibold text-gray-900">Mesas de serviço</h3>
+            {isServiceDesksError && (
+              <LoadErrorAlert
+                message="Não foi possível carregar as mesas de serviço."
+                onRetry={() => void refetchServiceDesks()}
+              />
+            )}
             <EzDoubleList
               availableLabel="Mesas disponíveis"
               selectedLabel="Mesas vinculadas"
@@ -348,7 +383,7 @@ function GroupDetail({
 }
 
 export function TechnicalGroupsPage() {
-  const { data: groups, isLoading } = useTechnicalGroups();
+  const { data: groups, isLoading, isError, refetch } = useTechnicalGroups();
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
@@ -389,18 +424,29 @@ export function TechnicalGroupsPage() {
         </EzCardItem>
       ) : (
         <EzCardItem flat className="overflow-hidden p-0">
-          <div className="flex items-center justify-end gap-3 border-b border-gray-100 px-4 py-3">
-            <EzButton size="small" leftIcon={Plus} onClick={() => setIsCreateOpen(true)}>
-              Novo grupo
-            </EzButton>
-          </div>
+          {groups && groups.length > 0 && (
+            <div className="flex items-center justify-end gap-3 border-b border-gray-100 px-4 py-3">
+              <EzButton size="small" leftIcon={Plus} onClick={() => setIsCreateOpen(true)}>
+                Novo grupo
+              </EzButton>
+            </div>
+          )}
 
           {isLoading ? (
             <div className="p-8">
               <EzSpinner label="Carregando grupos…" />
             </div>
+          ) : isError && !groups ? (
+            <EzEmptyCard variant="error" title="Não foi possível carregar os grupos." onRetry={() => void refetch()} />
           ) : !groups || groups.length === 0 ? (
-            <EzEmptyCard title="Nenhum grupo de atendentes cadastrado." />
+            <EzEmptyCard
+              title="Nenhum grupo de atendentes cadastrado."
+              action={
+                <EzButton size="small" leftIcon={Plus} onClick={() => setIsCreateOpen(true)}>
+                  Novo grupo
+                </EzButton>
+              }
+            />
           ) : (
             <div className="divide-y divide-gray-100 p-2">
               {groups.map((group) => (
