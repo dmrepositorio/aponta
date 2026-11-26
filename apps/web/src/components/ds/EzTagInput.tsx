@@ -20,6 +20,14 @@ export interface EzTagInputProps
    * Optional label displayed above the field.
    */
   label?: string;
+  /**
+   * Existing tags offered while typing (matched ignoring case).
+   */
+  suggestions?: string[];
+  /**
+   * Commit the typed text as a tag when the field loses focus.
+   */
+  addOnBlur?: boolean;
 }
 
 /**
