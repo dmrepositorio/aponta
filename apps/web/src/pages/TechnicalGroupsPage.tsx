@@ -6,6 +6,7 @@ import {
   EzButton,
   EzCardItem,
   EzCheck,
+  EzDialog,
   EzDoubleList,
   EzEmptyCard,
   EzListItem,
@@ -31,6 +32,19 @@ import {
 } from '../hooks/useTechnicalGroups';
 
 type DetailTab = 'info' | 'team' | 'access';
+
+interface InfoDraft {
+  name: string;
+  description: string;
+  dailyWorklogEmailEnabled: boolean;
+  scheduleEnabled: boolean;
+}
+
+const sameInfo = (a: InfoDraft, b: InfoDraft) =>
+  a.name === b.name &&
+  a.description === b.description &&
+  a.dailyWorklogEmailEnabled === b.dailyWorklogEmailEnabled &&
+  a.scheduleEnabled === b.scheduleEnabled;
 
 const TOAST_MS = 4000;
 const ACTION_ERROR_FALLBACK = 'Não foi possível concluir a ação. Tente novamente.';
@@ -124,10 +138,12 @@ function GroupDetail({
   groupId,
   onBack,
   onNotify,
+  onDirtyChange,
 }: {
   groupId: string;
   onBack: () => void;
   onNotify: (message: string) => void;
+  onDirtyChange: (dirty: boolean) => void;
 }) {
   const { data: group, isLoading } = useTechnicalGroup(groupId);
   const [tab, setTab] = useState<DetailTab>('info');
@@ -150,18 +166,41 @@ function GroupDetail({
     });
   };
 
-  const [infoDraft, setInfoDraft] = useState<{ name: string; description: string } | null>(null);
+  // Rascunho único da aba Informações: só existe depois da primeira edição e volta ao valor do
+  // servidor sempre que um dos quatro campos muda lá (ex.: depois de Salvar ou edição externa).
+  const [edits, setEdits] = useState<InfoDraft | null>(null);
+  const serverInfo: InfoDraft | null = group
+    ? {
+        name: group.name,
+        description: group.description ?? '',
+        dailyWorklogEmailEnabled: group.dailyWorklogEmailEnabled,
+        scheduleEnabled: group.scheduleEnabled,
+      }
+    : null;
+  const draft = edits ?? serverInfo;
+  const dirty = !!edits && !!serverInfo && !sameInfo(edits, serverInfo);
 
-  if (isLoading || !group) {
+  useEffect(() => {
+    setEdits(null);
+  }, [
+    groupId,
+    serverInfo?.name,
+    serverInfo?.description,
+    serverInfo?.dailyWorklogEmailEnabled,
+    serverInfo?.scheduleEnabled,
+  ]);
+
+  useEffect(() => {
+    onDirtyChange(dirty);
+    return () => onDirtyChange(false);
+  }, [dirty, onDirtyChange]);
+
+  if (isLoading || !group || !draft) {
     return (
       <div className="p-8">
         <EzSpinner label="Carregando grupo…" />
       </div>
     );
-  }
-
-  if (infoDraft === null) {
-    setInfoDraft({ name: group.name, description: group.description ?? '' });
   }
 
   const memberIds = new Set(group.members.map((m) => m.id));
@@ -193,37 +232,39 @@ function GroupDetail({
         onChange={(id) => setTab(id as DetailTab)}
       />
 
-      {tab === 'info' && infoDraft && (
+      {tab === 'info' && (
         <div className="space-y-4">
           <EzTextInput
             id="tg-detail-name"
             label="Nome"
-            value={infoDraft.name}
-            onChange={(e) => setInfoDraft({ ...infoDraft, name: e.target.value })}
+            value={draft.name}
+            onChange={(e) => setEdits({ ...draft, name: e.target.value })}
           />
           <EzTextArea
             id="tg-detail-description"
             label="Descrição"
-            value={infoDraft.description}
-            onChange={(e) => setInfoDraft({ ...infoDraft, description: e.target.value })}
+            value={draft.description}
+            onChange={(e) => setEdits({ ...draft, description: e.target.value })}
           />
           <EzCheck
             id="tg-daily-worklog"
             label="Enviar e-mail diário de apontamentos"
-            checked={group.dailyWorklogEmailEnabled}
-            onChange={(e) => run(updateMutation, { dailyWorklogEmailEnabled: e.target.checked }, 'Grupo salvo')}
+            checked={draft.dailyWorklogEmailEnabled}
+            onChange={(e) => setEdits({ ...draft, dailyWorklogEmailEnabled: e.target.checked })}
           />
           <EzCheck
             id="tg-schedule-enabled"
             label="Agenda habilitada"
-            checked={group.scheduleEnabled}
-            onChange={(e) => run(updateMutation, { scheduleEnabled: e.target.checked }, 'Grupo salvo')}
+            checked={draft.scheduleEnabled}
+            onChange={(e) => setEdits({ ...draft, scheduleEnabled: e.target.checked })}
           />
-          <div className="flex justify-end">
+          <div className="flex items-center justify-end gap-3">
+            {dirty && <span className="text-[12px] font-medium text-gray-600">Alterações não salvas</span>}
             <EzButton
               size="small"
-              disabled={updateMutation.isPending}
-              onClick={() => run(updateMutation, infoDraft, 'Grupo salvo')}
+              disabled={!dirty}
+              loading={updateMutation.isPending}
+              onClick={() => run(updateMutation, draft, 'Grupo salvo')}
             >
               Salvar
             </EzButton>
@@ -293,6 +334,15 @@ export function TechnicalGroupsPage() {
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const [detailDirty, setDetailDirty] = useState(false);
+  const [discardOpen, setDiscardOpen] = useState(false);
+
+  const leaveDetail = () => {
+    setDiscardOpen(false);
+    setDetailDirty(false);
+    setSelectedGroupId(null);
+  };
+  const requestBack = () => (detailDirty ? setDiscardOpen(true) : leaveDetail());
 
   useEffect(() => {
     if (!notice) return;
@@ -306,13 +356,18 @@ export function TechnicalGroupsPage() {
         <EzPageHeader
           title="Grupos de atendentes"
           showBackButton={!!selectedGroupId}
-          onBack={() => setSelectedGroupId(null)}
+          onBack={requestBack}
         />
       }
     >
       {selectedGroupId ? (
         <EzCardItem flat className="p-0">
-          <GroupDetail groupId={selectedGroupId} onBack={() => setSelectedGroupId(null)} onNotify={setNotice} />
+          <GroupDetail
+            groupId={selectedGroupId}
+            onBack={requestBack}
+            onNotify={setNotice}
+            onDirtyChange={setDetailDirty}
+          />
         </EzCardItem>
       ) : (
         <EzCardItem flat className="overflow-hidden p-0">
@@ -346,6 +401,15 @@ export function TechnicalGroupsPage() {
           )}
         </EzCardItem>
       )}
+
+      <EzDialog
+        open={discardOpen}
+        variant="warning"
+        title="Descartar alterações?"
+        message="As alterações não salvas deste grupo serão perdidas."
+        onCancel={() => setDiscardOpen(false)}
+        onConfirm={leaveDetail}
+      />
 
       {isCreateOpen && <CreateGroupModal onClose={() => setIsCreateOpen(false)} onNotify={setNotice} />}
 
