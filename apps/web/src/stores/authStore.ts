@@ -9,6 +9,8 @@ export interface AuthUser {
   email: string;
   role: Role;
   organizationId?: string | null;
+  /** Display name, only when the token carries a `name` claim. */
+  name?: string;
 }
 
 interface AuthState {
