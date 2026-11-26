@@ -103,8 +103,9 @@ async function openDetail(user: ReturnType<typeof userEvent.setup>) {
     expect(screen.getByText('Empresa A')).toBeInTheDocument();
   });
   await user.click(screen.getByRole('button', { name: /abrir cadastro de empresa a/i }));
+  // ORG-07 (#470): o detalhe não repete Razão Social em texto; o campo editável da aba Geral é a única cópia.
   await waitFor(() => {
-    expect(screen.getByText('Empresa A Ltda')).toBeInTheDocument();
+    expect(screen.getByLabelText(/razão social/i, { selector: 'input' })).toHaveValue('Empresa A Ltda');
   });
 }
 
@@ -1764,6 +1765,221 @@ describe('OrganizationsPage DMTE-541', { timeout: 15000 }, () => {
     expect(within(rowA).getByRole('checkbox', { name: 'Selecionar linha' }).closest('td')).toHaveClass('hidden', 'sm:table-cell');
     expect(within(rowA).getByRole('button', { name: 'Empresa A Ltda' }).closest('td')).toHaveClass('hidden', 'sm:table-cell');
     expect(within(rowA).getByText('Ativo').closest('td')).not.toHaveClass('hidden');
+  });
+});
+
+// F3-25 (#470): estados de lista, detalhe sem duplicidade, aba Usuários e legibilidade do faturamento.
+describe('OrganizationsPage F3-25 (#470)', { timeout: 15000 }, () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockApiGet();
+    useAuthStore.setState({ token: null, user: null });
+    localStorage.clear();
+  });
+
+  type GetImpl = (url: string, ...rest: unknown[]) => Promise<unknown>;
+  const gridContent = () => screen.getByTestId('organizations-grid-content');
+
+  async function searchOrgs(user: ReturnType<typeof userEvent.setup>, text: string) {
+    await user.click(await screen.findByTestId('ez-toolbar-filter-panel-button'));
+    await user.type(await screen.findByLabelText('Buscar Parceiro'), text);
+  }
+
+  describe('ORG-06: lista sem resultado e falha de carregamento', () => {
+    it('shows "Nenhum cliente encontrado" with a Limpar filtros action when the filters match nothing, and the action restores the grid', async () => {
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      renderPage();
+      await screen.findByText('Empresa A');
+
+      await searchOrgs(user, 'zzz-sem-resultado');
+
+      const content = gridContent();
+      expect(await within(content).findByText('Nenhum cliente encontrado')).toBeInTheDocument();
+      expect(within(content).queryByRole('table')).not.toBeInTheDocument();
+      expect(within(content).queryByText(/nenhuma empresa cadastrada/i)).not.toBeInTheDocument();
+
+      await user.click(within(content).getByRole('button', { name: 'Limpar filtros' }));
+
+      expect(await within(gridContent()).findByText('Empresa A')).toBeInTheDocument();
+      expect(within(gridContent()).getByText('Empresa B')).toBeInTheDocument();
+      expect(screen.queryByText('Nenhum cliente encontrado')).not.toBeInTheDocument();
+      expect(screen.getByLabelText('Buscar Parceiro')).toHaveValue('');
+    });
+
+    it('shows the error state with a retry button that queries the organizations again', async () => {
+      let attempts = 0;
+      const base = vi.mocked(api.get).getMockImplementation() as unknown as GetImpl;
+      vi.mocked(api.get).mockImplementation(((url: string, ...rest: unknown[]) => {
+        if (url === '/organizations') {
+          attempts += 1;
+          return attempts === 1 ? Promise.reject(new Error('Network Error')) : Promise.resolve({ data: orgs });
+        }
+        return base(url, ...rest);
+      }) as never);
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      renderPage();
+
+      expect(await screen.findByText('Não foi possível carregar os clientes.')).toBeInTheDocument();
+      expect(screen.queryByText(/nenhuma empresa cadastrada/i)).not.toBeInTheDocument();
+      expect(screen.queryByRole('table')).not.toBeInTheDocument();
+
+      await user.click(screen.getByRole('button', { name: /tentar novamente/i }));
+
+      expect(await screen.findByText('Empresa A')).toBeInTheDocument();
+      expect(attempts).toBe(2);
+      expect(screen.queryByText('Não foi possível carregar os clientes.')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('ORG-07: Nome Fantasia e Razão Social uma única vez no detalhe', () => {
+    it('shows each of the two fields once (the editable input), with no read-only copy in the card', async () => {
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      renderPage();
+
+      await openDetail(user);
+
+      expect(screen.getAllByLabelText(/razão social/i)).toHaveLength(1);
+      expect(screen.getAllByLabelText(/nome fantasia/i)).toHaveLength(1);
+      expect(screen.getAllByText('Razão Social')).toHaveLength(1);
+      expect(screen.getAllByText('Nome Fantasia')).toHaveLength(1);
+      // O cartão continua mostrando os demais dados somente leitura.
+      expect(screen.getByText('Dados do Parceiro / Cliente')).toBeInTheDocument();
+      expect(screen.getByText('/clientes/empresa-a')).toBeInTheDocument();
+    });
+  });
+
+  describe('ORG-08: aba Usuários com busca e confirmação de mudança de cliente', () => {
+    const otherClient = { id: 'u-4', name: 'Cliente Quatro', email: 'c4@example.com', role: 'CLIENT', organizationId: 'org-2' };
+    const orphanOwner = { id: 'u-5', name: 'Cliente Cinco', email: 'c5@example.com', role: 'CLIENT', organizationId: 'org-removida' };
+
+    async function openUsersTab(user: ReturnType<typeof userEvent.setup>) {
+      const base = vi.mocked(api.get).getMockImplementation() as unknown as GetImpl;
+      vi.mocked(api.get).mockImplementation(((url: string, ...rest: unknown[]) =>
+        url === '/users'
+          ? Promise.resolve({ data: [...users, otherClient, orphanOwner] })
+          : base(url, ...rest)) as never);
+      vi.mocked(api.patch).mockResolvedValue({ data: {} });
+      loginAs('ADMIN');
+      renderPage();
+      await openDetail(user);
+      await user.click(screen.getByRole('tab', { name: 'Usuários' }));
+      await screen.findByText('Cliente Quatro');
+    }
+
+    const rowOfUser = (name: string) => screen.getByText(name).closest('.justify-between') as HTMLElement;
+
+    it('shows the current client of whoever already belongs to another one, and nothing for the unlinked or the linked here', async () => {
+      const user = userEvent.setup();
+      await openUsersTab(user);
+
+      expect(within(rowOfUser('Cliente Quatro')).getByText('Cliente atual: Empresa B')).toBeInTheDocument();
+      expect(within(rowOfUser('Cliente Cinco')).getByText('Cliente atual: outro cliente')).toBeInTheDocument();
+      expect(within(rowOfUser('Cliente Dois')).queryByText(/cliente atual/i)).not.toBeInTheDocument();
+      expect(within(rowOfUser('Cliente Um')).queryByText(/cliente atual/i)).not.toBeInTheDocument();
+    });
+
+    it('asks "Mover de X para Y" before reassigning a user from another client, and only Confirmar sends the PATCH', async () => {
+      const user = userEvent.setup();
+      await openUsersTab(user);
+
+      await user.click(within(rowOfUser('Cliente Quatro')).getByRole('button', { name: 'Adicionar' }));
+
+      const dialog = await screen.findByRole('dialog', { name: /mover de empresa b para empresa a/i });
+      expect(dialog).toHaveTextContent('Cliente Quatro');
+      expect(api.patch).not.toHaveBeenCalled();
+
+      await user.click(within(dialog).getByRole('button', { name: 'Confirmar' }));
+      await waitFor(() => {
+        expect(api.patch).toHaveBeenCalledWith('/users/u-4', { organizationId: 'org-1' });
+      });
+    });
+
+    it('does not reassign when the move is cancelled', async () => {
+      const user = userEvent.setup();
+      await openUsersTab(user);
+
+      await user.click(within(rowOfUser('Cliente Quatro')).getByRole('button', { name: 'Adicionar' }));
+      const dialog = await screen.findByRole('dialog', { name: /mover de empresa b para empresa a/i });
+      await user.click(within(dialog).getByRole('button', { name: 'Cancelar' }));
+
+      await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+      expect(api.patch).not.toHaveBeenCalled();
+    });
+
+    it('links an unlinked user and removes a linked one without asking for confirmation', async () => {
+      const user = userEvent.setup();
+      await openUsersTab(user);
+
+      await user.click(within(rowOfUser('Cliente Dois')).getByRole('button', { name: 'Adicionar' }));
+      await waitFor(() => expect(api.patch).toHaveBeenCalledWith('/users/u-2', { organizationId: 'org-1' }));
+      await user.click(within(rowOfUser('Cliente Um')).getByRole('button', { name: 'Remover' }));
+      await waitFor(() => expect(api.patch).toHaveBeenCalledWith('/users/u-1', { organizationId: null }));
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+
+    it('filters the list by name or e-mail (client-side) and says when nobody matches', async () => {
+      const user = userEvent.setup();
+      await openUsersTab(user);
+      const search = screen.getByLabelText('Buscar usuário');
+
+      await user.type(search, 'DOIS');
+      expect(screen.getByText('Cliente Dois')).toBeInTheDocument();
+      expect(screen.queryByText('Cliente Um')).not.toBeInTheDocument();
+      expect(screen.queryByText('Cliente Quatro')).not.toBeInTheDocument();
+
+      await user.clear(search);
+      await user.type(search, 'c4@');
+      expect(screen.getByText('Cliente Quatro')).toBeInTheDocument();
+      expect(screen.queryByText('Cliente Dois')).not.toBeInTheDocument();
+
+      await user.clear(search);
+      await user.type(search, 'xyz');
+      expect(screen.getByText('Nenhum usuário encontrado.')).toBeInTheDocument();
+      expect(screen.queryByText('Cliente Quatro')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('ORG-12: texto de apoio legível', () => {
+    it('shows the client ID and the billing helper texts in gray-600 and at least 12 px', async () => {
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      renderPage();
+      await openDetail(user);
+
+      const idLabel = screen.getByText(`ID: ${orgDetail.id}`);
+      expect(idLabel).toHaveClass('text-gray-600', 'text-xs');
+      expect(idLabel).not.toHaveClass('text-gray-400');
+
+      await user.click(screen.getByRole('tab', { name: /faturamento/i }));
+      const billing = screen.getByTestId('org-billing-tab-content');
+      for (const text of [/e-mails que receberão/i, /dia do mês/i, /método preferencial/i]) {
+        const helper = within(billing).getByText(text);
+        expect(helper).toHaveClass('text-gray-600', 'text-xs');
+        expect(helper.className).not.toMatch(/text-gray-400|text-\[11px\]/);
+      }
+    });
+  });
+
+  describe('ORG-13: ajuda do faturamento quarteirizado', () => {
+    it('describes the checkbox with a short help message instead of an indented paragraph', async () => {
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      renderPage();
+      await openDetail(user);
+      await user.click(screen.getByRole('tab', { name: /faturamento/i }));
+
+      const billing = screen.getByTestId('org-billing-tab-content');
+      const checkbox = within(billing).getByLabelText(/habilitar faturamento quarteirizado/i);
+      expect(checkbox).toHaveAccessibleDescription(/quarteirizado/i);
+      const helpId = checkbox.getAttribute('aria-describedby');
+      expect(helpId).toBeTruthy();
+      expect((document.getElementById(helpId as string)?.textContent ?? '').length).toBeLessThanOrEqual(100);
+      expect(within(billing).queryByText(/organização \/ parceiro/i)).not.toBeInTheDocument();
+      expect(billing.querySelector('.pl-6')).toBeNull();
+    });
   });
 });
 
