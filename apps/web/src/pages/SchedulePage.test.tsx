@@ -342,6 +342,51 @@ describe('SchedulePage', () => {
     });
   });
 
+  describe('perfis e RBAC na UI (SCH-03, SCH-06)', () => {
+    it.each(['ADMIN', 'AGENT', 'CLIENT_MASTER'] as const)(
+      '%s vê "Novo Agendamento" e o menu "Ações"',
+      (role) => {
+        vi.mocked(api.get).mockResolvedValue({ data: [] });
+        loginAs(role);
+        renderPage();
+
+        expect(screen.getByRole('button', { name: /novo agendamento/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /ações/i })).toBeInTheDocument();
+      },
+    );
+
+    it('CLIENT não vê "Novo Agendamento" nem o menu "Ações"', () => {
+      vi.mocked(api.get).mockResolvedValue({ data: [] });
+      loginAs('CLIENT');
+      renderPage();
+
+      expect(screen.queryByRole('button', { name: /novo agendamento/i })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /ações/i })).not.toBeInTheDocument();
+    });
+
+    it.each(['AGENT', 'CLIENT', 'CLIENT_MASTER'] as const)(
+      '%s nunca consulta /users/agents',
+      async (role) => {
+        vi.mocked(api.get).mockResolvedValue({ data: [] });
+        loginAs(role);
+        renderPage();
+
+        await waitFor(() => expect(api.get).toHaveBeenCalledWith('/appointments', expect.anything()));
+        expect(vi.mocked(api.get).mock.calls.map(([url]) => url)).not.toContain('/users/agents');
+      },
+    );
+
+    it('ADMIN consulta /users/agents para o filtro de atendente', async () => {
+      vi.mocked(api.get).mockResolvedValue({ data: [] });
+      loginAs('ADMIN');
+      renderPage();
+
+      await waitFor(() =>
+        expect(vi.mocked(api.get).mock.calls.map(([url]) => url)).toContain('/users/agents'),
+      );
+    });
+  });
+
   describe('operação por teclado (SCH-01)', () => {
     async function tabUntilFocused(user: ReturnType<typeof userEvent.setup>, el: HTMLElement) {
       for (let i = 0; i < 60 && document.activeElement !== el; i += 1) {
