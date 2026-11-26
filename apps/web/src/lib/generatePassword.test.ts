@@ -54,14 +54,16 @@ describe('generatePassword (VLT-11)', () => {
   it('discards out-of-range draws instead of folding them (no modulo bias)', () => {
     const real = globalThis.crypto.getRandomValues.bind(globalThis.crypto);
     let rejectedLeft = 2;
-    const getRandomValues = vi.spyOn(globalThis.crypto, 'getRandomValues').mockImplementation(((array: Uint32Array) => {
-      if (rejectedLeft > 0) {
-        rejectedLeft -= 1;
-        array[0] = 0xffffffff;
-        return array;
-      }
-      return real(array);
-    }) as typeof globalThis.crypto.getRandomValues);
+    const getRandomValues = vi
+      .spyOn(globalThis.crypto, 'getRandomValues')
+      .mockImplementation(((array: Uint32Array) => {
+        if (rejectedLeft > 0) {
+          rejectedLeft -= 1;
+          array[0] = 0xffffffff;
+          return array;
+        }
+        return real(array);
+      }) as typeof globalThis.crypto.getRandomValues);
 
     const value = generatePassword(20);
 

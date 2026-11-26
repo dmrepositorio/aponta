@@ -23,7 +23,10 @@ function randomInt(max: number): number {
 const pick = (chars: string) => chars[randomInt(chars.length)];
 
 export function generatePassword(length = 20): string {
-  if (length < CLASSES.length) throw new RangeError('A senha precisa de ao menos um caractere de cada grupo.');
+  if (length < CLASSES.length)
+    throw new RangeError(
+      'A senha precisa de ao menos um caractere de cada grupo.',
+    );
 
   const chars = CLASSES.map(pick);
   while (chars.length < length) chars.push(pick(ALL));
