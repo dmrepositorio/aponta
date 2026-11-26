@@ -333,3 +333,166 @@ describe('TicketForm', () => {
     expect(within(followersContainer).getByText('Alice')).toBeInTheDocument();
   });
 });
+
+describe('GH-444 (F3-12): TicketForm', () => {
+  const requireAttachmentsDesk = [{ id: 'sd-1', name: 'Suporte N1', requireAttachments: true }];
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    useAuthStore.setState({ token: null, user: null });
+    mockApiGet();
+  });
+
+  describe('NEW-03: mesa que exige anexo', () => {
+    it('sem arquivo mostra o erro inline junto ao upload, avisa por alert e não envia', async () => {
+      mockApiGet({ serviceDesks: requireAttachmentsDesk });
+      const user = userEvent.setup();
+      const { onSubmit } = renderForm();
+      await waitFor(() => expect(api.get).toHaveBeenCalledWith('/service-desks'));
+      await fillRequiredFields(user);
+
+      await user.click(screen.getByRole('button', { name: /abrir ticket/i }));
+
+      await waitFor(() => {
+        expect(screen.queryByText(/anexe ao menos um arquivo/i)).toBeInTheDocument();
+      });
+      expect(screen.getByRole('alert')).toHaveTextContent(/anexe ao menos um arquivo/i);
+      expect(onSubmit).not.toHaveBeenCalled();
+    });
+
+    it('move o foco para o upload ao bloquear o envio', async () => {
+      mockApiGet({ serviceDesks: requireAttachmentsDesk });
+      const user = userEvent.setup();
+      renderForm();
+      await waitFor(() => expect(api.get).toHaveBeenCalledWith('/service-desks'));
+      await fillRequiredFields(user);
+
+      await user.click(screen.getByRole('button', { name: /abrir ticket/i }));
+
+      await waitFor(() => {
+        const upload = screen.getByText(/anexos \(obrigatório nesta mesa\)/i).closest('[data-testid="ticket-attachments"]');
+        expect(document.activeElement).toBe(upload);
+      });
+    });
+
+    it('"Salvar e criar novo" também bloqueia e mostra o erro', async () => {
+      mockApiGet({ serviceDesks: requireAttachmentsDesk });
+      const user = userEvent.setup();
+      const { onSubmit } = renderForm();
+      await waitFor(() => expect(api.get).toHaveBeenCalledWith('/service-desks'));
+      await fillRequiredFields(user);
+
+      await user.click(screen.getByRole('button', { name: /salvar e criar novo/i }));
+
+      await waitFor(() => {
+        expect(screen.queryByText(/anexe ao menos um arquivo/i)).toBeInTheDocument();
+      });
+      expect(onSubmit).not.toHaveBeenCalled();
+    });
+
+    it('anexar um arquivo limpa o erro e libera o envio', async () => {
+      mockApiGet({ serviceDesks: requireAttachmentsDesk });
+      const user = userEvent.setup();
+      const { onSubmit } = renderForm();
+      await waitFor(() => expect(api.get).toHaveBeenCalledWith('/service-desks'));
+      await fillRequiredFields(user);
+      await user.click(screen.getByRole('button', { name: /abrir ticket/i }));
+      await waitFor(() => {
+        expect(screen.queryByText(/anexe ao menos um arquivo/i)).toBeInTheDocument();
+      });
+
+      const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+      await user.upload(input, new File(['x'], 'evidencia.png', { type: 'image/png' }));
+      expect(screen.queryByText(/anexe ao menos um arquivo/i)).not.toBeInTheDocument();
+
+      await user.click(screen.getByRole('button', { name: /abrir ticket/i }));
+      await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
+    });
+  });
+
+  describe('NEW-06: Ticket Pai', () => {
+    const page = {
+      data: [{ id: '3f2a9c1e-aaaa-bbbb-cccc-111122223333', protocol: 'AP-000042', title: 'Impressora parada' }],
+      meta: { total: 1, page: 1, limit: 20, totalPages: 1 },
+    };
+
+    it('mostra "#protocolo - título" em vez do pedaço de UUID', async () => {
+      mockApiGet({ tickets: page });
+      const user = userEvent.setup();
+      renderForm();
+
+      await user.click(screen.getByPlaceholderText(/buscar ticket existente/i));
+
+      await waitFor(() => {
+        expect(screen.queryByText('#AP-000042 - Impressora parada')).toBeInTheDocument();
+      });
+      expect(screen.queryByText(/^3f2a9c1e - /)).not.toBeInTheDocument();
+    });
+
+    it('busca no servidor pelo texto digitado (protocolo ou título)', async () => {
+      mockApiGet({ tickets: page });
+      const user = userEvent.setup();
+      renderForm();
+
+      await user.type(screen.getByPlaceholderText(/buscar ticket existente/i), 'AP-0000');
+
+      await waitFor(() => {
+        expect(api.get).toHaveBeenCalledWith(
+          '/tickets',
+          expect.objectContaining({ params: expect.objectContaining({ search: 'AP-0000' }) }),
+        );
+      });
+    });
+
+    it('mantém o pai escolhido no campo quando a busca seguinte não o devolve', async () => {
+      mockApiGet({ tickets: page });
+      const user = userEvent.setup();
+      renderForm();
+      await user.click(screen.getByPlaceholderText(/buscar ticket existente/i));
+      await waitFor(() => {
+        expect(screen.queryByText('#AP-000042 - Impressora parada')).toBeInTheDocument();
+      });
+      await user.click(screen.getByText('#AP-000042 - Impressora parada'));
+
+      mockApiGet({ tickets: { data: [], meta: { total: 0, page: 1, limit: 20, totalPages: 0 } } });
+      await user.click(screen.getByPlaceholderText(/buscar ticket existente/i));
+      await user.type(screen.getByPlaceholderText(/buscar ticket existente/i), 'zzz');
+      await user.click(document.body);
+
+      await waitFor(() => {
+        expect(screen.getByPlaceholderText(/buscar ticket existente/i)).toHaveValue('#AP-000042 - Impressora parada');
+      });
+    });
+  });
+
+  describe('NEW-11: formulário alterado', () => {
+    it('avisa o pai quando o formulário passa a ter alterações', async () => {
+      const onDirtyChange = vi.fn();
+      const user = userEvent.setup();
+      renderForm({ onDirtyChange } as never);
+      await waitFor(() => expect(api.get).toHaveBeenCalledWith('/service-desks'));
+
+      await user.type(screen.getByLabelText(/título \(assunto\)/i), 'Algo');
+
+      await waitFor(() => expect(onDirtyChange).toHaveBeenLastCalledWith(true));
+    });
+
+    it('com o catálogo preenchendo o título, o formulário começa sem alterações', async () => {
+      const onDirtyChange = vi.fn();
+      renderForm({
+        onDirtyChange,
+        catalogOverride: {
+          id: 'item-1',
+          title: 'Troca de Teclado',
+          description: null,
+          icon: null,
+          defaultServiceDeskId: 'sd-1',
+          defaultPriority: 'HIGH',
+        },
+      } as never);
+      await waitFor(() => expect(api.get).toHaveBeenCalledWith('/service-desks'));
+
+      expect(onDirtyChange).not.toHaveBeenCalledWith(true);
+    });
+  });
+});

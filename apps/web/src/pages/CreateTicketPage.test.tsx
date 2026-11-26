@@ -877,4 +877,341 @@ describe('CreateTicketPage', () => {
       }
     });
   });
+  describe('GH-444 (F3-12): CreateTicketPage', () => {
+    const catalogWithItem = {
+      id: 'cat-1',
+      name: 'Hardware',
+      description: null,
+      items: [
+        {
+          id: 'item-1',
+          title: 'Troca de Impressora',
+          description: null,
+          icon: null,
+          defaultServiceDeskId: 'sd-1',
+          defaultPriority: 'HIGH',
+        },
+      ],
+    };
+
+    function mockGet({
+      catalog = [] as unknown[],
+      catalogError = false,
+      tickets = [] as unknown[],
+    } = {}) {
+      vi.mocked(api.get).mockImplementation((url: string) => {
+        if (url === '/catalog') {
+          return catalogError ? Promise.reject(new Error('boom')) : Promise.resolve({ data: catalog });
+        }
+        if (url === '/service-desks') return Promise.resolve({ data: [{ id: 'sd-1', name: 'Suporte N1' }] });
+        if (url === '/tickets') return Promise.resolve({ data: tickets });
+        return Promise.resolve({ data: [] });
+      });
+    }
+
+    async function fillTicket(user: ReturnType<typeof userEvent.setup>, title = 'Impressora não liga') {
+      await waitFor(() => {
+        expect(screen.getByRole('option', { name: 'Suporte N1', hidden: true })).toBeInTheDocument();
+      });
+      await user.type(screen.getByLabelText(/título \(assunto\)/i), title);
+      await user.selectOptions(screen.getByLabelText(/^mesa/i, { selector: 'select' }), 'sd-1');
+      fillDescriptionField();
+    }
+
+    function fillDescriptionField() {
+      const editable = screen
+        .getByTestId('ticket-description')
+        .querySelector('[contenteditable="true"]') as HTMLElement;
+      editable.innerHTML = '<p>Não acende ao ligar na tomada.</p>';
+      editable.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+
+    function mockPost({ failAttachments = [] as string[] } = {}) {
+      vi.mocked(api.post).mockImplementation((url: string, body?: unknown) => {
+        if (url === '/tickets') return Promise.resolve({ data: { id: 't-99', title: 'Test Ticket' } });
+        if (url === '/tickets/t-99/attachments') {
+          const file = (body as FormData).get('file') as File;
+          return failAttachments.includes(file.name)
+            ? Promise.reject(new Error('upload falhou'))
+            : Promise.resolve({ data: {} });
+        }
+        return Promise.resolve({ data: {} });
+      });
+    }
+
+    async function attach(user: ReturnType<typeof userEvent.setup>, ...names: string[]) {
+      const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+      await user.upload(
+        input,
+        names.map((name) => new File(['x'], name, { type: 'image/png' })),
+      );
+    }
+
+    function postsTo(url: string) {
+      return vi.mocked(api.post).mock.calls.filter(([target]) => target === url);
+    }
+
+    describe('NEW-04: criação em etapas sem duplicar o chamado', () => {
+      it('anexo rejeitado depois do POST: vai ao detalhe com aviso do arquivo e cria um único chamado', async () => {
+        mockGet();
+        mockPost({ failAttachments: ['evidencia.png'] });
+        const user = userEvent.setup();
+        renderPage();
+        await fillTicket(user);
+        await attach(user, 'evidencia.png');
+
+        await user.click(screen.getByRole('button', { name: /abrir ticket/i }));
+
+        await waitFor(() => {
+          expect(navigateMock).toHaveBeenCalledWith('/tickets/t-99', {
+            state: { createWarnings: ['O anexo "evidencia.png" não foi enviado.'] },
+          });
+        });
+        expect(postsTo('/tickets')).toHaveLength(1);
+        expect(screen.queryByText(/falha ao criar o chamado/i)).not.toBeInTheDocument();
+      });
+
+      it('só os anexos que falharam entram no aviso; os demais seguem enviados', async () => {
+        mockGet();
+        mockPost({ failAttachments: ['b.png'] });
+        const user = userEvent.setup();
+        renderPage();
+        await fillTicket(user);
+        await attach(user, 'a.png', 'b.png', 'c.png');
+
+        await user.click(screen.getByRole('button', { name: /abrir ticket/i }));
+
+        await waitFor(() => {
+          expect(navigateMock).toHaveBeenCalledWith('/tickets/t-99', {
+            state: { createWarnings: ['O anexo "b.png" não foi enviado.'] },
+          });
+        });
+        expect(postsTo('/tickets/t-99/attachments')).toHaveLength(3);
+      });
+
+      it('PATCH do pai rejeitado: avisa a etapa, ainda envia os anexos e vai ao detalhe', async () => {
+        mockGet({ tickets: [{ id: 'p-1', protocol: 'AP-1', title: 'Pai' }] });
+        mockPost();
+        vi.mocked(api.patch).mockRejectedValue(new Error('sem acesso ao pai'));
+        const user = userEvent.setup();
+        renderPage();
+        await fillTicket(user);
+        await attach(user, 'ok.png');
+        await user.click(screen.getByPlaceholderText(/buscar ticket existente/i));
+        await user.click(await screen.findByText(/- Pai$/));
+
+        await user.click(screen.getByRole('button', { name: /abrir ticket/i }));
+
+        await waitFor(() => {
+          expect(navigateMock).toHaveBeenCalledWith('/tickets/t-99', {
+            state: { createWarnings: ['O chamado não foi vinculado ao ticket pai.'] },
+          });
+        });
+        expect(postsTo('/tickets/t-99/attachments')).toHaveLength(1);
+        expect(postsTo('/tickets')).toHaveLength(1);
+      });
+
+      it('"Salvar e criar novo" com anexo rejeitado também vai ao detalhe, para o aviso não se perder', async () => {
+        mockGet();
+        mockPost({ failAttachments: ['evidencia.png'] });
+        const user = userEvent.setup();
+        renderPage();
+        await fillTicket(user);
+        await attach(user, 'evidencia.png');
+
+        await user.click(screen.getByRole('button', { name: /salvar e criar novo/i }));
+
+        await waitFor(() => {
+          expect(navigateMock).toHaveBeenCalledWith('/tickets/t-99', {
+            state: { createWarnings: ['O anexo "evidencia.png" não foi enviado.'] },
+          });
+        });
+        expect(postsTo('/tickets')).toHaveLength(1);
+      });
+
+      it('sem falha nas etapas posteriores navega ao detalhe sem aviso', async () => {
+        mockGet();
+        mockPost();
+        const user = userEvent.setup();
+        renderPage();
+        await fillTicket(user);
+        await attach(user, 'ok.png');
+
+        await user.click(screen.getByRole('button', { name: /abrir ticket/i }));
+
+        await waitFor(() => expect(navigateMock).toHaveBeenCalledWith('/tickets/t-99'));
+      });
+    });
+
+    describe('NEW-05: mensagem de erro da API', () => {
+      it('mostra response.data.message quando existe', async () => {
+        mockGet();
+        vi.mocked(api.post).mockRejectedValue({
+          response: { data: { message: 'A mesa não aceita novos chamados.' } },
+        });
+        const user = userEvent.setup();
+        renderPage();
+        await fillTicket(user);
+
+        await user.click(screen.getByRole('button', { name: /abrir ticket/i }));
+
+        await waitFor(() => {
+          expect(screen.queryByText('A mesa não aceita novos chamados.')).toBeInTheDocument();
+        });
+        expect(screen.queryByText(/falha ao criar o chamado/i)).not.toBeInTheDocument();
+        expect(navigateMock).not.toHaveBeenCalled();
+      });
+
+      it('junta as mensagens quando o class-validator devolve uma lista', async () => {
+        mockGet();
+        vi.mocked(api.post).mockRejectedValue({
+          response: { data: { message: ['title should not be empty', 'priority must be valid'] } },
+        });
+        const user = userEvent.setup();
+        renderPage();
+        await fillTicket(user);
+
+        await user.click(screen.getByRole('button', { name: /abrir ticket/i }));
+
+        await waitFor(() => {
+          expect(screen.queryByText('title should not be empty; priority must be valid')).toBeInTheDocument();
+        });
+      });
+    });
+
+    describe('NEW-08: catálogo carregando e indisponível', () => {
+      it('o carregamento mostra o título da página junto do spinner', async () => {
+        vi.mocked(api.get).mockImplementation((url) => {
+          if (url === '/catalog') return new Promise<never>(() => undefined);
+          return Promise.resolve({ data: [] });
+        });
+        renderPage();
+
+        expect(await screen.findByRole('status')).toHaveTextContent(/carregando/i);
+        expect(screen.queryByRole('heading', { level: 1, name: 'Novo Ticket' })).toBeInTheDocument();
+      });
+
+      it('com o catálogo falhando mostra o alerta acima do formulário em branco', async () => {
+        mockGet({ catalogError: true });
+        renderPage();
+
+        const form = await screen.findByLabelText(/título \(assunto\)/i);
+        await waitFor(() => {
+          expect(screen.queryByText(/catálogo indisponível; abra um chamado em branco/i)).toBeInTheDocument();
+        });
+        const alert = screen.getByText(/catálogo indisponível/i);
+        expect(alert.compareDocumentPosition(form) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      });
+
+      it('catálogo apenas vazio não mostra o alerta', async () => {
+        mockGet({ catalog: [] });
+        renderPage();
+
+        await screen.findByLabelText(/título \(assunto\)/i);
+        expect(screen.queryByText(/catálogo indisponível/i)).not.toBeInTheDocument();
+      });
+    });
+
+    describe('NEW-09: ícone do item do catálogo', () => {
+      it('sem ícone cadastrado o nome acessível não traz o emoji de página', async () => {
+        mockGet({ catalog: [catalogWithItem] });
+        renderPage();
+
+        const item = await screen.findByRole('button', { name: /troca de impressora/i });
+        expect(item).not.toHaveAccessibleName(/📄/);
+      });
+
+      it('ícone emoji cadastrado na API fica visível mas fora do nome acessível', async () => {
+        mockGet({ catalog: [{ ...catalogWithItem, items: [{ ...catalogWithItem.items[0], icon: '🖨️' }] }] });
+        renderPage();
+
+        const item = await screen.findByRole('button', { name: /troca de impressora/i });
+        expect(item).toHaveTextContent('🖨️');
+        expect(item).not.toHaveAccessibleName(/🖨️/);
+      });
+    });
+
+    describe('NEW-11: descartar formulário alterado', () => {
+      async function openBlankForm(user: ReturnType<typeof userEvent.setup>) {
+        mockGet({ catalog: [catalogWithItem] });
+        renderPage();
+        await user.click(await screen.findByRole('button', { name: /meu problema não está catalogado/i }));
+        await screen.findByLabelText(/título \(assunto\)/i);
+      }
+
+      it('Esc com a descrição digitada pede confirmação e mantém o formulário montado', async () => {
+        const user = userEvent.setup();
+        await openBlankForm(user);
+        fillDescriptionField();
+
+        await user.keyboard('{Escape}');
+
+        await waitFor(() => expect(screen.queryByRole('dialog')).toBeInTheDocument());
+        expect(screen.getByRole('dialog')).toHaveTextContent(/descartar alterações/i);
+        expect(screen.getByLabelText(/título \(assunto\)/i)).toBeInTheDocument();
+        expect(screen.queryByText('Catálogo de Serviços')).not.toBeInTheDocument();
+      });
+
+      it('botão Voltar com o título digitado pede confirmação; "Continuar editando" preserva o texto', async () => {
+        const user = userEvent.setup();
+        await openBlankForm(user);
+        await user.type(screen.getByLabelText(/título \(assunto\)/i), 'Rascunho');
+
+        await user.click(screen.getByLabelText('Voltar para o catálogo'));
+
+        await waitFor(() => expect(screen.queryByRole('dialog')).toBeInTheDocument());
+        await user.click(screen.getByRole('button', { name: /continuar editando/i }));
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+        expect(screen.getByLabelText(/título \(assunto\)/i)).toHaveValue('Rascunho');
+      });
+
+      it('Esc com o diálogo aberto fecha só o diálogo e mantém o formulário', async () => {
+        const user = userEvent.setup();
+        await openBlankForm(user);
+        await user.type(screen.getByLabelText(/título \(assunto\)/i), 'Rascunho');
+        await user.click(screen.getByLabelText('Voltar para o catálogo'));
+        await waitFor(() => expect(screen.queryByRole('dialog')).toBeInTheDocument());
+
+        await user.keyboard('{Escape}');
+
+        await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+        expect(screen.getByLabelText(/título \(assunto\)/i)).toHaveValue('Rascunho');
+      });
+
+      it('"Descartar" volta ao catálogo', async () => {
+        const user = userEvent.setup();
+        await openBlankForm(user);
+        await user.type(screen.getByLabelText(/título \(assunto\)/i), 'Rascunho');
+        await user.click(screen.getByLabelText('Voltar para o catálogo'));
+        await waitFor(() => expect(screen.queryByRole('dialog')).toBeInTheDocument());
+
+        await user.click(screen.getByRole('button', { name: /^descartar$/i }));
+
+        expect(await screen.findByText('Catálogo de Serviços')).toBeInTheDocument();
+      });
+
+      it('sem alterações volta direto, sem diálogo', async () => {
+        const user = userEvent.setup();
+        await openBlankForm(user);
+
+        await user.click(screen.getByLabelText('Voltar para o catálogo'));
+
+        expect(await screen.findByText('Catálogo de Serviços')).toBeInTheDocument();
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      });
+
+      it('item do catálogo com título preenchido pelo serviço não conta como alteração', async () => {
+        mockGet({ catalog: [catalogWithItem] });
+        const user = userEvent.setup();
+        renderPage();
+        await user.click(await screen.findByRole('button', { name: /troca de impressora/i }));
+        await screen.findByLabelText(/título \(assunto\)/i);
+
+        await user.keyboard('{Escape}');
+
+        expect(await screen.findByText('Catálogo de Serviços')).toBeInTheDocument();
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      });
+    });
+  });
 });
