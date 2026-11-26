@@ -97,4 +97,17 @@ describe('authStore', () => {
       organizationId: null,
     });
   });
+
+  it('GH-448: logout() apaga os rascunhos de comentário do sessionStorage (e só eles)', () => {
+    window.sessionStorage.setItem('aponta:comment-draft:u1:t-1', 'rascunho');
+    window.sessionStorage.setItem('aponta:comment-draft:u1:t-2', 'outro');
+    window.sessionStorage.setItem('outra-chave', 'fica');
+
+    useAuthStore.getState().logout();
+
+    expect(window.sessionStorage.getItem('aponta:comment-draft:u1:t-1')).toBeNull();
+    expect(window.sessionStorage.getItem('aponta:comment-draft:u1:t-2')).toBeNull();
+    expect(window.sessionStorage.getItem('outra-chave')).toBe('fica');
+    window.sessionStorage.removeItem('outra-chave');
+  });
 });
