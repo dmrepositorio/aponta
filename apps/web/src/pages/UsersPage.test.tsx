@@ -88,6 +88,7 @@ const USERS_PAGE_1: UsersList = {
   data: [ANA, BRUNO],
   meta: { total: 2, page: 1, pageSize: 20, totalPages: 1 },
 };
+const EMPTY_LIST: UsersList = { data: [], meta: { total: 0, page: 1, pageSize: 20, totalPages: 0 } };
 const WITH_CARLA: UsersList = { data: [ANA, BRUNO, CARLA], meta: { total: 3, page: 1, pageSize: 20, totalPages: 1 } };
 const USERS_MANY: UsersList = { data: [ANA, BRUNO, CARLA], meta: { total: 45, page: 1, pageSize: 20, totalPages: 3 } };
 
@@ -1036,6 +1037,63 @@ describe('UsersPage', () => {
 
       expect(await screen.findByText('Ana Silva')).toBeInTheDocument();
       expect(screen.queryByText('Acesso restrito')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('F3-26 USR-03: vazio e erro com ação', () => {
+    it('USR-03: no results with an active filter says so and Limpar filtros clears the search and refetches', async () => {
+      mockApi({ list: EMPTY_LIST });
+      const user = userEvent.setup();
+      renderUsersPage();
+      await screen.findByText('Nenhum usuário encontrado.');
+      await user.type(screen.getByRole('textbox', { name: 'Buscar usuário' }), 'zzz');
+
+      expect(await screen.findByText('Nenhum usuário encontrado com estes filtros')).toBeInTheDocument();
+      await user.click(screen.getByRole('button', { name: 'Limpar filtros' }));
+
+      await waitFor(() => expect(usersParams().q).toBeUndefined());
+      expect(screen.getByRole('textbox', { name: 'Buscar usuário' })).toHaveValue('');
+      expect(await screen.findByText('Nenhum usuário encontrado.')).toBeInTheDocument();
+    });
+
+    it('USR-03: no data and no filters offers Novo usuário to who has CREATE_USERS and no Limpar filtros', async () => {
+      mockApi({ list: EMPTY_LIST });
+      const user = userEvent.setup();
+      renderUsersPage();
+      const card = (await screen.findByText('Nenhum usuário encontrado.')).parentElement as HTMLElement;
+
+      expect(screen.queryByRole('button', { name: 'Limpar filtros' })).not.toBeInTheDocument();
+      await user.click(await within(card).findByRole('button', { name: 'Novo usuário' }));
+      expect(await screen.findByRole('textbox', { name: 'Nome' })).toBeInTheDocument();
+    });
+
+    it('USR-03: without CREATE_USERS the empty state has no Novo usuário action', async () => {
+      mockApi({ list: EMPTY_LIST, permissions: ['MANAGE_USERS'] });
+      renderUsersPage();
+      const card = (await screen.findByText('Nenhum usuário encontrado.')).parentElement as HTMLElement;
+      await waitFor(() => expect(api.get).toHaveBeenCalledWith('/auth/me'));
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      expect(within(card).queryByRole('button')).not.toBeInTheDocument();
+    });
+
+    it('USR-03: a server error shows Tentar de novo, which fetches the list again', async () => {
+      mockApi();
+      const base = vi.mocked(api.get).getMockImplementation()!;
+      let failing = true;
+      vi.mocked(api.get).mockImplementation((url: string) =>
+        url === '/users' && failing ? Promise.reject(axiosError(500)) : base(url),
+      );
+      const user = userEvent.setup();
+      renderUsersPage();
+      expect(await screen.findByText('Erro ao carregar usuários.')).toBeInTheDocument();
+      const before = vi.mocked(api.get).mock.calls.filter(([url]) => url === '/users').length;
+
+      failing = false;
+      await user.click(screen.getByRole('button', { name: 'Tentar de novo' }));
+
+      expect(await screen.findByText('Ana Silva')).toBeInTheDocument();
+      expect(vi.mocked(api.get).mock.calls.filter(([url]) => url === '/users').length).toBeGreaterThan(before);
     });
   });
 });
