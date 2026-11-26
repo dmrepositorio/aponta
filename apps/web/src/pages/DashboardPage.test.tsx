@@ -793,7 +793,7 @@ describe('DashboardPage', () => {
     expect(await screen.findByTestId('card-resumo-de-tickets')).toBeInTheDocument();
     expect(vi.mocked(api.get)).toHaveBeenCalledTimes(2);
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
-    expect(screen.getByRole('tablist')).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Chats' })).toBeInTheDocument();
   });
 
   it('DSH-03: the pie is named with every category, its count and percent, and same-initial rows get distinct markers', async () => {
