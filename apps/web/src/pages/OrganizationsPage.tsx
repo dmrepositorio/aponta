@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { api } from '../lib/api';
 import { useAuthStore } from '../stores/authStore';
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { Search, Trash2, CreditCard, Plus, RefreshCw, FilePlus } from 'lucide-react';
 import type { ColumnDef } from '@tanstack/react-table';
 import {
@@ -919,6 +919,11 @@ export function OrganizationsPage() {
       .filter((u) => !query || u.name.toLowerCase().includes(query) || u.email.toLowerCase().includes(query));
   }, [usersList, userSearch]);
 
+  const filtersHideAllOrgs = !!orgs && orgs.length > 0 && filteredOrgs.length === 0;
+  useEffect(() => {
+    if (filtersHideAllOrgs) setSelectedOrgs([]);
+  }, [filtersHideAllOrgs]);
+
   const clearFilters = () => {
     setFilterSearch('');
     setFilterStatus('ALL');
@@ -1211,8 +1216,8 @@ className="isolate flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll
                     <div className="p-4">
                       <EzEmptyCard title="Nenhuma empresa cadastrada ainda." />
                     </div>
-                  ) : orgs && orgs.length > 0 && filteredOrgs.length === 0 ? (
-                    // ORG-06 (#470): os filtros zeraram a lista; a grade desmonta, então a seleção antiga é descartada.
+                  ) : filtersHideAllOrgs ? (
+                    // ORG-06 (#470): os filtros zeraram a lista; a grade desmonta e a seleção é descartada pelo efeito acima.
                     <div className="p-4">
                       <EzEmptyCard
                         title="Nenhum cliente encontrado"
@@ -1222,10 +1227,7 @@ className="isolate flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll
                             variant="secondary"
                             size="small"
                             label="Limpar filtros"
-                            onClick={() => {
-                              clearFilters();
-                              setSelectedOrgs([]);
-                            }}
+                            onClick={clearFilters}
                           />
                         }
                       />
