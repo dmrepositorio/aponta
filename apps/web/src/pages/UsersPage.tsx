@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { ReactNode, useMemo, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { ColumnDef } from '@tanstack/react-table';
 import { ActiveTag } from '../components/ActiveTag';
@@ -25,7 +25,7 @@ import {
 } from '../components/ds';
 import { applyDynamicFilters } from '../components/ds/EzDynamicFilter';
 import type { EzDynamicFilterField, EzDynamicFilterRule } from '../components/ds/EzDynamicFilter';
-import { useHasPermission } from '../hooks/usePermissions';
+import { useEffectivePermissions, useHasPermission } from '../hooks/usePermissions';
 import { usePermissionGroups } from '../hooks/usePermissionGroups';
 import { useTechnicalGroups } from '../hooks/useTechnicalGroups';
 import { useUserScreenConfig } from '../hooks/useUserScreenConfig';
@@ -519,11 +519,50 @@ function UsersPageContent() {
   );
 }
 
+/**
+ * Guarda de UI da página: sem MANAGE_USERS não monta a lista (nenhum GET /users) e mostra o acesso restrito.
+ * Só reflexo da tela; a autorização continua no servidor. Enquanto /auth/me carrega, mostra o carregando
+ * em vez de piscar "restrito".
+ */
+function UsersAccessGate({ children }: { children: ReactNode }) {
+  const { data, isError, refetch } = useEffectivePermissions();
+  if (isError) {
+    return (
+      <EzPageLayout header={<EzPageHeader title="Usuários" />}>
+        <EzEmptyCard
+          variant="error"
+          title="Não foi possível verificar suas permissões."
+          onRetry={() => void refetch()}
+        />
+      </EzPageLayout>
+    );
+  }
+  if (!data) {
+    return (
+      <EzPageLayout header={<EzPageHeader title="Usuários" />}>
+        <div className="p-8">
+          <EzSpinner label="Carregando permissões…" />
+        </div>
+      </EzPageLayout>
+    );
+  }
+  if (!data.isAdmin && !data.permissions.includes('MANAGE_USERS')) {
+    return (
+      <EzPageLayout header={<EzPageHeader title="Usuários" />}>
+        <EzEmptyCard title="Acesso restrito" description="Você não tem permissão para gerenciar usuários." />
+      </EzPageLayout>
+    );
+  }
+  return <>{children}</>;
+}
+
 export function UsersPage() {
   return (
-    <MesaSaveProvider>
-      <UsersPageContent />
-    </MesaSaveProvider>
+    <UsersAccessGate>
+      <MesaSaveProvider>
+        <UsersPageContent />
+      </MesaSaveProvider>
+    </UsersAccessGate>
   );
 }
 
