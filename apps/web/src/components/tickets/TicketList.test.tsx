@@ -39,7 +39,7 @@ const waitForSave = () => act(() => new Promise<void>((done) => setTimeout(done,
 
 /** A tela só desenha depois da leitura da preferência: espera os controles (ausentes no esqueleto e no erro). */
 async function waitForList(props: { isLoading?: boolean }) {
-  if (!props.isLoading) await screen.findByRole('button', { name: /exibir colunas/i });
+  if (!props.isLoading) await screen.findByRole('combobox', { name: 'Agrupar por' });
 }
 
 const ticketA: Ticket = {
@@ -769,7 +769,7 @@ describe('F3-11: menu de colunas, grupos e cartões da Lista', () => {
         <Probe />
       </MemoryRouter>,
     );
-    await screen.findByRole('button', { name: /exibir colunas/i });
+    await screen.findByRole('combobox', { name: 'Agrupar por' });
     const card = screen.getAllByRole('listitem')[1];
     card.focus();
     await user.keyboard('{Enter}');
@@ -786,6 +786,46 @@ describe('F3-11: menu de colunas, grupos e cartões da Lista', () => {
     expect(screen.getAllByRole('listitem')).toHaveLength(2);
     await user.click(screen.getByRole('button', { name: /Acme \(1\)/ }));
     expect(screen.getAllByRole('listitem')).toHaveLength(1);
+  });
+
+  it('TKT-14: nos cartões "Ordenar por" lista as colunas ordenáveis e reflete a ordenação atual', async () => {
+    mockViewport(true);
+    await renderList({ sortBy: 'title', sortDir: 'desc' });
+
+    const field = screen.getByRole('combobox', { name: 'Ordenar por' });
+    expect(field).toHaveValue('title');
+    const labels = within(field).getAllByRole('option').map((o) => o.textContent);
+    for (const label of ['Número', 'Título', 'Prioridade', 'Status', 'Responsável', 'Criado em', 'Atualizado em']) {
+      expect(labels).toContain(label);
+    }
+    expect(labels).not.toContain('Cliente');
+    expect(screen.getByRole('combobox', { name: 'Direção da ordenação' })).toHaveValue('desc');
+  });
+
+  it('TKT-14: nos cartões escolher o campo e a direção chama onSortChange', async () => {
+    mockViewport(true);
+    const onSortChange = vi.fn();
+    const user = userEvent.setup();
+    await renderList({ onSortChange, sortBy: 'title', sortDir: 'asc' });
+
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Ordenar por' }), 'status');
+    expect(onSortChange).toHaveBeenLastCalledWith('status', 'asc');
+
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Direção da ordenação' }), 'desc');
+    expect(onSortChange).toHaveBeenLastCalledWith('status', 'desc');
+  });
+
+  it('TKT-14: nos cartões "Exibir colunas" não aparece; na tabela continua', async () => {
+    mockViewport(true);
+    const narrow = await renderList();
+    expect(screen.queryByRole('button', { name: 'Exibir colunas' })).not.toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: 'Agrupar por' })).toBeInTheDocument();
+    narrow.unmount();
+
+    mockViewport(false);
+    await renderList();
+    expect(screen.getByRole('button', { name: 'Exibir colunas' })).toBeInTheDocument();
+    expect(screen.queryByRole('combobox', { name: 'Ordenar por' })).not.toBeInTheDocument();
   });
 
   it('TKT-14: em tela larga a tabela permanece e não há cartões', async () => {
