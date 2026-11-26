@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { useQuery, type UseMutationResult } from '@tanstack/react-query';
-import { ArrowLeft, Plus } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
 import {
   EzAlert,
   EzButton,
@@ -27,6 +27,7 @@ import {
   useTechnicalGroup,
   useCreateTechnicalGroup,
   useUpdateTechnicalGroup,
+  useDeleteTechnicalGroup,
   useTechnicalGroupMemberMutations,
   useTechnicalGroupOrganizationMutations,
   useTechnicalGroupServiceDeskMutations,
@@ -48,6 +49,7 @@ const sameInfo = (a: InfoDraft, b: InfoDraft) =>
   a.scheduleEnabled === b.scheduleEnabled;
 
 const TOAST_MS = 4000;
+const plural = (count: number, one: string, many: string) => `${count} ${count === 1 ? one : many}`;
 const ACTION_ERROR_FALLBACK = 'Não foi possível concluir a ação. Tente novamente.';
 
 interface SimpleUser {
@@ -110,7 +112,6 @@ function CreateGroupModal({ onClose, onNotify }: { onClose: () => void; onNotify
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
-    if (createMutation.isPending) return;
     if (!name.trim()) {
       setNameError('Informe o nome');
       return;
@@ -168,16 +169,20 @@ function GroupDetail({
   groupId,
   onBack,
   onNotify,
+  onDeleted,
   onDirtyChange,
 }: {
   groupId: string;
   onBack: () => void;
   onNotify: (message: string) => void;
+  onDeleted: () => void;
   onDirtyChange: (dirty: boolean) => void;
 }) {
   const { data: group, isLoading, isError: isGroupError, refetch: refetchGroup } = useTechnicalGroup(groupId);
   const [tab, setTab] = useState<DetailTab>('info');
   const updateMutation = useUpdateTechnicalGroup(groupId);
+  const deleteMutation = useDeleteTechnicalGroup();
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
   const { addMember, removeMember } = useTechnicalGroupMemberMutations(groupId);
   const { addOrganization, removeOrganization } = useTechnicalGroupOrganizationMutations(groupId);
   const { addServiceDesk, removeServiceDesk } = useTechnicalGroupServiceDeskMutations(groupId);
@@ -249,6 +254,26 @@ function GroupDetail({
 
   const deskIds = new Set(group.serviceDeskLinks.map((l) => l.serviceDesk.id));
   const availableServiceDesks = (allServiceDesks ?? []).filter((d) => !deskIds.has(d.id));
+
+  const memberCount = group.members.length;
+  const organizationCount = group.organizationLinks.length;
+  const serviceDeskCount = group.serviceDeskLinks.length;
+  const deleteMessage =
+    `O grupo "${group.name}" tem ${plural(memberCount, 'membro', 'membros')}, ` +
+    `${plural(organizationCount, 'cliente vinculado', 'clientes vinculados')} e ` +
+    `${plural(serviceDeskCount, 'mesa vinculada', 'mesas vinculadas')}. ` +
+    'Os membros ficam sem grupo e os vínculos são removidos. Esta ação não pode ser desfeita.';
+
+  const confirmDelete = () => {
+    setActionError(null);
+    deleteMutation.mutate(groupId, {
+      onSuccess: onDeleted,
+      onError: (error) => {
+        setConfirmingDelete(false);
+        setActionError(apiErrorMessage(error, ACTION_ERROR_FALLBACK));
+      },
+    });
+  };
 
   return (
     <div className="space-y-5 p-5">
@@ -369,7 +394,7 @@ function GroupDetail({
         </div>
       )}
 
-      <div>
+      <div className="flex items-center justify-between gap-3">
         <button
           type="button"
           onClick={onBack}
@@ -377,7 +402,23 @@ function GroupDetail({
         >
           <ArrowLeft className="h-3.5 w-3.5" /> Voltar para a lista
         </button>
+        <EzButton variant="danger" size="small" leftIcon={Trash2} onClick={() => setConfirmingDelete(true)}>
+          Excluir grupo
+        </EzButton>
       </div>
+
+      <EzDialog
+        open={confirmingDelete}
+        variant="danger"
+        title="Excluir grupo"
+        message={deleteMessage}
+        confirmLabel="Excluir"
+        confirmLoading={deleteMutation.isPending}
+        onConfirm={confirmDelete}
+        onCancel={() => {
+          if (!deleteMutation.isPending) setConfirmingDelete(false);
+        }}
+      />
     </div>
   );
 }
@@ -419,6 +460,10 @@ export function TechnicalGroupsPage() {
             groupId={selectedGroupId}
             onBack={requestBack}
             onNotify={setNotice}
+            onDeleted={() => {
+              setNotice('Grupo excluído');
+              leaveDetail();
+            }}
             onDirtyChange={setDetailDirty}
           />
         </EzCardItem>

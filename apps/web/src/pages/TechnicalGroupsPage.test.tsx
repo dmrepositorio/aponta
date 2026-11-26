@@ -372,16 +372,50 @@ describe('TechnicalGroupsPage: rascunho da aba Informações (TG-04, TG-05)', ()
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
-  it('ressincroniza o rascunho quando o servidor muda o grupo (sem edição pendente)', async () => {
+  it.each([
+    {
+      field: 'o nome',
+      edit: () => userEvent.type(screen.getByLabelText('Nome'), ' B'),
+      saved: { name: 'Suporte N1 B' },
+      later: { name: 'Suporte N1 C' },
+      check: () => expect(screen.getByLabelText('Nome')).toHaveValue('Suporte N1 C'),
+    },
+    {
+      field: 'a descrição',
+      edit: () => userEvent.type(screen.getByLabelText('Descrição'), ' B'),
+      saved: { description: 'Primeira linha B' },
+      later: { description: 'Primeira linha C' },
+      check: () => expect(screen.getByLabelText('Descrição')).toHaveValue('Primeira linha C'),
+    },
+    {
+      field: 'o e-mail diário',
+      edit: () => userEvent.click(screen.getByLabelText('Enviar e-mail diário de apontamentos')),
+      saved: { dailyWorklogEmailEnabled: true },
+      later: { dailyWorklogEmailEnabled: false },
+      check: () => expect(screen.getByLabelText('Enviar e-mail diário de apontamentos')).not.toBeChecked(),
+    },
+    {
+      field: 'a agenda',
+      edit: () => userEvent.click(screen.getByLabelText('Agenda habilitada')),
+      saved: { scheduleEnabled: false },
+      later: { scheduleEnabled: true },
+      check: () => expect(screen.getByLabelText('Agenda habilitada')).toBeChecked(),
+    },
+  ])('depois de salvar, ressincroniza com o servidor quando ele muda $field', async ({ edit, saved, later, check }) => {
     renderPage();
-    await openGroup('Equipe');
-    mockGroupDetail({ ...GROUP_DETAIL, name: 'Suporte N1 (v2)', description: 'Outra' });
+    await openGroup();
+    await edit();
+    mockGroupDetail({ ...GROUP_DETAIL, ...saved });
+    await userEvent.click(screen.getByRole('button', { name: 'Salvar' }));
+    await expectText('Grupo salvo');
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Salvar' })).toBeDisabled());
+
+    await userEvent.click(screen.getByRole('tab', { name: 'Equipe' }));
+    mockGroupDetail({ ...GROUP_DETAIL, ...later });
     await userEvent.click(await screen.findByRole('button', { name: 'Adicionar Carlos Dias' }));
-    await expectText('Membro adicionado');
     await userEvent.click(screen.getByRole('tab', { name: 'Informações' }));
 
-    await waitFor(() => expect(screen.getByLabelText('Nome')).toHaveValue('Suporte N1 (v2)'));
-    expect(screen.getByLabelText('Descrição')).toHaveValue('Outra');
+    await waitFor(check);
     expect(screen.queryByText('Alterações não salvas')).not.toBeInTheDocument();
   });
 
