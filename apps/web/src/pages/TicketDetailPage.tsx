@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { isAxiosError } from 'axios';
 import { ArrowLeft, PlayCircle, Square } from 'lucide-react';
 import { CommentForm } from '../components/tickets/CommentForm';
 import { TicketComments } from '../components/tickets/TicketComments';
@@ -36,7 +37,7 @@ export function TicketDetailPage() {
   const location = useLocation();
   const createWarnings = (location.state as { createWarnings?: string[] } | null)?.createWarnings;
   const [warningsDismissed, setWarningsDismissed] = useState(false);
-  const { data: ticket, isLoading, isError } = useTicket(id);
+  const { data: ticket, isLoading, isError, error, refetch, isFetching } = useTicket(id);
   const user = useAuthStore((state) => state.user);
 
   const initialTab = searchParams.get('tab') || 'geral';
@@ -93,13 +94,28 @@ export function TicketDetailPage() {
   }
 
   // The API returns 404 both for unknown ids and for tickets a CLIENT does
-  // not own, so the error copy covers both cases without distinguishing them.
+  // not own, so the error copy covers both cases without distinguishing them
+  // (404 e 403 não podem ser diferenciados: evita enumeração de ids). GH-448 DET-15: só a falha
+  // de rede (sem resposta do servidor) ganha mensagem própria.
   if (isError || !ticket) {
+    const isNetworkError = isAxiosError(error) && !error.response;
     return (
-      <EzAlert variant="error">
-        Falha ao carregar o chamado. Ele pode não existir ou você pode não ter
-        acesso a ele.
-      </EzAlert>
+      <div className="space-y-4">
+        <EzAlert variant="error">
+          {isNetworkError
+            ? 'Não foi possível carregar o chamado por falha de conexão. Verifique sua conexão e tente novamente.'
+            : 'Falha ao carregar o chamado. Ele pode não existir ou você pode não ter acesso a ele.'}
+        </EzAlert>
+        <div className="flex flex-wrap items-center gap-3">
+          <EzButton type="button" label="Tentar novamente" loading={isFetching} onClick={() => void refetch()} />
+          <Link
+            to="/tickets"
+            className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900"
+          >
+            <ArrowLeft className="h-4 w-4" /> Voltar para Tickets
+          </Link>
+        </div>
+      </div>
     );
   }
 
