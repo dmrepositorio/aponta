@@ -2,9 +2,13 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { EzLineChart } from './EzLineChart';
 
 /**
- * Aponta DS Line Chart — gráfico de linhas em SVG próprio, sem biblioteca. Eixo Y com 0, valor
- * médio e máximo; rótulos do eixo X escolhidos pela largura do contêiner (no máximo 4 abaixo
- * de 640 px e 7 acima, sempre com o último ponto); tooltip por hover, foco de teclado e toque.
+ * Aponta DS Line Chart — gráfico de linhas em SVG próprio, sem biblioteca. Eixo Y com 5 marcas
+ * (0, três valores intermediários e o máximo); um único tab stop: setas movem o ponto ativo,
+ * Home/End vão ao primeiro e ao último e Escape fecha o tooltip. Com várias séries, cada uma tem
+ * tracejado e marcador próprios (sólida com círculo, tracejada com quadrado, pontilhada com
+ * losango), refletidos na legenda, além da cor. Rótulos do eixo X escolhidos pela largura do
+ * contêiner (no máximo 4 abaixo de 640 px e 7 acima, sempre com o último ponto); tooltip por
+ * hover, foco de teclado e toque.
  * O último ponto pode ser parcial (dia de hoje ainda aberto).
  */
 const meta: Meta<typeof EzLineChart> = {
