@@ -1,9 +1,12 @@
+import axios from 'axios';
 import { useSearchParams } from 'react-router-dom';
 import { Users, DollarSign, Clock } from 'lucide-react';
 import { useReportWorkload, useReportBilling } from '../hooks/useReports';
 import { useAuthStore } from '../stores/authStore';
 import { useCanViewTicketValues } from '../hooks/usePermissions';
 import {
+  EzAlert,
+  EzButton,
   EzComboBox,
   EzEmptyCard,
   EzGridWrapper,
@@ -23,6 +26,21 @@ type TabId = 'WORKLOAD' | 'BILLING' | 'COMMERCIAL';
 
 const TABS_ID_PREFIX = 'reports';
 const MONTH_PATTERN = /^\d{4}-(0[1-9]|1[0-2])$/;
+
+const billingErrorStatus = (error: unknown) =>
+  axios.isAxiosError(error) ? error.response?.status : undefined;
+
+// REP-02: a mensagem segue o status; só o 400 aponta o período.
+function billingErrorMessage(error: unknown): string {
+  const status = billingErrorStatus(error);
+  if (status === 400) {
+    return 'Não foi possível carregar o relatório. Verifique o período selecionado.';
+  }
+  if (status === 403) {
+    return 'Você não tem permissão para ver o faturamento.';
+  }
+  return 'Falha temporária ao carregar o faturamento. Tente novamente em instantes.';
+}
 
 export function ReportsPage() {
   const user = useAuthStore((s) => s.user);
@@ -57,7 +75,9 @@ export function ReportsPage() {
   const contractsQ = useContracts();
 
   const workloadQ = useReportWorkload();
-  const billingQ = useReportBilling(canSeeBilling, {
+  // REP-03: início depois do fim não vira consulta; o campo final mostra o erro.
+  const rangeInvalid = !!startMonth && !!endMonth && startMonth > endMonth;
+  const billingQ = useReportBilling(canSeeBilling && !rangeInvalid, {
     contractId: contractId || undefined,
     startDate: startMonth ? billingMonthStartIso(startMonth) : undefined,
     endDate: endMonth ? billingMonthStartIso(endMonth) : undefined,
@@ -150,7 +170,7 @@ export function ReportsPage() {
             mensalidade. Ciclos mensais em America/Sao_Paulo; valores históricos
             preservados.
           </p>
-          <div className="flex flex-wrap gap-4">
+          <div className="flex flex-wrap items-end gap-4">
             <EzComboBox
               id="billing-contract"
               label="Contrato"
@@ -173,17 +193,45 @@ export function ReportsPage() {
             />
             <EzTextInput
               id="billing-end-month"
-              label="Ciclos até (exclusivo)"
+              label="Ciclos até"
               type="month"
               value={endMonth}
+              hasError={rangeInvalid}
+              message={
+                rangeInvalid
+                  ? 'O mês final não pode ser anterior ao início.'
+                  : 'O mês escolhido não é incluído no relatório.'
+              }
               onChange={(event) => updateParams({ ate: event.target.value })}
             />
+            {(startMonth || endMonth) && (
+              <EzButton
+                variant="tertiary"
+                onClick={() => updateParams({ de: '', ate: '' })}
+              >
+                Limpar período
+              </EzButton>
+            )}
           </div>
           {billingQ.isError && (
-            <p role="alert">
-              Não foi possível carregar o relatório. Verifique o período
-              selecionado.
-            </p>
+            <EzAlert
+              variant="error"
+              action={
+                billingErrorStatus(billingQ.error) === 400 ||
+                billingErrorStatus(billingQ.error) === 403 ? undefined : (
+                  <EzButton
+                    variant="secondary"
+                    size="small"
+                    loading={billingQ.isFetching}
+                    onClick={() => void billingQ.refetch()}
+                  >
+                    Tentar de novo
+                  </EzButton>
+                )
+              }
+            >
+              {billingErrorMessage(billingQ.error)}
+            </EzAlert>
           )}
           {billingQ.isLoading && (
             <div className="flex justify-center p-4">

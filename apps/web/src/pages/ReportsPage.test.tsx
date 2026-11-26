@@ -284,7 +284,8 @@ describe('ReportsPage F3-17 (#454)', () => {
       expect(await screen.findByText(/não pode ser anterior ao início/i)).toBeInTheDocument();
       expect(screen.getByLabelText(/Ciclos até/)).toHaveAttribute('aria-invalid', 'true');
       await act(async () => undefined);
-      expect(billingCalls().some((call) => billingParams(call).startDate)).toBe(false);
+      // Só início (2026-05) é intervalo válido e consulta; início e fim juntos, invertidos, não.
+      expect(billingCalls().some((call) => billingParams(call).startDate && billingParams(call).endDate)).toBe(false);
     });
 
     it('Limpar período esvazia início e fim', async () => {
