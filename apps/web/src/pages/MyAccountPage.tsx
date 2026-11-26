@@ -1,23 +1,34 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import axios from 'axios';
 import { api } from '../lib/api';
 import { useAuthStore } from '../stores/authStore';
 import { useApiTokens } from '../hooks/useApiTokens';
-import { EzAlert, EzButton, EzDialog, EzTabs, EzTextInput } from '../components/ds';
+import { EzAlert, EzButton, EzDialog, EzTabs, EzTextInput, ezTabId, ezTabPanelId } from '../components/ds';
 import { PasswordRules, PolicyErrors } from '../components/PasswordRules';
 import { TwoFactorSection } from '../components/TwoFactorSection';
-import { policyMessages } from '../lib/passwordRules';
+import { allRulesMet, policyMessages } from '../lib/passwordRules';
 
-const changePasswordSchema = z.object({
-  currentPassword: z.string().min(1, 'Senha atual é obrigatória'),
-  newPassword: z
-    .string()
-    .min(10, 'A nova senha deve ter pelo menos 10 caracteres'),
-});
-type ChangePasswordFormValues = z.infer<typeof changePasswordSchema>;
+// Mesmas regras do registro (passwordRules); o servidor continua sendo a autoridade.
+const buildChangePasswordSchema = (email?: string) =>
+  z
+    .object({
+      currentPassword: z.string().min(1, 'Senha atual é obrigatória'),
+      newPassword: z.string().min(1, 'Nova senha é obrigatória'),
+      confirmNewPassword: z.string(),
+    })
+    .superRefine(({ newPassword, confirmNewPassword }, ctx) => {
+      if (newPassword && !allRulesMet(newPassword, { email })) {
+        ctx.addIssue({ code: 'custom', path: ['newPassword'], message: 'A senha não atende a todas as regras da lista.' });
+      }
+      if (confirmNewPassword !== newPassword) {
+        ctx.addIssue({ code: 'custom', path: ['confirmNewPassword'], message: 'As senhas não coincidem.' });
+      }
+    });
+type ChangePasswordFormValues = z.infer<ReturnType<typeof buildChangePasswordSchema>>;
 
 const profileSchema = z.object({
   name: z.string().trim().min(1, 'Nome é obrigatório'),
@@ -26,6 +37,8 @@ const profileSchema = z.object({
 type ProfileFormValues = z.infer<typeof profileSchema>;
 
 type Tab = 'profile' | 'security' | 'tokens';
+const TAB_IDS: readonly Tab[] = ['profile', 'security', 'tokens'];
+const ACCOUNT_TABS_ID = 'my-account';
 
 /**
  * Mirrors the Tiflux reference UI (accessed 2026-09-30): "Minha conta"
@@ -40,7 +53,9 @@ type Tab = 'profile' | 'security' | 'tokens';
  * outside the browser — e.g. the apps/mcp MCP server for LLM clients.
  */
 export function MyAccountPage() {
-  const [tab, setTab] = useState<Tab>('profile');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requested = searchParams.get('tab');
+  const tab: Tab = TAB_IDS.find((id) => id === requested) ?? 'profile';
 
   const tabs = [
     { id: 'profile', label: 'Minha Conta' },
@@ -55,10 +70,16 @@ export function MyAccountPage() {
       <EzTabs
         tabs={tabs}
         activeTab={tab}
-        onChange={(id) => setTab(id as Tab)}
+        idPrefix={ACCOUNT_TABS_ID}
+        onChange={(id) => setSearchParams({ tab: id }, { replace: true })}
       />
 
-      <div className="pt-2">
+      <div
+        role="tabpanel"
+        id={ezTabPanelId(ACCOUNT_TABS_ID, tab)}
+        aria-labelledby={ezTabId(ACCOUNT_TABS_ID, tab)}
+        className="pt-2"
+      >
         {tab === 'profile' && <ProfileTab />}
         {tab === 'security' && (
           <div className="space-y-6">
@@ -76,6 +97,8 @@ function ProfileTab() {
   const user = useAuthStore((state) => state.user);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [loadState, setLoadState] = useState<'loading' | 'error' | 'ready'>('loading');
+  const [attempt, setAttempt] = useState(0);
   const {
     register,
     handleSubmit,
@@ -88,6 +111,7 @@ function ProfileTab() {
 
   useEffect(() => {
     let cancelled = false;
+    setLoadState('loading');
     api
       .get<{ name: string; email: string }>('/auth/me')
       .then((response) => {
@@ -98,16 +122,18 @@ function ProfileTab() {
             { name: response.data.name, email: response.data.email },
             { keepDirtyValues: true },
           );
+          setLoadState('ready');
         }
       })
       .catch(() => {
-        // Keep the defaults (blank name / token email) if the fetch fails;
-        // the user can still edit and save.
+        // Sem os dados reais o e-mail do token pode estar obsoleto: avisa e
+        // bloqueia o Salvar até uma nova tentativa funcionar.
+        if (!cancelled) setLoadState('error');
       });
     return () => {
       cancelled = true;
     };
-  }, [reset]);
+  }, [reset, attempt]);
 
   const onSubmit = async (values: ProfileFormValues) => {
     setSubmitError(null);
@@ -130,6 +156,17 @@ function ProfileTab() {
       noValidate
       className="space-y-4 rounded-lg border border-gray-200 bg-white p-6"
     >
+      {loadState === 'error' && (
+        <EzAlert variant="error" role="alert">
+          <div className="flex flex-wrap items-center gap-3">
+            <span>Não foi possível carregar seus dados.</span>
+            <EzButton type="button" size="small" variant="secondary" onClick={() => setAttempt((n) => n + 1)}>
+              Tentar novamente
+            </EzButton>
+          </div>
+        </EzAlert>
+      )}
+
       <EzTextInput
         id="name"
         label="Nome"
@@ -158,7 +195,12 @@ function ProfileTab() {
         </EzAlert>
       )}
 
-      <EzButton type="submit" disabled={isSubmitting} className="w-full">
+      <EzButton
+        type="submit"
+        disabled={isSubmitting || loadState !== 'ready'}
+        disabledReason={loadState === 'ready' ? undefined : 'Aguarde os dados da conta carregarem.'}
+        className="w-full"
+      >
         Salvar
       </EzButton>
     </form>
@@ -177,7 +219,7 @@ function SecurityTab() {
     watch,
     formState: { errors, isSubmitting },
   } = useForm<ChangePasswordFormValues>({
-    resolver: zodResolver(changePasswordSchema),
+    resolver: zodResolver(useMemo(() => buildChangePasswordSchema(email), [email])),
   });
 
   const onSubmit = async (values: ChangePasswordFormValues) => {
@@ -185,7 +227,8 @@ function SecurityTab() {
     setSuccess(false);
 
     try {
-      const { data } = await api.post<{ access_token?: string }>('/auth/change-password', values);
+      const { confirmNewPassword: _confirmNewPassword, ...payload } = values;
+      const { data } = await api.post<{ access_token?: string }>('/auth/change-password', payload);
       // A troca derruba os outros tokens; a sessão atual guarda o novo.
       if (data?.access_token) login(data.access_token);
       setSuccess(true);
@@ -230,6 +273,16 @@ function SecurityTab() {
         {...register('newPassword')}
       />
       <PasswordRules password={watch('newPassword') ?? ''} email={email} />
+
+      <EzTextInput
+        id="confirmNewPassword"
+        type="password"
+        autoComplete="new-password"
+        label="Confirmar nova senha"
+        hasError={!!errors.confirmNewPassword}
+        message={errors.confirmNewPassword?.message}
+        {...register('confirmNewPassword')}
+      />
 
       {submitError && (
         <EzAlert variant="error" role="alert">
@@ -334,7 +387,6 @@ function ApiTokensTab() {
               type="button"
               size="small"
               onClick={handleCopy}
-              className="!bg-amber-600 !border-amber-600 hover:!bg-amber-700 hover:!border-amber-700"
             >
               {copied ? 'Copiado!' : 'Copiar'}
             </EzButton>
@@ -416,10 +468,9 @@ function ApiTokensTab() {
             </div>
             <EzButton
               type="button"
-              variant="tertiary"
+              variant="danger"
               size="small"
               onClick={() => setRevokeTarget({ id: token.id, name: token.name })}
-              className="!text-red-600 hover:!text-red-700"
             >
               Revogar
             </EzButton>

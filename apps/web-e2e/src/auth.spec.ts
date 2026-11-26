@@ -78,6 +78,7 @@ test.describe('authentication', () => {
     await page.getByRole('tab', { name: 'Segurança' }).click();
     await page.fill('#currentPassword', 'Cavalo#Azul-7418');
     await page.fill('#newPassword', 'Girafa#Verde-5290');
+    await page.fill('#confirmNewPassword', 'Girafa#Verde-5290');
     await page.click('button[type="submit"]');
 
     await expect(page.getByText('Senha atualizada com sucesso!')).toBeVisible();
