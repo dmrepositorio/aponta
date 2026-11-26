@@ -25,10 +25,12 @@ import {
   EzPageLayout,
   EzSpinner,
   EzTabs,
+  EzTag,
   EzTextArea,
   EzTextEdit,
   EzTextInput,
 } from '../components/ds';
+import { EzEmptyCard as EzErrorCard } from '../components/ds/EzEmptyCard';
 import { applyDynamicFilters } from '../components/ds/EzDynamicFilter';
 import type { EzDynamicFilterField, EzDynamicFilterRule } from '../components/ds/EzDynamicFilter';
 import { ActiveTag } from '../components/ActiveTag';
@@ -255,6 +257,8 @@ export function OrganizationsPage() {
   } | null>(null);
   const [linkDeskId, setLinkDeskId] = useState<string>('');
   const [newGroupMemberIds, setNewGroupMemberIds] = useState<(string | number)[]>([]);
+  // ORG-08 (#470): busca client-side por nome ou e-mail na aba Usuários.
+  const [userSearch, setUserSearch] = useState('');
 
   // Sankhya Parity (br.com.sankhya.core.cad.parceiros): toolbar, drawer, personalização por usuário
   const {
@@ -312,7 +316,7 @@ export function OrganizationsPage() {
   // esses campos após a busca, exigindo "Editar manualmente" para sobrescrevê-los.
   const [isCnpjDataLocked, setIsCnpjDataLocked] = useState(false);
 
-  const { data: orgs, isLoading: isLoadingOrgs } = useQuery({
+  const { data: orgs, isLoading: isLoadingOrgs, isError: isErrorOrgs, refetch: refetchOrgs } = useQuery({
     queryKey: ['organizations'],
     queryFn: async () => {
       const { data } = await api.get<Organization[]>('/organizations');
@@ -908,6 +912,21 @@ export function OrganizationsPage() {
     return applyDynamicFilters(base, dynamicRules, ORG_FILTER_FIELDS);
   }, [orgs, filterStatus, filterDocType, filterSearch, dynamicRules]);
 
+  const clientUsers = useMemo(() => {
+    const query = userSearch.trim().toLowerCase();
+    return (usersList ?? [])
+      .filter((u) => u.role.includes('CLIENT'))
+      .filter((u) => !query || u.name.toLowerCase().includes(query) || u.email.toLowerCase().includes(query));
+  }, [usersList, userSearch]);
+
+  const clearFilters = () => {
+    setFilterSearch('');
+    setFilterStatus('ALL');
+    setFilterDocType('ALL');
+    setDynamicRules([]);
+    setActiveSavedFilterId(null);
+  };
+
   const handlePrevious = () => {
     if (focusedIndex > 0) {
       const newIdx = focusedIndex - 1;
@@ -1036,6 +1055,14 @@ export function OrganizationsPage() {
       <div className="space-y-6">
         {isLoadingOrgs ? (
           <EzSpinner label="Carregando…" />
+        ) : isErrorOrgs && !orgs ? (
+          // ORG-06 (#470): falha de rede não pode parecer lista vazia nem spinner infinito.
+          <EzErrorCard
+            variant="error"
+            title="Não foi possível carregar os clientes."
+            description="Verifique a conexão e tente novamente."
+            onRetry={() => void refetchOrgs()}
+          />
         ) : (
           <div className="bg-white rounded-[10px] border border-gray-200 overflow-hidden shadow-xs flex flex-col">
             {/* Sankhya Standard Entity Toolbar */}
@@ -1102,13 +1129,7 @@ export function OrganizationsPage() {
                 <EzFilterDrawer
                   isOpen={isFilterPanelOpen}
                   onClose={() => setIsFilterPanelOpen(false)}
-                  onClear={() => {
-                    setFilterSearch('');
-                    setFilterStatus('ALL');
-                    setFilterDocType('ALL');
-                    setDynamicRules([]);
-                    setActiveSavedFilterId(null);
-                  }}
+                  onClear={clearFilters}
                   title="Filtros de Clientes"
                   savedFilters={screenConfig.savedFilters}
                   activeSavedFilterId={activeSavedFilterId}
@@ -1189,6 +1210,25 @@ className="isolate flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll
                   {orgs?.length === 0 ? (
                     <div className="p-4">
                       <EzEmptyCard title="Nenhuma empresa cadastrada ainda." />
+                    </div>
+                  ) : orgs && orgs.length > 0 && filteredOrgs.length === 0 ? (
+                    // ORG-06 (#470): os filtros zeraram a lista; a grade desmonta, então a seleção antiga é descartada.
+                    <div className="p-4">
+                      <EzEmptyCard
+                        title="Nenhum cliente encontrado"
+                        description="Nenhum cliente corresponde aos filtros aplicados."
+                        action={
+                          <EzButton
+                            variant="secondary"
+                            size="small"
+                            label="Limpar filtros"
+                            onClick={() => {
+                              clearFilters();
+                              setSelectedOrgs([]);
+                            }}
+                          />
+                        }
+                      />
                     </div>
                   ) : (
                     <EzEntityGrid
@@ -1405,20 +1445,12 @@ className="isolate flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll
                         <h3 className="text-sm font-semibold text-gray-900">Dados do Parceiro / Cliente</h3>
                         <p className="text-xs text-gray-500">Dados cadastrais principais do cliente.</p>
                       </div>
-                      <div className="text-xs text-gray-400 font-mono">
+                      <div className="text-xs text-gray-600 font-mono">
                         ID: {orgDetail.id}
                       </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 text-sm">
-                      <div className="space-y-1">
-                        <span className="text-xs font-medium text-gray-500">Nome Fantasia</span>
-                        <div className="text-gray-900 font-medium text-sm">{orgDetail.name || '—'}</div>
-                      </div>
-                      <div className="space-y-1">
-                        <span className="text-xs font-medium text-gray-500">Razão Social</span>
-                        <div className="text-gray-900 font-medium text-sm">{orgDetail.legalName || '—'}</div>
-                      </div>
                       <div className="space-y-1">
                         <span className="text-xs font-medium text-gray-500">CPF/CNPJ</span>
                         <div className="text-gray-900 font-medium text-sm font-mono">
@@ -1696,21 +1728,49 @@ className="isolate flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll
               {detailTab === 'users' && (
                 <div className="space-y-4">
                   <h4 className="text-sm font-semibold text-gray-900">Usuários vinculados</h4>
+                  <EzTextInput
+                    id="org-users-search"
+                    label="Buscar usuário"
+                    placeholder="Nome ou e-mail"
+                    value={userSearch}
+                    onChange={(e) => setUserSearch(e.target.value)}
+                  />
                   {isLoadingUsers ? <EzSpinner label="Carregando usuários…" /> : (
                     <div className="max-h-72 overflow-y-auto space-y-2 border border-gray-200 rounded-[12px] p-3">
-                      {(usersList ?? []).filter(u => u.role.includes('CLIENT')).map(u => {
+                      {clientUsers.map(u => {
                         const isPinned = u.organizationId === detailOrgId;
+                        const otherOrgId = isPinned ? null : u.organizationId;
+                        const otherOrgName = otherOrgId ? (orgs?.find((o) => o.id === otherOrgId)?.name ?? 'outro cliente') : null;
                         return (
                           <div key={u.id} className="flex justify-between items-center text-sm p-1 hover:bg-gray-90 rounded-[8px]">
-                            <div>
-                              <span className="text-gray-900">{u.name}</span>{' '}
-                              <span className="text-gray-500">({u.email})</span>
+                            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                              <span>
+                                <span className="text-gray-900">{u.name}</span>{' '}
+                                <span className="text-gray-500">({u.email})</span>
+                              </span>
+                              {otherOrgName && <EzTag variant="gray" label={'Cliente atual: ' + otherOrgName} />}
                             </div>
                             <EzButton
                               variant="tertiary"
                               size="x-small"
                               disabled={attachUserMutation.isPending}
-                              onClick={() => attachUserMutation.mutate({ userId: u.id, orgId: isPinned ? null : detailOrgId })}
+                              onClick={() => {
+                                if (isPinned) {
+                                  attachUserMutation.mutate({ userId: u.id, orgId: null });
+                                  return;
+                                }
+                                if (!otherOrgName) {
+                                  attachUserMutation.mutate({ userId: u.id, orgId: detailOrgId });
+                                  return;
+                                }
+                                // ORG-08 (#470): reatribuir quem já pertence a outro cliente exige confirmação.
+                                setPendingConfirm({
+                                  title: `Mover de ${otherOrgName} para ${orgDetail.name}?`,
+                                  message: `${u.name} deixará de pertencer a ${otherOrgName} e passará a pertencer a ${orgDetail.name}.`,
+                                  variant: 'warning',
+                                  onConfirm: () => attachUserMutation.mutate({ userId: u.id, orgId: detailOrgId }),
+                                });
+                              }}
                               className={isPinned ? 'text-red-600 hover:text-red-700' : 'text-green-600 hover:text-green-700'}
                             >
                               {isPinned ? 'Remover' : 'Adicionar'}
@@ -1718,6 +1778,9 @@ className="isolate flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll
                           </div>
                         );
                       })}
+                      {clientUsers.length === 0 && (
+                        <p className="text-sm text-gray-600">Nenhum usuário encontrado.</p>
+                      )}
                     </div>
                   )}
                 </div>
@@ -1874,11 +1937,14 @@ className="isolate flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll
                     </div>
 
                     {/* Faturamento Quarteirizado card */}
-                    <div className="p-4 rounded-[8px] bg-gray-50 border border-gray-200 space-y-2">
+                    <div className="p-4 rounded-[8px] bg-gray-50 border border-gray-200">
                       <div className="flex items-center gap-2">
                         <EzCheck
                           id="org-billing-quarterly-checkbox"
                           label="Habilitar faturamento quarteirizado"
+                          // ORG-13 (#470): a ajuda é a mensagem do campo; sem erro o EzCheck não liga a mensagem ao input, então ligamos aqui.
+                          message="Os apontamentos e ordens de serviço deste cliente seguem o regime quarteirizado."
+                          aria-describedby="org-billing-quarterly-checkbox-message"
                           checked={billingDraft?.quarterlyBilling ?? (orgDetail.quarterlyBilling === true)}
                           disabled={updateOrgMutation.isPending}
                           onChange={(e) =>
@@ -1889,9 +1955,6 @@ className="isolate flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll
                           }
                         />
                       </div>
-                      <p className="text-[12px] text-gray-600 pl-6">
-                        Quando ativado, os apontamentos de horas e ordens de serviço deste cliente serão direcionados para o regime de faturamento quarteirizado por organização / parceiro.
-                      </p>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1908,7 +1971,7 @@ className="isolate flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll
                             }))
                           }
                         />
-                        <span className="text-[11px] text-gray-400 block">
+                        <span className="text-xs text-gray-600 block">
                           E-mails que receberão as notificações e relatórios de faturamento (separados por vírgula).
                         </span>
                       </div>
@@ -1934,7 +1997,7 @@ className="isolate flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll
                               }))
                             }
                           />
-                          <span className="text-[11px] text-gray-400 block">
+                          <span className="text-xs text-gray-600 block">
                             Dia do mês (1 a 31).
                           </span>
                         </div>
@@ -1956,7 +2019,7 @@ className="isolate flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll
                             <option value="TRANSFERENCIA">Transferência</option>
                             <option value="CARTAO">Cartão de Crédito</option>
                           </EzComboBox>
-                          <span className="text-[11px] text-gray-400 block">
+                          <span className="text-xs text-gray-600 block">
                             Método preferencial.
                           </span>
                         </div>

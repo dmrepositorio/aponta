@@ -203,7 +203,7 @@ describe('OrganizationsPage', { timeout: 15000 }, () => {
     await user.click(screen.getByTestId('ez-toolbar-mode-toggle-button'));
 
     await waitFor(() => {
-      expect(screen.getByText('Empresa A Ltda')).toBeInTheDocument();
+      expect(screen.getByLabelText(/razão social/i, { selector: 'input' })).toHaveValue('Empresa A Ltda');
     });
 
     await user.click(screen.getByTitle('Voltar'));
@@ -1133,12 +1133,12 @@ describe('OrganizationsPage', { timeout: 15000 }, () => {
 
     await user.click(screen.getByTestId('ez-toolbar-next-button'));
     await waitFor(() => {
-      expect(screen.getByText('Empresa B Ltda')).toBeInTheDocument();
+      expect(screen.getByLabelText(/razão social/i, { selector: 'input' })).toHaveValue('Empresa B Ltda');
     });
 
     await user.click(screen.getByTestId('ez-toolbar-previous-button'));
     await waitFor(() => {
-      expect(screen.getByText('Empresa A Ltda')).toBeInTheDocument();
+      expect(screen.getByLabelText(/razão social/i, { selector: 'input' })).toHaveValue('Empresa A Ltda');
     });
   });
 
