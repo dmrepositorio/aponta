@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -44,6 +44,27 @@ const ALL_ORGS = [
 ];
 
 const ALL_DESKS = [{ id: 'desk-1', name: 'Mesa Principal' }];
+
+function apiError(message: string) {
+  return Object.assign(new Error(message), { isAxiosError: true, response: { status: 400, data: { message } } });
+}
+
+async function expectText(text: string | RegExp) {
+  await waitFor(() => expect(screen.queryByText(text)).toBeInTheDocument());
+}
+
+async function openGroup(tab?: 'Equipe' | 'Acessos') {
+  await userEvent.click(await screen.findByText('Suporte N1'));
+  await screen.findByRole('tablist');
+  if (tab) await userEvent.click(screen.getByRole('tab', { name: tab }));
+}
+
+function mockGroupDetail(detail: object) {
+  const base = vi.mocked(api.get).getMockImplementation()!;
+  vi.mocked(api.get).mockImplementation((url: string) =>
+    url === '/technical-groups/tg-1' ? Promise.resolve({ data: detail }) : base(url),
+  );
+}
 
 function renderPage() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -138,5 +159,97 @@ describe('TechnicalGroupsPage', () => {
     await waitFor(() =>
       expect(api.post).toHaveBeenCalledWith('/technical-groups/tg-1/service-desks/desk-1'),
     );
+  });
+});
+
+describe('TechnicalGroupsPage: feedback das mutações (TG-01)', () => {
+  const DESK_LINKED = {
+    ...GROUP_DETAIL,
+    serviceDeskLinks: [{ serviceDesk: { id: 'desk-1', name: 'Mesa Principal' } }],
+  };
+  const CASES = [
+    { tab: 'Equipe', button: 'Adicionar Carlos Dias', method: 'post', success: 'Membro adicionado', detail: GROUP_DETAIL },
+    { tab: 'Equipe', button: 'Remover Ana Silva', method: 'delete', success: 'Membro removido', detail: GROUP_DETAIL },
+    { tab: 'Acessos', button: 'Adicionar Cliente B', method: 'post', success: 'Cliente vinculado', detail: GROUP_DETAIL },
+    { tab: 'Acessos', button: 'Remover Cliente A', method: 'delete', success: 'Cliente desvinculado', detail: GROUP_DETAIL },
+    { tab: 'Acessos', button: 'Adicionar Mesa Principal', method: 'post', success: 'Mesa vinculada', detail: GROUP_DETAIL },
+    { tab: 'Acessos', button: 'Remover Mesa Principal', method: 'delete', success: 'Mesa desvinculada', detail: DESK_LINKED },
+  ] as const;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(api.get).mockImplementation((url: string) => {
+      if (url === '/technical-groups') return Promise.resolve({ data: GROUP_LIST });
+      if (url === '/technical-groups/tg-1') return Promise.resolve({ data: GROUP_DETAIL });
+      if (url === '/users') return Promise.resolve({ data: ALL_USERS });
+      if (url === '/organizations') return Promise.resolve({ data: ALL_ORGS });
+      if (url === '/service-desks') return Promise.resolve({ data: ALL_DESKS });
+      return Promise.reject(new Error(`Unexpected GET ${url}`));
+    });
+    vi.mocked(api.post).mockResolvedValue({ data: {} });
+    vi.mocked(api.patch).mockResolvedValue({ data: {} });
+    vi.mocked(api.delete).mockResolvedValue({ data: {} });
+  });
+
+  it.each(CASES)('mostra "$success" ao concluir "$button"', async ({ tab, button, method, success, detail }) => {
+    mockGroupDetail(detail);
+    renderPage();
+    await openGroup(tab);
+    await userEvent.click(await screen.findByRole('button', { name: button }));
+
+    await waitFor(() => expect(api[method]).toHaveBeenCalledTimes(1));
+    await expectText(success);
+  });
+
+  it.each(CASES)('mostra a mensagem da API quando "$button" falha', async ({ tab, button, method, detail }) => {
+    mockGroupDetail(detail);
+    vi.mocked(api[method]).mockRejectedValue(apiError('Falha da API: ' + button));
+    renderPage();
+    await openGroup(tab);
+    await userEvent.click(await screen.findByRole('button', { name: button }));
+
+    await expectText('Falha da API: ' + button);
+  });
+
+  it('mostra "Grupo salvo" depois de Salvar na aba Informações', async () => {
+    renderPage();
+    await openGroup();
+    await userEvent.type(screen.getByLabelText('Nome'), ' B');
+    await userEvent.click(screen.getByRole('button', { name: 'Salvar' }));
+
+    await waitFor(() => expect(api.patch).toHaveBeenCalledTimes(1));
+    await expectText('Grupo salvo');
+  });
+
+  it('mostra a mensagem da API quando Salvar falha', async () => {
+    vi.mocked(api.patch).mockRejectedValue(apiError('Nome inválido'));
+    renderPage();
+    await openGroup();
+    await userEvent.type(screen.getByLabelText('Nome'), ' B');
+    await userEvent.click(screen.getByRole('button', { name: 'Salvar' }));
+
+    await expectText('Nome inválido');
+    expect(screen.queryByText('Grupo salvo')).not.toBeInTheDocument();
+  });
+
+  it('usa um texto padrão quando a falha não traz mensagem da API', async () => {
+    vi.mocked(api.post).mockRejectedValue(new Error('Network Error'));
+    renderPage();
+    await openGroup('Equipe');
+    await userEvent.click(await screen.findByRole('button', { name: 'Adicionar Carlos Dias' }));
+
+    await expectText(/não foi possível/i);
+  });
+
+  it('o alerta de erro fecha e some na próxima ação bem-sucedida', async () => {
+    vi.mocked(api.post).mockRejectedValueOnce(apiError('Falha momentânea')).mockResolvedValue({ data: {} });
+    renderPage();
+    await openGroup('Equipe');
+    await userEvent.click(await screen.findByRole('button', { name: 'Adicionar Carlos Dias' }));
+    await expectText('Falha momentânea');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Adicionar Carlos Dias' }));
+    await expectText('Membro adicionado');
+    expect(screen.queryByText('Falha momentânea')).not.toBeInTheDocument();
   });
 });
