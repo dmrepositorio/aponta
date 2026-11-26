@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useRef, useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiErrorMessage, apiErrorStatus } from '../hooks/useUsers';
+import { generatePassword } from '../lib/generatePassword';
 import {
   Copy,
+  Dices,
   Eye,
   EyeOff,
   Trash2,
@@ -51,7 +53,10 @@ type SecretField = 'username' | 'password';
 type Feedback = { kind: 'success' | 'error'; text: string };
 type DeleteTarget = { kind: 'credential'; credential: VaultCredential } | { kind: 'folder'; folder: VaultFolder };
 
-const passwordCount = (count: number) => (count === 0 ? 'nenhuma senha' : count === 1 ? '1 senha' : `${count} senhas`);
+const KEEP_HINT = 'Deixe em branco para não alterar.';
+const GENERATED_HINT = 'Senha gerada. Use "Mostrar senha" para conferir antes de salvar.';
+
+const passwordCount =(count: number) => (count === 0 ? 'nenhuma senha' : count === 1 ? '1 senha' : `${count} senhas`);
 
 const SECRET_FIELDS: Record<
   SecretField,
@@ -193,6 +198,7 @@ function CredentialModal({
   const [name, setName] = useState(credential?.name ?? '');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [generated, setGenerated] = useState(false);
   const [url, setUrl] = useState(credential?.url ?? '');
   const [description, setDescription] = useState(credential?.description ?? '');
   const initialFolderId = credential ? credential.folderId ?? ROOT_FOLDER_ID : defaultFolderId;
@@ -238,17 +244,41 @@ function CredentialModal({
         {error && <EzAlert variant="error">{error}</EzAlert>}
         <EzTextInput label="Nome" value={name} onChange={(e) => setName(e.target.value)} autoFocus required />
         <EzTextInput
-          label={isEdit ? 'Usuário (deixe em branco para não alterar)' : 'Usuário'}
+          id="vault-credential-username"
+          label="Usuário"
+          message={isEdit ? KEEP_HINT : undefined}
+          aria-describedby={isEdit ? 'vault-credential-username-message' : undefined}
           value={username}
           onChange={(e) => setUsername(e.target.value)}
         />
-        <EzTextInput
-          label={isEdit ? 'Senha (deixe em branco para não alterar)' : 'Senha'}
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required={!isEdit}
-        />
+        <div className="flex flex-col gap-2">
+          <EzTextInput
+            id="vault-credential-password"
+            label="Senha"
+            type="password"
+            message={generated ? GENERATED_HINT : isEdit ? KEEP_HINT : undefined}
+            aria-describedby={generated || isEdit ? 'vault-credential-password-message' : undefined}
+            value={password}
+            onChange={(e) => {
+              setGenerated(false);
+              setPassword(e.target.value);
+            }}
+            required={!isEdit}
+          />
+          <div>
+            <EzButton
+              type="button"
+              variant="secondary"
+              size="small"
+              leftIcon={Dices}
+              label="Gerar senha"
+              onClick={() => {
+                setPassword(generatePassword());
+                setGenerated(true);
+              }}
+            />
+          </div>
+        </div>
         <EzTextInput label="URL" value={url} onChange={(e) => setUrl(e.target.value)} />
         <EzTextInput label="Notas" value={description} onChange={(e) => setDescription(e.target.value)} />
         <EzSelect label="Pasta" value={folderId} onChange={(e) => setFolderId(e.target.value)}>
