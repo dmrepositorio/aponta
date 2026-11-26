@@ -38,8 +38,8 @@ beforeEach(() => {
 const waitForSave = () => act(() => new Promise<void>((done) => setTimeout(done, 450)));
 
 /** A tela só desenha depois da leitura da preferência: espera os controles (ausentes no esqueleto e no erro). */
-async function waitForList(props: { isLoading?: boolean; isError?: boolean }) {
-  if (!props.isLoading && !props.isError) await screen.findByRole('button', { name: /exibir colunas/i });
+async function waitForList(props: { isLoading?: boolean }) {
+  if (!props.isLoading) await screen.findByRole('button', { name: /exibir colunas/i });
 }
 
 const ticketA: Ticket = {
@@ -89,7 +89,6 @@ async function renderList(props: Partial<Parameters<typeof TicketList>[0]> = {})
   const defaults: Parameters<typeof TicketList>[0] = {
     tickets: [ticketA, ticketB],
     isLoading: false,
-    isError: false,
   };
   const view = render(
     <MemoryRouter>
@@ -114,14 +113,11 @@ describe('TicketList (D5: Lista agrupável)', () => {
     expect(screen.getByRole('status')).toHaveTextContent(/carregando chamados/i);
   });
 
-  it('shows an error message when isError is true', async () => {
-    await renderList({ tickets: [], isError: true });
-    expect(screen.getByRole('alert')).toHaveTextContent(/falha ao carregar os chamados/i);
-  });
-
-  it('shows an empty-state message when there are no tickets', async () => {
+  it('TKT-06: sem filtros ativos o vazio diz "Nenhum chamado ainda" e oferece "Abrir chamado"', async () => {
     await renderList({ tickets: [] });
-    expect(screen.getByText(/nenhum chamado encontrado/i)).toBeInTheDocument();
+    expect(screen.getByText('Nenhum chamado ainda')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Abrir chamado' })).toBeInTheDocument();
+    expect(screen.queryByText(/tente ajustar os filtros/i)).not.toBeInTheDocument();
   });
 
   it('renders status and priority with the new tags', async () => {
@@ -251,7 +247,7 @@ describe('TicketList (D5: Lista agrupável)', () => {
 
       expect(screen.getByLabelText(/agrupar por/i, { selector: 'select' })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /exibir colunas/i })).toBeInTheDocument();
-      expect(screen.getByText(/nenhum chamado encontrado/i)).toBeInTheDocument();
+      expect(screen.getByText('Nenhum chamado ainda')).toBeInTheDocument();
       expect(screen.queryByRole('table')).not.toBeInTheDocument();
     });
 
@@ -260,7 +256,7 @@ describe('TicketList (D5: Lista agrupável)', () => {
       const first = await renderList({ tickets: [] });
 
       await user.click(screen.getByRole('button', { name: /exibir colunas/i }));
-      expect(screen.getAllByRole('checkbox')).toHaveLength(14 + columnNames.length);
+      expect(screen.getAllByRole('checkbox')).toHaveLength(15 + columnNames.length);
       await user.click(screen.getByRole('checkbox', { name: /responsável/i }));
       await waitForSave();
       first.unmount();
@@ -269,12 +265,8 @@ describe('TicketList (D5: Lista agrupável)', () => {
       expect(headers().some((h) => h.includes('Responsável'))).toBe(true);
     });
 
-    it('AC-03: loading and error states still render without the controls', async () => {
-      const loading = await renderList({ tickets: [], isLoading: true });
-      expect(screen.queryByRole('button', { name: /exibir colunas/i })).not.toBeInTheDocument();
-      loading.unmount();
-
-      await renderList({ tickets: [], isError: true });
+    it('AC-03: the loading state still renders without the controls', async () => {
+      await renderList({ tickets: [], isLoading: true });
       expect(screen.queryByRole('button', { name: /exibir colunas/i })).not.toBeInTheDocument();
       expect(screen.queryByLabelText(/agrupar por/i, { selector: 'select' })).not.toBeInTheDocument();
     });
@@ -285,7 +277,7 @@ describe('TicketList (D5: Lista agrupável)', () => {
 
       expect(headers().some((h) => columnNames.includes(h))).toBe(false);
       await user.click(screen.getByRole('button', { name: /exibir colunas/i }));
-      for (const name of ['Número', 'Título', 'Cliente', 'Origem', 'Prioridade', 'Status', 'Estágio']) {
+      for (const name of ['Número', 'Título', 'Cliente', 'Origem', 'Prioridade', 'Status', 'Estágio', 'SLA']) {
         expect(screen.getByRole('checkbox', { name })).toBeChecked();
       }
       for (const name of columnNames) {
@@ -301,7 +293,8 @@ describe('TicketList (D5: Lista agrupável)', () => {
       expect(first).toContain('4321');
       expect(first).toContain('Financeiro');
       const second = within(rows[2]).getAllByRole('cell').map((c) => c.textContent);
-      expect(second.filter((c) => c === '—')).toHaveLength(3);
+      // Telefone, ramal e grupo de recursos vazios, mais o SLA (ticketB não traz estado de prazo).
+      expect(second.filter((c) => c === '—')).toHaveLength(4);
       expect(second).toContain('joao@beta.com');
     });
 
@@ -369,7 +362,7 @@ describe('DMTE-526: abrir a linha por teclado e nova aba, e estado da ordenaçã
   async function renderWithProbe(props: Partial<Parameters<typeof TicketList>[0]> = {}) {
     const view = render(
       <MemoryRouter>
-        <TicketList tickets={[ticketA, ticketB]} isLoading={false} isError={false} {...props} />
+        <TicketList tickets={[ticketA, ticketB]} isLoading={false} {...props} />
         <LocationProbe />
       </MemoryRouter>,
     );
@@ -534,5 +527,106 @@ describe('DMTE-527 ticket 1: Lista com altura por faixa e tags sem quebra', () =
     });
     expect(screen.getByText('Aguardando Aprovação')).toBeInTheDocument();
     expect(screen.getByText('Aguardando Sankhya')).toBeInTheDocument();
+  });
+});
+
+describe('F3-10: SLA, linha por teclado e vazio da Lista', () => {
+  const visits: string[] = [];
+  function LocationProbe() {
+    const location = useLocation();
+    visits.push(location.pathname);
+    return <div data-testid="location-probe">{location.pathname}</div>;
+  }
+  async function renderWithProbe(props: Partial<Parameters<typeof TicketList>[0]> = {}) {
+    const view = render(
+      <MemoryRouter>
+        <TicketList tickets={[ticketA, ticketB]} isLoading={false} {...props} />
+        <LocationProbe />
+      </MemoryRouter>,
+    );
+    await waitForList(props);
+    return view;
+  }
+
+  beforeEach(() => {
+    localStorage.clear();
+    visits.length = 0;
+    useAuthStore.setState({
+      token: null,
+      user: { sub: 'u1', email: 'a@x.com', role: 'ADMIN', organizationId: null } as any,
+    });
+  });
+
+  it('TKT-02: a coluna SLA aparece por padrão com o chip de resolução "vencido" do ticket estourado', async () => {
+    await renderWithProbe({ tickets: [{ ...ticketA, resolveSlaStatus: 'BREACHED' }, ticketB] });
+    expect(screen.getByRole('columnheader', { name: 'SLA' })).toBeInTheDocument();
+    const row = screen.getByText('Printer broken').closest('tr') as HTMLElement;
+    expect(within(row).getByLabelText(/Resolução: vencido/)).toBeInTheDocument();
+  });
+
+  it('TKT-02: mostra o chip de atendimento quando há estado e "Pausado" quando slaPausedAt está preenchido', async () => {
+    await renderWithProbe({
+      tickets: [
+        { ...ticketA, responseSlaStatus: 'AT_RISK', slaPausedAt: '2026-01-01T12:00:00.000Z' },
+        ticketB,
+      ],
+    });
+    const row = screen.getByText('Printer broken').closest('tr') as HTMLElement;
+    expect(within(row).getByLabelText(/Resposta: em risco/)).toBeInTheDocument();
+    expect(within(row).getByText('Pausado')).toBeInTheDocument();
+    const other = screen.getByText('Email down').closest('tr') as HTMLElement;
+    expect(within(other).queryByText('Pausado')).not.toBeInTheDocument();
+  });
+
+  it('TKT-02: quem já tinha preferência salva sem a coluna SLA passa a vê-la', async () => {
+    serverPreference = { grid: { columnVisibility: { number: true, title: true } } };
+    await renderWithProbe();
+    expect(screen.getByRole('columnheader', { name: 'SLA' })).toBeInTheDocument();
+  });
+
+  it('TKT-04: a linha é focável e Enter nela abre o ticket, como o clique', async () => {
+    const user = userEvent.setup();
+    await renderWithProbe();
+    const row = screen.getByText('Email down').closest('tr') as HTMLElement;
+    expect(row).toHaveAttribute('tabindex', '0');
+    row.focus();
+    expect(row).toHaveFocus();
+    await user.keyboard('{Enter}');
+    expect(screen.getByTestId('location-probe')).toHaveTextContent('/tickets/t2');
+  });
+
+  it('TKT-04: Enter no link do número abre o ticket uma vez só (a linha não duplica)', async () => {
+    const user = userEvent.setup();
+    await renderWithProbe();
+    const row = screen.getByText('Email down').closest('tr') as HTMLElement;
+    expect(row).toHaveAttribute('tabindex', '0');
+    visits.length = 0;
+    screen.getByRole('link', { name: 'AP-2026-0002' }).focus();
+    await user.keyboard('{Enter}');
+    expect(screen.getByTestId('location-probe')).toHaveTextContent('/tickets/t2');
+    expect(visits).toHaveLength(1);
+  });
+
+  it('TKT-04: a linha documenta o atalho em texto acessível', async () => {
+    await renderWithProbe();
+    const row = screen.getByText('Email down').closest('tr') as HTMLElement;
+    expect(row).toHaveAttribute('aria-keyshortcuts', 'Enter');
+  });
+
+  it('TKT-06: "Abrir chamado" leva à tela de novo chamado', async () => {
+    const user = userEvent.setup();
+    await renderWithProbe({ tickets: [] });
+    await user.click(screen.getByRole('button', { name: 'Abrir chamado' }));
+    expect(screen.getByTestId('location-probe')).toHaveTextContent('/tickets/new');
+  });
+
+  it('TKT-06: com filtros ativos o vazio diz "Nenhum chamado encontrado" e oferece "Redefinir filtros"', async () => {
+    const user = userEvent.setup();
+    const onResetFilters = vi.fn();
+    await renderWithProbe({ tickets: [], hasFilters: true, onResetFilters });
+    expect(screen.getByText('Nenhum chamado encontrado')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Abrir chamado' })).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Redefinir filtros' }));
+    expect(onResetFilters).toHaveBeenCalledTimes(1);
   });
 });

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Search } from 'lucide-react';
 import { EzSegmented } from '../ds';
 
@@ -27,6 +27,21 @@ export function TicketsHeader({
   onOpenAdvancedSearch,
 }: TicketsHeaderProps) {
   const [searchText, setSearchText] = useState(search);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Atalho "/": foca Buscar, exceto quando a tecla é digitada num campo de texto
+  // (aí é texto) ou combinada com Ctrl/Meta/Alt (atalho do navegador ou do sistema) ou com um diálogo aberto.
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== '/' || event.ctrlKey || event.metaKey || event.altKey || event.defaultPrevented) return;
+      const target = event.target as HTMLElement | null;
+      if (target?.closest('input, textarea, select, [contenteditable=""], [contenteditable="true"], [role="dialog"]')) return;
+      event.preventDefault();
+      searchInputRef.current?.focus();
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   useEffect(() => {
     setSearchText(search);
@@ -68,6 +83,9 @@ export function TicketsHeader({
           </label>
           <input
             id="tickets-header-search"
+            ref={searchInputRef}
+            aria-keyshortcuts="/"
+            title="Buscar (atalho: /)"
             type="search"
             name="search"
             autoComplete="off"

@@ -34,7 +34,7 @@ function formatCardDate(value: string | null | undefined): string | null {
 }
 
 /** Prazo efetivo: o gravado mais as pausas acumuladas e a pausa em curso, como em `getSlaStatus` (apps/api). */
-function effectiveDeadline(deadline: string | null, ticket: Ticket, now: Date): string | null {
+export function effectiveDeadline(deadline: string | null, ticket: Ticket, now: Date): string | null {
   if (!deadline) return null;
   const pausedMs = (ticket.slaAccumulatedPauseTime || 0) * 60000;
   const currentPauseMs = ticket.slaPausedAt

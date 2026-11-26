@@ -2,10 +2,15 @@ import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { TicketList } from '../components/tickets/TicketList';
 import { TicketKanban } from '../components/tickets/TicketKanban';
-import { TicketActiveFilters } from '../components/tickets/TicketActiveFilters';
+import {
+  TicketActiveFilters,
+  hasActiveFilters,
+  type ActiveFilterKey,
+} from '../components/tickets/TicketActiveFilters';
 import { TicketShortcuts } from '../components/tickets/TicketShortcuts';
 import { TicketsHeader, type TicketsViewMode } from '../components/tickets/TicketsHeader';
 import { EzAlert, EzButton, EzSpinner } from '../components/ds';
+import { useTicketFilterNames } from '../hooks/useTicketFilterNames';
 import type { TicketFiltersInput } from '../hooks/useTickets';
 import { useTickets } from '../hooks/useTickets';
 import { useAuthStore } from '../stores/authStore';
@@ -15,12 +20,21 @@ import {
   parseFiltersFromSearchParams,
 } from '../lib/ticketFilterParams';
 
+/** 403 é falta de permissão; o resto (rede, 5xx) é falha de carga que vale tentar de novo. */
+function loadErrorMessage(error: unknown): string {
+  const status = (error as { response?: { status?: number } } | null)?.response?.status;
+  return status === 403
+    ? 'Você não tem permissão para ver estes chamados.'
+    : 'Falha ao carregar os chamados. Verifique a conexão e tente novamente.';
+}
+
 export function TicketsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [filters, setFilters] = useState<TicketFiltersInput>(() =>
     parseFiltersFromSearchParams(searchParams),
   );
-  const { data, isLoading, isError } = useTickets(filters);
+  const { data, isLoading, isError, error, isFetching, isPlaceholderData, refetch } = useTickets(filters);
+  const filterNames = useTicketFilterNames(filters);
   const user = useAuthStore((state) => state.user);
   const isClient = user?.role === 'CLIENT';
   const openInTab = useOpenInTab();
@@ -78,6 +92,21 @@ export function TicketsPage() {
   const meta = data?.meta;
   const currentPage = filters.page ?? 1;
 
+  const resetFilters = () =>
+    setFilters((prev) => ({ sortBy: prev.sortBy, sortDir: prev.sortDir }));
+  const removeFilter = (key: ActiveFilterKey) =>
+    setFilters((prev) => {
+      const next: TicketFiltersInput = { ...prev, page: 1 };
+      if (key === 'period') {
+        delete next.dateFrom;
+        delete next.dateTo;
+        delete next.dateField;
+      } else {
+        delete next[key];
+      }
+      return next;
+    });
+
   return (
     <div className="space-y-4">
       <TicketsHeader
@@ -103,9 +132,9 @@ export function TicketsPage() {
       {viewMode === 'list' && (
         <TicketActiveFilters
           filters={filters}
-          onReset={() =>
-            setFilters((prev) => ({ sortBy: prev.sortBy, sortDir: prev.sortDir }))
-          }
+          onReset={resetFilters}
+          onRemove={removeFilter}
+          names={filterNames}
         />
       )}
 
@@ -114,23 +143,43 @@ export function TicketsPage() {
           <EzSpinner label="Carregando chamados…" />
         </div>
       ) : isError ? (
-        <EzAlert variant="error">
-          Falha ao carregar os chamados. Tente novamente.
+        <EzAlert
+          variant="error"
+          action={
+            <EzButton
+              variant="secondary"
+              size="small"
+              label="Tentar novamente"
+              loading={isFetching}
+              onClick={() => void refetch()}
+            />
+          }
+        >
+          {loadErrorMessage(error)}
         </EzAlert>
       ) : viewMode === 'kanban' ? (
-        <TicketKanban
-          tickets={tickets}
-          isLoading={isLoading}
-          isError={isError}
-          initialServiceDeskId={filters.serviceDeskId}
-        />
-      ) : (
-        /* ================= LIST VIEW (MODO LISTA) ================= */
-        <>
-          <TicketList
+        <div aria-busy={isFetching} className={isPlaceholderData ? 'space-y-3 opacity-60' : 'space-y-3'}>
+          {/* O Kanban recebe só a primeira página; avisa quando há mais chamados do que os exibidos. */}
+          {meta && meta.total > tickets.length && (
+            <EzAlert variant="info">
+              Mostrando {tickets.length} de {meta.total} chamados, refine os filtros.
+            </EzAlert>
+          )}
+          <TicketKanban
             tickets={tickets}
             isLoading={isLoading}
             isError={isError}
+            initialServiceDeskId={filters.serviceDeskId}
+          />
+        </div>
+      ) : (
+        /* ================= LIST VIEW (MODO LISTA) ================= */
+        <div aria-busy={isFetching} className={isPlaceholderData ? 'space-y-4 opacity-60' : 'space-y-4'}>
+          <TicketList
+            tickets={tickets}
+            isLoading={isLoading}
+            hasFilters={hasActiveFilters(filters)}
+            onResetFilters={resetFilters}
             totalPages={meta?.totalPages}
             sortBy={filters.sortBy}
             sortDir={filters.sortDir}
@@ -169,7 +218,7 @@ export function TicketsPage() {
               </div>
             </nav>
           )}
-        </>
+        </div>
       )}
     </div>
   );

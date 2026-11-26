@@ -131,4 +131,49 @@ describe('TicketsHeader: escala de altura e quebra em telas estreitas (DMTE-527 
     const title = screen.getByRole('heading', { name: 'Tickets' });
     expect(commonAncestor(title, screen.getByRole('group', { name: /visualização/i })).contains(search())).toBe(false);
   });
+  it('TKT-04: a tecla "/" fora de campo de texto move o foco para Buscar', async () => {
+    const user = userEvent.setup();
+    renderHeader();
+    await user.keyboard('/');
+    expect(screen.getByLabelText(/buscar/i)).toHaveFocus();
+  });
+
+  it('TKT-04: "/" digitada em outro campo de texto continua sendo texto e não rouba o foco', async () => {
+    const user = userEvent.setup();
+    render(
+      <>
+        <label>
+          Outro campo
+          <input />
+        </label>
+        <TicketsHeader
+          isClient={false}
+          viewMode="kanban"
+          onViewModeChange={vi.fn()}
+          search=""
+          onSearchChange={vi.fn()}
+          onOpenAdvancedSearch={vi.fn()}
+        />
+      </>,
+    );
+    const other = screen.getByLabelText('Outro campo');
+    await user.click(other);
+    await user.keyboard('a/b');
+    expect(other).toHaveValue('a/b');
+    expect(other).toHaveFocus();
+  });
+
+  it('TKT-04: "/" com Ctrl ou Meta não é atalho da tela', async () => {
+    const user = userEvent.setup();
+    renderHeader();
+    await user.keyboard('{Control>}/{/Control}');
+    expect(screen.getByLabelText(/buscar/i)).not.toHaveFocus();
+  });
+
+  it('TKT-04: documenta o atalho no campo Buscar (aria-keyshortcuts e title)', () => {
+    renderHeader();
+    const input = screen.getByLabelText(/buscar/i);
+    expect(input).toHaveAttribute('aria-keyshortcuts', '/');
+    expect(input).toHaveAttribute('title', expect.stringContaining('/'));
+  });
 });
