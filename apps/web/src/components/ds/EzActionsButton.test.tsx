@@ -46,4 +46,18 @@ describe('EzActionsButton', () => {
     await user.click(screen.getByText('Ações'));
     expect(screen.getByText('Excluir').closest('button')).toHaveClass('text-red-700');
   });
+
+  it('closes the menu with Escape and returns focus to the trigger', async () => {
+    const user = userEvent.setup();
+    render(<EzActionsButton label="Ações" actions={defaultActions} />);
+
+    const trigger = screen.getByRole('button', { name: /ações/i });
+    await user.click(trigger);
+    expect(screen.getByRole('menu')).toBeInTheDocument();
+
+    await user.keyboard('{Escape}');
+
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    expect(trigger).toHaveFocus();
+  });
 });

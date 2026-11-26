@@ -1,6 +1,7 @@
 import {
   ButtonHTMLAttributes,
   forwardRef,
+  KeyboardEvent,
   ReactNode,
   useEffect,
   useRef,
@@ -68,8 +69,17 @@ export const EzActionsButton = forwardRef<HTMLButtonElement, EzActionsButtonProp
       return () => document.removeEventListener('mousedown', handleOutsideClick);
     }, []);
 
+    // Esc fecha o menu e devolve o foco ao gatilho (padrão de menu button).
+    const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+      if (e.key === 'Escape' && isOpen) {
+        e.stopPropagation();
+        setIsOpen(false);
+        containerRef.current?.querySelector<HTMLButtonElement>('button[aria-haspopup]')?.focus();
+      }
+    };
+
     return (
-      <div className="relative inline-block text-left" ref={containerRef}>
+      <div className="relative inline-block text-left" ref={containerRef} onKeyDown={handleKeyDown}>
         <button
           ref={ref}
           type="button"

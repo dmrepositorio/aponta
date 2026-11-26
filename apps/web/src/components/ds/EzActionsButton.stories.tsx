@@ -72,3 +72,17 @@ export const Desabilitado: Story = {
     ],
   },
 };
+
+/** Teclado: Enter/Espaço abre o menu; Esc fecha e devolve o foco ao gatilho (F3-18, SCH-06). */
+export const FechaComEsc: Story = {
+  args: {
+    label: 'Ações',
+    actions: [
+      { label: 'Novas Férias', icon: <Eye className="w-4 h-4" />, onClick: () => undefined },
+      { label: 'Nova Ausência', icon: <Pencil className="w-4 h-4" />, onClick: () => undefined },
+    ],
+  },
+  parameters: {
+    docs: { description: { story: 'Abra com Enter ou Espaço e feche com Esc: o foco volta ao botão Ações.' } },
+  },
+};
