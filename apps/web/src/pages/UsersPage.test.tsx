@@ -97,15 +97,16 @@ interface ApiOptions {
   list?: UsersList;
   preference?: Record<string, unknown>;
   extraUsers?: TestUser[];
+  isAdmin?: boolean;
 }
 
 /** Servidor simulado: lista, detalhe, permissões da tela (/auth/me), flag, preferência de tela e listas de apoio do formulário. */
-function mockApi({ permissions = ALL_PERMISSIONS, flag = false, list = USERS_PAGE_1, preference = {}, extraUsers = [] }: ApiOptions = {}) {
+function mockApi({ permissions = ALL_PERMISSIONS, flag = false, list = USERS_PAGE_1, preference = {}, extraUsers = [], isAdmin = false }: ApiOptions = {}) {
   const everyone = [...list.data, ...extraUsers];
   vi.mocked(api.get).mockImplementation((url: string) => {
     if (url === '/users') return Promise.resolve({ data: list });
     if (url.startsWith('/users/')) return Promise.resolve({ data: everyone.find((u) => `/users/${u.id}` === url) });
-    if (url === '/auth/me') return Promise.resolve({ data: { id: 'u-0', isAdmin: false, permissions } });
+    if (url === '/auth/me') return Promise.resolve({ data: { id: 'u-0', isAdmin, permissions } });
     if (url === '/feature-flags') return Promise.resolve({ data: { [FLAG]: flag } });
     if (url === '/me/screen-preferences/users') return Promise.resolve({ data: preference });
     if (url === '/technical-groups') return Promise.resolve({ data: [{ id: 'tg-1', name: 'Suporte N1' }, { id: 'tg-2', name: 'Suporte N2' }] });
@@ -155,7 +156,7 @@ async function openUser(user: ReturnType<typeof userEvent.setup>, name: string) 
 describe('UsersPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    useAuthStore.setState({ token: null, user: null });
+    signIn();
     mockApi();
   });
 
@@ -970,6 +971,47 @@ describe('UsersPage', () => {
       await waitFor(() => expect(vi.mocked(api.get)).toHaveBeenCalledWith('/feature-flags'));
 
       expect(screen.getByRole('button', { name: 'Redefinir senha' })).toBeDisabled();
+    });
+  });
+
+  describe('F3-26 USR-01: guarda de acesso à página', () => {
+    it('USR-01: without MANAGE_USERS shows Acesso restrito, no load error, and never calls GET /users', async () => {
+      mockApi({ permissions: ['CREATE_USERS', 'ACTIVATE_DEACTIVATE_USERS'] });
+      renderUsersPage();
+
+      expect(await screen.findByText('Acesso restrito')).toBeInTheDocument();
+      expect(screen.queryByText('Erro ao carregar usuários.')).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Novo usuário' })).not.toBeInTheDocument();
+      expect(vi.mocked(api.get).mock.calls.some(([url]) => url === '/users')).toBe(false);
+    });
+
+    it('USR-01: does not flash Acesso restrito while the permissions are still loading', async () => {
+      let release: (value: unknown) => void = () => undefined;
+      const pendingMe = new Promise((resolve) => {
+        release = resolve;
+      });
+      mockApi();
+      const base = vi.mocked(api.get).getMockImplementation()!;
+      vi.mocked(api.get).mockImplementation((url: string) =>
+        url === '/auth/me' ? (pendingMe as Promise<never>) : base(url),
+      );
+      renderUsersPage();
+
+      expect(await screen.findByText('Carregando permissões…')).toBeInTheDocument();
+      expect(screen.queryByText('Acesso restrito')).not.toBeInTheDocument();
+      expect(vi.mocked(api.get).mock.calls.some(([url]) => url === '/users')).toBe(false);
+
+      release({ data: { id: 'u-0', isAdmin: false, permissions: ['MANAGE_USERS'] } });
+      expect(await screen.findByText('Ana Silva')).toBeInTheDocument();
+      expect(screen.queryByText('Acesso restrito')).not.toBeInTheDocument();
+    });
+
+    it('USR-01: an admin without the explicit key sees the list', async () => {
+      mockApi({ permissions: [], isAdmin: true });
+      renderUsersPage();
+
+      expect(await screen.findByText('Ana Silva')).toBeInTheDocument();
+      expect(screen.queryByText('Acesso restrito')).not.toBeInTheDocument();
     });
   });
 });
