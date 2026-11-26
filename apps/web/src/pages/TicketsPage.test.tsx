@@ -733,3 +733,186 @@ describe('TicketsPage', () => {
     });
   });
 });
+
+describe('F3-10: TicketsPage parte 1 (TKT-01, 05, 07, 08)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    useAuthStore.setState({
+      token: 'tok',
+      user: { sub: 'u1', email: 'admin@example.com', role: 'ADMIN', organizationId: null },
+    });
+  });
+
+  const manyTickets = (count: number) =>
+    Array.from({ length: count }, (_, i) => ({
+      ...tickets[0],
+      id: `bulk-${i}`,
+      protocol: `AP-1${String(i).padStart(5, '0')}`,
+      title: `Chamado em massa ${i}`,
+    }));
+
+  function mockPage(ticketData: unknown[], total: number, extra: Record<string, unknown> = {}) {
+    vi.mocked(api.get).mockImplementation((url: string) => {
+      if (url.startsWith('/me/screen-preferences/')) return Promise.resolve({ data: {} });
+      if (url === '/service-desks') return Promise.resolve({ data: serviceDesks });
+      if (url in extra) return Promise.resolve({ data: extra[url] });
+      if (url === '/tickets') {
+        return Promise.resolve({
+          data: { data: ticketData, meta: { total, page: 1, totalPages: Math.ceil(total / 20) } },
+        });
+      }
+      return Promise.reject(new Error(`Unexpected GET ${url}`));
+    });
+  }
+
+  const ticketCalls = () =>
+    vi.mocked(api.get).mock.calls.filter(
+      ([url, config]) => url === '/tickets' && (config as { params?: { limit?: number } })?.params?.limit === 20,
+    );
+
+  it('TKT-01: no Kanban avisa "Mostrando 20 de 57" quando o total passa do que veio na página', async () => {
+    mockPage(manyTickets(20), 57);
+    renderDashboard();
+
+    expect(await screen.findByText(/Mostrando 20 de 57 chamados, refine os filtros/)).toBeInTheDocument();
+  });
+
+  it('TKT-01: sem aviso quando o total cabe no que está exibido', async () => {
+    mockPage(manyTickets(20), 20);
+    renderDashboard();
+
+    await screen.findAllByTestId('kanban-column');
+    expect(screen.queryByText(/Mostrando/)).not.toBeInTheDocument();
+  });
+
+  it('TKT-05: ao trocar de página a tabela anterior continua visível, marcada como ocupada, até a resposta chegar', async () => {
+    const user = userEvent.setup();
+    let calls = 0;
+    vi.mocked(api.get).mockImplementation((url: string, config?: { params?: { limit?: number } }) => {
+      if (url.startsWith('/me/screen-preferences/')) return Promise.resolve({ data: {} });
+      // O atalho Autorizações também consulta /tickets (limit 1); só a lista principal conta.
+      if (url === '/tickets' && config?.params?.limit === 1) return Promise.resolve({ data: { meta: { total: 0 } } });
+      if (url === '/tickets') {
+        calls += 1;
+        if (calls > 1) return new Promise(() => undefined);
+        return Promise.resolve({ data: { data: tickets, meta: { total: 45, page: 1, totalPages: 3 } } });
+      }
+      return Promise.reject(new Error(`Unexpected GET ${url}`));
+    });
+    renderDashboard(['/?view=list']);
+
+    await screen.findByText('Printer not working');
+    await user.click(screen.getByRole('button', { name: 'Próxima' }));
+    await waitFor(() => expect(calls).toBe(2));
+
+    expect(screen.getByText('Printer not working')).toBeInTheDocument();
+    expect(screen.getByRole('table').closest('[aria-busy]')).toHaveAttribute('aria-busy', 'true');
+    expect(screen.queryByText(/carregando chamados/i)).not.toBeInTheDocument();
+  });
+
+  it('TKT-05: o carregamento inicial mostra um indicador só', () => {
+    vi.mocked(api.get).mockImplementation((url: string) => {
+      if (url.startsWith('/me/screen-preferences/')) return Promise.resolve({ data: {} });
+      return new Promise(() => undefined);
+    });
+    renderDashboard(['/?view=list']);
+
+    expect(screen.getAllByRole('status')).toHaveLength(1);
+  });
+
+  it('TKT-07: em falha de rede mostra um único alerta com "Tentar novamente", que busca de novo', async () => {
+    const user = userEvent.setup();
+    let calls = 0;
+    vi.mocked(api.get).mockImplementation((url: string, config?: { params?: { limit?: number } }) => {
+      if (url.startsWith('/me/screen-preferences/')) return Promise.resolve({ data: {} });
+      if (url === '/service-desks') return Promise.resolve({ data: serviceDesks });
+      if (url === '/tickets' && config?.params?.limit === 1) return Promise.resolve({ data: { meta: { total: 0 } } });
+      if (url === '/tickets') {
+        calls += 1;
+        if (calls === 1) return Promise.reject(new Error('Network Error'));
+        return Promise.resolve({ data: { data: tickets, meta: { total: 2, page: 1, totalPages: 1 } } });
+      }
+      return Promise.reject(new Error(`Unexpected GET ${url}`));
+    });
+    renderDashboard(['/?view=list']);
+
+    expect(await screen.findAllByRole('alert')).toHaveLength(1);
+    await user.click(screen.getByRole('button', { name: 'Tentar novamente' }));
+
+    expect(await screen.findByText('Printer not working')).toBeInTheDocument();
+    expect(calls).toBe(2);
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it('TKT-07: 403 diz que falta permissão, sem culpar a rede', async () => {
+    vi.mocked(api.get).mockImplementation((url: string) => {
+      if (url.startsWith('/me/screen-preferences/')) return Promise.resolve({ data: {} });
+      if (url === '/tickets') return Promise.reject({ isAxiosError: true, response: { status: 403 } });
+      return Promise.resolve({ data: [] });
+    });
+    renderDashboard(['/?view=list']);
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(/não tem permissão/i);
+    expect(screen.getByRole('alert')).not.toHaveTextContent(/conexão/i);
+  });
+
+  it('TKT-07: falha de servidor (5xx) orienta a verificar a conexão e tentar de novo', async () => {
+    vi.mocked(api.get).mockImplementation((url: string) => {
+      if (url.startsWith('/me/screen-preferences/')) return Promise.resolve({ data: {} });
+      if (url === '/tickets') return Promise.reject({ isAxiosError: true, response: { status: 503 } });
+      return Promise.resolve({ data: [] });
+    });
+    renderDashboard(['/?view=list']);
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(/falha ao carregar os chamados.*conexão/i);
+  });
+
+  it('TKT-08: os filtros por id mostram o nome resolvido de mesa, cliente, atendente e estágio', async () => {
+    mockPage(tickets, 2, {
+      '/organizations': [{ id: 'org-1', name: 'Acme' }],
+      '/users/agents': [{ id: 'ag-1', name: 'Ana Agente' }],
+      '/service-desks/sd-1/stages': [{ id: 'st-1', name: 'Triagem' }],
+    });
+    renderDashboard(['/?view=list&serviceDeskId=sd-1&organizationId=org-1&agentId=ag-1&stageId=st-1']);
+
+    const group = await screen.findByRole('group', { name: /filtros ativos/i });
+    await waitFor(() => {
+      for (const text of ['Mesa de serviço: Suporte N1', 'Cliente: Acme', 'Atendente: Ana Agente', 'Estágio: Triagem']) {
+        expect(group).toHaveTextContent(text);
+      }
+    });
+  });
+
+  it('TKT-08: remover um filtro tira só ele, volta à página 1 e busca de novo', async () => {
+    const user = userEvent.setup();
+    mockPage(tickets, 2, { '/organizations': [{ id: 'org-1', name: 'Acme' }] });
+    renderDashboard(['/?view=list&status=OPEN&organizationId=org-1']);
+
+    await user.click(await screen.findByRole('button', { name: 'Remover filtro Cliente: Acme' }));
+
+    await waitFor(() => {
+      const last = ticketCalls()[ticketCalls().length - 1][1] as { params: Record<string, unknown> };
+      expect(last.params.organizationId).toBeUndefined();
+      expect(last.params.status).toBe('OPEN');
+    });
+    const group = screen.getByRole('group', { name: /filtros ativos/i });
+    expect(group).toHaveTextContent('Status: Aberto');
+    expect(group).not.toHaveTextContent('Cliente');
+  });
+
+  it('TKT-08: CLIENT não consulta a lista de organizações nem a de atendentes (a API recusa com 403)', async () => {
+    useAuthStore.setState({
+      token: 'tok',
+      user: { sub: 'u2', email: 'client@example.com', role: 'CLIENT', organizationId: 'org-1' },
+    });
+    mockPage(tickets, 2);
+    renderDashboard(['/?organizationId=org-1&agentId=ag-1']);
+
+    const group = await screen.findByRole('group', { name: /filtros ativos/i });
+    expect(group).toHaveTextContent('Cliente');
+    expect(group).toHaveTextContent('Atendente');
+    const urls = vi.mocked(api.get).mock.calls.map(([url]) => url);
+    expect(urls).not.toContain('/organizations');
+    expect(urls).not.toContain('/users/agents');
+  });
+});

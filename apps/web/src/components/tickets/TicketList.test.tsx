@@ -119,9 +119,11 @@ describe('TicketList (D5: Lista agrupável)', () => {
     expect(screen.getByRole('alert')).toHaveTextContent(/falha ao carregar os chamados/i);
   });
 
-  it('shows an empty-state message when there are no tickets', async () => {
+  it('TKT-06: sem filtros ativos o vazio diz "Nenhum chamado ainda" e oferece "Abrir chamado"', async () => {
     await renderList({ tickets: [] });
-    expect(screen.getByText(/nenhum chamado encontrado/i)).toBeInTheDocument();
+    expect(screen.getByText('Nenhum chamado ainda')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Abrir chamado' })).toBeInTheDocument();
+    expect(screen.queryByText(/tente ajustar os filtros/i)).not.toBeInTheDocument();
   });
 
   it('renders status and priority with the new tags', async () => {
@@ -534,5 +536,106 @@ describe('DMTE-527 ticket 1: Lista com altura por faixa e tags sem quebra', () =
     });
     expect(screen.getByText('Aguardando Aprovação')).toBeInTheDocument();
     expect(screen.getByText('Aguardando Sankhya')).toBeInTheDocument();
+  });
+});
+
+describe('F3-10: SLA, linha por teclado e vazio da Lista', () => {
+  const visits: string[] = [];
+  function LocationProbe() {
+    const location = useLocation();
+    visits.push(location.pathname);
+    return <div data-testid="location-probe">{location.pathname}</div>;
+  }
+  async function renderWithProbe(props: Partial<Parameters<typeof TicketList>[0]> = {}) {
+    const view = render(
+      <MemoryRouter>
+        <TicketList tickets={[ticketA, ticketB]} isLoading={false} isError={false} {...props} />
+        <LocationProbe />
+      </MemoryRouter>,
+    );
+    await waitForList(props);
+    return view;
+  }
+
+  beforeEach(() => {
+    localStorage.clear();
+    visits.length = 0;
+    useAuthStore.setState({
+      token: null,
+      user: { sub: 'u1', email: 'a@x.com', role: 'ADMIN', organizationId: null } as any,
+    });
+  });
+
+  it('TKT-02: a coluna SLA aparece por padrão com o chip de resolução "vencido" do ticket estourado', async () => {
+    await renderWithProbe({ tickets: [{ ...ticketA, resolveSlaStatus: 'BREACHED' }, ticketB] });
+    expect(screen.getByRole('columnheader', { name: 'SLA' })).toBeInTheDocument();
+    const row = screen.getByText('Printer broken').closest('tr') as HTMLElement;
+    expect(within(row).getByLabelText(/Resolução: vencido/)).toBeInTheDocument();
+  });
+
+  it('TKT-02: mostra o chip de atendimento quando há estado e "Pausado" quando slaPausedAt está preenchido', async () => {
+    await renderWithProbe({
+      tickets: [
+        { ...ticketA, responseSlaStatus: 'AT_RISK', slaPausedAt: '2026-01-01T12:00:00.000Z' },
+        ticketB,
+      ],
+    });
+    const row = screen.getByText('Printer broken').closest('tr') as HTMLElement;
+    expect(within(row).getByLabelText(/Resposta: em risco/)).toBeInTheDocument();
+    expect(within(row).getByText('Pausado')).toBeInTheDocument();
+    const other = screen.getByText('Email down').closest('tr') as HTMLElement;
+    expect(within(other).queryByText('Pausado')).not.toBeInTheDocument();
+  });
+
+  it('TKT-02: quem já tinha preferência salva sem a coluna SLA passa a vê-la', async () => {
+    serverPreference = { grid: { columnVisibility: { number: true, title: true } } };
+    await renderWithProbe();
+    expect(screen.getByRole('columnheader', { name: 'SLA' })).toBeInTheDocument();
+  });
+
+  it('TKT-04: a linha é focável e Enter nela abre o ticket, como o clique', async () => {
+    const user = userEvent.setup();
+    await renderWithProbe();
+    const row = screen.getByText('Email down').closest('tr') as HTMLElement;
+    expect(row).toHaveAttribute('tabindex', '0');
+    row.focus();
+    expect(row).toHaveFocus();
+    await user.keyboard('{Enter}');
+    expect(screen.getByTestId('location-probe')).toHaveTextContent('/tickets/t2');
+  });
+
+  it('TKT-04: Enter no link do número abre o ticket uma vez só (a linha não duplica)', async () => {
+    const user = userEvent.setup();
+    await renderWithProbe();
+    const row = screen.getByText('Email down').closest('tr') as HTMLElement;
+    expect(row).toHaveAttribute('tabindex', '0');
+    visits.length = 0;
+    screen.getByRole('link', { name: 'AP-2026-0002' }).focus();
+    await user.keyboard('{Enter}');
+    expect(screen.getByTestId('location-probe')).toHaveTextContent('/tickets/t2');
+    expect(visits).toHaveLength(1);
+  });
+
+  it('TKT-04: a linha documenta o atalho em texto acessível', async () => {
+    await renderWithProbe();
+    const row = screen.getByText('Email down').closest('tr') as HTMLElement;
+    expect(row).toHaveAttribute('aria-keyshortcuts', 'Enter');
+  });
+
+  it('TKT-06: "Abrir chamado" leva à tela de novo chamado', async () => {
+    const user = userEvent.setup();
+    await renderWithProbe({ tickets: [] });
+    await user.click(screen.getByRole('button', { name: 'Abrir chamado' }));
+    expect(screen.getByTestId('location-probe')).toHaveTextContent('/tickets/new');
+  });
+
+  it('TKT-06: com filtros ativos o vazio diz "Nenhum chamado encontrado" e oferece "Redefinir filtros"', async () => {
+    const user = userEvent.setup();
+    const onResetFilters = vi.fn();
+    await renderWithProbe({ tickets: [], hasFilters: true, onResetFilters });
+    expect(screen.getByText('Nenhum chamado encontrado')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Abrir chamado' })).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Redefinir filtros' }));
+    expect(onResetFilters).toHaveBeenCalledTimes(1);
   });
 });
