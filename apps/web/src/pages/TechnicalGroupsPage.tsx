@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { useQuery, type UseMutationResult } from '@tanstack/react-query';
 import { ArrowLeft, Plus } from 'lucide-react';
 import {
@@ -93,10 +93,16 @@ function useAllServiceDesks() {
 function CreateGroupModal({ onClose, onNotify }: { onClose: () => void; onNotify: (message: string) => void }) {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [nameError, setNameError] = useState<string | undefined>();
   const createMutation = useCreateTechnicalGroup();
 
-  const handleSubmit = () => {
-    if (!name.trim()) return;
+  const handleSubmit = (event: FormEvent) => {
+    event.preventDefault();
+    if (createMutation.isPending) return;
+    if (!name.trim()) {
+      setNameError('Informe o nome');
+      return;
+    }
     createMutation.mutate(
       { name: name.trim(), description: description.trim() || undefined },
       {
@@ -110,11 +116,23 @@ function CreateGroupModal({ onClose, onNotify }: { onClose: () => void; onNotify
 
   return (
     <EzModal isOpen onClose={onClose} title="Novo grupo de atendentes">
-      <div className="space-y-4">
+      <form noValidate onSubmit={handleSubmit} className="space-y-4">
         {createMutation.isError && (
           <EzAlert variant="error">{apiErrorMessage(createMutation.error, ACTION_ERROR_FALLBACK)}</EzAlert>
         )}
-        <EzTextInput id="tg-name" label="Nome" value={name} onChange={(e) => setName(e.target.value)} />
+        <EzTextInput
+          id="tg-name"
+          label="Nome"
+          required
+          autoFocus
+          value={name}
+          hasError={!!nameError}
+          message={nameError}
+          onChange={(e) => {
+            setName(e.target.value);
+            setNameError(undefined);
+          }}
+        />
         <EzTextArea
           id="tg-description"
           label="Descrição"
@@ -125,11 +143,11 @@ function CreateGroupModal({ onClose, onNotify }: { onClose: () => void; onNotify
           <EzButton variant="tertiary" onClick={onClose}>
             Cancelar
           </EzButton>
-          <EzButton onClick={handleSubmit} disabled={createMutation.isPending}>
+          <EzButton type="submit" loading={createMutation.isPending}>
             Criar
           </EzButton>
         </div>
-      </div>
+      </form>
     </EzModal>
   );
 }
