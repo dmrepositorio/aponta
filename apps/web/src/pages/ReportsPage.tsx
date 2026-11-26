@@ -87,7 +87,7 @@ export function ReportsPage() {
             <EzEmptyCard title="Nenhum apontamento registrado." />
           )}
           {workloadQ.data && workloadQ.data.length > 0 && (
-            <EzGridWrapper>
+            <EzGridWrapper tableLabel="Carga de trabalho por usuário">
               <thead className="bg-gray-90">
                 <tr>
                   <th className="px-4 py-3 font-semibold text-gray-700">
@@ -167,7 +167,7 @@ export function ReportsPage() {
             <EzEmptyCard title="Nenhum dado financeiro processado." />
           )}
           {billingQ.data && billingQ.data.length > 0 && (
-            <EzGridWrapper>
+            <EzGridWrapper tableLabel="Faturamento base por contrato">
               <thead className="bg-gray-90">
                 <tr>
                   <th className="px-4 py-3 font-semibold text-gray-700">

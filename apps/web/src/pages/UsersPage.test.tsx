@@ -204,8 +204,8 @@ describe('UsersPage', () => {
   it('DMTE-541 AC-03: the status in the list is the shared tag, text plus icon, no raw emerald', async () => {
     const { container } = renderUsersPage();
 
-    const on = (await screen.findByText('Ativo')).closest('div') as HTMLElement;
-    const off = screen.getByText('Inativo').closest('div') as HTMLElement;
+    const on = (await screen.findByText('Ativo')).closest('[data-ez-tag]') as HTMLElement;
+    const off = screen.getByText('Inativo').closest('[data-ez-tag]') as HTMLElement;
     expect(on.querySelector('[data-glyph]')).not.toBeNull();
     expect(off.querySelector('[data-glyph]')).not.toBeNull();
     expect(on.querySelector('[data-glyph]')?.getAttribute('data-glyph')).not.toBe(
@@ -436,8 +436,8 @@ describe('UsersPage', () => {
       renderUsersPage();
       await screen.findByText('Carla Dias');
 
-      const pending = within(rowOf('Carla Dias')).getByText('Convite pendente').closest('div') as HTMLElement;
-      const active = within(rowOf('Ana Silva')).getByText('Ativo').closest('div') as HTMLElement;
+      const pending = within(rowOf('Carla Dias')).getByText('Convite pendente').closest('[data-ez-tag]') as HTMLElement;
+      const active = within(rowOf('Ana Silva')).getByText('Ativo').closest('[data-ez-tag]') as HTMLElement;
       const glyph = pending.querySelector('[data-glyph]')?.getAttribute('data-glyph');
       expect(glyph).toBeTruthy();
       expect(glyph).not.toBe(active.querySelector('[data-glyph]')?.getAttribute('data-glyph'));

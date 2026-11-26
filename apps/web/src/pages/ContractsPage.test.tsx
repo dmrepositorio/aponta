@@ -842,7 +842,7 @@ describe('ContractsPage grid (DMTE-536)', () => {
     expect(screen.getAllByText('Rascunho')).toHaveLength(1);
     expect(screen.getAllByText('Regularização pendente')).toHaveLength(1);
     for (const label of ['Inativo', 'Rascunho', 'Regularização pendente']) {
-      expect(screen.getByText(label).closest('div')?.querySelector('[data-glyph]')).not.toBeNull();
+      expect(screen.getByText(label).closest('[data-ez-tag]')?.querySelector('[data-glyph]')).not.toBeNull();
     }
     expect(screen.queryByText('Pendente')).not.toBeInTheDocument();
   });

@@ -2,6 +2,7 @@ import {
   HTMLAttributes,
   forwardRef,
   useCallback,
+  useId,
   useLayoutEffect,
   useRef,
   useState,
@@ -12,6 +13,11 @@ import { cn } from './utils';
 // No Aponta, substituiremos o uso desse trambolho (de 1.4mb) por @tanstack/react-table injetando as classes desta casca.
 // Este componente apenas encapsula visualmente o wrapper da tabela e a scrollbar horizontal fixa.
 export type EzGridProps = HTMLAttributes<HTMLDivElement> & {
+  /**
+   * Nome acessível da tabela (obrigatório). Vira o `aria-label` do `<table>` e
+   * compõe o nome da região rolável ("<tableLabel> (rolagem horizontal)").
+   */
+  tableLabel: string;
   /**
    * Se verdadeiro, habilita a barra de rolagem horizontal persistente estilo AG Grid
    * sempre visível quando o conteúdo da tabela transbordar horizontalmente.
@@ -36,12 +42,14 @@ export const EzGridWrapper = forwardRef<HTMLDivElement, EzGridProps>(
     {
       className,
       children,
+      tableLabel,
       showHorizontalScrollbar = true,
       alwaysShowHorizontalScrollbar = false,
       ...props
     },
     ref
   ) => {
+    const scrollRegionId = useId();
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const trackRef = useRef<HTMLDivElement>(null);
     const [hasOverflow, setHasOverflow] = useState(false);
@@ -199,11 +207,18 @@ export const EzGridWrapper = forwardRef<HTMLDivElement, EzGridProps>(
       >
         <div
           ref={scrollContainerRef}
-          id="ez-grid-table-container"
+          id={scrollRegionId}
+          data-testid="ez-grid-scroll-region"
+          role="region"
+          aria-label={`${tableLabel} (rolagem horizontal)`}
+          tabIndex={0}
           onScroll={handleScroll}
-          className="w-full overflow-x-auto touch-pan-x touch-pan-y overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className="w-full overflow-x-auto focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-600 touch-pan-x touch-pan-y overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
-          <table className="w-full text-left border-collapse min-w-[480px] sm:min-w-[600px]">
+          <table
+            aria-label={tableLabel}
+            className="w-full text-left border-collapse min-w-0 sm:min-w-[600px]"
+          >
             {/* 
               Estilos aplicados em filhas genéricas (thead/tbody/tr)
               para quando usarmos o Tanstack Table dentro deste container
@@ -222,7 +237,7 @@ export const EzGridWrapper = forwardRef<HTMLDivElement, EzGridProps>(
               data-testid="ez-grid-horizontal-scrollbar-thumb"
               role="scrollbar"
               aria-orientation="horizontal"
-              aria-controls="ez-grid-table-container"
+              aria-controls={scrollRegionId}
               aria-label="Barra de rolagem horizontal"
               aria-valuenow={
                 maxScroll > 0 ? Math.round((scrollLeft / maxScroll) * 100) : 0

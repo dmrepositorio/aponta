@@ -10,6 +10,8 @@ import { EzSpinner } from './EzSpinner';
 export type EzSimpleCrudMode = 'SERVER' | 'IN_MEMORY';
 
 export type EzSimpleCrudProps<T> = Omit<HTMLAttributes<HTMLDivElement>, 'children'> & {
+  /** Nome acessível da tabela da visão em grade (obrigatório); repassado ao `EzEntityGrid`. */
+  tableLabel: string;
   /** Column definitions used by the grid view (same shape as `EzEntityGrid`). */
   columns: ColumnDef<T>[];
   /** Field schema used by the form view (same shape as `EzEntityForm`). */
@@ -44,6 +46,7 @@ type ViewMode = 'GRID' | 'FORM';
 
 function EzSimpleCrudInner<T>(
   {
+    tableLabel,
     columns,
     fields,
     mode,
@@ -179,6 +182,7 @@ function EzSimpleCrudInner<T>(
         <EzSpinner label="Carregando..." />
       ) : view === 'GRID' ? (
         <EzEntityGrid
+          tableLabel={tableLabel}
           columns={columns}
           data={items}
           selectable

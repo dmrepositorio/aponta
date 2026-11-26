@@ -1437,8 +1437,8 @@ describe('OrganizationsPage DMTE-541', { timeout: 15000 }, () => {
     const rowB = await rowOf('Empresa B');
     expect(within(rowA).queryByRole('button', { name: 'Ativo' })).not.toBeInTheDocument();
     expect(within(rowB).queryByRole('button', { name: 'Inativo' })).not.toBeInTheDocument();
-    expect(within(rowA).getByText('Ativo').closest('div')?.querySelector('[data-glyph]')).not.toBeNull();
-    expect(within(rowB).getByText('Inativo').closest('div')?.querySelector('[data-glyph]')).not.toBeNull();
+    expect(within(rowA).getByText('Ativo').closest('[data-ez-tag]')?.querySelector('[data-glyph]')).not.toBeNull();
+    expect(within(rowB).getByText('Inativo').closest('[data-ez-tag]')?.querySelector('[data-glyph]')).not.toBeNull();
     expect(container.innerHTML).not.toMatch(/emerald-/);
 
     await user.click(within(rowA).getByText('Ativo'));

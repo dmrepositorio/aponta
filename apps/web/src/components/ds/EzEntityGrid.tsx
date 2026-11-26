@@ -83,6 +83,8 @@ declare module '@tanstack/react-table' {
 export type EzEntityGridProps<T> = Omit<HTMLAttributes<HTMLDivElement>, 'children'> & {
   /** Column definitions, in the exact shape expected by `@tanstack/react-table`. */
   columns: ColumnDef<T>[];
+  /** Nome acessível da tabela (obrigatório); repassado ao `EzGridWrapper`. */
+  tableLabel: string;
   /** Rows rendered by the grid. */
   data: T[];
   /** Ordered list of taskbar button identifiers (see `EzTaskbar`). Omit to hide the taskbar. */
@@ -1142,6 +1144,7 @@ function EzEntityGridInner<T>(
   {
     columns,
     data,
+    tableLabel,
     taskbarButtons,
     onTaskbarAction,
     filters,
@@ -1712,6 +1715,7 @@ function EzEntityGridInner<T>(
         )}
 
         <EzGridWrapper
+          tableLabel={tableLabel}
           showHorizontalScrollbar={showHorizontalScrollbar}
           alwaysShowHorizontalScrollbar={alwaysShowHorizontalScrollbar}
         >

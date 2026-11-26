@@ -1,7 +1,8 @@
-import { HTMLAttributes, forwardRef, ReactNode } from 'react';
+import { HTMLAttributes, Ref, forwardRef, ReactNode } from 'react';
+import { CircleCheck, CircleX, TriangleAlert } from 'lucide-react';
 import { cn } from './utils';
 
-export interface EzTagProps extends HTMLAttributes<HTMLDivElement> {
+export interface EzTagProps extends HTMLAttributes<HTMLElement> {
   /**
    * Main text of the tag.
    */
@@ -12,7 +13,7 @@ export interface EzTagProps extends HTMLAttributes<HTMLDivElement> {
    */
   variant?: 'ocean' | 'gray' | 'green' | 'yellow' | 'red' | 'petroleum' | 'outline';
   /**
-   * Prepend an icon.
+   * Prepend an icon. Substitui o indicador automático das variantes green/yellow/red.
    */
   leftIcon?: ReactNode;
   /**
@@ -21,15 +22,32 @@ export interface EzTagProps extends HTMLAttributes<HTMLDivElement> {
   rightIcon?: ReactNode;
 }
 
+const SEVERITY_INDICATORS = {
+  green: { kind: 'success', Icon: CircleCheck },
+  yellow: { kind: 'warning', Icon: TriangleAlert },
+  red: { kind: 'danger', Icon: CircleX },
+} as const;
+
 /**
  * Aponta DS Tag (Chip)
  * Pill shaped element for status, categories, or filters.
+ *
+ * Renderiza um `span`; com `onClick` renderiza um `button type="button"`.
+ * As variantes green/yellow/red mostram um ícone de prefixo distinto (check,
+ * alerta, X) para que a severidade não dependa só da cor (WCAG 1.4.1).
  */
-export const EzTag = forwardRef<HTMLDivElement, EzTagProps>(
-  ({ label, variant = 'ocean', leftIcon, rightIcon, className, ...props }, ref) => {
+export const EzTag = forwardRef<HTMLElement, EzTagProps>(
+  ({ label, variant = 'ocean', leftIcon, rightIcon, className, onClick, ...props }, ref) => {
+    const severity =
+      !leftIcon && (variant === 'green' || variant === 'yellow' || variant === 'red')
+        ? SEVERITY_INDICATORS[variant]
+        : null;
+    const Root = (onClick ? 'button' : 'span') as 'span';
     return (
-      <div
-        ref={ref}
+      <Root
+        ref={ref as Ref<HTMLSpanElement>}
+        data-ez-tag=""
+        {...(onClick ? { type: 'button' as const, onClick } : {})}
         className={cn(
           'inline-flex items-center justify-center rounded-[24px] px-2.5 py-1 min-w-[32px] min-h-[24px]',
           'text-[12px] font-medium leading-none select-none transition-colors border',
@@ -41,10 +59,19 @@ export const EzTag = forwardRef<HTMLDivElement, EzTagProps>(
           variant === 'red' && 'bg-red-100 text-red-800 border-red-200',
           variant === 'petroleum' && 'bg-petroleum-100 text-petroleum-800 border-petroleum-200',
           variant === 'outline' && 'bg-transparent text-gray-700 border-gray-300',
+          onClick && 'cursor-pointer hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand-600',
           className
         )}
         {...props}
       >
+        {severity && (
+          <severity.Icon
+            data-testid="ez-tag-indicator"
+            data-indicator={severity.kind}
+            aria-hidden="true"
+            className="mr-1 -ml-0.5 h-3 w-3 shrink-0"
+          />
+        )}
         {leftIcon && (
           <span className="flex items-center justify-center mr-1.5 -ml-0.5">
             {leftIcon}
@@ -56,7 +83,7 @@ export const EzTag = forwardRef<HTMLDivElement, EzTagProps>(
             {rightIcon}
           </span>
         )}
-      </div>
+      </Root>
     );
   }
 );

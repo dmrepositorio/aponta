@@ -450,6 +450,7 @@ function UsersPageContent() {
                   </div>
                 ) : (
                   <EzEntityGrid
+                    tableLabel="Usuários"
                     key={gridKey}
                     data={users}
                     columns={columns}

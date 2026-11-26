@@ -40,7 +40,7 @@ const money = (cents: number | null) =>
 export function CommercialResultTable({ rows }: { rows: CommercialResult[] }) {
   if (!rows.length) return <EzEmptyCard title="Nenhum contrato no período." />;
   return (
-    <EzGridWrapper>
+    <EzGridWrapper tableLabel="Resultado gerencial por contrato">
       <thead>
         <tr>
           {[

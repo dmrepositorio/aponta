@@ -34,7 +34,7 @@ const createEmptyItem = (): Ticket => ({ id: '', title: '', priority: '' });
 describe('EzSimpleCrud', () => {
   it('renders the grid by default with the IN_MEMORY data', () => {
     render(
-      <EzSimpleCrud
+      <EzSimpleCrud tableLabel="Grade de exemplo"
         columns={columns}
         fields={fields}
         mode="IN_MEMORY"
@@ -52,7 +52,7 @@ describe('EzSimpleCrud', () => {
   it('clicking INSERT shows an empty form', async () => {
     const user = userEvent.setup();
     render(
-      <EzSimpleCrud
+      <EzSimpleCrud tableLabel="Grade de exemplo"
         columns={columns}
         fields={fields}
         mode="IN_MEMORY"
@@ -73,7 +73,7 @@ describe('EzSimpleCrud', () => {
   it('clicking a grid row shows the form filled with that item', async () => {
     const user = userEvent.setup();
     render(
-      <EzSimpleCrud
+      <EzSimpleCrud tableLabel="Grade de exemplo"
         columns={columns}
         fields={fields}
         mode="IN_MEMORY"
@@ -97,7 +97,7 @@ describe('EzSimpleCrud', () => {
     function Wrapper() {
       const [items, setItems] = useState<Ticket[]>(data);
       return (
-        <EzSimpleCrud
+        <EzSimpleCrud tableLabel="Grade de exemplo"
           columns={columns}
           fields={fields}
           mode="IN_MEMORY"
@@ -124,7 +124,7 @@ describe('EzSimpleCrud', () => {
     const user = userEvent.setup();
     const onDataChange = vi.fn();
     render(
-      <EzSimpleCrud
+      <EzSimpleCrud tableLabel="Grade de exemplo"
         columns={columns}
         fields={fields}
         mode="IN_MEMORY"
@@ -154,7 +154,7 @@ describe('EzSimpleCrud', () => {
     );
 
     render(
-      <EzSimpleCrud
+      <EzSimpleCrud tableLabel="Grade de exemplo"
         columns={columns}
         fields={fields}
         mode="SERVER"
@@ -181,7 +181,7 @@ describe('EzSimpleCrud', () => {
     const onSave = vi.fn().mockResolvedValue(savedItem);
 
     render(
-      <EzSimpleCrud
+      <EzSimpleCrud tableLabel="Grade de exemplo"
         columns={columns}
         fields={fields}
         mode="SERVER"
@@ -206,7 +206,7 @@ describe('EzSimpleCrud', () => {
     const user = userEvent.setup();
     const onOpenConfigurator = vi.fn();
     render(
-      <EzSimpleCrud
+      <EzSimpleCrud tableLabel="Grade de exemplo"
         columns={columns}
         fields={fields}
         mode="IN_MEMORY"

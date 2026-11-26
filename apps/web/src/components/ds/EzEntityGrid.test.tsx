@@ -31,7 +31,7 @@ const columnsWithAmount: ColumnDef<Ticket>[] = [
 
 describe('EzEntityGrid', () => {
   it('renders a header cell for each column and a row for each data entry', () => {
-    render(<EzEntityGrid columns={columns} data={data} />);
+    render(<EzEntityGrid tableLabel="Grade de exemplo" columns={columns} data={data} />);
 
     expect(screen.getByRole('columnheader', { name: 'ID' })).toBeInTheDocument();
     expect(screen.getByRole('columnheader', { name: 'Título' })).toBeInTheDocument();
@@ -44,7 +44,7 @@ describe('EzEntityGrid', () => {
 
   it('sorts rows by column when its header is clicked', async () => {
     const user = userEvent.setup();
-    render(<EzEntityGrid columns={columns} data={data} />);
+    render(<EzEntityGrid tableLabel="Grade de exemplo" columns={columns} data={data} />);
 
     const rowsBefore = screen.getAllByRole('row').slice(1);
     expect(within(rowsBefore[0]).getByText('Impressora não liga')).toBeInTheDocument();
@@ -64,7 +64,7 @@ describe('EzEntityGrid', () => {
     const user = userEvent.setup();
     const onSelectionChange = vi.fn();
     render(
-      <EzEntityGrid
+      <EzEntityGrid tableLabel="Grade de exemplo"
         columns={columns}
         data={data}
         selectable
@@ -84,7 +84,7 @@ describe('EzEntityGrid', () => {
     const user = userEvent.setup();
     const onTaskbarAction = vi.fn();
     render(
-      <EzEntityGrid
+      <EzEntityGrid tableLabel="Grade de exemplo"
         columns={columns}
         data={data}
         taskbarButtons={['INSERT', 'REMOVE']}
@@ -103,7 +103,7 @@ describe('EzEntityGrid', () => {
 
   it('paginates rows and advances to the next page on click', async () => {
     const user = userEvent.setup();
-    render(<EzEntityGrid columns={columns} data={data} pageSize={2} />);
+    render(<EzEntityGrid tableLabel="Grade de exemplo" columns={columns} data={data} pageSize={2} />);
 
     expect(screen.getByText('Impressora não liga')).toBeInTheDocument();
     expect(screen.getByText('Erro ao salvar chamado')).toBeInTheDocument();
@@ -122,7 +122,7 @@ describe('EzEntityGrid', () => {
       { id: 'status', label: 'Status', category: 'Chamado', value: 'Aberto', active: true },
     ];
     render(
-      <EzEntityGrid
+      <EzEntityGrid tableLabel="Grade de exemplo"
         columns={columns}
         data={data}
         filters={filters}
@@ -136,7 +136,7 @@ describe('EzEntityGrid', () => {
 
   it('renders a footer row with the sum of numeric columns when footerAggregations is provided', () => {
     render(
-      <EzEntityGrid
+      <EzEntityGrid tableLabel="Grade de exemplo"
         columns={columnsWithAmount}
         data={data}
         footerAggregations={{ amount: 'sum' }}
@@ -149,14 +149,14 @@ describe('EzEntityGrid', () => {
   });
 
   it('does not render a footer row when footerAggregations is not provided', () => {
-    render(<EzEntityGrid columns={columnsWithAmount} data={data} />);
+    render(<EzEntityGrid tableLabel="Grade de exemplo" columns={columnsWithAmount} data={data} />);
 
     expect(screen.queryByTestId('ez-entity-grid-footer-row')).not.toBeInTheDocument();
   });
 
   it('keeps the footer row empty for a column id that does not exist in the data', () => {
     render(
-      <EzEntityGrid
+      <EzEntityGrid tableLabel="Grade de exemplo"
         columns={columnsWithAmount}
         data={data}
         footerAggregations={{ nonExistentColumn: 'sum' }}
@@ -170,7 +170,7 @@ describe('EzEntityGrid', () => {
 
   it('sums the full dataset (not just the current page) when footerAggregations and pageSize are both set', () => {
     render(
-      <EzEntityGrid
+      <EzEntityGrid tableLabel="Grade de exemplo"
         columns={columnsWithAmount}
         data={data}
         pageSize={2}
@@ -185,7 +185,7 @@ describe('EzEntityGrid', () => {
 
   it('renders a left-pinned column before the other columns, marked with data-pinned="left"', () => {
     render(
-      <EzEntityGrid
+      <EzEntityGrid tableLabel="Grade de exemplo"
         columns={columnsWithAmount}
         data={data}
         pinnedColumns={{ left: ['priority'] }}
@@ -205,7 +205,7 @@ describe('EzEntityGrid', () => {
 
   it('renders a right-pinned column after the other columns, marked with data-pinned="right"', () => {
     render(
-      <EzEntityGrid
+      <EzEntityGrid tableLabel="Grade de exemplo"
         columns={columnsWithAmount}
         data={data}
         pinnedColumns={{ right: ['amount'] }}
@@ -218,7 +218,7 @@ describe('EzEntityGrid', () => {
   });
 
   it('keeps the original column order when pinnedColumns is not provided', () => {
-    render(<EzEntityGrid columns={columnsWithAmount} data={data} />);
+    render(<EzEntityGrid tableLabel="Grade de exemplo" columns={columnsWithAmount} data={data} />);
 
     const headerCells = screen.getAllByRole('columnheader');
     expect(headerCells.map((cell) => cell.textContent)).toEqual([
@@ -250,7 +250,7 @@ describe('EzEntityGrid', () => {
 
     try {
       render(
-        <EzEntityGrid
+        <EzEntityGrid tableLabel="Grade de exemplo"
           columns={columnsWithAmount}
           data={data}
           pinnedColumns={{ left: ['id', 'title'] }}
@@ -270,7 +270,7 @@ describe('EzEntityGrid', () => {
 
   it('ignores a pinned column id that does not exist in the data without crashing', () => {
     render(
-      <EzEntityGrid
+      <EzEntityGrid tableLabel="Grade de exemplo"
         columns={columnsWithAmount}
         data={data}
         pinnedColumns={{ left: ['doesNotExist'] }}
@@ -295,7 +295,7 @@ describe('EzEntityGrid grouping', () => {
   ];
 
   it('renders one collapsed group header row per distinct value when groupBy is set', () => {
-    render(<EzEntityGrid columns={columnsWithAmount} data={groupableData} groupBy={['priority']} />);
+    render(<EzEntityGrid tableLabel="Grade de exemplo" columns={columnsWithAmount} data={groupableData} groupBy={['priority']} />);
 
     // Groups start collapsed: 2 group rows (Alta, Baixa), 0 leaf rows visible yet.
     const groupRows = screen.getAllByTestId('ez-entity-grid-group-row');
@@ -308,7 +308,7 @@ describe('EzEntityGrid grouping', () => {
 
   it('expands a group to reveal its leaf rows when its header row is clicked', async () => {
     const user = userEvent.setup();
-    render(<EzEntityGrid columns={columnsWithAmount} data={groupableData} groupBy={['priority']} />);
+    render(<EzEntityGrid tableLabel="Grade de exemplo" columns={columnsWithAmount} data={groupableData} groupBy={['priority']} />);
 
     const groupRows = screen.getAllByTestId('ez-entity-grid-group-row');
     await user.click(groupRows[0]);
@@ -319,14 +319,14 @@ describe('EzEntityGrid grouping', () => {
   });
 
   it('does not render group rows when groupBy is omitted', () => {
-    render(<EzEntityGrid columns={columnsWithAmount} data={groupableData} />);
+    render(<EzEntityGrid tableLabel="Grade de exemplo" columns={columnsWithAmount} data={groupableData} />);
 
     expect(screen.queryByTestId('ez-entity-grid-group-row')).not.toBeInTheDocument();
     expect(screen.getByText('Impressora não liga')).toBeInTheDocument();
   });
 
   it('ignores a groupBy column id that does not exist in the data without crashing', () => {
-    render(<EzEntityGrid columns={columnsWithAmount} data={groupableData} groupBy={['doesNotExist']} />);
+    render(<EzEntityGrid tableLabel="Grade de exemplo" columns={columnsWithAmount} data={groupableData} groupBy={['doesNotExist']} />);
 
     expect(screen.queryByTestId('ez-entity-grid-group-row')).not.toBeInTheDocument();
     expect(screen.getByText('Impressora não liga')).toBeInTheDocument();
@@ -337,7 +337,7 @@ describe('EzEntityGrid grouping', () => {
       { id: '1', title: 'Sem prioridade definida', priority: undefined as unknown as string, createdAt: '2024-01-01', amount: 10 },
       { id: '2', title: 'Acesso ao sistema negado', priority: 'Baixa', createdAt: '2024-01-03', amount: 30 },
     ];
-    render(<EzEntityGrid columns={columnsWithAmount} data={dataWithMissingField} groupBy={['priority']} />);
+    render(<EzEntityGrid tableLabel="Grade de exemplo" columns={columnsWithAmount} data={dataWithMissingField} groupBy={['priority']} />);
 
     const groupRows = screen.getAllByTestId('ez-entity-grid-group-row');
     expect(groupRows.some((row) => row.textContent?.includes('undefined'))).toBe(false);
@@ -346,7 +346,7 @@ describe('EzEntityGrid grouping', () => {
 
   it('expands a group when its header row receives Enter or Space while focused', async () => {
     const user = userEvent.setup();
-    render(<EzEntityGrid columns={columnsWithAmount} data={groupableData} groupBy={['priority']} />);
+    render(<EzEntityGrid tableLabel="Grade de exemplo" columns={columnsWithAmount} data={groupableData} groupBy={['priority']} />);
 
     const groupRows = screen.getAllByTestId('ez-entity-grid-group-row');
     expect(groupRows[0]).toHaveAttribute('tabindex', '0');
@@ -362,7 +362,7 @@ describe('EzEntityGrid grouping', () => {
 
 describe('EzEntityGrid visual tokens (Sankhya ERP parity)', () => {
   it('applies compact row density by default (~25px line height with py-1 on cells and py-1.5 on headers)', () => {
-    render(<EzEntityGrid columns={columns} data={data} />);
+    render(<EzEntityGrid tableLabel="Grade de exemplo" columns={columns} data={data} />);
     const headers = screen.getAllByRole('columnheader');
     expect(headers[0]).toHaveClass('py-1.5');
 
@@ -372,7 +372,7 @@ describe('EzEntityGrid visual tokens (Sankhya ERP parity)', () => {
   });
 
   it('applies comfortable density (py-3) when density="comfortable" is passed', () => {
-    render(<EzEntityGrid columns={columns} data={data} density="comfortable" />);
+    render(<EzEntityGrid tableLabel="Grade de exemplo" columns={columns} data={data} density="comfortable" />);
     const headers = screen.getAllByRole('columnheader');
     expect(headers[0]).toHaveClass('py-3');
 
@@ -382,14 +382,14 @@ describe('EzEntityGrid visual tokens (Sankhya ERP parity)', () => {
   });
 
   it('applies hover:bg-grid-row-hover to body rows', () => {
-    render(<EzEntityGrid columns={columns} data={data} />);
+    render(<EzEntityGrid tableLabel="Grade de exemplo" columns={columns} data={data} />);
     const firstBodyRow = screen.getAllByRole('row')[1];
     expect(firstBodyRow).toHaveClass('hover:bg-grid-row-hover');
   });
 
   it('applies bg-brand-50 to selected rows when selectable is true and row is checked', async () => {
     const user = userEvent.setup();
-    render(<EzEntityGrid columns={columns} data={data} selectable />);
+    render(<EzEntityGrid tableLabel="Grade de exemplo" columns={columns} data={data} selectable />);
     const checkboxes = screen.getAllByRole('checkbox');
     const firstBodyRow = screen.getAllByRole('row')[1];
     expect(firstBodyRow).not.toHaveClass('bg-brand-50');
@@ -399,7 +399,7 @@ describe('EzEntityGrid visual tokens (Sankhya ERP parity)', () => {
   });
 
   it('adds border-r border-gray-100 vertical grade between header columns except on the last column', () => {
-    render(<EzEntityGrid columns={columns} data={data} />);
+    render(<EzEntityGrid tableLabel="Grade de exemplo" columns={columns} data={data} />);
     const headers = screen.getAllByRole('columnheader');
     expect(headers.length).toBe(columns.length);
     for (let i = 0; i < headers.length - 1; i++) {
@@ -415,7 +415,7 @@ describe('EzEntityGrid rich pagination and horizontal scrollbar (Sankhya parity)
     const user = userEvent.setup();
     const onPageSizeChange = vi.fn();
     render(
-      <EzEntityGrid
+      <EzEntityGrid tableLabel="Grade de exemplo"
         columns={columns}
         data={data}
         pageSize={2}
@@ -453,7 +453,7 @@ describe('EzEntityGrid rich pagination and horizontal scrollbar (Sankhya parity)
 
   it('renders persistent horizontal scrollbar when alwaysShowHorizontalScrollbar is enabled', () => {
     render(
-      <EzEntityGrid
+      <EzEntityGrid tableLabel="Grade de exemplo"
         columns={columns}
         data={data}
         alwaysShowHorizontalScrollbar
@@ -470,7 +470,7 @@ describe('EzEntityGrid rich pagination and horizontal scrollbar (Sankhya parity)
 
   it('does not render horizontal scrollbar when showHorizontalScrollbar is false', () => {
     render(
-      <EzEntityGrid
+      <EzEntityGrid tableLabel="Grade de exemplo"
         columns={columns}
         data={data}
         alwaysShowHorizontalScrollbar
@@ -485,7 +485,7 @@ describe('EzEntityGrid rich pagination and horizontal scrollbar (Sankhya parity)
 describe('EzEntityGrid Excel-style column filters and status bar counters', () => {
   it('renders status bar with total row count and selection counter when selectable', async () => {
     const user = userEvent.setup();
-    render(<EzEntityGrid columns={columnsWithAmount} data={data} selectable />);
+    render(<EzEntityGrid tableLabel="Grade de exemplo" columns={columnsWithAmount} data={data} selectable />);
 
     const statusBar = screen.getByTestId('ez-entity-grid-status-bar');
     expect(statusBar).toBeInTheDocument();
@@ -512,7 +512,7 @@ describe('EzEntityGrid Excel-style column filters and status bar counters', () =
 
   it('opens Excel-style column filter popover on funnel click and filters data by distinct values', async () => {
     const user = userEvent.setup();
-    render(<EzEntityGrid columns={columns} data={data} />);
+    render(<EzEntityGrid tableLabel="Grade de exemplo" columns={columns} data={data} />);
 
     // Prioridade column filter button
     const filterBtn = screen.getByTestId('ez-grid-column-filter-priority');
@@ -551,7 +551,7 @@ describe('EzEntityGrid Excel-style column filters and status bar counters', () =
 
   it('clears column filter restoring all rows', async () => {
     const user = userEvent.setup();
-    render(<EzEntityGrid columns={columns} data={data} />);
+    render(<EzEntityGrid tableLabel="Grade de exemplo" columns={columns} data={data} />);
 
     const filterBtn = screen.getByTestId('ez-grid-column-filter-priority');
     await user.click(filterBtn);
@@ -576,7 +576,7 @@ describe('EzEntityGrid Excel-style column filters and status bar counters', () =
 
   it('searches values within filter popover and uses select all', async () => {
     const user = userEvent.setup();
-    render(<EzEntityGrid columns={columns} data={data} />);
+    render(<EzEntityGrid tableLabel="Grade de exemplo" columns={columns} data={data} />);
 
     const filterBtn = screen.getByTestId('ez-grid-column-filter-title');
     await user.click(filterBtn);
@@ -599,13 +599,13 @@ describe('EzEntityGrid Excel-style column filters and status bar counters', () =
   });
 
   it('does not render column filter buttons when enableColumnFilters is false', () => {
-    render(<EzEntityGrid columns={columns} data={data} enableColumnFilters={false} />);
+    render(<EzEntityGrid tableLabel="Grade de exemplo" columns={columns} data={data} enableColumnFilters={false} />);
     expect(screen.queryByTestId('ez-grid-column-filter-title')).not.toBeInTheDocument();
     expect(screen.queryByTestId('ez-grid-column-filter-priority')).not.toBeInTheDocument();
   });
 
   it('does not render status bar when showStatusBar is false', () => {
-    render(<EzEntityGrid columns={columns} data={data} showStatusBar={false} />);
+    render(<EzEntityGrid tableLabel="Grade de exemplo" columns={columns} data={data} showStatusBar={false} />);
     expect(screen.queryByTestId('ez-entity-grid-status-bar')).not.toBeInTheDocument();
   });
 });
@@ -613,7 +613,7 @@ describe('EzEntityGrid Excel-style column filters and status bar counters', () =
 describe('EzEntityGrid Sankhya JS AG Grid parity features', () => {
   it('renders Sankhya sort indicators (green border for asc, red for desc)', async () => {
     const user = userEvent.setup();
-    render(<EzEntityGrid columns={columns} data={data} />);
+    render(<EzEntityGrid tableLabel="Grade de exemplo" columns={columns} data={data} />);
 
     // Click to sort ascending
     await user.click(screen.getByRole('columnheader', { name: 'Título' }));
@@ -625,7 +625,7 @@ describe('EzEntityGrid Sankhya JS AG Grid parity features', () => {
   });
 
   it('renders zebra striping and vertical dividers on body cells', () => {
-    render(<EzEntityGrid columns={columns} data={data} zebraStriping />);
+    render(<EzEntityGrid tableLabel="Grade de exemplo" columns={columns} data={data} zebraStriping />);
 
     const rows = screen.getAllByRole('row').slice(1);
     expect(rows[1]).toHaveClass('bg-gray-50/60');
@@ -639,7 +639,7 @@ describe('EzEntityGrid Sankhya JS AG Grid parity features', () => {
 
   it('opens column header menu and sorts via menu action', async () => {
     const user = userEvent.setup();
-    render(<EzEntityGrid columns={columns} data={data} />);
+    render(<EzEntityGrid tableLabel="Grade de exemplo" columns={columns} data={data} />);
 
     const menuBtn = screen.getByTestId('ez-grid-column-menu-title');
     await user.click(menuBtn);
@@ -658,7 +658,7 @@ describe('EzEntityGrid Sankhya JS AG Grid parity features', () => {
 
   it('provides "Todos" and "Filtrados" tabs in the Excel filter popover', async () => {
     const user = userEvent.setup();
-    render(<EzEntityGrid columns={columns} data={data} />);
+    render(<EzEntityGrid tableLabel="Grade de exemplo" columns={columns} data={data} />);
 
     await user.click(screen.getByTestId('ez-grid-column-filter-title'));
 
@@ -673,20 +673,20 @@ describe('EzEntityGrid Sankhya JS AG Grid parity features', () => {
   });
 
   it('reserves room for the corner menu button in the last header', () => {
-    const { unmount } = render(<EzEntityGrid columns={columns} data={data} />);
+    const { unmount } = render(<EzEntityGrid tableLabel="Grade de exemplo" columns={columns} data={data} />);
     const withButton = screen.getAllByRole('columnheader');
     expect(withButton[withButton.length - 1]).toHaveClass('pr-10');
     expect(withButton[0]).not.toHaveClass('pr-10');
     unmount();
 
-    render(<EzEntityGrid columns={columns} data={data} showGridCornerMenu={false} />);
+    render(<EzEntityGrid tableLabel="Grade de exemplo" columns={columns} data={data} showGridCornerMenu={false} />);
     const withoutButton = screen.getAllByRole('columnheader');
     expect(withoutButton[withoutButton.length - 1]).not.toHaveClass('pr-10');
   });
 
   it('renders AG Grid corner menu and toggles density', async () => {
     const user = userEvent.setup();
-    render(<EzEntityGrid columns={columns} data={data} density="compact" />);
+    render(<EzEntityGrid tableLabel="Grade de exemplo" columns={columns} data={data} density="compact" />);
 
     const cornerBtn = screen.getByTestId('ez-grid-corner-menu-button');
     expect(cornerBtn).toBeInTheDocument();
@@ -704,7 +704,7 @@ describe('EzEntityGrid Sankhya JS AG Grid parity features', () => {
 
   it('opens Grid Statistics modal and displays numeric metrics', async () => {
     const user = userEvent.setup();
-    render(<EzEntityGrid columns={columnsWithAmount} data={data} />);
+    render(<EzEntityGrid tableLabel="Grade de exemplo" columns={columnsWithAmount} data={data} />);
 
     const statsBtn = screen.getByTestId('ez-grid-open-statistics-button');
     expect(statsBtn).toBeInTheDocument();
@@ -723,7 +723,7 @@ describe('EzEntityGrid Sankhya JS AG Grid parity features', () => {
 
   it('opens Column Configurator modal and toggles column visibility', async () => {
     const user = userEvent.setup();
-    render(<EzEntityGrid columns={columns} data={data} />);
+    render(<EzEntityGrid tableLabel="Grade de exemplo" columns={columns} data={data} />);
 
     // Open corner menu
     await user.click(screen.getByTestId('ez-grid-corner-menu-button'));
@@ -743,7 +743,7 @@ describe('EzEntityGrid Sankhya JS AG Grid parity features', () => {
   });
 
   it('renders sequential row numbers when showRowNumbers is true', () => {
-    render(<EzEntityGrid columns={columns} data={data} showRowNumbers />);
+    render(<EzEntityGrid tableLabel="Grade de exemplo" columns={columns} data={data} showRowNumbers />);
 
     const rowNumbers = screen.getAllByTestId('ez-grid-row-number');
     expect(rowNumbers).toHaveLength(3);
@@ -754,7 +754,7 @@ describe('EzEntityGrid Sankhya JS AG Grid parity features', () => {
 
   it('respects initialColumnVisibility prop to hide specified columns on mount', () => {
     render(
-      <EzEntityGrid
+      <EzEntityGrid tableLabel="Grade de exemplo"
         columns={columns}
         data={data}
         initialColumnVisibility={{ priority: false }}
@@ -767,7 +767,7 @@ describe('EzEntityGrid Sankhya JS AG Grid parity features', () => {
 
   it('hides column directly via "Ocultar esta Coluna" in column menu', async () => {
     const user = userEvent.setup();
-    render(<EzEntityGrid columns={columns} data={data} />);
+    render(<EzEntityGrid tableLabel="Grade de exemplo" columns={columns} data={data} />);
 
     expect(screen.getByRole('columnheader', { name: 'Prioridade' })).toBeInTheDocument();
 
@@ -784,7 +784,7 @@ describe('EzEntityGrid Sankhya JS AG Grid parity features', () => {
   it('opens Column Configurator modal from taskbar CONFIGURATOR action', async () => {
     const user = userEvent.setup();
     render(
-      <EzEntityGrid
+      <EzEntityGrid tableLabel="Grade de exemplo"
         columns={columns}
         data={data}
         taskbarButtons={['CONFIGURATOR']}
@@ -800,7 +800,7 @@ describe('EzEntityGrid Sankhya JS AG Grid parity features', () => {
   it('supports custom columnOrder and drag-and-drop reordering (Sankhya AG Grid parity)', () => {
     const onColumnOrderChange = vi.fn();
     render(
-      <EzEntityGrid
+      <EzEntityGrid tableLabel="Grade de exemplo"
         columns={columns}
         data={data}
         columnOrder={['priority', 'title', 'id']}
@@ -815,7 +815,7 @@ describe('EzEntityGrid Sankhya JS AG Grid parity features', () => {
   });
 
   it('renders a resize handle for each resizable column, never for special columns (Sankhya AG Grid parity)', () => {
-    render(<EzEntityGrid columns={columns} data={data} selectable showRowNumbers />);
+    render(<EzEntityGrid tableLabel="Grade de exemplo" columns={columns} data={data} selectable showRowNumbers />);
 
     expect(screen.getByTestId('ez-entity-grid-resize-handle-id')).toBeInTheDocument();
     expect(screen.getByTestId('ez-entity-grid-resize-handle-title')).toBeInTheDocument();
@@ -828,7 +828,7 @@ describe('EzEntityGrid Sankhya JS AG Grid parity features', () => {
   });
 
   it('hides the resize handle when enableColumnResize is false', () => {
-    render(<EzEntityGrid columns={columns} data={data} enableColumnResize={false} />);
+    render(<EzEntityGrid tableLabel="Grade de exemplo" columns={columns} data={data} enableColumnResize={false} />);
 
     expect(screen.queryByTestId('ez-entity-grid-resize-handle-id')).not.toBeInTheDocument();
     expect(screen.queryByTestId('ez-entity-grid-resize-handle-title')).not.toBeInTheDocument();
@@ -836,7 +836,7 @@ describe('EzEntityGrid Sankhya JS AG Grid parity features', () => {
   });
 
   it('resizes a column by dragging its resize handle (mousedown + mousemove + mouseup)', () => {
-    render(<EzEntityGrid columns={columns} data={data} />);
+    render(<EzEntityGrid tableLabel="Grade de exemplo" columns={columns} data={data} />);
 
     const header = screen.getByRole('columnheader', { name: 'ID' });
     expect(header).toHaveStyle({ width: '150px' });
@@ -852,7 +852,7 @@ describe('EzEntityGrid Sankhya JS AG Grid parity features', () => {
   it('supports controlled columnSizing and onColumnSizingChange when dragging the resize handle', () => {
     const onColumnSizingChange = vi.fn();
     render(
-      <EzEntityGrid
+      <EzEntityGrid tableLabel="Grade de exemplo"
         columns={columns}
         data={data}
         columnSizing={{ id: 300 }}
@@ -875,7 +875,7 @@ describe('EzEntityGrid Sankhya JS AG Grid parity features', () => {
 describe('EzEntityGrid duplo clique na linha (DMTE-462 T5)', () => {
   it('chama onRowDoubleClick com a linha original, e não chama no clique simples', async () => {
     const onRowDoubleClick = vi.fn();
-    render(<EzEntityGrid columns={columns} data={data} onRowDoubleClick={onRowDoubleClick} />);
+    render(<EzEntityGrid tableLabel="Grade de exemplo" columns={columns} data={data} onRowDoubleClick={onRowDoubleClick} />);
     await userEvent.click(screen.getByText('Erro ao salvar chamado'));
     expect(onRowDoubleClick).not.toHaveBeenCalled();
     fireEvent.doubleClick(screen.getByText('Erro ao salvar chamado'));
@@ -884,7 +884,7 @@ describe('EzEntityGrid duplo clique na linha (DMTE-462 T5)', () => {
   });
 
   it('sem onRowDoubleClick, o duplo clique não faz nada', () => {
-    render(<EzEntityGrid columns={columns} data={data} />);
+    render(<EzEntityGrid tableLabel="Grade de exemplo" columns={columns} data={data} />);
     expect(() => fireEvent.doubleClick(screen.getByText('Impressora não liga'))).not.toThrow();
   });
 });
@@ -896,7 +896,7 @@ describe('EzEntityGrid DMTE-541', () => {
   ];
 
   it('AC-06: a column with meta.truncate renders a single line with ellipsis and the full text in title', () => {
-    render(<EzEntityGrid columns={truncating} data={data} />);
+    render(<EzEntityGrid tableLabel="Grade de exemplo" columns={truncating} data={data} />);
 
     const cell = screen.getByText('Impressora não liga').closest('td') as HTMLElement;
     expect(cell).toHaveClass('truncate');
@@ -909,7 +909,7 @@ describe('EzEntityGrid DMTE-541', () => {
   });
 
   it('AC-06: with the option off the markup stays the same (no truncate, title or max width)', () => {
-    render(<EzEntityGrid columns={columns} data={data} />);
+    render(<EzEntityGrid tableLabel="Grade de exemplo" columns={columns} data={data} />);
 
     const cell = screen.getByText('Impressora não liga').closest('td') as HTMLElement;
     expect(cell).not.toHaveClass('truncate');
@@ -918,7 +918,7 @@ describe('EzEntityGrid DMTE-541', () => {
   });
 
   it('AC-07: the select-all and per-row checkboxes use the brand accent color', () => {
-    render(<EzEntityGrid columns={columns} data={data} selectable />);
+    render(<EzEntityGrid tableLabel="Grade de exemplo" columns={columns} data={data} selectable />);
 
     expect(screen.getByRole('checkbox', { name: 'Selecionar todas as linhas' })).toHaveClass('accent-brand-600');
     for (const box of screen.getAllByRole('checkbox', { name: 'Selecionar linha' })) {
@@ -928,7 +928,7 @@ describe('EzEntityGrid DMTE-541', () => {
 
   it('AC-07: the column filter and column configurator checkboxes use the brand accent color', async () => {
     const user = userEvent.setup();
-    render(<EzEntityGrid columns={columns} data={data} />);
+    render(<EzEntityGrid tableLabel="Grade de exemplo" columns={columns} data={data} />);
 
     await user.click(screen.getByTestId('ez-grid-column-filter-priority'));
     expect(screen.getByTestId('ez-grid-column-filter-select-all')).toHaveClass('accent-brand-600');
@@ -942,7 +942,7 @@ describe('EzEntityGrid DMTE-541', () => {
 
   it('AC-12: compactBelowSm hides the row number and selection columns below 640 px, off by default', () => {
     const { rerender } = render(
-      <EzEntityGrid columns={columns} data={data} selectable showRowNumbers compactBelowSm />,
+      <EzEntityGrid tableLabel="Grade de exemplo" columns={columns} data={data} selectable showRowNumbers compactBelowSm />,
     );
     const hidden = (text: string | RegExp) => {
       const headers = screen.getAllByRole('columnheader');
@@ -956,7 +956,7 @@ describe('EzEntityGrid DMTE-541', () => {
     const dataCell = screen.getByText('Impressora não liga').closest('td') as HTMLElement;
     expect(dataCell).not.toHaveClass('hidden');
 
-    rerender(<EzEntityGrid columns={columns} data={data} selectable showRowNumbers />);
+    rerender(<EzEntityGrid tableLabel="Grade de exemplo" columns={columns} data={data} selectable showRowNumbers />);
     expect(screen.getAllByTestId('ez-grid-row-number')[0].closest('td')).not.toHaveClass('hidden');
     expect(screen.getAllByRole('checkbox', { name: 'Selecionar linha' })[0].closest('td')).not.toHaveClass('hidden');
   });
@@ -967,7 +967,7 @@ describe('EzEntityGrid DMTE-541', () => {
       { accessorKey: 'id', header: 'ID' },
       { accessorKey: 'title', header: 'Título', cell: ({ row }) => <input aria-label={`Título ${row.original.id}`} defaultValue="" /> },
     ];
-    render(<EzEntityGrid columns={editable} data={data} selectable />);
+    render(<EzEntityGrid tableLabel="Grade de exemplo" columns={editable} data={data} selectable />);
 
     await user.click(screen.getByLabelText('Título 1'));
     await user.type(screen.getByLabelText('Título 1'), 'a b');

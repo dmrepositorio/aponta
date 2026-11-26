@@ -751,6 +751,7 @@ className="isolate flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll
                   </div>
                 ) : (
                   <EzEntityGrid
+                    tableLabel="Mesas de serviço"
                     data={filteredDesks}
                     columns={serviceDeskGridColumns}
                     selectable

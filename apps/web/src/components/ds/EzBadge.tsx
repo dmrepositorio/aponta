@@ -17,6 +17,11 @@ export interface EzBadgeProps extends HTMLAttributes<HTMLSpanElement> {
 /**
  * Aponta DS Badge
  * Small numeric or status indicator, usually a circle or rounded rectangle.
+ *
+ * Acessibilidade: um contador sem texto de contexto (ex.: "3") deve receber
+ * `aria-label` com a unidade ("3 chamados"); o atributo é repassado ao `span`.
+ * A cor padrão (`bg-brand-600 text-gray-70`, branco sobre #008561) tem contraste
+ * 4,6:1 (AA). Ao usar `colorClass`, o consumidor mantém o contraste AA.
  */
 export const EzBadge = forwardRef<HTMLSpanElement, EzBadgeProps>(
   ({ size = 'medium', colorClass, className, children, ...props }, ref) => {
@@ -29,7 +34,7 @@ export const EzBadge = forwardRef<HTMLSpanElement, EzBadgeProps>(
           !colorClass && 'bg-brand-600 text-gray-70',
           colorClass,
           // Sizes mapping directly to Sankhya's xs to xl concepts
-          size === 'x-small' && 'min-w-[12px] h-[12px] text-[10px] px-1',
+          size === 'x-small' && 'min-w-[16px] h-[16px] text-[11px] px-1',
           size === 'small' && 'min-w-[16px] h-[16px] text-[11px] px-1.5',
           size === 'medium' && 'min-w-[20px] h-[20px] text-[12px] px-2',
           size === 'large' && 'min-w-[24px] h-[24px] text-[14px] px-2.5',

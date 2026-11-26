@@ -87,6 +87,7 @@ export function ReleasesPage() {
           </div>
           {pageError && <EzAlert variant="error">{pageError}</EzAlert>}
           <EzEntityGrid
+            tableLabel="Liberações"
             key={rows.map((row) => row.id).join(',')}
             data={rows}
             columns={COLUMNS}
