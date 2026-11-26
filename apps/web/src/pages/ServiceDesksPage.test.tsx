@@ -93,6 +93,8 @@ function loginAs(role: 'ADMIN' | 'AGENT' | 'CLIENT') {
 describe('ServiceDesksPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(api.post).mockReset();
+    vi.mocked(api.delete).mockReset();
     mockApiGet();
     useAuthStore.setState({ token: null, user: null });
   });
@@ -131,7 +133,7 @@ describe('ServiceDesksPage', () => {
     expect(screen.getByTestId('ez-toolbar-clone-button')).toBeDisabled();
   });
 
-  it('should enable Excluir and Duplicar once a row is selected, and call the delete endpoint on confirmation', async () => {
+  it('should enable Excluir and Duplicar once a row is selected, and call the delete endpoint only after confirming the dialog (MSA-01)', async () => {
     loginAs('ADMIN');
     const user = userEvent.setup();
     vi.mocked(api.delete).mockResolvedValue({ data: {} });
@@ -149,7 +151,12 @@ describe('ServiceDesksPage', () => {
 
     await user.click(screen.getByTestId('ez-toolbar-delete-button'));
 
-    expect(confirmSpy).toHaveBeenCalled();
+    expect(confirmSpy).not.toHaveBeenCalled();
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByText('Suporte N1')).toBeInTheDocument();
+    expect(api.delete).not.toHaveBeenCalled();
+
+    await user.click(within(dialog).getByRole('button', { name: 'Confirmar' }));
     await waitFor(() => {
       expect(api.delete).toHaveBeenCalledWith('/service-desks/sd-1');
     });
@@ -206,6 +213,10 @@ describe('ServiceDesksPage', () => {
     expect(
       screen.getByText(/não tem permissão/i),
     ).toBeInTheDocument();
+    // MSA-06: dentro do EzPageLayout/EzPageHeader, com EzEmptyCard 'Acesso restrito'.
+    expect(screen.getByRole('heading', { level: 1, name: 'Mesa' })).toBeInTheDocument();
+    expect(screen.getByText('Acesso restrito')).toBeInTheDocument();
+    expect(screen.getByText(/procure um administrador/i)).toBeInTheDocument();
     // Só a preferência de tela do próprio usuário é lida (DMTE-527 T2); nenhum dado de Mesa.
     expect(vi.mocked(api.get).mock.calls.every(([url]) => url === '/me/screen-preferences/service-desks')).toBe(true);
   });
@@ -977,5 +988,211 @@ describe('DMTE-533: um só modelo de salvamento, com retorno', () => {
     await user.click(screen.getByRole('button', { name: '+ Estágio' }));
     await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('Não foi possível salvar.'));
     expect(screen.getByLabelText('Novo estágio')).toHaveValue('Em análise');
+  });
+});
+
+describe('F3-23: ServiceDesksPage (MSA-01 a MSA-09)', () => {
+  const axiosLikeError = (status: number, message: string) =>
+    Object.assign(new Error(message), { isAxiosError: true, response: { status, data: { message } } });
+
+  const manyDesks = Array.from({ length: 12 }, (_, i) => ({
+    id: `sd-${i + 1}`,
+    name: i < 3 ? `Alfa ${i + 1}` : `Beta ${i + 1}`,
+    createdAt: '2026-09-29T10:00:00.000Z',
+  }));
+
+  function mockDesks(desks: unknown[]) {
+    vi.mocked(api.get).mockImplementation((url: string) => {
+      if (url === '/service-desks') return Promise.resolve({ data: desks });
+      if (url === '/organizations') return Promise.resolve({ data: organizations });
+      if (url === '/users/agents') return Promise.resolve({ data: [] });
+      return Promise.reject(new Error(`Unexpected GET ${url}`));
+    });
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(api.post).mockReset();
+    vi.mocked(api.delete).mockReset();
+    mockApiGet();
+    useAuthStore.setState({ token: null, user: null });
+  });
+
+  it('MSA-01: Excluir abre o dialog de perigo com a contagem e os nomes; Cancelar não exclui', async () => {
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+    renderPage();
+    await screen.findByText('Suporte N1');
+    await user.click(screen.getAllByRole('checkbox')[1]);
+    await user.click(screen.getAllByRole('checkbox')[2]);
+
+    await user.click(screen.getByTestId('ez-toolbar-delete-button'));
+
+    expect(confirmSpy).not.toHaveBeenCalled();
+    const dialog = await screen.findByRole('dialog', { name: 'Excluir 2 mesas' });
+    expect(within(dialog).getByText('Suporte N1')).toBeInTheDocument();
+    expect(within(dialog).getByText('Infraestrutura')).toBeInTheDocument();
+
+    await user.click(within(dialog).getByRole('button', { name: 'Cancelar' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(api.delete).not.toHaveBeenCalled();
+    confirmSpy.mockRestore();
+  });
+
+  it('MSA-02: falha parcial mostra o alerta com o motivo da API e mantém só a mesa que falhou selecionada', async () => {
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    vi.mocked(api.delete).mockImplementation((url: string) =>
+      url === '/service-desks/sd-2'
+        ? Promise.reject(axiosLikeError(409, 'A mesa possui tickets'))
+        : Promise.resolve({ data: {} }),
+    );
+    renderPage();
+    await screen.findByText('Suporte N1');
+    await user.click(screen.getAllByRole('checkbox')[1]);
+    await user.click(screen.getAllByRole('checkbox')[2]);
+    await user.click(screen.getByTestId('ez-toolbar-delete-button'));
+    await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Confirmar' }));
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent('1 excluída, 1 falhou');
+    expect(alert).toHaveTextContent('Infraestrutura: A mesa possui tickets');
+    expect(api.delete).toHaveBeenCalledTimes(2);
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    // A seleção segue ativa (a mesa que falhou continua selecionada).
+    expect(screen.getByTestId('ez-toolbar-delete-button')).toBeEnabled();
+  });
+
+  it('MSA-02: com todas as exclusões bem-sucedidas não há alerta e a seleção é limpa', async () => {
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    vi.mocked(api.delete).mockResolvedValue({ data: {} });
+    renderPage();
+    await screen.findByText('Suporte N1');
+    await user.click(screen.getAllByRole('checkbox')[1]);
+    await user.click(screen.getByTestId('ez-toolbar-delete-button'));
+    await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Confirmar' }));
+
+    await waitFor(() => expect(screen.getByTestId('ez-toolbar-delete-button')).toBeDisabled());
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it('MSA-03: falha da lista mostra o estado de erro com Tentar de novo, sem o vazio', async () => {
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    vi.mocked(api.get).mockImplementation((url: string) => {
+      if (url === '/service-desks') return Promise.reject(axiosLikeError(500, 'boom'));
+      if (url === '/users/agents') return Promise.resolve({ data: [] });
+      return Promise.reject(new Error(`Unexpected GET ${url}`));
+    });
+    renderPage();
+
+    expect(await screen.findByText('Não foi possível carregar as mesas.')).toBeInTheDocument();
+    expect(screen.queryByText('Nenhuma mesa cadastrada ainda.')).not.toBeInTheDocument();
+
+    mockDesks(serviceDesks);
+    await user.click(screen.getByRole('button', { name: 'Tentar de novo' }));
+    expect(await screen.findByText('Suporte N1')).toBeInTheDocument();
+    expect(screen.queryByText('Não foi possível carregar as mesas.')).not.toBeInTheDocument();
+  });
+
+  it('MSA-04: sem mesas o vazio oferece Nova mesa', async () => {
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    mockDesks([]);
+    renderPage();
+
+    expect(await screen.findByText('Nenhuma mesa cadastrada ainda.')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Nova mesa' }));
+    expect(await screen.findByRole('textbox', { name: /^nome$/i })).toBeInTheDocument();
+  });
+
+  it('MSA-04: filtro sem resultado diz Nenhuma mesa encontrada e Limpar filtros restaura a lista', async () => {
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    renderPage();
+    await screen.findByText('Suporte N1');
+
+    await user.click(screen.getByTestId('ez-toolbar-filter-panel-button'));
+    await user.type(within(screen.getByTestId('ez-filter-drawer')).getByLabelText(/buscar mesa/i), 'zzz');
+
+    expect(screen.getByText('Nenhuma mesa encontrada')).toBeInTheDocument();
+    expect(screen.queryByText('Nenhuma mesa cadastrada ainda.')).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Limpar filtros' }));
+    expect(await screen.findByText('Suporte N1')).toBeInTheDocument();
+    expect(screen.getByText('Infraestrutura')).toBeInTheDocument();
+    expect(screen.queryByText('Nenhuma mesa encontrada')).not.toBeInTheDocument();
+  });
+
+  it('MSA-05: o contador da toolbar acompanha o total filtrado e a faixa da página', async () => {
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    mockDesks(manyDesks);
+    renderPage();
+    await screen.findByText('Alfa 1');
+
+    expect(screen.getByTestId('ez-toolbar-record-count')).toHaveTextContent('1 - 10 de 12');
+
+    await user.click(screen.getByTestId('ez-toolbar-filter-panel-button'));
+    await user.type(within(screen.getByTestId('ez-filter-drawer')).getByLabelText(/buscar mesa/i), 'Alfa');
+
+    expect(screen.getByTestId('ez-toolbar-record-count')).toHaveTextContent('1 - 3 de 3');
+  });
+
+  it('MSA-08: erro 409 na criação mostra a mensagem do servidor e marca o campo Nome', async () => {
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    vi.mocked(api.post).mockRejectedValue(axiosLikeError(409, 'Já existe uma mesa com este nome'));
+    renderPage();
+    await screen.findByText('Suporte N1');
+    await user.click(screen.getByTestId('ez-toolbar-insert-button'));
+    await user.type(await screen.findByRole('textbox', { name: /^nome$/i }), 'Suporte N1');
+    await user.click(screen.getByRole('button', { name: /criar/i }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Já existe uma mesa com este nome');
+    expect(screen.getByRole('textbox', { name: /^nome$/i })).toHaveAttribute('aria-invalid', 'true');
+  });
+
+  it('MSA-08: sem mensagem da API a criação cai no texto genérico e o Nome não é marcado', async () => {
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    vi.mocked(api.post).mockRejectedValue(new Error('Network Error'));
+    renderPage();
+    await screen.findByText('Suporte N1');
+    await user.click(screen.getByTestId('ez-toolbar-insert-button'));
+    await user.type(await screen.findByRole('textbox', { name: /^nome$/i }), 'Financeiro');
+    await user.click(screen.getByRole('button', { name: /criar/i }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Falha ao criar a mesa. Tente novamente.');
+    expect(screen.getByRole('textbox', { name: /^nome$/i })).not.toHaveAttribute('aria-invalid', 'true');
+  });
+
+  it('MSA-09: depois de criar a mesa, abre o detalhe dela com as abas de configuração', async () => {
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    vi.mocked(api.post).mockResolvedValue({
+      data: { id: 'sd-3', name: 'Financeiro', createdAt: '2026-09-30T10:00:00.000Z' },
+    });
+    renderPage();
+    await screen.findByText('Suporte N1');
+    await user.click(screen.getByTestId('ez-toolbar-insert-button'));
+    await user.type(await screen.findByRole('textbox', { name: /^nome$/i }), 'Financeiro');
+    await user.click(screen.getByRole('button', { name: /criar/i }));
+
+    expect(await screen.findByRole('tab', { name: 'Informações básicas' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Parâmetros' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Financeiro' })).toBeInTheDocument();
+  });
+
+  it('MSA-09: o tooltip do Duplicar informa que só o nome é copiado', async () => {
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    renderPage();
+    await screen.findByText('Suporte N1');
+    await user.click(screen.getAllByRole('checkbox')[1]);
+
+    expect(screen.getByTestId('ez-toolbar-clone-button')).toHaveAttribute('title', expect.stringMatching(/só o nome/i));
   });
 });

@@ -50,6 +50,8 @@ export interface EzEntityToolbarProps extends Omit<HTMLAttributes<HTMLDivElement
   onDelete?: () => void;
   /** Fired when the user clicks "Duplicar". */
   onClone?: () => void;
+  /** Tooltip do botão Duplicar com linha selecionada (ex.: avisar que só parte do registro é copiada). @default 'Duplicar registro selecionado' */
+  cloneTooltip?: string;
   /** Number of currently selected records. If 0, Delete and Clone are disabled. */
   selectedCount?: number;
   /** Fired when the user clicks "Recarregar". */
