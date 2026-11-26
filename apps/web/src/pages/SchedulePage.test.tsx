@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -100,37 +100,55 @@ describe('SchedulePage', () => {
     expect(screen.getByPlaceholderText(/ex: reunião com cliente/i)).toBeInTheDocument();
   });
 
-  it('filters appointments when changing type filter', async () => {
+  it('filtra por tipo pelo painel de checkboxes, sem seletor oculto', async () => {
     const user = userEvent.setup();
-    vi.mocked(api.get).mockResolvedValue({ data: [] });
+    const vacation = { ...mockAppointments[0], id: 'app-2', title: 'Férias de Verão', type: 'VACATION' };
+    vi.mocked(api.get).mockResolvedValue({ data: [...mockAppointments, vacation] });
     loginAs('ADMIN');
     renderPage();
 
-    const select = screen.getByLabelText(/filtrar por tipo/i, { selector: 'select' });
-    await user.selectOptions(select, 'VACATION');
+    expect(await screen.findByText('Férias de Verão')).toBeInTheDocument();
+    expect(screen.getByText('Alinhamento Semanal')).toBeInTheDocument();
 
-    expect(api.get).toHaveBeenCalledWith(
-      '/appointments',
-      expect.objectContaining({
-        params: expect.objectContaining({ type: 'VACATION' }),
-      }),
+    await user.click(screen.getByRole('checkbox', { name: 'Férias' }));
+
+    await waitFor(() => expect(screen.queryByText('Férias de Verão')).not.toBeInTheDocument());
+    expect(screen.getByText('Alinhamento Semanal')).toBeInTheDocument();
+    expect(screen.queryAllByLabelText('Filtrar por tipo')).toHaveLength(0);
+  });
+
+  it('SCH-03: filtro de atendente do ADMIN é um select rotulado, sem campo de UUID', async () => {
+    const user = userEvent.setup();
+    vi.mocked(api.get).mockImplementation(async (url: string) => {
+      if (url === '/users/agents') {
+        return { data: [{ id: 'agent-9', name: 'Maria Souza', email: 'maria@aponta.com' }] };
+      }
+      return { data: [] };
+    });
+    loginAs('ADMIN');
+    renderPage();
+
+    const combo = await screen.findByRole('combobox', { name: 'Atendente' });
+    expect(screen.queryByPlaceholderText(/filtrar id do técnico/i)).not.toBeInTheDocument();
+
+    await user.click(combo);
+    await user.click(await screen.findByRole('option', { name: 'Maria Souza' }));
+
+    await waitFor(() =>
+      expect(api.get).toHaveBeenCalledWith(
+        '/appointments',
+        expect.objectContaining({ params: expect.objectContaining({ userId: 'agent-9' }) }),
+      ),
     );
   });
 
-  it('shows technician input filter only for ADMIN', async () => {
-    vi.mocked(api.get).mockResolvedValue({ data: [] });
-    loginAs('ADMIN');
-    renderPage();
-
-    expect(screen.getByPlaceholderText(/filtrar id do técnico/i)).toBeInTheDocument();
-  });
-
-  it('does not show technician input filter for standard AGENT', async () => {
+  it('does not show technician filter for standard AGENT', async () => {
     vi.mocked(api.get).mockResolvedValue({ data: [] });
     loginAs('AGENT');
     renderPage();
 
     expect(screen.queryByPlaceholderText(/filtrar id do técnico/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole('combobox', { name: 'Atendente' })).not.toBeInTheDocument();
   });
 
   it('switches to Dia view and shows a single-day grid', async () => {
@@ -195,11 +213,127 @@ describe('SchedulePage', () => {
     loginAs('AGENT');
     renderPage();
 
-    await user.click(screen.getByTitle('Semana anterior'));
-    await user.click(screen.getByTitle('Próxima semana'));
+    await user.click(screen.getByRole('button', { name: 'Semana anterior' }));
+    await user.click(screen.getByRole('button', { name: 'Próxima semana' }));
     await user.click(screen.getByText('Hoje'));
 
     expect(api.get).toHaveBeenCalled();
+  });
+
+  describe('controles inertes (SCH-02)', () => {
+    it('não exibe o card Agendas com nome de empresa fixo nem lápis sem ação', async () => {
+      vi.mocked(api.get).mockResolvedValue({ data: [] });
+      loginAs('AGENT');
+      renderPage();
+
+      expect(screen.queryByText('DM Tech')).not.toBeInTheDocument();
+      expect(screen.queryByLabelText('Agendas')).not.toBeInTheDocument();
+      expect(document.querySelector('svg.lucide-pencil')).toBeNull();
+    });
+  });
+
+  describe('falha e carregamento (SCH-04)', () => {
+    it('mostra alerta com Tentar novamente quando a consulta falha e refaz a busca', async () => {
+      const user = userEvent.setup();
+      vi.mocked(api.get).mockRejectedValueOnce(new Error('500'));
+      vi.mocked(api.get).mockResolvedValue({ data: [] });
+      loginAs('AGENT');
+      renderPage();
+
+      const alert = await screen.findByRole('alert');
+      expect(within(alert).getByRole('button', { name: 'Tentar novamente' })).toBeInTheDocument();
+      expect(screen.queryAllByRole('button', { name: /adicionar compromisso às/i })).toHaveLength(0);
+
+      await user.click(within(alert).getByRole('button', { name: 'Tentar novamente' }));
+
+      await waitFor(() => expect(screen.queryByRole('alert')).not.toBeInTheDocument());
+      expect(api.get).toHaveBeenCalledTimes(2);
+    });
+
+    it('rotula o indicador de carregamento como Carregando agenda', () => {
+      vi.mocked(api.get).mockReturnValue(new Promise(() => undefined));
+      loginAs('AGENT');
+      renderPage();
+
+      expect(screen.getByRole('status', { name: 'Carregando agenda' })).toBeInTheDocument();
+    });
+  });
+
+  describe('marcador da hora atual (SCH-13)', () => {
+    it('esconde o triângulo dos leitores de tela e não usa vermelho de erro', async () => {
+      vi.mocked(api.get).mockResolvedValue({ data: [] });
+      loginAs('AGENT');
+      renderPage();
+
+      const marker = await screen.findByText('▶');
+      expect(marker).toHaveAttribute('aria-hidden', 'true');
+      expect(document.querySelector('[class*="red-"]')).toBeNull();
+    });
+  });
+
+  describe('cores por token (SCH-05)', () => {
+    it('pinta o cartão pelo tipo com token do DS, sem hex inline', async () => {
+      vi.mocked(api.get).mockResolvedValue({ data: mockAppointments });
+      loginAs('AGENT');
+      renderPage();
+
+      const card = await screen.findByRole('button', { name: /alinhamento semanal/i });
+      expect(card.style.backgroundColor).toBe('');
+      expect(card.className).toMatch(/\bbg-petroleum-500\b/);
+      expect(document.querySelector('[class*="bg-[#"]')).toBeNull();
+    });
+  });
+
+  describe('ações e criação (SCH-06)', () => {
+    it('Ações é um menu acessível que fecha com Esc e não duplica Nova Agenda', async () => {
+      const user = userEvent.setup();
+      vi.mocked(api.get).mockResolvedValue({ data: [] });
+      loginAs('AGENT');
+      renderPage();
+
+      const trigger = screen.getByRole('button', { name: /ações/i });
+      expect(trigger).toHaveAttribute('aria-haspopup', 'menu');
+      expect(trigger).toHaveAttribute('aria-expanded', 'false');
+
+      await user.click(trigger);
+      expect(trigger).toHaveAttribute('aria-expanded', 'true');
+      expect(screen.getByRole('menu')).toBeInTheDocument();
+      expect(screen.getByRole('menuitem', { name: /novas férias/i })).toBeInTheDocument();
+      expect(screen.getByRole('menuitem', { name: /nova ausência/i })).toBeInTheDocument();
+      expect(screen.queryByRole('menuitem', { name: /nova agenda/i })).not.toBeInTheDocument();
+
+      await user.keyboard('{Escape}');
+      expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+      expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    });
+
+    it('Novo Agendamento não carrega o verde fixo de outra marca', async () => {
+      vi.mocked(api.get).mockResolvedValue({ data: [] });
+      loginAs('AGENT');
+      renderPage();
+
+      expect(screen.getByRole('button', { name: /novo agendamento/i }).className).not.toMatch(/00a884/i);
+    });
+  });
+
+  describe('navegação e alternador de vista (SCH-07)', () => {
+    it('rotula anterior/próximo conforme a vista e marca a vista ativa com aria-pressed', async () => {
+      const user = userEvent.setup();
+      vi.mocked(api.get).mockResolvedValue({ data: [] });
+      loginAs('AGENT');
+      renderPage();
+
+      await user.click(screen.getByRole('button', { name: 'Dia' }));
+      expect(screen.getByRole('button', { name: 'Dia anterior' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Próximo dia' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Dia' })).toHaveAttribute('aria-pressed', 'true');
+      expect(screen.getByRole('button', { name: 'Semana' })).toHaveAttribute('aria-pressed', 'false');
+      expect(screen.getByRole('group', { name: /vista/i })).toBeInTheDocument();
+
+      await user.click(screen.getByRole('button', { name: 'Mês' }));
+      expect(screen.getByRole('button', { name: 'Mês anterior' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Próximo mês' })).toBeInTheDocument();
+    });
   });
 
   describe('operação por teclado (SCH-01)', () => {
