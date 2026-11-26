@@ -109,7 +109,12 @@ describe('commercial contract setup', () => {
 });
 
 describe('horas em pt-BR (CTR-06)', () => {
-  const base = { id: 'c', organizationId: 'org', active: true, createdAt: '2026-01-01' };
+  const base = {
+    id: 'c',
+    organizationId: 'org',
+    active: true,
+    createdAt: '2026-01-01',
+  };
   const estimate = (minutes: number | undefined) => {
     const { unmount } = render(
       <ContractDetail
@@ -117,7 +122,8 @@ describe('horas em pt-BR (CTR-06)', () => {
         showFinancial={false}
       />,
     );
-    const text = screen.getByText('Estimativa total').nextElementSibling?.textContent;
+    const text =
+      screen.getByText('Estimativa total').nextElementSibling?.textContent;
     unmount();
     return text;
   };
@@ -136,9 +142,15 @@ describe('horas em pt-BR (CTR-06)', () => {
     expect(estimate(120000)).toBe('2.000h');
   });
   it('shows the package allowance with a decimal comma', () => {
-    expect(modality({ ...base, type: 'HOURS_LIMIT', hoursLimit: 1.5 })).toBe('Pacote: 1,5h');
-    expect(modality({ ...base, type: 'HOURS_LIMIT', includedMinutes: 80 })).toBe('Pacote: 1,33h');
-    expect(modality({ ...base, type: 'HOURS_LIMIT', hoursLimit: 40 })).toBe('Pacote: 40h');
+    expect(modality({ ...base, type: 'HOURS_LIMIT', hoursLimit: 1.5 })).toBe(
+      'Pacote: 1,5h',
+    );
+    expect(
+      modality({ ...base, type: 'HOURS_LIMIT', includedMinutes: 80 }),
+    ).toBe('Pacote: 1,33h');
+    expect(modality({ ...base, type: 'HOURS_LIMIT', hoursLimit: 40 })).toBe(
+      'Pacote: 40h',
+    );
   });
   it('keeps the dash when the package has no allowance', () => {
     expect(modality({ ...base, type: 'HOURS_LIMIT' })).toBe('Pacote: —h');

@@ -1,4 +1,10 @@
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  within,
+} from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { ContractDetail, ContractForm } from './ContractViews';
 
@@ -129,9 +135,13 @@ describe('ContractForm onDirtyChange (CTR-02)', () => {
 
   it('reports dirty when a text field changes and clean again when it is restored', () => {
     const onDirtyChange = renderForm(existing);
-    fireEvent.change(screen.getByLabelText('Nome do contrato'), { target: { value: 'Outro' } });
+    fireEvent.change(screen.getByLabelText('Nome do contrato'), {
+      target: { value: 'Outro' },
+    });
     expect(last(onDirtyChange)).toBe(true);
-    fireEvent.change(screen.getByLabelText('Nome do contrato'), { target: { value: 'Suporte' } });
+    fireEvent.change(screen.getByLabelText('Nome do contrato'), {
+      target: { value: 'Suporte' },
+    });
     expect(last(onDirtyChange)).toBe(false);
   });
 
@@ -141,35 +151,54 @@ describe('ContractForm onDirtyChange (CTR-02)', () => {
     expect(last(onDirtyChange)).toBe(true);
     fireEvent.click(screen.getByLabelText('Condições comerciais aprovadas'));
     expect(last(onDirtyChange)).toBe(false);
-    fireEvent.change(screen.getByLabelText('Franquia mensal (horas)'), { target: { value: '12' } });
+    fireEvent.change(screen.getByLabelText('Franquia mensal (horas)'), {
+      target: { value: '12' },
+    });
     expect(last(onDirtyChange)).toBe(true);
-    fireEvent.change(screen.getByLabelText('Franquia mensal (horas)'), { target: { value: '10' } });
+    fireEvent.change(screen.getByLabelText('Franquia mensal (horas)'), {
+      target: { value: '10' },
+    });
     expect(last(onDirtyChange)).toBe(false);
-    fireEvent.change(screen.getByLabelText('Início da vigência'), { target: { value: '2026-10-01' } });
+    fireEvent.change(screen.getByLabelText('Início da vigência'), {
+      target: { value: '2026-10-01' },
+    });
     expect(last(onDirtyChange)).toBe(true);
-    fireEvent.change(screen.getByLabelText('Início da vigência'), { target: { value: '' } });
+    fireEvent.change(screen.getByLabelText('Início da vigência'), {
+      target: { value: '' },
+    });
     expect(last(onDirtyChange)).toBe(false);
-    fireEvent.change(screen.getByLabelText('Modalidade', { selector: 'select' }), { target: { value: 'HOURLY' } });
+    fireEvent.change(
+      screen.getByLabelText('Modalidade', { selector: 'select' }),
+      { target: { value: 'HOURLY' } },
+    );
     expect(last(onDirtyChange)).toBe(true);
   });
 
   it('treats the empty new-contract form as clean and a typed name as dirty', () => {
     const onDirtyChange = renderForm();
     expect(last(onDirtyChange)).toBe(false);
-    fireEvent.change(screen.getByLabelText('Nome do contrato'), { target: { value: 'Novo' } });
+    fireEvent.change(screen.getByLabelText('Nome do contrato'), {
+      target: { value: 'Novo' },
+    });
     expect(last(onDirtyChange)).toBe(true);
   });
 
   it('does not report false dirt when the company is re-selected with the same value', () => {
     const onDirtyChange = renderForm(existing);
-    fireEvent.change(screen.getByLabelText(/Empresa/, { selector: 'select' }), { target: { value: 'org-1' } });
+    fireEvent.change(screen.getByLabelText(/Empresa/, { selector: 'select' }), {
+      target: { value: 'org-1' },
+    });
     expect(last(onDirtyChange)).toBe(false);
   });
 });
 
 describe('ContractForm campos monetários (CTR-07)', () => {
   const organizations = [
-    { id: 'org', name: 'Empresa', serviceDesks: [{ id: 'desk', name: 'Desenvolvimento' }] },
+    {
+      id: 'org',
+      name: 'Empresa',
+      serviceDesks: [{ id: 'desk', name: 'Desenvolvimento' }],
+    },
   ];
   const MONEY_LABELS = [
     'Preço fechado (R$)',
@@ -187,11 +216,17 @@ describe('ContractForm campos monetários (CTR-07)', () => {
         onCancel={vi.fn()}
       />,
     );
-    fireEvent.change(screen.getByLabelText(/Empresa/, { selector: 'select' }), { target: { value: 'org' } });
-    fireEvent.change(screen.getByLabelText('Modalidade', { selector: 'select' }), { target: { value: type } });
+    fireEvent.change(screen.getByLabelText(/Empresa/, { selector: 'select' }), {
+      target: { value: 'org' },
+    });
+    fireEvent.change(
+      screen.getByLabelText('Modalidade', { selector: 'select' }),
+      { target: { value: type } },
+    );
     return onSave;
   };
-  const save = () => fireEvent.click(screen.getByRole('button', { name: 'Salvar contrato' }));
+  const save = () =>
+    fireEvent.click(screen.getByRole('button', { name: 'Salvar contrato' }));
   const type = (label: string, value: string) =>
     fireEvent.change(screen.getByLabelText(label), { target: { value } });
 
@@ -199,11 +234,18 @@ describe('ContractForm campos monetários (CTR-07)', () => {
     const seen = new Set<string>();
     for (const modalityValue of ['FIXED_PROJECT', 'MONTHLY_HOURS', 'HOURLY']) {
       const { unmount } = render(
-        <ContractForm organizations={organizations} onSave={vi.fn()} onCancel={vi.fn()} />,
+        <ContractForm
+          organizations={organizations}
+          onSave={vi.fn()}
+          onCancel={vi.fn()}
+        />,
       );
-      fireEvent.change(screen.getByLabelText('Modalidade', { selector: 'select' }), {
-        target: { value: modalityValue },
-      });
+      fireEvent.change(
+        screen.getByLabelText('Modalidade', { selector: 'select' }),
+        {
+          target: { value: modalityValue },
+        },
+      );
       for (const label of MONEY_LABELS) {
         const input = screen.queryByLabelText(label);
         if (!input) continue;
@@ -219,30 +261,45 @@ describe('ContractForm campos monetários (CTR-07)', () => {
   it('shows 1234,56 as R$ 1.234,56 and saves 123456 cents in Valor mensal', () => {
     const onSave = open('MONTHLY_HOURS');
     type('Valor mensal (R$)', '1234,56');
-    expect(screen.getByLabelText('Valor mensal (R$)')).toHaveValue('R$ 1.234,56');
+    expect(screen.getByLabelText('Valor mensal (R$)')).toHaveValue(
+      'R$ 1.234,56',
+    );
     type('Franquia mensal (horas)', '10');
     save();
-    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ monthlyFeeCents: 123456, monthlyValue: 1234.56 }));
+    expect(onSave).toHaveBeenCalledWith(
+      expect.objectContaining({
+        monthlyFeeCents: 123456,
+        monthlyValue: 1234.56,
+      }),
+    );
   });
 
   it('saves Hora excedente, Preço fechado and Hora avulsa in whole cents', () => {
     let onSave = open('MONTHLY_HOURS');
     type('Hora excedente (R$)', '120,25');
-    expect(screen.getByLabelText('Hora excedente (R$)')).toHaveValue('R$ 120,25');
+    expect(screen.getByLabelText('Hora excedente (R$)')).toHaveValue(
+      'R$ 120,25',
+    );
     save();
-    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ excessHourlyRateCents: 12025 }));
+    expect(onSave).toHaveBeenCalledWith(
+      expect.objectContaining({ excessHourlyRateCents: 12025 }),
+    );
     cleanup();
 
     onSave = open('FIXED_PROJECT');
     type('Preço fechado (R$)', '15000,5');
     save();
-    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ fixedPriceCents: 1500050 }));
+    expect(onSave).toHaveBeenCalledWith(
+      expect.objectContaining({ fixedPriceCents: 1500050 }),
+    );
     cleanup();
 
     onSave = open('HOURLY');
     type('Hora avulsa (R$)', '99,99');
     save();
-    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ hourlyRateCents: 9999 }));
+    expect(onSave).toHaveBeenCalledWith(
+      expect.objectContaining({ hourlyRateCents: 9999 }),
+    );
   });
 
   it('rejects e in a money field: the typed letter never reaches the value', () => {
@@ -258,14 +315,22 @@ describe('ContractForm campos monetários (CTR-07)', () => {
     type('Hora excedente (R$)', '0');
     save();
     expect(onSave).toHaveBeenCalledWith(
-      expect.objectContaining({ monthlyFeeCents: 0, monthlyValue: 0, excessHourlyRateCents: 0 }),
+      expect.objectContaining({
+        monthlyFeeCents: 0,
+        monthlyValue: 0,
+        excessHourlyRateCents: 0,
+      }),
     );
     cleanup();
 
     onSave = open('MONTHLY_HOURS');
     save();
     expect(onSave).toHaveBeenCalledWith(
-      expect.objectContaining({ monthlyFeeCents: null, monthlyValue: null, excessHourlyRateCents: null }),
+      expect.objectContaining({
+        monthlyFeeCents: null,
+        monthlyValue: null,
+        excessHourlyRateCents: null,
+      }),
     );
   });
 
@@ -288,11 +353,18 @@ describe('ContractForm campos monetários (CTR-07)', () => {
         onCancel={vi.fn()}
       />,
     );
-    expect(screen.getByLabelText('Valor mensal (R$)')).toHaveValue('R$ 8.500,00');
-    expect(screen.getByLabelText('Hora excedente (R$)')).toHaveValue('R$ 190,50');
+    expect(screen.getByLabelText('Valor mensal (R$)')).toHaveValue(
+      'R$ 8.500,00',
+    );
+    expect(screen.getByLabelText('Hora excedente (R$)')).toHaveValue(
+      'R$ 190,50',
+    );
     save();
     expect(onSave).toHaveBeenCalledWith(
-      expect.objectContaining({ monthlyFeeCents: 850000, excessHourlyRateCents: 19050 }),
+      expect.objectContaining({
+        monthlyFeeCents: 850000,
+        excessHourlyRateCents: 19050,
+      }),
     );
   });
 
@@ -300,7 +372,9 @@ describe('ContractForm campos monetários (CTR-07)', () => {
     open('MONTHLY_HOURS');
     type('Valor mensal (R$)', '21474836,47');
     type('Valor mensal (R$)', '21474836,48');
-    expect(screen.getByLabelText('Valor mensal (R$)')).toHaveValue('R$ 21.474.836,47');
+    expect(screen.getByLabelText('Valor mensal (R$)')).toHaveValue(
+      'R$ 21.474.836,47',
+    );
   });
 
   it('marks the form dirty when only a money field changes', () => {
