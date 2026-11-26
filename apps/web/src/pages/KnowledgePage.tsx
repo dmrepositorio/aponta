@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { keepPreviousData, useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
-import { LayoutGrid, List as ListIcon } from 'lucide-react';
+import { Check, LayoutGrid, List as ListIcon } from 'lucide-react';
 import { api } from '../lib/api';
 import { useAuthStore } from '../stores/authStore';
 import {
@@ -15,9 +15,12 @@ import {
   EzEmptyCard,
   EzModal,
   EzMultiSelect,
+  EzPageHeader,
+  EzPageLayout,
   EzRichText,
   EzSpinner,
   EzTag,
+  EzTagInput,
   EzTextInput,
   EzToast,
 } from '../components/ds';
@@ -157,6 +160,7 @@ export function KnowledgePage() {
 
   const searchRef = useRef<HTMLInputElement>(null);
   const titleRef = useRef<HTMLInputElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
   const [articleToDelete, setArticleToDelete] = useState<Article | null>(null);
 
   // Reutiliza a mesma queryKey da KnowledgeFoldersGrid para ler o nome da
@@ -181,19 +185,21 @@ export function KnowledgePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedFolderId, folders, foldersFetching, selectedFolder]);
 
+  const fetchArticles = async (filters: { search: string; tags: string[]; sort: ArticleSort }) => {
+    const params = new URLSearchParams();
+    if (filters.search) params.set('search', filters.search);
+    if (filters.tags.length > 0) params.set('tags', filters.tags.join(','));
+    if (filters.sort !== 'updated_desc') params.set('sort', filters.sort);
+    if (selectedFolderId) params.set('folderId', selectedFolderId);
+
+    // Even if user not logged in, api.get works for public articles.
+    const res = await api.get(`/articles?${params.toString()}`);
+    return res.data as Article[];
+  };
+
   const { data: articles, isLoading, isError, isPlaceholderData, refetch } = useQuery<Article[]>({
     queryKey: ['articles', { search, tags: selectedTags, sort, folderId: selectedFolderId }],
-    queryFn: async () => {
-      const params = new URLSearchParams();
-      if (search) params.set('search', search);
-      if (selectedTags.length > 0) params.set('tags', selectedTags.join(','));
-      if (sort !== 'updated_desc') params.set('sort', sort);
-      if (selectedFolderId) params.set('folderId', selectedFolderId);
-
-      // Even if user not logged in, api.get works for public articles.
-      const res = await api.get(`/articles?${params.toString()}`);
-      return res.data;
-    },
+    queryFn: () => fetchArticles({ search, tags: selectedTags, sort }),
     enabled: selectedFolderId !== null,
     // KNW-04: a lista anterior fica na tela enquanto a nova carrega, mas só a da
     // mesma pasta (outra pasta mostraria artigos que não são dela).
@@ -202,6 +208,22 @@ export function KnowledgePage() {
       return previousFolder === selectedFolderId ? keepPreviousData(previous) : undefined;
     },
   });
+
+  // KNW-07: as tags já usadas na pasta alimentam as sugestões do formulário e a
+  // lista de filtro. Vêm da lista sem filtro (mesma chave da lista principal
+  // quando não há filtro, então sem requisição extra) para que filtrar não
+  // esconda as demais tags; não há endpoint de tags.
+  const { data: folderArticles } = useQuery<Article[]>({
+    queryKey: ['articles', { search: '', tags: [], sort: 'updated_desc', folderId: selectedFolderId }],
+    queryFn: () => fetchArticles({ search: '', tags: [], sort: 'updated_desc' }),
+    enabled: selectedFolderId !== null,
+  });
+  const knownTags = useMemo(() => {
+    const unique = new Set<string>();
+    for (const art of folderArticles ?? []) for (const tag of art.tags ?? []) unique.add(tag);
+    for (const tag of selectedTags) unique.add(tag);
+    return [...unique].sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base' }));
+  }, [folderArticles, selectedTags]);
 
   // Fontes para o diálogo de compartilhamento e para o multi-select de
   // Catálogo de Serviços — só necessárias para quem pode autorar artigos.
@@ -272,7 +294,7 @@ export function KnowledgePage() {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [visibility, setVisibility] = useState<ArticleVisibility>('PUBLIC');
-  const [tagsInput, setTagsInput] = useState('');
+  const [formTags, setFormTags] = useState<string[]>([]);
   const [agentGroupIds, setAgentGroupIds] = useState<string[]>([]);
   const [organizationIds, setOrganizationIds] = useState<string[]>([]);
   const [autoShareWithNewOrganizations, setAutoShareWithNewOrganizations] = useState(false);
@@ -321,7 +343,7 @@ export function KnowledgePage() {
     setTitle('');
     setContent('');
     setVisibility('PUBLIC');
-    setTagsInput('');
+    setFormTags([]);
     setAgentGroupIds([]);
     setOrganizationIds([]);
     setAutoShareWithNewOrganizations(false);
@@ -336,18 +358,23 @@ export function KnowledgePage() {
     setTitle(art.title);
     setContent(art.content);
     setVisibility(art.visibility);
-    setTagsInput(art.tags?.join(', ') || '');
+    setFormTags(art.tags ?? []);
     setAgentGroupIds((art.allowedAgentGroups ?? []).map((g) => g.id));
     setOrganizationIds((art.allowedOrganizations ?? []).map((o) => o.id));
     setAutoShareWithNewOrganizations(art.autoShareWithNewOrganizations ?? false);
     setServiceCatalogItemIds((art.serviceCatalogItems ?? []).map((c) => c.id));
     setIsFormOpen(true);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // O formulário abre inline e empurra a lista: o foco vai ao título.
+  // O formulário abre inline e empurra a lista: o foco vai ao título. Ao editar,
+  // o formulário entra na vista (KNW-11): sem animação com prefers-reduced-motion.
   useEffect(() => {
-    if (isFormOpen) titleRef.current?.focus();
+    if (!isFormOpen) return;
+    titleRef.current?.focus({ preventScroll: editingId !== null });
+    if (editingId !== null) {
+      const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+      formRef.current?.scrollIntoView?.({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+    }
   }, [isFormOpen, editingId]);
 
   const saveMutation = useMutation({
@@ -366,7 +393,7 @@ export function KnowledgePage() {
         title,
         content,
         visibility,
-        tags: tagsInput.split(',').map((t) => t.trim()).filter(Boolean),
+        tags: formTags,
         // KNW-06: só Privado compartilha; Público não carrega listas antigas.
         agentGroupIds: visibility === 'PRIVATE' ? agentGroupIds : [],
         organizationIds: visibility === 'PRIVATE' ? organizationIds : [],
@@ -407,52 +434,74 @@ export function KnowledgePage() {
   });
 
   if (selectedFolderId === null) {
-    return (
-      <div className="p-8 flex-1 overflow-y-auto">
-        <KnowledgeFoldersGrid onOpenFolder={openFolder} canAuthor={canAuthor} />
-      </div>
-    );
+    // A grade de pastas monta o próprio EzPageLayout/EzPageHeader.
+    return <KnowledgeFoldersGrid onOpenFolder={openFolder} canAuthor={canAuthor} />;
   }
 
   return (
-    <div className="p-8 flex-1 overflow-y-auto">
-      <EzBreadcrumb
-        className="mb-4"
-        items={[
-          { label: 'Pastas', onClick: closeFolder },
-          { label: selectedFolder?.name ?? '...' },
-        ]}
-      />
+    <EzPageLayout
+      header={
+        <EzPageHeader
+          title="Base de Conhecimento (FAQ)"
+          breadcrumbs={
+            <EzBreadcrumb
+              items={[
+                { label: 'Pastas', onClick: closeFolder },
+                { label: selectedFolder?.name ?? '...' },
+              ]}
+            />
+          }
+          actions={
+            <>
+              <EzTextInput
+                ref={searchRef}
+                type="search"
+                placeholder="Buscar palavra-chave..."
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                title="busca por palavra-chave"
+                className="w-40 sm:w-[280px]"
+              />
+              {canAuthor && (
+                <EzButton
+                  type="button"
+                  onClick={openNewForm}
+                  disabled={isFormOpen}
+                  title={isFormOpen ? 'O formulário de artigo já está aberto.' : undefined}
+                  className={cn('shrink-0', KNOWLEDGE_PRIMARY)}
+                >
+                  + Novo artigo
+                </EzButton>
+              )}
+            </>
+          }
+        />
+      }
+    >
+      {!user && <p className="mb-4 text-sm text-gray-500">Exibindo apenas artigos públicos</p>}
 
-      <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-4">
-        <div className="min-w-0">
-          <h1 className="text-[20px] font-semibold text-gray-900">Base de Conhecimento (FAQ)</h1>
-          {!user && <p className="text-sm text-gray-500">Exibindo apenas artigos públicos</p>}
+      {knownTags.length > 0 && (
+        <div role="group" aria-label="Filtrar por tag" className="mb-4 flex max-h-24 flex-wrap gap-2 overflow-y-auto">
+          {knownTags.map((t) => {
+            const active = selectedTags.includes(t);
+            return (
+              <button
+                key={t}
+                type="button"
+                onClick={() => toggleTag(t)}
+                aria-pressed={active}
+                className={cn('rounded-full', FOCUS_RING)}
+              >
+                <EzTag
+                  label={t}
+                  variant={active ? 'ocean' : 'gray'}
+                  leftIcon={active ? <Check className="h-3 w-3" aria-hidden="true" /> : undefined}
+                />
+              </button>
+            );
+          })}
         </div>
-
-        <div className="flex flex-col gap-3 md:flex-row md:items-center">
-          <EzTextInput
-            ref={searchRef}
-            type="search"
-            placeholder="Buscar palavra-chave..."
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            title="busca por palavra-chave"
-            className="w-full md:w-[280px]"
-          />
-          {canAuthor && (
-            <EzButton
-              type="button"
-              onClick={openNewForm}
-              disabled={isFormOpen}
-              title={isFormOpen ? 'O formulário de artigo já está aberto.' : undefined}
-              className={cn('shrink-0 self-start md:self-auto', KNOWLEDGE_PRIMARY)}
-            >
-              + Novo artigo
-            </EzButton>
-          )}
-        </div>
-      </div>
+      )}
 
       {selectedTags.length > 0 && (
         <div data-testid="knowledge-active-filters" className="mb-4 flex flex-wrap items-center gap-2">
@@ -468,7 +517,7 @@ export function KnowledgePage() {
                   onClick={() => toggleTag(t)}
                   aria-label={`Remover filtro de tag ${t}`}
                   className={cn(
-                    'inline-flex h-4 w-4 items-center justify-center rounded-full font-bold hover:bg-black/10',
+                    'inline-flex h-6 w-6 items-center justify-center rounded-full font-bold hover:bg-black/10',
                     FOCUS_RING
                   )}
                 >
@@ -482,6 +531,7 @@ export function KnowledgePage() {
 
       {canAuthor && isFormOpen && (
         <form
+          ref={formRef}
           onSubmit={(e) => {
             e.preventDefault();
             saveMutation.mutate();
@@ -503,12 +553,14 @@ export function KnowledgePage() {
               label="Conteúdo"
               testId="article-content-editor"
             />
-            <EzTextInput
+            <EzTagInput
               id="article-tags"
-              label="Tags (separadas por vírgula)"
-              value={tagsInput}
-              onChange={(e) => setTagsInput(e.target.value)}
-              placeholder="ex: acesso, senha, rh"
+              label="Tags"
+              tags={formTags}
+              onChange={setFormTags}
+              suggestions={knownTags}
+              addOnBlur
+              placeholder="Digite e pressione Enter. Ex: acesso, senha, rh"
             />
             {editingId && (
               <KnowledgeArticleAttachments
@@ -614,7 +666,7 @@ export function KnowledgePage() {
                 })()}
               </EzAlert>
             )}
-            <div className="flex gap-2 pt-2">
+            <div className="sticky bottom-0 z-10 -mx-4 -mb-4 flex gap-2 rounded-b-[inherit] border-t border-gray-200 bg-white px-4 py-3">
               <EzButton type="submit" className={KNOWLEDGE_PRIMARY} disabled={saveMutation.isPending}>
                 {editingId ? 'Atualizar' : 'Salvar'}
               </EzButton>
@@ -862,7 +914,7 @@ export function KnowledgePage() {
           </EzButton>
         </div>
       )}
-    </div>
+    </EzPageLayout>
   );
 }
 

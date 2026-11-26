@@ -630,7 +630,7 @@ describe('KnowledgePage', () => {
     await user.click(within(card).getByRole('button', { name: /editar/i }));
 
     expect(screen.getAllByText('Selecionar arquivo')).toHaveLength(1);
-    await user.click(screen.getByRole('button', { name: /remover/i }));
+    await user.click(screen.getByRole('button', { name: 'Remover' }));
 
     await waitFor(() => {
       expect(api.delete).toHaveBeenCalledWith('/articles/article-1/attachments/att-1');

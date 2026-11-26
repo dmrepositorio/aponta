@@ -1,7 +1,17 @@
 import { FormEvent, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../lib/api';
-import { EzAlert, EzButton, EzCardItem, EzDialog, EzEmptyCard, EzSpinner, EzTextInput } from '../ds';
+import {
+  EzAlert,
+  EzButton,
+  EzCardItem,
+  EzDialog,
+  EzEmptyCard,
+  EzPageHeader,
+  EzPageLayout,
+  EzSpinner,
+  EzTextInput,
+} from '../ds';
 import { knowledgeApiError } from './knowledgeApiError';
 import { KNOWLEDGE_PRIMARY } from './knowledgeStyles';
 
@@ -89,24 +99,30 @@ export function KnowledgeFoldersGrid({ onOpenFolder, canAuthor }: KnowledgeFolde
     saveMutation.mutate();
   };
 
+  // KNW-10: título e ação no EzPageHeader, como Cofre e Contratos.
+  const header = (
+    <EzPageHeader
+      title="Base de Conhecimento"
+      actions={
+        canAuthor && !form && !isLoading ? (
+          <EzButton type="button" onClick={openNewForm} className={KNOWLEDGE_PRIMARY}>
+            + Nova pasta
+          </EzButton>
+        ) : undefined
+      }
+    />
+  );
+
   if (isLoading) {
     return (
-      <div className="p-8">
+      <EzPageLayout header={header}>
         <EzSpinner label="Carregando pastas..." />
-      </div>
+      </EzPageLayout>
     );
   }
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-[20px] font-semibold text-gray-900">Base de Conhecimento</h1>
-        {canAuthor && !form && (
-          <EzButton type="button" onClick={openNewForm} className={KNOWLEDGE_PRIMARY}>
-            + Nova pasta
-          </EzButton>
-        )}
-      </div>
+    <EzPageLayout header={header}>
 
       {canAuthor && form && (
         <form onSubmit={handleSubmit} className="mb-6">
@@ -222,7 +238,7 @@ export function KnowledgeFoldersGrid({ onOpenFolder, canAuthor }: KnowledgeFolde
           </EzAlert>
         )}
       </EzDialog>
-    </div>
+    </EzPageLayout>
   );
 }
 
