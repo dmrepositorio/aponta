@@ -942,4 +942,83 @@ describe('DashboardPage', () => {
     expect(bar).toHaveAttribute('aria-valuenow', '5');
     expect(horas.queryByText(/\dH\b/)).not.toBeInTheDocument();
   });
+  it('DSH-13: the chat tables read at 13px, with numeric cells and headers right-aligned and tabular', async () => {
+    vi.mocked(api.get).mockResolvedValue({
+      data: {
+        ...fullSummary(),
+        chatsByAgent: [
+          { name: 'Carlos', status: 'online', inProgress: 2, group: 'N1' },
+          { name: 'Carla', status: 'away', inProgress: 7, group: 'N1' },
+        ],
+      },
+    });
+    renderDashboard();
+
+    await openTab('Chats');
+    const depts = within(await screen.findByRole('table', { name: /chats por departamentos/i }));
+    expect(screen.getByRole('table', { name: /chats por departamentos/i })).toHaveClass('text-[13px]');
+    const total = depts.getByText('5', { selector: 'td' });
+    expect(total).toHaveClass('text-right', 'tabular-nums');
+    expect(depts.getByRole('columnheader', { name: 'Todos' })).toHaveClass('text-right');
+    expect(depts.getByText('4m', { selector: 'td' })).toHaveClass('text-right', 'tabular-nums');
+
+    const agents = within(screen.getByRole('table', { name: /chats por atendentes/i }));
+    expect(screen.getByRole('table', { name: /chats por atendentes/i })).toHaveClass('text-[13px]');
+    expect(agents.getByText('7', { selector: 'td' })).toHaveClass('text-right', 'tabular-nums');
+    expect(agents.getByRole('columnheader', { name: 'Em andamento' })).toHaveClass('text-right');
+    expect(agents.getByRole('columnheader', { name: 'Atendente' })).not.toHaveClass('text-right');
+  });
+
+  it('DSH-14: the rating star is decorative and a null average has accessible text', async () => {
+    vi.mocked(api.get).mockResolvedValue({
+      data: { ...fullSummary(), csatMine30d: { avg: null, count: 3, satisfactionRate: null } },
+    });
+    renderDashboard();
+
+    await openTab('Recurso');
+    const geral = card('card-avaliacao-geral-de-tickets-30-dias');
+    expect(geral.getByText('4.5').parentElement?.querySelector('svg')).toHaveAttribute('aria-hidden', 'true');
+    const minhas = card('card-avaliacao-dos-meus-tickets-30-dias');
+    expect(minhas.getByText('Sem nota')).toBeInTheDocument();
+    expect(minhas.getByText('—')).toHaveAttribute('aria-hidden', 'true');
+  });
+
+  it('DSH-15: each notification links to its ticket with relative time, in a focusable scroll area', async () => {
+    const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
+    vi.mocked(api.get).mockResolvedValue({
+      data: {
+        ...fullSummary(),
+        recentNotifications: [
+          { id: 't-77', protocol: 'TK-77', title: 'Novo comentário', message: 'Status: OPEN', createdAt: twoHoursAgo, userName: 'Joana' },
+        ],
+      },
+    });
+    renderDashboard();
+
+    await screen.findByTestId('card-ultimas-notificacoes', undefined, { timeout: 5000 });
+    const notifications = card('card-ultimas-notificacoes');
+    const link = await notifications.findByRole('link', { name: /TK-77/ });
+    expect(link).toHaveAttribute('href', '/tickets/t-77');
+    expect(link).toHaveTextContent('Novo comentário');
+    expect(link).toHaveTextContent('há 2 horas');
+    const area = notifications.getByRole('region', { name: /últimas notificações/i });
+    expect(area).toHaveAttribute('tabindex', '0');
+    expect(area).not.toHaveClass('no-scrollbar');
+  });
+
+  it('DSH-16: each open-ticket status links to the filtered list and shows its share of the total', async () => {
+    vi.mocked(api.get).mockResolvedValue({
+      data: { ...fullSummary(), byStatus: { OPEN: 3, IN_PROGRESS: 1 } },
+    });
+    renderDashboard();
+
+    await screen.findByTestId('card-chamados-abertos-por-status', undefined, { timeout: 5000 });
+    const byStatus = card('card-chamados-abertos-por-status');
+    const open = await byStatus.findByRole('link', { name: /Aberto/ });
+    expect(open).toHaveAttribute('href', '/tickets?status=OPEN');
+    expect(open).toHaveTextContent('75%');
+    const doing = byStatus.getByRole('link', { name: /Em Andamento/ });
+    expect(doing).toHaveAttribute('href', '/tickets?status=IN_PROGRESS');
+    expect(doing).toHaveTextContent('25%');
+  });
 });

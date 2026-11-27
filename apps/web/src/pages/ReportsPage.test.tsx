@@ -95,6 +95,34 @@ describe('ReportsPage', () => {
     expect(screen.getByText('1h 0m')).toBeInTheDocument();
   });
 
+  it('REP-08: the workload table has no decorative icons and the agent cell is a plain table cell', async () => {
+    loginAs('ADMIN');
+    renderPage();
+
+    const cell = (await screen.findByText('Alice', undefined, { timeout: 5000 })).closest('td') as HTMLElement;
+    expect(cell).not.toHaveClass('flex');
+    expect(cell.querySelector('svg')).toBeNull();
+    const table = screen.getByRole('table', { name: /carga de trabalho por usuário/i });
+    expect(within(table).getByRole('columnheader', { name: /atendente/i }).querySelector('svg')).toBeNull();
+  });
+
+  it('REP-09: the empty billing state tells the user how to widen the period', async () => {
+    vi.mocked(api.get).mockImplementation((url: string) => {
+      if (url === '/auth/me') return Promise.resolve({ data: { id: 'u-1', isAdmin: false, permissions: [], canViewTicketValues } });
+      if (url === '/reports/workload') return Promise.resolve({ data: workload });
+      if (url === '/reports/billing') return Promise.resolve({ data: [] });
+      if (url === '/contracts') return Promise.resolve({ data: [{ id: 'c1', name: 'Suporte' }] });
+      return Promise.reject(new Error(`Unexpected GET ${url}`));
+    });
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(await screen.findByRole('tab', { name: /faturamento base/i }, { timeout: 5000 }));
+    expect(await screen.findByText('Nenhum dado financeiro no período.', undefined, { timeout: 5000 })).toBeInTheDocument();
+    expect(screen.getByText(/amplie o período ou escolha outro contrato/i)).toBeInTheDocument();
+  });
+
   it('shows the Faturamento tab for ADMIN and switches content on click', async () => {
     loginAs('ADMIN');
     const user = userEvent.setup();
@@ -201,6 +229,8 @@ describe('ReportsPage', () => {
     await waitFor(() => {
       expect(screen.getByText(/nenhum apontamento registrado/i)).toBeInTheDocument();
     });
+    // REP-09: o vazio orienta o que fazer.
+    expect(screen.getByText(/quando houver horas apontadas, elas aparecem aqui/i)).toBeInTheDocument();
   });
 });
 
