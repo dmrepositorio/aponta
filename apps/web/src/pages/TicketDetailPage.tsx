@@ -215,7 +215,7 @@ export function TicketDetailPage() {
                     }}
                     title="Inicia um pré-apontamento: o horário de início fica salvo e o fim é preenchido ao parar"
                     aria-label="Iniciar apontamento"
-                    className="inline-flex items-center justify-center gap-1.5 min-h-[44px] px-3 rounded-control text-sm font-medium text-brand-600 hover:bg-brand-50 border border-transparent hover:border-brand-200 cursor-pointer"
+                    className="inline-flex items-center justify-center gap-1.5 min-h-[42px] px-3 rounded-control text-sm font-medium text-brand-600 hover:bg-brand-50 border border-transparent hover:border-brand-200 cursor-pointer"
                   >
                     <PlayCircle className="w-6 h-6" aria-hidden="true" />
                     Iniciar apontamento
@@ -227,7 +227,7 @@ export function TicketDetailPage() {
                     onClick={activityTimer.handleStopTimer}
                     title="Parar pré-apontamento"
                     aria-label="Parar pré-apontamento"
-                    className="inline-flex items-center justify-center gap-1.5 min-h-[44px] px-3 rounded-control text-sm font-medium text-red-600 hover:bg-red-100 border border-transparent hover:border-red-200 cursor-pointer"
+                    className="inline-flex items-center justify-center gap-1.5 min-h-[42px] px-3 rounded-control text-sm font-medium text-red-600 hover:bg-red-100 border border-transparent hover:border-red-200 cursor-pointer"
                   >
                     <Square
                       className="w-4 h-4 fill-current"
