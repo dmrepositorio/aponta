@@ -1114,7 +1114,7 @@ describe('F3-23: ServiceDesksPage (MSA-01 a MSA-09)', () => {
     renderPage();
 
     expect(await screen.findByText('Nenhuma mesa cadastrada ainda.')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Nova mesa' }));
+    await user.click(within(screen.getByTestId('service-desks-grid-content')).getByRole('button', { name: 'Nova mesa' }));
     expect(await screen.findByRole('textbox', { name: /^nome$/i })).toBeInTheDocument();
   });
 
