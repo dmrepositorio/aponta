@@ -1,4 +1,5 @@
 import { act, render, screen, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -227,11 +228,10 @@ describe('SettingsPage: auditoria de interface (DMTE-524)', () => {
       screen.getAllByRole('heading', { level: 2 }).map((heading) => heading.textContent),
     ).toEqual(['Conta', 'Usuários', 'Sistema']);
     const sistema = screen.getByRole('region', { name: 'Sistema' });
-    expect(
-      within(sistema)
-        .getAllByRole('link')
-        .map((link) => link.textContent),
-    ).toEqual(['Tarefas agendadas', 'Mesa']);
+    const sistemaLinks = within(sistema).getAllByRole('link');
+    expect(sistemaLinks).toHaveLength(2);
+    expect(sistemaLinks[0]).toHaveAccessibleName('Tarefas agendadas');
+    expect(sistemaLinks[1]).toHaveAccessibleName('Mesa');
   });
 
   it('omits the Sistema group when the user has no system item', async () => {
@@ -314,5 +314,118 @@ describe('SettingsPage: auditoria de interface (DMTE-524)', () => {
     await waitFor(() => expect(container.querySelector('[aria-busy="true"]')).toBeNull());
     expect(screen.getByRole('link', { name: /minha conta/i })).toHaveAttribute('href', '/my-account');
     expect(screen.queryByRole('link', { name: /^usuários$/i })).not.toBeInTheDocument();
+  });
+});
+
+describe('SettingsPage: descrições, aviso de falha e dica de acesso (F3-22)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    useAuthStore.setState({
+      token: 'fake-token',
+      user: { sub: 'admin-1', email: 'admin@aponta.com', role: 'ADMIN' },
+    });
+  });
+
+  it('SET-03: cada link do hub exibe sua descrição, associada por aria-describedby, sem mudar o nome do link', async () => {
+    mockMe({ isAdmin: true, permissions: [] });
+    renderSettingsPage();
+    await screen.findByRole('link', { name: /^usuários$/i });
+
+    const expected: Array<[string, string]> = [
+      ['Minha conta', 'Seus dados, senha e autenticação em duas etapas'],
+      ['Usuários', 'Quem acessa o Aponta e com qual perfil'],
+      ['Grupos de atendentes', 'Equipes que recebem chamados'],
+      ['Grupos de permissões', 'O que cada perfil pode fazer'],
+      ['Tarefas agendadas', 'Rotinas automáticas e histórico de execuções'],
+      ['Mesa', 'Mesas de serviço e suas etapas'],
+    ];
+    expect(screen.getAllByRole('link')).toHaveLength(expected.length);
+    for (const [name, description] of expected) {
+      const link = screen.getByRole('link', { name });
+      expect(link).toHaveAccessibleName(name);
+      expect(link).toHaveAccessibleDescription(description);
+      expect(link.getAttribute('aria-describedby')).toBeTruthy();
+    }
+  });
+
+  it('SET-04: após falha de /auth/me mostra o alerta, mantém Minha conta e Tentar de novo dispara novo GET', async () => {
+    vi.mocked(api.get).mockRejectedValueOnce(new Error('network down'));
+    renderSettingsPage();
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent('Não foi possível carregar suas permissões');
+    expect(screen.getByRole('link', { name: 'Minha conta' })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /^usuários$/i })).not.toBeInTheDocument();
+    expect(api.get).toHaveBeenCalledTimes(1);
+
+    mockMe({ isAdmin: true, permissions: [] });
+    await userEvent.click(screen.getByRole('button', { name: 'Tentar de novo' }));
+
+    await waitFor(() => expect(api.get).toHaveBeenCalledTimes(2));
+    expect(await screen.findByRole('link', { name: /^usuários$/i })).toBeInTheDocument();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it('SET-04: já na primeira falha, com retries pendentes, o alerta aparece', async () => {
+    vi.mocked(api.get).mockRejectedValue(new Error('network down'));
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: 3, retryDelay: 60_000 } },
+    });
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter>
+          <SettingsPage />
+        </MemoryRouter>
+      </QueryClientProvider>,
+    );
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Não foi possível carregar suas permissões');
+  });
+
+  it('SET-04: sem falha e durante o carregamento não há alerta', async () => {
+    let respond: (value: unknown) => void = () => undefined;
+    vi.mocked(api.get).mockReturnValue(
+      new Promise((resolve) => {
+        respond = resolve;
+      }),
+    );
+    renderSettingsPage();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+
+    await act(async () => {
+      respond({ data: { id: 'admin-1', isAdmin: true, permissions: [] } });
+    });
+    await screen.findByRole('link', { name: /^usuários$/i });
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it('SET-01: quem não vê todas as áreas recebe a dica de acesso ao final; ADMIN e erro de carga não', async () => {
+    useAuthStore.setState({
+      token: 'fake-token',
+      user: { sub: 'u-1', email: 'agent@aponta.com', role: 'AGENT' },
+    });
+    mockMe({ permissions: ['MANAGE_USERS'] });
+    const agent = renderSettingsPage();
+
+    const hint = await screen.findByText(/dependem de permissão/i);
+    expect(hint).toHaveTextContent('Algumas áreas dependem de permissão. Se faltar uma, peça acesso a um administrador.');
+    const lastLink = screen.getAllByRole('link').at(-1) as HTMLElement;
+    expect(lastLink.compareDocumentPosition(hint) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    agent.unmount();
+
+    useAuthStore.setState({
+      token: 'fake-token',
+      user: { sub: 'admin-1', email: 'admin@aponta.com', role: 'ADMIN' },
+    });
+    mockMe({ isAdmin: true, permissions: [] });
+    const admin = renderSettingsPage();
+    await screen.findByRole('link', { name: /^usuários$/i });
+    expect(screen.queryByText(/dependem de permissão/i)).not.toBeInTheDocument();
+    admin.unmount();
+
+    vi.mocked(api.get).mockRejectedValue(new Error('network down'));
+    renderSettingsPage();
+    await screen.findByRole('alert');
+    expect(screen.queryByText(/dependem de permissão/i)).not.toBeInTheDocument();
   });
 });
