@@ -6,6 +6,29 @@ import { CreateCommentDto } from './dto/create-comment.dto';
 import { CurrentUserPayload } from '../tickets/decorators/current-user.decorator';
 import { assertListedAgentMayMutate } from '../service-desks/desk-policy';
 
+/** Autor do comentário: SOMENTE id, nome e papel (nunca e-mail, telefone etc.). */
+export interface CommentAuthorView {
+  id: string;
+  /** Nulo quando o leitor é CLIENT e o autor é da equipe (nome oculto). */
+  name: string | null;
+  role: Role;
+}
+
+const CLIENT_ROLES: Role[] = [Role.CLIENT, Role.CLIENT_MASTER];
+
+function toCommentAuthorView(
+  author: { id: string; name: string; role: Role } | null | undefined,
+  readerIsClient: boolean,
+): CommentAuthorView | null {
+  if (!author) return null;
+  const hideName = readerIsClient && !CLIENT_ROLES.includes(author.role);
+  return {
+    id: author.id,
+    name: hideName ? null : author.name,
+    role: author.role,
+  };
+}
+
 @Injectable()
 export class CommentsService {
   constructor(
@@ -86,7 +109,7 @@ export class CommentsService {
   async findByTicket(
     ticketId: string,
     currentUser: CurrentUserPayload,
-  ): Promise<Comment[]> {
+  ): Promise<Array<Comment & { author: CommentAuthorView | null }>> {
     await this.assertTicketVisibleTo(ticketId, currentUser);
 
     const where: Prisma.CommentWhereInput = { ticketId };
@@ -94,10 +117,17 @@ export class CommentsService {
       where.isInternal = false;
     }
 
-    return this.prisma.comment.findMany({
+    const comments = await this.prisma.comment.findMany({
       where,
       orderBy: { createdAt: 'asc' },
+      include: { author: { select: { id: true, name: true, role: true } } },
     });
+
+    const readerIsClient = currentUser.role === Role.CLIENT;
+    return comments.map((comment) => ({
+      ...comment,
+      author: toCommentAuthorView(comment.author, readerIsClient),
+    }));
   }
 
   /**
