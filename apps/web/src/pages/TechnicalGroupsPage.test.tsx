@@ -449,7 +449,7 @@ describe('TechnicalGroupsPage: rascunho da aba Informações (TG-04, TG-05)', ()
     renderPage();
     await openGroup();
     await userEvent.type(screen.getByLabelText('Nome'), ' B');
-    await userEvent.click(screen.getByRole('button', { name: /voltar para a lista/i }));
+    await userEvent.click(screen.getByTitle('Voltar'));
 
     const dialog = await expectDialog('Descartar alterações?');
     await userEvent.click(within(dialog).getByRole('button', { name: 'Cancelar' }));
@@ -462,7 +462,7 @@ describe('TechnicalGroupsPage: rascunho da aba Informações (TG-04, TG-05)', ()
     renderPage();
     await openGroup();
     await userEvent.type(screen.getByLabelText('Nome'), ' B');
-    await userEvent.click(screen.getByRole('button', { name: /voltar para a lista/i }));
+    await userEvent.click(screen.getByTitle('Voltar'));
     const dialog = await expectDialog('Descartar alterações?');
     await userEvent.click(within(dialog).getByRole('button', { name: 'Confirmar' }));
 
@@ -479,10 +479,18 @@ describe('TechnicalGroupsPage: rascunho da aba Informações (TG-04, TG-05)', ()
     await expectDialog('Descartar alterações?');
   });
 
+  it('TG-10: o detalhe tem um só Voltar (o do cabeçalho); o rodapé não repete', async () => {
+    renderPage();
+    await openGroup();
+
+    expect(screen.getByTitle('Voltar')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /voltar para a lista/i })).not.toBeInTheDocument();
+  });
+
   it('sem alterações, Voltar sai direto, sem diálogo', async () => {
     renderPage();
     await openGroup();
-    await userEvent.click(screen.getByRole('button', { name: /voltar para a lista/i }));
+    await userEvent.click(screen.getByTitle('Voltar'));
 
     await expectButton('Novo grupo');
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();

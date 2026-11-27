@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { keepPreviousData, useQuery, type UseMutationResult } from '@tanstack/react-query';
-import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
 import {
   EzButton,
   EzCardItem,
@@ -136,13 +136,11 @@ function CreateGroupModal({ onClose }: { onClose: () => void }) {
 
 function GroupDetail({
   groupId,
-  onBack,
   onNotify,
   onDeleted,
   onDirtyChange,
 }: {
   groupId: string;
-  onBack: () => void;
   onNotify: Notify;
   onDeleted: () => void;
   onDirtyChange: (dirty: boolean) => void;
@@ -434,14 +432,7 @@ function GroupDetail({
         </div>
       )}
 
-      <div className="flex items-center justify-between gap-3">
-        <button
-          type="button"
-          onClick={onBack}
-          className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-brand-700"
-        >
-          <ArrowLeft className="h-3.5 w-3.5" /> Voltar para a lista
-        </button>
+      <div className="flex items-center justify-end gap-3">
         <EzButton variant="danger" size="small" leftIcon={Trash2} onClick={() => setConfirmingDelete(true)}>
           Excluir grupo
         </EzButton>
@@ -574,7 +565,6 @@ export function PermissionGroupsPage() {
         <EzCardItem flat className="p-0">
           <GroupDetail
             groupId={selectedGroupId}
-            onBack={requestBack}
             onNotify={notify}
             onDeleted={() => {
               notify('success', 'Grupo excluído');

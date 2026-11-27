@@ -98,6 +98,8 @@ const serviceDeskFormSchema = z.object({
   description: z.string().trim().optional(),
 });
 
+type ServiceDeskStatusFilter = 'ALL' | 'ACTIVE' | 'INACTIVE';
+
 type ServiceDeskFormValues = z.infer<typeof serviceDeskFormSchema>;
 
 /** Clientes da mesa: lista nova (`organizations`) ou o vínculo único legado (`organization`). */
@@ -199,10 +201,10 @@ const SERVICE_DESK_FILTER_FIELDS: EzDynamicFilterField[] = [
     label: 'Status',
     type: 'select',
     options: [
-      { label: 'Ativo', value: 'Ativo' },
-      { label: 'Inativo', value: 'Inativo' },
+      { label: 'Ativa', value: 'Ativa' },
+      { label: 'Inativa', value: 'Inativa' },
     ],
-    getValue: (d: ServiceDesk) => (d.active === false ? 'Inativo' : 'Ativo'),
+    getValue: (d: ServiceDesk) => (d.active === false ? 'Inativa' : 'Ativa'),
   },
   {
     id: 'accepting',
@@ -261,7 +263,7 @@ function ServiceDesksPageContent() {
   // dinâmicos e filtros salvos, mesmo padrão de OrganizationsPage.tsx.
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
   const [filterSearch, setFilterSearch] = useState('');
-  const [filterStatus, setFilterStatus] = useState<'ALL' | 'ACTIVE' | 'INACTIVE'>('ALL');
+  const [filterStatus, setFilterStatus] = useState<ServiceDeskStatusFilter>('ALL');
   const [dynamicRules, setDynamicRules] = useState<EzDynamicFilterRule[]>([]);
   const [activeSavedFilterId, setActiveSavedFilterId] = useState<string | null>(null);
 
@@ -506,8 +508,8 @@ function ServiceDesksPageContent() {
               })
             }
             onInsert={() => guard(handleInsert)}
-            insertAriaLabel="Nova Mesa"
-            insertTooltip="Nova Mesa"
+            insertAriaLabel="Nova mesa"
+            insertTooltip="Nova mesa"
             isFilterOpen={isFilterPanelOpen}
             onToggleFilter={() => setIsFilterPanelOpen((prev) => !prev)}
             selectedCount={selectedDesks.length}
@@ -552,6 +554,7 @@ function ServiceDesksPageContent() {
                       id="service-desk-name"
                       label="Nome"
                       required
+                      autoFocus
                       hasError={!!errors.name || nameConflict}
                       message={errors.name?.message}
                       {...register('name', { onChange: () => setNameConflict(false) })}
@@ -806,11 +809,11 @@ function ServiceDesksPageContent() {
                     <EzComboBox
                       id="filter-status-select"
                       value={filterStatus}
-                      onChange={(e) => setFilterStatus(e.target.value as any)}
+                      onChange={(e) => setFilterStatus(e.target.value as ServiceDeskStatusFilter)}
                     >
                       <option value="ALL">Todos os status</option>
-                      <option value="ACTIVE">Apenas Ativos</option>
-                      <option value="INACTIVE">Apenas Inativos</option>
+                      <option value="ACTIVE">Ativa</option>
+                      <option value="INACTIVE">Inativa</option>
                     </EzComboBox>
                   </div>
 

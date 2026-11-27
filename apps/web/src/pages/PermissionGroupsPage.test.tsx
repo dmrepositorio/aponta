@@ -352,7 +352,7 @@ describe('PermissionGroupsPage', () => {
       renderPage();
       await openPermissionsTab();
       await userEvent.click(screen.getByRole('checkbox', { name: /editar tickets fechados/i }));
-      await userEvent.click(screen.getByRole('button', { name: /voltar para a lista/i }));
+      await userEvent.click(screen.getByTitle('Voltar'));
 
       const dialog = await screen.findByRole('dialog');
       expect(within(dialog).getByText('Descartar alterações?')).toBeInTheDocument();
@@ -360,9 +360,17 @@ describe('PermissionGroupsPage', () => {
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
       expect(screen.getByRole('checkbox', { name: /editar tickets fechados/i })).toBeChecked();
 
-      await userEvent.click(screen.getByRole('button', { name: /voltar para a lista/i }));
+      await userEvent.click(screen.getByTitle('Voltar'));
       await confirmDialog();
       expect(await screen.findByRole('button', { name: 'Novo grupo' })).toBeInTheDocument();
+    });
+
+    it('PG-09: o detalhe tem um só Voltar (o do cabeçalho); o rodapé não repete', async () => {
+      renderPage();
+      await openPermissionsTab();
+
+      expect(screen.getByTitle('Voltar')).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /voltar para a lista/i })).not.toBeInTheDocument();
     });
 
     it('o Voltar do cabeçalho também pede descarte; sem pendência sai direto', async () => {
@@ -509,7 +517,7 @@ describe('PermissionGroupsPage', () => {
       await userEvent.type(name, ' X');
       expect(screen.getByText('Alterações não salvas')).toBeInTheDocument();
 
-      await userEvent.click(screen.getByRole('button', { name: /voltar para a lista/i }));
+      await userEvent.click(screen.getByTitle('Voltar'));
       expect(await screen.findByRole('dialog')).toBeInTheDocument();
     });
   });
