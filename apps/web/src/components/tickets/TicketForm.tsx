@@ -408,6 +408,13 @@ export function TicketForm({ onSubmit, isSubmitting, submitError, catalogOverrid
         <EzAlert variant="error">{submitError}</EzAlert>
       )}
 
+      {/* Anuncia o envio a leitores de tela; só existe enquanto envia, para não repetir o role=status de outros avisos da tela. */}
+      {isSubmitting && (
+        <p role="status" className="sr-only">
+          Criando chamado…
+        </p>
+      )}
+
       <div className="flex flex-col sm:flex-row sm:flex-wrap items-center justify-between gap-4 pt-2">
         <div>
           <EzButton

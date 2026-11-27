@@ -8,6 +8,8 @@ import { EzAlert, EzBadge, EzButton, EzCheck, EzDialog, EzTextInput } from './ds
 
 const FLAG = 'autenticacao-dois-fatores';
 type Setup = { secret: string; otpauthUri: string };
+/** Cada fluxo mostra o próprio erro junto do formulário ou da ação que falhou. */
+type Flow = 'begin' | 'confirm' | 'disable' | 'copy-key' | 'copy-codes';
 
 /** Segundo fator em Minha Conta → Segurança (DMTE-551): ativar com QR e códigos de recuperação, e desativar. */
 export function TwoFactorSection() {
@@ -21,7 +23,7 @@ export function TwoFactorSection() {
   const [recoveryCodes, setRecoveryCodes] = useState<string[] | null>(null);
   const [code, setCode] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<{ flow: Flow; message: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
@@ -31,28 +33,31 @@ export function TwoFactorSection() {
   // Sem a flag só aparece para quem já ativou (para poder desativar); durante a ativação, a seção segue até o fim.
   if (!data || (!flagOn && !enabled && !setup && !recoveryCodes)) return null;
 
-  const run = async (action: () => Promise<void>, fallback: string) => {
+  const run = async (action: () => Promise<void>, fallback: string, flow: Flow) => {
     setBusy(true);
     setError(null);
     setNotice(null);
     try {
       await action();
     } catch (e) {
-      setError(apiErrorMessage(e, fallback));
+      setError({ flow, message: apiErrorMessage(e, fallback) });
     } finally {
       setBusy(false);
     }
   };
   const refresh = () => queryClient.invalidateQueries({ queryKey: ['two-factor-status'] });
 
-  const begin = () => run(async () => setSetup((await api.post<Setup>('/auth/2fa/setup')).data), 'Não foi possível iniciar a ativação.');
+  const begin = () =>
+    run(async () => setSetup((await api.post<Setup>('/auth/2fa/setup')).data), 'Não foi possível iniciar a ativação.', 'begin');
+  const flowError = (...flows: Flow[]) =>
+    error && flows.includes(error.flow) ? <EzAlert variant="error" role="alert">{error.message}</EzAlert> : null;
   const confirm = (event: FormEvent) => {
     event.preventDefault();
     return run(async () => {
       setRecoveryCodes((await api.post<{ recoveryCodes: string[] }>('/auth/2fa/confirm', { code })).data.recoveryCodes);
       setSetup(null);
       setCode('');
-    }, 'Não foi possível confirmar o código.');
+    }, 'Não foi possível confirmar o código.', 'confirm');
   };
   // Desativar reduz a segurança da conta: o envio do formulário só abre a confirmação.
   const askDisable = (event: FormEvent) => {
@@ -66,7 +71,7 @@ export function TwoFactorSection() {
       setPassword('');
       setCode('');
       await refresh();
-    }, 'Não foi possível desativar.');
+    }, 'Não foi possível desativar.', 'disable');
   };
   const finish = async () => {
     setRecoveryCodes(null);
@@ -81,14 +86,14 @@ export function TwoFactorSection() {
     setNotice(null);
   };
   // Os segredos ficam só no estado do componente: nada vai para storage nem para log.
-  const copy = async (text: string, done: string) => {
+  const copy = async (text: string, done: string, flow: Flow) => {
     setError(null);
     try {
       await navigator.clipboard.writeText(text);
       setNotice(done);
     } catch {
       setNotice(null);
-      setError('Não foi possível copiar automaticamente. Selecione o texto e copie manualmente.');
+      setError({ flow, message: 'Não foi possível copiar automaticamente. Selecione o texto e copie manualmente.' });
     }
   };
   const download = (codes: string[]) => {
@@ -115,13 +120,14 @@ export function TwoFactorSection() {
             ))}
           </ul>
           <div className="flex flex-wrap gap-2">
-            <EzButton type="button" variant="secondary" size="small" onClick={() => copy(recoveryCodes.join('\n'), 'Códigos copiados.')}>
+            <EzButton type="button" variant="secondary" size="small" onClick={() => copy(recoveryCodes.join('\n'), 'Códigos copiados.', 'copy-codes')}>
               Copiar códigos
             </EzButton>
             <EzButton type="button" variant="secondary" size="small" onClick={() => download(recoveryCodes)}>
               Baixar (.txt)
             </EzButton>
           </div>
+          {flowError('copy-codes')}
           <EzCheck label="Guardei estes códigos" checked={saved} onChange={(e) => setSaved(e.target.checked)} />
           <EzButton type="button" onClick={finish} disabled={!saved} disabledReason="Marque que guardou os códigos para concluir.">
             Concluir
@@ -137,7 +143,7 @@ export function TwoFactorSection() {
           <QRCodeSVG value={setup.otpauthUri} size={160} role="img" aria-label="QR code para o aplicativo autenticador" />
           <div className="flex flex-wrap items-center gap-2">
             <p className="break-all font-mono text-sm tabular-nums">{setup.secret}</p>
-            <EzButton type="button" variant="secondary" size="small" onClick={() => copy(setup.secret, 'Chave copiada.')}>
+            <EzButton type="button" variant="secondary" size="small" onClick={() => copy(setup.secret, 'Chave copiada.', 'copy-key')}>
               Copiar chave
             </EzButton>
           </div>
@@ -151,6 +157,7 @@ export function TwoFactorSection() {
             maxLength={6}
             onChange={(e) => setCode(e.target.value)}
           />
+          {flowError('confirm', 'copy-key')}
           <div className="flex gap-2">
             <EzButton type="submit" disabled={busy} loading={busy} label={busy ? 'Confirmando...' : 'Confirmar'} />
             <EzButton type="button" variant="secondary" onClick={cancelSetup} disabled={busy}>Cancelar</EzButton>
@@ -161,6 +168,7 @@ export function TwoFactorSection() {
       {!recoveryCodes && !setup && !enabled && (
         <div className="space-y-3">
           <p className="text-sm text-gray-700">Peça um código do aplicativo autenticador a cada entrada, além da senha.</p>
+          {flowError('begin')}
           <EzButton type="button" onClick={begin} disabled={busy}>Ativar segundo fator</EzButton>
         </div>
       )}
@@ -184,12 +192,12 @@ export function TwoFactorSection() {
             value={code}
             onChange={(e) => setCode(e.target.value)}
           />
+          {flowError('disable')}
           <EzButton type="submit" disabled={busy}>Desativar segundo fator</EzButton>
         </form>
       )}
 
       {notice && <p role="status" className="text-sm text-gray-700">{notice}</p>}
-      {error && <EzAlert variant="error" role="alert">{error}</EzAlert>}
 
       <EzDialog
         open={confirmDisable}

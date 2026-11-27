@@ -28,6 +28,8 @@ function loadErrorMessage(error: unknown): string {
     : 'Falha ao carregar os chamados. Verifique a conexão e tente novamente.';
 }
 
+const countLabel = (total: number) => `${total} ${total === 1 ? 'chamado' : 'chamados'}`;
+
 export function TicketsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [filters, setFilters] = useState<TicketFiltersInput>(() =>
@@ -137,6 +139,10 @@ export function TicketsPage() {
           role={user?.role}
           status={filters.status}
           closedOnly={filters.closedOnly}
+          mine={filters.mine}
+          unassigned={filters.unassigned}
+          overdue={filters.overdue}
+          paused={filters.paused}
           onSelect={(patch) => setFilters((prev) => ({ ...prev, ...patch, page: 1 }))}
         />
       )}
@@ -172,10 +178,12 @@ export function TicketsPage() {
       ) : viewMode === 'kanban' ? (
         <div aria-busy={isFetching} className={isPlaceholderData ? 'space-y-3 opacity-60' : 'space-y-3'}>
           {/* O Kanban recebe só a primeira página; avisa quando há mais chamados do que os exibidos. */}
-          {meta && meta.total > tickets.length && (
+          {meta && meta.total > tickets.length ? (
             <EzAlert variant="info">
               Mostrando {tickets.length} de {meta.total} chamados, refine os filtros.
             </EzAlert>
+          ) : (
+            meta && <p className="text-sm text-gray-500">{countLabel(meta.total)}</p>
           )}
           <TicketKanban
             tickets={tickets}
@@ -199,6 +207,9 @@ export function TicketsPage() {
               setFilters((prev) => ({ ...prev, sortBy, sortDir, page: 1 }))
             }
           />
+          {meta && meta.totalPages <= 1 && (
+            <p className="pt-2 text-sm text-gray-500">{countLabel(meta.total)}</p>
+          )}
           {meta && meta.totalPages > 1 && (
             <nav
               aria-label="Paginação de chamados"

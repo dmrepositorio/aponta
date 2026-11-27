@@ -42,7 +42,7 @@ const ACCOUNT_TABS_ID = 'my-account';
 
 /**
  * Mirrors the Tiflux reference UI (accessed 2026-09-30): "Minha conta"
- * opens a tabbed page — a "Minha conta" tab for profile fields (name,
+ * opens a tabbed page — a "Perfil" tab for profile fields (name,
  * email, ...) and a "Segurança" tab holding the change-password form.
  * Only name/email are implemented here; photo/phone/language etc. from
  * the reference are out of scope for now.
@@ -58,7 +58,7 @@ export function MyAccountPage() {
   const tab: Tab = TAB_IDS.find((id) => id === requested) ?? 'profile';
 
   const tabs = [
-    { id: 'profile', label: 'Minha Conta' },
+    { id: 'profile', label: 'Perfil' },
     { id: 'security', label: 'Segurança' },
     { id: 'tokens', label: 'Tokens de API' },
   ];
@@ -103,11 +103,22 @@ function ProfileTab() {
     register,
     handleSubmit,
     reset,
-    formState: { errors, isSubmitting },
+    watch,
+    formState: { errors, isSubmitting, isDirty },
   } = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
     defaultValues: { name: '', email: user?.email ?? '' },
   });
+
+  // Voltar a editar qualquer campo tira o aviso do envio anterior (só mudança do usuário, não o reset).
+  useEffect(() => {
+    const subscription = watch((_values, { type }) => {
+      if (type !== 'change') return;
+      setSubmitError(null);
+      setSuccess(false);
+    });
+    return () => subscription.unsubscribe();
+  }, [watch]);
 
   useEffect(() => {
     let cancelled = false;
@@ -140,6 +151,7 @@ function ProfileTab() {
     setSuccess(false);
     try {
       await api.patch('/auth/me', values);
+      reset(values);
       setSuccess(true);
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.status === 409) {
@@ -195,14 +207,16 @@ function ProfileTab() {
         </EzAlert>
       )}
 
-      <EzButton
-        type="submit"
-        disabled={isSubmitting || loadState !== 'ready'}
-        disabledReason={loadState === 'ready' ? undefined : 'Aguarde os dados da conta carregarem.'}
-        className="w-full"
-      >
-        Salvar
-      </EzButton>
+      <div className="flex justify-end">
+        <EzButton
+          type="submit"
+          disabled={isSubmitting || loadState !== 'ready' || !isDirty}
+          disabledReason={loadState === 'ready' ? undefined : 'Aguarde os dados da conta carregarem.'}
+          loading={isSubmitting}
+          label={isSubmitting ? 'Salvando…' : 'Salvar'}
+          className="max-sm:w-full"
+        />
+      </div>
     </form>
   );
 }
@@ -221,6 +235,16 @@ function SecurityTab() {
   } = useForm<ChangePasswordFormValues>({
     resolver: zodResolver(useMemo(() => buildChangePasswordSchema(email), [email])),
   });
+
+  // Voltar a editar qualquer campo tira o aviso do envio anterior (só mudança do usuário, não o reset).
+  useEffect(() => {
+    const subscription = watch((_values, { type }) => {
+      if (type !== 'change') return;
+      setSubmitError(null);
+      setSuccess(false);
+    });
+    return () => subscription.unsubscribe();
+  }, [watch]);
 
   const onSubmit = async (values: ChangePasswordFormValues) => {
     setSubmitError(null);
@@ -295,14 +319,26 @@ function SecurityTab() {
         </EzAlert>
       )}
 
-      <EzButton type="submit" disabled={isSubmitting} className="w-full">
-        Trocar senha
-      </EzButton>
+      <div className="flex justify-end">
+        <EzButton
+          type="submit"
+          disabled={isSubmitting}
+          loading={isSubmitting}
+          label={isSubmitting ? 'Salvando…' : 'Trocar senha'}
+          className="max-sm:w-full"
+        />
+      </div>
     </form>
   );
 }
 
 export default MyAccountPage;
+
+const pad2 = (value: number) => String(value).padStart(2, '0');
+/** dd/MM/aaaa HH:mm no fuso do navegador, sem segundos. */
+function formatShortDateTime(date: Date) {
+  return `${pad2(date.getDate())}/${pad2(date.getMonth() + 1)}/${date.getFullYear()} ${pad2(date.getHours())}:${pad2(date.getMinutes())}`;
+}
 
 function ApiTokensTab() {
   const { listQuery, createMutation, revokeMutation } = useApiTokens();
@@ -359,10 +395,8 @@ function ApiTokensTab() {
     revokeMutation.mutate(revokeTarget.id, { onSettled: () => setRevokeTarget(null) });
   };
 
-  const formatDate = (iso: string | null) => {
-    if (!iso) return 'Nunca usado';
-    return new Date(iso).toLocaleString('pt-BR');
-  };
+  const formatDate = (iso: string) => formatShortDateTime(new Date(iso));
+  const formatLastUsed = (iso: string | null) => (iso ? formatDate(iso) : 'Nunca usado');
 
   return (
     <div className="space-y-6 rounded-lg border border-gray-200 bg-white p-6">
@@ -444,7 +478,7 @@ function ApiTokensTab() {
           disabled={createMutation.isPending || !name.trim()}
           className="whitespace-nowrap"
         >
-          Gerar Token
+          Gerar token
         </EzButton>
       </form>
 
@@ -463,7 +497,7 @@ function ApiTokensTab() {
             <div>
               <p className="text-sm font-medium text-gray-900">{token.name}</p>
               <p className="text-xs text-gray-500">
-                Criado em {formatDate(token.createdAt)} · Último uso: {formatDate(token.lastUsedAt)}
+                Criado em {formatDate(token.createdAt)} · Último uso: {formatLastUsed(token.lastUsedAt)}
               </p>
             </div>
             <EzButton
