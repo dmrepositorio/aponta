@@ -1097,6 +1097,58 @@ describe('UsersPage', () => {
     });
   });
 
+  describe('P3-G: grade de usuários (USR-11, USR-12, USR-13)', () => {
+    it('USR-11: the Tipo column renders the role as a tag, like the other columns', async () => {
+      renderUsersPage();
+      await screen.findByText('Ana Silva');
+
+      const tag = within(rowOf('Ana Silva')).getByText('Atendente');
+      expect(tag).toHaveAttribute('data-ez-tag');
+    });
+
+    it('USR-11: the Nome column no longer has the fixed 170px cap and keeps the title', async () => {
+      renderUsersPage();
+      await screen.findByText('Ana Silva');
+
+      const name = within(rowOf('Ana Silva')).getByText('Ana Silva');
+      expect(name).toHaveAttribute('title', 'Ana Silva');
+      expect(name.parentElement?.className).not.toMatch(/max-w-\[170px\]/);
+    });
+
+    it('USR-12: without selection the fixed hint is gone and the disabled buttons carry it as the reason', async () => {
+      renderUsersPage();
+      await screen.findByText('Ana Silva');
+
+      expect(screen.queryByText('Marque usuários na grade para ativar ou inativar.')).not.toBeInTheDocument();
+      expect(screen.queryByText(/selecionado\(s\)/)).not.toBeInTheDocument();
+      for (const name of ['Ativar', 'Inativar']) {
+        const button = screen.getByRole('button', { name });
+        expect(button).toBeDisabled();
+        expect(button).toHaveAttribute('title', 'Marque usuários na grade para ativar ou inativar.');
+      }
+    });
+
+    it('USR-12: with a selection the bar shows only the count', async () => {
+      const user = userEvent.setup();
+      renderUsersPage();
+      await screen.findByText('Ana Silva');
+
+      await user.click(within(rowOf('Ana Silva')).getByRole('checkbox', { name: 'Selecionar linha' }));
+
+      expect(await screen.findByText('1 selecionado(s)')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Inativar' })).not.toHaveAttribute('title');
+    });
+
+    it('USR-13: with more than one page the counter "de N" sits inside the pagination, from meta.total', async () => {
+      mockApi({ list: USERS_MANY });
+      renderUsersPage();
+      await screen.findByText('Ana Silva');
+
+      const pagination = screen.getByRole('button', { name: 'Página 2' }).closest('nav') as HTMLElement;
+      expect(within(pagination).getByText(/de 45/)).toBeInTheDocument();
+    });
+  });
+
   describe('F3-26 USR-04: filtro dinâmico vale só para a página', () => {
     it('USR-04: without dynamic rules the counter is unchanged', async () => {
       mockApi({ list: USERS_MANY });
