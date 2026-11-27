@@ -28,6 +28,19 @@ function setup(props: Partial<React.ComponentProps<typeof EzSelect>> = {}) {
 }
 
 describe('EzSelect (DMTE-490 T2)', () => {
+  it('USR-07 (#517): aria-describedby goes to the visible combobox, not to the hidden native select', () => {
+    render(
+      <>
+        <p id="why">Requer permissão.</p>
+        <EzSelect id="st" label="Status" defaultValue="open" disabled aria-describedby="why">
+          {options}
+        </EzSelect>
+      </>,
+    );
+
+    expect(screen.getByRole('combobox', { name: /status/i })).toHaveAccessibleDescription('Requer permissão.');
+  });
+
   it('AC-08: shows the selected option label on the closed control, with the list closed', () => {
     const { control } = setup({ defaultValue: 'wait' });
 
