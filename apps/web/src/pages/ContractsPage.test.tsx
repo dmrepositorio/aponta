@@ -801,6 +801,24 @@ describe('ContractsPage grid (DMTE-536)', () => {
     expect(await screen.findByText('Mesas cobertas')).toBeInTheDocument();
   });
 
+  it('CTR-08: o nome acessível do botão contém o texto visível e distingue linhas sem nome pela empresa', async () => {
+    const unnamed = [
+      { ...gridContracts[1], id: 'u1', name: '', organization: { name: 'Acme' } },
+      { ...gridContracts[1], id: 'u2', name: '', organization: { name: 'Globex' } },
+      { ...gridContracts[1], id: 'u3', name: '', organization: undefined },
+    ];
+    vi.mocked(api.get).mockResolvedValue({ data: unnamed });
+    loginAs('ADMIN');
+    renderPage();
+
+    const acme = await screen.findByRole('button', { name: /Sem nome.*Acme/ });
+    expect(acme).toHaveAccessibleName('Ver detalhes Sem nome, Acme');
+    expect(acme).toHaveTextContent('Sem nome');
+    expect(screen.getByRole('button', { name: /Sem nome.*Globex/ })).not.toBe(acme);
+    // sem empresa, o nome acessível ainda contém o texto visível
+    expect(screen.getByRole('button', { name: 'Ver detalhes Sem nome' })).toBeInTheDocument();
+  });
+
   it('opens the detail of the row on double click', async () => {
     mockGrid();
     renderPage();
