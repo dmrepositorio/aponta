@@ -347,7 +347,7 @@ describe('ContractsPage', () => {
     expect(within(dialog).getByText('Contrato 1 · Empresa 1')).toBeInTheDocument();
     expect(api.delete).not.toHaveBeenCalled();
 
-    await user.click(within(dialog).getByRole('button', { name: 'Confirmar' }));
+    await user.click(within(dialog).getByRole('button', { name: 'Excluir' }));
     await waitFor(() => {
       expect(api.delete).toHaveBeenCalledWith('/contracts/c1');
     });
@@ -400,7 +400,9 @@ describe('ContractsPage', () => {
 
     await screen.findByText('Empresa 1');
     const dialog = await openDeleteDialog(user, 'all');
-    await user.click(within(dialog).getByRole('button', { name: 'Confirmar' }));
+    await user.click(
+      within(dialog).getByRole('button', { name: 'Excluir 3 contratos' }),
+    );
 
     const failures = await within(dialog).findAllByRole('listitem');
     expect(failures).toHaveLength(2);
@@ -427,7 +429,9 @@ describe('ContractsPage', () => {
 
     await screen.findByText('Empresa 1');
     const dialog = await openDeleteDialog(user, 'all');
-    await user.click(within(dialog).getByRole('button', { name: 'Confirmar' }));
+    await user.click(
+      within(dialog).getByRole('button', { name: 'Excluir 3 contratos' }),
+    );
     await within(dialog).findAllByRole('listitem');
     expect(api.delete).toHaveBeenCalledTimes(3);
 
@@ -445,7 +449,7 @@ describe('ContractsPage', () => {
     });
   });
 
-  it('disables Confirmar while the deletion is running', async () => {
+  it('disables Excluir while the deletion is running', async () => {
     vi.mocked(api.get).mockResolvedValue({ data: namedContracts(2) });
     let finish: (value: unknown) => void = () => undefined;
     vi.mocked(api.delete).mockImplementation(
@@ -457,10 +461,12 @@ describe('ContractsPage', () => {
 
     await screen.findByText('Empresa 1');
     const dialog = await openDeleteDialog(user, 1);
-    await user.click(within(dialog).getByRole('button', { name: 'Confirmar' }));
+    await user.click(within(dialog).getByRole('button', { name: 'Excluir' }));
 
     await waitFor(() => {
-      expect(within(dialog).getByRole('button', { name: 'Confirmar' })).toBeDisabled();
+      expect(
+        within(dialog).getByRole('button', { name: 'Excluir' }),
+      ).toBeDisabled();
     });
     expect(api.delete).toHaveBeenCalledTimes(1);
 
@@ -993,5 +999,507 @@ describe('ContractsPage form errors (DMTE-539)', () => {
     await user.click(screen.getByRole('button', { name: 'Salvar contrato' }));
     expect(screen.getByRole('alert').parentElement).toHaveFocus();
     expect(scrollIntoView).toHaveBeenCalledTimes(2);
+  });
+});
+
+// Auditoria de design F3-34 (Contratos, parte 1): seleção, busca, descarte, rótulo da exclusão e horas.
+describe('ContractsPage F3-34', () => {
+  const named = (count: number) =>
+    Array.from({ length: count }, (_, i) => ({
+      id: `c${i + 1}`,
+      organizationId: `org-${i + 1}`,
+      organization: { name: `Empresa ${i + 1}` },
+      name: `Contrato ${i + 1}`,
+      type: 'COVERAGE',
+      active: i !== 1,
+      createdAt: `2025-0${(i % 9) + 1}-01T00:00:00.000Z`,
+    }));
+
+  const mockList = (list: ReturnType<typeof named>) => {
+    vi.mocked(api.get).mockImplementation(async (url: string) => ({
+      data:
+        url === '/organizations'
+          ? list.map((c) => ({
+              id: c.organizationId,
+              name: c.organization.name,
+            }))
+          : (list.find((c) => url === `/contracts/${c.id}`) ?? list),
+    }));
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    useAuthStore.setState({ token: null, user: null });
+    localStorage.clear();
+  });
+
+  describe('CTR-01 seleção da barra', () => {
+    it('clears the selection when going back from the detail, so Excluir stays disabled', async () => {
+      mockList(named(2));
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      renderPage();
+
+      await user.click(
+        await screen.findByRole('button', { name: 'Ver detalhes Contrato 1' }),
+      );
+      await waitFor(() =>
+        expect(screen.getByTestId('ez-toolbar-record-count')).toHaveTextContent(
+          '1 de 2',
+        ),
+      );
+      await user.click(screen.getByTitle('Voltar'));
+
+      await screen.findByText('Empresa 2');
+      expect(screen.getByTestId('ez-toolbar-delete-button')).toBeDisabled();
+      screen
+        .getAllByRole('checkbox')
+        .forEach((box) => expect(box).not.toBeChecked());
+    });
+
+    it('drops a marked row that a new search hides and leaves no stale mark on the remaining rows', async () => {
+      mockList(named(2));
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      renderPage();
+
+      await screen.findByText('Empresa 1');
+      await user.click(screen.getAllByRole('checkbox')[1]);
+      expect(screen.getByTestId('ez-toolbar-delete-button')).toBeEnabled();
+
+      await user.click(screen.getByTestId('ez-toolbar-filter-panel-button'));
+      await user.type(
+        within(screen.getByTestId('ez-filter-drawer')).getByLabelText(
+          /buscar contrato\/empresa/i,
+        ),
+        'Empresa 2',
+      );
+
+      expect(screen.queryByText('Empresa 1')).not.toBeInTheDocument();
+      expect(screen.getByTestId('ez-toolbar-delete-button')).toBeDisabled();
+      screen
+        .getAllByRole('checkbox')
+        .forEach((box) => expect(box).not.toBeChecked());
+    });
+
+    it('also clears the selection when the status filter changes', async () => {
+      mockList(named(2));
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      renderPage();
+
+      await screen.findByText('Empresa 1');
+      await user.click(screen.getAllByRole('checkbox')[1]);
+      expect(screen.getByTestId('ez-toolbar-delete-button')).toBeEnabled();
+
+      await user.click(screen.getByTestId('ez-toolbar-filter-panel-button'));
+      await user.selectOptions(
+        within(screen.getByTestId('ez-filter-drawer')).getByLabelText('Status'),
+        'INACTIVE',
+      );
+
+      expect(screen.getByTestId('ez-toolbar-delete-button')).toBeDisabled();
+    });
+
+    it('keeps Anterior/Próximo working after the change (the focus is not the selection)', async () => {
+      mockList(named(2));
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      renderPage();
+
+      await user.click(
+        await screen.findByRole('button', { name: 'Ver detalhes Contrato 1' }),
+      );
+      await waitFor(() =>
+        expect(screen.getByTestId('ez-toolbar-record-count')).toHaveTextContent(
+          '1 de 2',
+        ),
+      );
+      await user.click(screen.getByTestId('ez-toolbar-next-button'));
+      await waitFor(() =>
+        expect(screen.getByTestId('ez-toolbar-record-count')).toHaveTextContent(
+          '2 de 2',
+        ),
+      );
+      expect(screen.getByText('Empresa 2')).toBeInTheDocument();
+    });
+  });
+
+  describe('CTR-04 rótulo do botão de exclusão', () => {
+    const openDialog = async (
+      user: ReturnType<typeof userEvent.setup>,
+      rows: number,
+    ) => {
+      // A grade recria as caixas a cada marca: consulte de novo antes de cada clique.
+      for (let i = 1; i <= rows; i += 1)
+        await user.click(screen.getAllByRole('checkbox')[i]);
+      await user.click(screen.getByTestId('ez-toolbar-delete-button'));
+      return screen.findByRole('dialog');
+    };
+
+    it('names the confirm button "Excluir" for one contract', async () => {
+      mockList(named(2));
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      renderPage();
+      await screen.findByText('Empresa 1');
+      const dialog = await openDialog(user, 1);
+      expect(
+        within(dialog).getByRole('button', { name: 'Excluir' }),
+      ).toBeInTheDocument();
+      expect(
+        within(dialog).queryByRole('button', { name: 'Confirmar' }),
+      ).not.toBeInTheDocument();
+    });
+
+    it('names the confirm button with the count for several contracts, including the ones hidden by "e mais N"', async () => {
+      mockList(named(7));
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      renderPage();
+      await screen.findByText('Empresa 1');
+      const dialog = await openDialog(user, 3);
+      expect(
+        within(dialog).getByRole('button', { name: 'Excluir 3 contratos' }),
+      ).toBeInTheDocument();
+      await user.click(
+        within(dialog).getByRole('button', { name: 'Cancelar' }),
+      );
+      for (let i = 4; i <= 7; i += 1)
+        await user.click(screen.getAllByRole('checkbox')[i]);
+      await user.click(screen.getByTestId('ez-toolbar-delete-button'));
+      const again = await screen.findByRole('dialog');
+      expect(
+        within(again).getByRole('button', { name: 'Excluir 7 contratos' }),
+      ).toBeInTheDocument();
+      expect(within(again).getByText('e mais 2')).toBeInTheDocument();
+    });
+
+    it('goes back to "Tentar novamente" after a failure and does not call the API before the click', async () => {
+      mockList(named(2));
+      vi.mocked(api.delete).mockRejectedValue({
+        response: { data: { message: 'Falhou' } },
+      });
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      renderPage();
+      await screen.findByText('Empresa 1');
+      const dialog = await openDialog(user, 1);
+      expect(api.delete).not.toHaveBeenCalled();
+      await user.click(within(dialog).getByRole('button', { name: 'Excluir' }));
+      expect(
+        await within(dialog).findByRole('button', { name: 'Tentar novamente' }),
+      ).toBeInTheDocument();
+      expect(api.delete).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('CTR-03 busca sempre visível e filtros ativos', () => {
+    const SEARCH = 'Buscar contrato ou empresa';
+
+    it('searches by contract or company with the filter panel closed', async () => {
+      mockList(named(3));
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      renderPage();
+      await screen.findByText('Empresa 1');
+      expect(screen.queryByTestId('ez-filter-drawer')).not.toBeInTheDocument();
+
+      await user.type(screen.getByLabelText(SEARCH), 'Empresa 3');
+      expect(screen.queryByText('Empresa 1')).not.toBeInTheDocument();
+      expect(screen.getByText('Empresa 3')).toBeInTheDocument();
+
+      await user.clear(screen.getByLabelText(SEARCH));
+      await user.type(screen.getByLabelText(SEARCH), 'contrato 2');
+      expect(screen.getByText('Empresa 2')).toBeInTheDocument();
+      expect(screen.queryByText('Empresa 3')).not.toBeInTheDocument();
+    });
+
+    it('shares the search text with the drawer field', async () => {
+      mockList(named(2));
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      renderPage();
+      await screen.findByText('Empresa 1');
+      await user.type(screen.getByLabelText(SEARCH), 'Empresa 2');
+      await user.click(screen.getByTestId('ez-toolbar-filter-panel-button'));
+      expect(
+        within(screen.getByTestId('ez-filter-drawer')).getByLabelText(
+          /buscar contrato\/empresa/i,
+        ),
+      ).toHaveValue('Empresa 2');
+    });
+
+    it('shows no indicator while nothing is filtered', async () => {
+      mockList(named(2));
+      loginAs('ADMIN');
+      renderPage();
+      await screen.findByText('Empresa 1');
+      expect(screen.queryByText(/filtros? ativos?/)).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: 'Limpar filtros' }),
+      ).not.toBeInTheDocument();
+    });
+
+    it('counts the active filters with the panel closed and clears them all', async () => {
+      mockList(named(3));
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      renderPage();
+      await screen.findByText('Empresa 1');
+
+      await user.click(screen.getByTestId('ez-toolbar-filter-panel-button'));
+      await user.selectOptions(
+        within(screen.getByTestId('ez-filter-drawer')).getByLabelText('Status'),
+        'ACTIVE',
+      );
+      await user.click(screen.getByTestId('ez-toolbar-filter-panel-button'));
+      expect(screen.queryByTestId('ez-filter-drawer')).not.toBeInTheDocument();
+      expect(screen.getByText('1 filtro ativo')).toBeInTheDocument();
+
+      await user.type(screen.getByLabelText(SEARCH), 'Empresa 3');
+      expect(screen.getByText('2 filtros ativos')).toBeInTheDocument();
+      expect(screen.queryByText('Empresa 1')).not.toBeInTheDocument();
+
+      await user.click(screen.getByRole('button', { name: 'Limpar filtros' }));
+      expect(screen.getByText('Empresa 1')).toBeInTheDocument();
+      expect(screen.getByText('Empresa 2')).toBeInTheDocument();
+      expect(screen.getByLabelText(SEARCH)).toHaveValue('');
+      expect(screen.queryByText(/filtros? ativos?/)).not.toBeInTheDocument();
+    });
+
+    it('counts each dynamic rule that is complete, and ignores an empty one', async () => {
+      mockList(named(3));
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      renderPage();
+      await screen.findByText('Empresa 1');
+
+      await user.click(screen.getByTestId('ez-toolbar-filter-panel-button'));
+      const drawer = screen.getByTestId('ez-filter-drawer');
+      await user.click(within(drawer).getByTestId('ez-dynamic-filter-add'));
+      expect(screen.queryByText(/filtros? ativos?/)).not.toBeInTheDocument();
+      const rule = within(drawer).getByTestId('ez-dynamic-filter-rule');
+      await user.selectOptions(
+        within(rule).getByLabelText('Campo', { selector: 'select' }),
+        'status',
+      );
+      await user.selectOptions(
+        within(rule).getByLabelText('Valor', { selector: 'select' }),
+        'Inativo',
+      );
+      expect(screen.getByText('1 filtro ativo')).toBeInTheDocument();
+    });
+
+    it('does not offer the strip inside the form mode', async () => {
+      mockList(named(2));
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      renderPage();
+      await user.click(
+        await screen.findByRole('button', { name: 'Ver detalhes Contrato 1' }),
+      );
+      await screen.findByText('Mesas cobertas');
+      expect(screen.queryByLabelText(SEARCH)).not.toBeInTheDocument();
+    });
+
+    it('clears the grid selection when the search changes', async () => {
+      mockList(named(2));
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      renderPage();
+      await screen.findByText('Empresa 1');
+      await user.click(screen.getAllByRole('checkbox')[1]);
+      expect(screen.getByTestId('ez-toolbar-delete-button')).toBeEnabled();
+      await user.type(screen.getByLabelText(SEARCH), 'Empresa 2');
+      expect(screen.getByTestId('ez-toolbar-delete-button')).toBeDisabled();
+    });
+  });
+
+  describe('CTR-02 descartar alterações do formulário', () => {
+    const DISCARD = 'Descartar alterações?';
+
+    async function openEdit(user: ReturnType<typeof userEvent.setup>) {
+      mockList(named(2));
+      loginAs('ADMIN');
+      renderPage();
+      await user.click(
+        await screen.findByRole('button', { name: 'Ver detalhes Contrato 1' }),
+      );
+      await user.click(
+        await screen.findByRole('button', { name: 'Editar contrato' }),
+      );
+      await screen.findByLabelText('Nome do contrato');
+      await screen.findByRole('option', { name: 'Empresa 2', hidden: true });
+    }
+    const dirty = () =>
+      fireEvent.change(screen.getByLabelText('Nome do contrato'), {
+        target: { value: 'Alterado sem salvar' },
+      });
+    const record = () => screen.getByTestId('ez-toolbar-record-count');
+
+    it('asks before Próximo drops the edit, and keeps the record and the typed text when the user stays', async () => {
+      const user = userEvent.setup();
+      await openEdit(user);
+      dirty();
+      await user.click(screen.getByTestId('ez-toolbar-next-button'));
+
+      const dialog = await screen.findByRole('dialog', { name: DISCARD });
+      expect(record()).toHaveTextContent('1 de 2');
+      await user.click(
+        within(dialog).getByRole('button', { name: 'Continuar editando' }),
+      );
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      expect(screen.getByLabelText('Nome do contrato')).toHaveValue(
+        'Alterado sem salvar',
+      );
+      expect(record()).toHaveTextContent('1 de 2');
+    });
+
+    it('moves to the next record only after the user confirms the discard', async () => {
+      const user = userEvent.setup();
+      await openEdit(user);
+      dirty();
+      await user.click(screen.getByTestId('ez-toolbar-next-button'));
+      const dialog = await screen.findByRole('dialog', { name: DISCARD });
+      await user.click(
+        within(dialog).getByRole('button', { name: 'Descartar' }),
+      );
+
+      await waitFor(() => expect(record()).toHaveTextContent('2 de 2'));
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      expect(
+        screen.queryByLabelText('Nome do contrato'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('asks before the back button leaves a dirty form, and goes back after confirming', async () => {
+      const user = userEvent.setup();
+      await openEdit(user);
+      dirty();
+      await user.click(screen.getByTitle('Voltar'));
+      const dialog = await screen.findByRole('dialog', { name: DISCARD });
+      expect(screen.getByLabelText('Nome do contrato')).toBeInTheDocument();
+      await user.click(
+        within(dialog).getByRole('button', { name: 'Descartar' }),
+      );
+      expect(await screen.findByText('Empresa 2')).toBeInTheDocument();
+      expect(
+        screen.queryByLabelText('Nome do contrato'),
+      ).not.toBeInTheDocument();
+    });
+
+    it('asks before Cancelar leaves a dirty form', async () => {
+      const user = userEvent.setup();
+      await openEdit(user);
+      dirty();
+      await user.click(screen.getByRole('button', { name: 'Cancelar' }));
+      expect(
+        await screen.findByRole('dialog', { name: DISCARD }),
+      ).toBeInTheDocument();
+      expect(screen.getByLabelText('Nome do contrato')).toBeInTheDocument();
+    });
+
+    it('asks before switching to Grade with a dirty form', async () => {
+      const user = userEvent.setup();
+      await openEdit(user);
+      dirty();
+      await user.click(screen.getByTestId('ez-toolbar-mode-toggle-button'));
+      expect(
+        await screen.findByRole('dialog', { name: DISCARD }),
+      ).toBeInTheDocument();
+      expect(screen.getByLabelText('Nome do contrato')).toBeInTheDocument();
+    });
+
+    it('closes the discard dialog with Escape and keeps editing', async () => {
+      const user = userEvent.setup();
+      await openEdit(user);
+      dirty();
+      await user.click(screen.getByTitle('Voltar'));
+      await screen.findByRole('dialog', { name: DISCARD });
+      await user.keyboard('{Escape}');
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      expect(screen.getByLabelText('Nome do contrato')).toHaveValue(
+        'Alterado sem salvar',
+      );
+    });
+
+    it('navigates straight away, with no dialog, while the form has no changes', async () => {
+      const user = userEvent.setup();
+      await openEdit(user);
+      await user.click(screen.getByTestId('ez-toolbar-next-button'));
+      await waitFor(() => expect(record()).toHaveTextContent('2 de 2'));
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+
+    it('does not ask once the typed change is reverted to the original value', async () => {
+      const user = userEvent.setup();
+      await openEdit(user);
+      dirty();
+      fireEvent.change(screen.getByLabelText('Nome do contrato'), {
+        target: { value: 'Contrato 1' },
+      });
+      await user.click(screen.getByTitle('Voltar'));
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      expect(await screen.findByText('Empresa 2')).toBeInTheDocument();
+    });
+
+    it('does not ask after saving: the save itself leaves the form', async () => {
+      const user = userEvent.setup();
+      await openEdit(user);
+      vi.mocked(api.post).mockResolvedValue({ data: {} });
+      dirty();
+      await user.click(screen.getByRole('button', { name: 'Salvar contrato' }));
+      expect(await screen.findByText('Empresa 2')).toBeInTheDocument();
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+
+    it('does not carry a discarded change into the next form', async () => {
+      const user = userEvent.setup();
+      await openEdit(user);
+      dirty();
+      await user.click(screen.getByTitle('Voltar'));
+      await user.click(
+        within(await screen.findByRole('dialog', { name: DISCARD })).getByRole(
+          'button',
+          { name: 'Descartar' },
+        ),
+      );
+      await user.click(
+        await screen.findByRole('button', { name: 'Ver detalhes Contrato 1' }),
+      );
+      await user.click(
+        await screen.findByRole('button', { name: 'Editar contrato' }),
+      );
+      await screen.findByLabelText('Nome do contrato');
+      await user.click(screen.getByTitle('Voltar'));
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+
+    it('asks before Cancelar leaves a new contract that was filled in, but not an untouched one', async () => {
+      mockList(named(2));
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      renderPage();
+      await user.click(
+        await screen.findByRole('button', { name: 'Novo contrato' }),
+      );
+      await screen.findByRole('option', { name: 'Empresa 2', hidden: true });
+      await user.click(screen.getByRole('button', { name: 'Cancelar' }));
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      expect(await screen.findByText('Empresa 2')).toBeInTheDocument();
+
+      await user.click(
+        await screen.findByRole('button', { name: 'Novo contrato' }),
+      );
+      await screen.findByRole('option', { name: 'Empresa 2', hidden: true });
+      fireEvent.change(screen.getByLabelText('Nome do contrato'), {
+        target: { value: 'Rascunho' },
+      });
+      await user.click(screen.getByRole('button', { name: 'Cancelar' }));
+      expect(
+        await screen.findByRole('dialog', { name: DISCARD }),
+      ).toBeInTheDocument();
+    });
   });
 });

@@ -16,6 +16,7 @@ import {
   EzComboBox,
   EzEmptyCard,
   EzEntityGrid,
+  EzMoneyInput,
   EzSpinner,
   EzTextInput,
 } from '../ds';
@@ -28,6 +29,9 @@ const dateLabel = (value?: string | null) =>
   value
     ? new Date(value).toLocaleDateString('pt-BR', { timeZone: 'UTC' })
     : 'Não informada';
+// Horas em pt-BR: vírgula decimal e no máximo duas casas (80 min = 1,33h). Só exibição; o valor salvo é em minutos.
+export const hoursLabel = (hours: number) =>
+  `${hours.toLocaleString('pt-BR', { maximumFractionDigits: 2 })}h`;
 const allowance = (c: Contract) =>
   c.includedMinutes != null ? c.includedMinutes / 60 : c.hoursLimit;
 // End dates entered in the form include the entire selected civil day.
@@ -56,7 +60,11 @@ export const commercialModalities: Record<string, string> = {
 };
 export const modality = (c: Contract) =>
   commercialModalities[c.type] ||
-  (c.type === 'HOURS_LIMIT' ? `Pacote: ${allowance(c) ?? '—'}h` : 'Cobertura');
+  (c.type === 'HOURS_LIMIT'
+    ? `Pacote: ${allowance(c) == null ? '—h' : hoursLabel(allowance(c) as number)}`
+    : 'Cobertura');
+// Teto da API para valores em centavos (Int32): acima disso o campo recusa a digitação, em vez de a API recusar o envio.
+const MAX_CENTS = 2147483647;
 const isLegacy = (c: Contract) => !commercialModalities[c.type];
 export const contractApproval = (c: Contract) =>
   approvalLabel({ legacy: isLegacy(c), approved: !!c.approved });
@@ -225,7 +233,7 @@ export function ContractDetail({
     ...(c.type === 'FIXED_PROJECT'
       ? [
           ['Escopo', c.scope || 'Não informado'],
-          ['Estimativa total', `${(c.estimatedMinutes || 0) / 60}h`],
+          ['Estimativa total', hoursLabel((c.estimatedMinutes || 0) / 60)],
         ]
       : []),
     [
@@ -355,6 +363,7 @@ export function ContractForm({
   error,
   onSave,
   onCancel,
+  onDirtyChange,
 }: {
   contract?: Contract;
   organizations: ContractOrganization[];
@@ -364,6 +373,8 @@ export function ContractForm({
   error?: string;
   onSave: (values: ContractInput) => void;
   onCancel: () => void;
+  /** Informa se há alteração não salva em relação aos valores com que o formulário abriu. */
+  onDirtyChange?: (dirty: boolean) => void;
 }) {
   const [name, setName] = useState(c?.name || '');
   const [organizationId, setOrganizationId] = useState(c?.organizationId || '');
@@ -377,11 +388,10 @@ export function ContractForm({
   const [estimate, setEstimate] = useState(
     c?.estimatedMinutes == null ? '' : String(c.estimatedMinutes / 60),
   );
-  const [price, setPrice] = useState(
-    c?.fixedPriceCents == null ? '' : String(c.fixedPriceCents / 100),
-  );
-  const [hourly, setHourly] = useState(
-    c?.hourlyRateCents == null ? '' : String(c.hourlyRateCents / 100),
+  // Dinheiro fica em centavos inteiros (null = não informado; 0 é um valor válido).
+  const [price, setPrice] = useState<number | null>(c?.fixedPriceCents ?? null);
+  const [hourly, setHourly] = useState<number | null>(
+    c?.hourlyRateCents ?? null,
   );
   const [effectiveDay, setEffectiveDay] = useState('');
   const desks =
@@ -393,18 +403,42 @@ export function ContractForm({
     c?.adjustmentDate?.slice(0, 10) || '',
   );
   const [hours, setHours] = useState(c ? String(allowance(c) ?? '') : '');
-  const [monthly, setMonthly] = useState(
-    c?.monthlyFeeCents != null
-      ? String(c.monthlyFeeCents / 100)
-      : c?.monthlyValue == null
-        ? ''
-        : String(c.monthlyValue),
+  const [monthly, setMonthly] = useState<number | null>(
+    c?.monthlyFeeCents ??
+      // Contrato legado: só tem o valor mensal em reais, sem centavos gravados.
+      (c?.monthlyValue == null ? null : Math.round(c.monthlyValue * 100)),
   );
-  const [rate, setRate] = useState(
-    c?.excessHourlyRateCents == null
-      ? ''
-      : String(c.excessHourlyRateCents / 100),
+  const [rate, setRate] = useState<number | null>(
+    c?.excessHourlyRateCents ?? null,
   );
+  // Sujo = algum campo difere do que o formulário tinha ao abrir (voltar ao valor original limpa). As mesas
+  // entram ordenadas: marcar, desmarcar e marcar de novo muda a ordem, não o conjunto.
+  const snapshot = JSON.stringify([
+    name,
+    organizationId,
+    type,
+    active,
+    approved,
+    [...serviceDeskIds].sort(),
+    scope,
+    estimate,
+    price,
+    hourly,
+    effectiveDay,
+    startsAt,
+    endsAt,
+    adjustmentDate,
+    hours,
+    monthly,
+    rate,
+  ]);
+  const initialSnapshot = useRef(snapshot);
+  const dirty = snapshot !== initialSnapshot.current;
+  const dirtyCallback = useRef(onDirtyChange);
+  dirtyCallback.current = onDirtyChange;
+  useEffect(() => {
+    dirtyCallback.current?.(dirty);
+  }, [dirty]);
   const [validation, setValidation] = useState('');
   // Cada tentativa que falha conta, mesmo com a mesma mensagem: o alerta fica no topo e o Salvar no fim
   // (a 390 px a 1.500 px dele), então a falha leva o foco e a vista ao alerta.
@@ -436,7 +470,7 @@ export function ContractForm({
           return;
         }
         if (
-          [monthly, rate, hours, price, hourly, estimate]
+          [hours, estimate]
             .filter((v) => v !== '')
             .some((v) => !Number.isFinite(Number(v)) || Number(v) < 0)
         ) {
@@ -450,20 +484,6 @@ export function ContractForm({
           (minutes == null || minutes < 0 || (type === 'HOURS_LIMIT' && minutes === 0) || !Number.isSafeInteger(minutes))
         ) {
           fail(type === 'HOURS_LIMIT' ? 'Informe uma franquia mensal maior que zero.' : 'Informe uma franquia mensal não negativa.');
-          return;
-        }
-        if (
-          [monthly, rate, price, hourly]
-            .filter((v) => v !== '')
-            .some(
-              (v) =>
-                !Number.isSafeInteger(Math.round(Number(v) * 100)) ||
-                !/^\d+(\.\d{1,2})?$/.test(v),
-            )
-        ) {
-          fail(
-            'Informe valores monetários com até duas casas decimais.',
-          );
           return;
         }
         if (
@@ -488,11 +508,11 @@ export function ContractForm({
           approved &&
           ((type === 'FIXED_PROJECT' &&
             (!scope.trim() ||
-              price === '' ||
+              price == null ||
               !estimate ||
               Number(estimate) <= 0)) ||
-            (type === 'MONTHLY_HOURS' && (monthly === '' || rate === '')) ||
-            (type === 'HOURLY' && hourly === ''))
+            (type === 'MONTHLY_HOURS' && (monthly == null || rate == null)) ||
+            (type === 'HOURLY' && hourly == null))
         ) {
           fail(
             'Complete as condições comerciais da modalidade antes de aprovar.',
@@ -508,22 +528,13 @@ export function ContractForm({
           approved,
           serviceDeskIds,
           scope: type === 'FIXED_PROJECT' ? scope.trim() : null,
-          fixedPriceCents:
-            type === 'FIXED_PROJECT' && price !== ''
-              ? Math.round(Number(price) * 100)
-              : null,
+          fixedPriceCents: type === 'FIXED_PROJECT' ? price : null,
           estimatedMinutes:
             type === 'FIXED_PROJECT' && estimate !== ''
               ? Math.round(Number(estimate) * 60)
               : null,
-          monthlyFeeCents:
-            type === 'MONTHLY_HOURS' && monthly !== ''
-              ? Math.round(Number(monthly) * 100)
-              : null,
-          hourlyRateCents:
-            type === 'HOURLY' && hourly !== ''
-              ? Math.round(Number(hourly) * 100)
-              : null,
+          monthlyFeeCents: type === 'MONTHLY_HOURS' ? monthly : null,
+          hourlyRateCents: type === 'HOURLY' ? hourly : null,
           ...(effectiveDay
             ? { conditionsEffectiveAt: brasiliaDayStartIso(effectiveDay) }
             : {}),
@@ -546,9 +557,9 @@ export function ContractForm({
           includedMinutes: ['HOURS_LIMIT', 'MONTHLY_HOURS'].includes(type)
             ? minutes
             : null,
-          monthlyValue: monthly === '' ? null : Number(monthly),
-          excessHourlyRateCents:
-            rate === '' ? null : Math.round(Number(rate) * 100),
+          // O campo legado em reais acompanha os centavos (divisão de inteiros: sem arredondar nada).
+          monthlyValue: monthly === null ? null : monthly / 100,
+          excessHourlyRateCents: rate,
         });
       }}
     >
@@ -674,14 +685,12 @@ export function ContractForm({
                 value={scope}
                 onChange={(event) => setScope(event.target.value)}
               />
-              <EzTextInput
+              <EzMoneyInput
                 id="contract-price"
                 label="Preço fechado (R$)"
-                type="number"
-                min="0"
-                step="0.01"
+                max={MAX_CENTS}
                 value={price}
-                onChange={(event) => setPrice(event.target.value)}
+                onChange={setPrice}
               />
               <EzTextInput
                 id="contract-estimate"
@@ -699,35 +708,29 @@ export function ContractForm({
             </>
           )}
           {type === 'HOURLY' && (
-            <EzTextInput
+            <EzMoneyInput
               id="contract-hourly"
               label="Hora avulsa (R$)"
-              type="number"
-              min="0"
-              step="0.01"
+              max={MAX_CENTS}
               value={hourly}
-              onChange={(event) => setHourly(event.target.value)}
+              onChange={setHourly}
             />
           )}
           {['HOURS_LIMIT', 'FIXED_COVERAGE', 'MONTHLY_HOURS'].includes(type) && (
             <>
-              <EzTextInput
+              <EzMoneyInput
                 id="contract-monthly"
                 label="Valor mensal (R$)"
-                type="number"
-                min="0"
-                step="0.01"
+                max={MAX_CENTS}
                 value={monthly}
-                onChange={(e) => setMonthly(e.target.value)}
+                onChange={setMonthly}
               />
-              <EzTextInput
+              <EzMoneyInput
                 id="contract-rate"
                 label="Hora excedente (R$)"
-                type="number"
-                min="0"
-                step="0.01"
+                max={MAX_CENTS}
                 value={rate}
-                onChange={(e) => setRate(e.target.value)}
+                onChange={setRate}
                 message="Tarifa explícita obrigatória para aprovação. Zero é uma tarifa válida."
               />
             </>

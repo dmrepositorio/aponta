@@ -66,6 +66,7 @@ export * from './EzFormView';
 export * from './EzGridView';
 export * from './EzGuideNavigator';
 export * from './EzModalContainer';
+export * from './EzMoneyInput';
 export * from './EzMultiSelectionList';
 export * from './EzNumberInput';
 export * from './EzPopoverPlus';
