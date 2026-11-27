@@ -11,7 +11,7 @@ import { SlaProgress } from './SlaProgress';
 import { TicketChecklist } from './TicketChecklist';
 import { TicketParentChild } from './TicketParent';
 import { RichContentView } from './RichContentView';
-import { EzAlert, EzSelect, EzToast } from '../ds';
+import { EzAlert, EzDialog, EzSelect, EzToast } from '../ds';
 
 interface TicketAudit {
   id: string;
@@ -62,6 +62,9 @@ function describeAudit(audit: TicketAudit): string {
   }
 }
 
+/** Status finais: escolher um deles pede confirmação. */
+const CONFIRMED_STATUSES: TicketStatus[] = ['RESOLVED', 'CLOSED'];
+
 interface TicketDetailProps {
   ticket: Ticket;
 }
@@ -89,12 +92,12 @@ export function TicketDetail({ ticket }: TicketDetailProps) {
     enabled: isAgentOrAdmin,
   });
 
-  const [assignedNotice, setAssignedNotice] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   useEffect(() => {
-    if (!assignedNotice) return undefined;
-    const timer = setTimeout(() => setAssignedNotice(null), 5000);
+    if (!notice) return undefined;
+    const timer = setTimeout(() => setNotice(null), 5000);
     return () => clearTimeout(timer);
-  }, [assignedNotice]);
+  }, [notice]);
 
   const assignMutation = useMutation({
     mutationFn: (agentId: string) =>
@@ -102,18 +105,38 @@ export function TicketDetail({ ticket }: TicketDetailProps) {
     onSuccess: (_data, agentId) => {
       queryClient.invalidateQueries({ queryKey: ['tickets', ticket.id] });
       const agentName = agents.find((agent) => agent.id === agentId)?.name;
-      if (agentName) setAssignedNotice(`Chamado atribuído a ${agentName}`);
+      if (agentName) setNotice(`Chamado atribuído a ${agentName}`);
     },
   });
 
   const statusMutation = useMutation({
     mutationFn: (status: TicketStatus) =>
       api.patch(`/tickets/${ticket.id}/status`, { status }),
-    onSuccess: () => {
+    onSuccess: (_data, status) => {
       queryClient.invalidateQueries({ queryKey: ['tickets', ticket.id] });
       queryClient.invalidateQueries({ queryKey: ['tickets'] });
+      setNotice(`Status alterado para ${statusLabels[status]}`);
     },
   });
+
+  // Resolvido e Fechado pedem confirmação antes do PATCH; a API continua sendo quem valida.
+  const [pendingStatus, setPendingStatus] = useState<TicketStatus | null>(null);
+  const handleStatusChange = (status: TicketStatus) => {
+    if (CONFIRMED_STATUSES.includes(status)) {
+      setPendingStatus(status);
+      return;
+    }
+    statusMutation.mutate(status);
+  };
+  const confirmStatusChange = () => {
+    if (pendingStatus) statusMutation.mutate(pendingStatus);
+    setPendingStatus(null);
+  };
+
+  // Só o status atual e as transições que a API devolveu; sem allowedStatuses (API antiga), lista completa.
+  const statusOptions = (Object.keys(statusLabels) as TicketStatus[]).filter(
+    (st) => !ticket.allowedStatuses || st === ticket.status || ticket.allowedStatuses.includes(st),
+  );
 
   const statusErrorMessage = statusMutation.isError
     ? 'Não foi possível alterar o status deste chamado. Verifique se a transição é permitida (ex.: é preciso passar por "Em Andamento" antes de "Resolvido").'
@@ -144,9 +167,9 @@ export function TicketDetail({ ticket }: TicketDetailProps) {
                 className="w-auto min-w-[10rem]"
                 value={ticket.status}
                 disabled={statusMutation.isPending}
-                onChange={(e) => statusMutation.mutate(e.target.value as TicketStatus)}
+                onChange={(e) => handleStatusChange(e.target.value as TicketStatus)}
               >
-                {(Object.keys(statusLabels) as TicketStatus[]).map((st) => (
+                {statusOptions.map((st) => (
                   <option key={st} value={st}>
                     {statusLabels[st]}
                   </option>
@@ -196,10 +219,18 @@ export function TicketDetail({ ticket }: TicketDetailProps) {
           Não foi possível atribuir o chamado. Tente novamente.
         </EzAlert>
       )}
-      {assignedNotice && (
+      <EzDialog
+        open={pendingStatus !== null}
+        title="Confirmar mudança de status"
+        message={`O status do chamado passará para ${pendingStatus ? statusLabels[pendingStatus] : ''}.`}
+        variant="warning"
+        onConfirm={confirmStatusChange}
+        onCancel={() => setPendingStatus(null)}
+      />
+      {notice && (
         <div className="pointer-events-none fixed right-4 top-4 z-40 w-[calc(100%-2rem)] max-w-sm">
           <div>
-            <EzToast variant="success" title={assignedNotice} onClose={() => setAssignedNotice(null)} />
+            <EzToast variant="success" title={notice} onClose={() => setNotice(null)} />
           </div>
         </div>
       )}
