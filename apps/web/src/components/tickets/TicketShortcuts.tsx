@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { ShieldCheck, TicketCheck } from 'lucide-react';
+import { Clock, PauseCircle, ShieldCheck, TicketCheck, User, UserX } from 'lucide-react';
 import { api } from '../../lib/api';
 import type { TicketFiltersInput } from '../../hooks/useTickets';
 import { EzBadge } from '../ds';
@@ -9,7 +9,7 @@ const AUTHORIZER_ROLES = ['ADMIN', 'AGENT_MASTER', 'CLIENT_MASTER'];
 
 type ShortcutPatch = Pick<
   TicketFiltersInput,
-  'status' | 'closedOnly' | 'notClosed' | 'unassigned' | 'paused' | 'overdue'
+  'status' | 'closedOnly' | 'notClosed' | 'unassigned' | 'paused' | 'overdue' | 'mine'
 >;
 
 /** Ligar um atalho assume o recorte de status: a API sobrepõe `status`/`closedOnly` a estes filtros, e o botão aceso mentiria. */
@@ -20,14 +20,29 @@ const CLEAR_STATUS_FILTERS: ShortcutPatch = {
   unassigned: undefined,
   paused: undefined,
   overdue: undefined,
+  mine: undefined,
 };
 
 interface TicketShortcutsProps {
   role?: string;
   status?: TicketFiltersInput['status'];
   closedOnly?: boolean;
+  mine?: boolean;
+  unassigned?: boolean;
+  overdue?: boolean;
+  paused?: boolean;
   onSelect: (patch: ShortcutPatch) => void;
 }
+
+type BooleanFilter = 'mine' | 'unassigned' | 'overdue' | 'paused';
+
+/** Visões de trabalho sobre filtros que a lista e a Busca avançada já têm; as de atendimento ficam ocultas para CLIENT. */
+const filterShortcuts: { label: string; icon: typeof Clock; filter: BooleanFilter; hideForClient?: boolean }[] = [
+  { label: 'Meus', icon: User, filter: 'mine', hideForClient: true },
+  { label: 'Não atendidos', icon: UserX, filter: 'unassigned', hideForClient: true },
+  { label: 'Vencidos', icon: Clock, filter: 'overdue' },
+  { label: 'Pausados', icon: PauseCircle, filter: 'paused' },
+];
 
 const buttonClass = (active: boolean) =>
   `inline-flex max-sm:h-11 sm:h-[var(--control-height-compact)] min-w-0 items-center gap-2 rounded-control border px-3 text-[13px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 ${
@@ -41,8 +56,19 @@ const buttonClass = (active: boolean) =>
  * da própria lista (um por vez). O estado vem dos filtros, não de estado próprio,
  * então um link com `closedOnly` ou `status` na URL já abre o atalho ligado.
  */
-export function TicketShortcuts({ role, status, closedOnly, onSelect }: TicketShortcutsProps) {
+export function TicketShortcuts({
+  role,
+  status,
+  closedOnly,
+  mine,
+  unassigned,
+  overdue,
+  paused,
+  onSelect,
+}: TicketShortcutsProps) {
+  const active = { mine, unassigned, overdue, paused };
   const canAuthorize = AUTHORIZER_ROLES.includes(role ?? '');
+  const isClient = role === 'CLIENT';
   const closedActive = Boolean(closedOnly);
   const authorizationActive = status === 'PENDING_APPROVAL';
 
@@ -83,6 +109,18 @@ export function TicketShortcuts({ role, status, closedOnly, onSelect }: TicketSh
           </span>
         </button>
       )}
+      {filterShortcuts
+        .filter(({ hideForClient }) => !(hideForClient && isClient))
+        .map(({ label, icon, filter }) => (
+          <FilterShortcut
+            key={filter}
+            label={label}
+            icon={icon}
+            filter={filter}
+            active={Boolean(active[filter])}
+            onSelect={onSelect}
+          />
+        ))}
       <button
         type="button"
         aria-pressed={closedActive}
@@ -95,6 +133,33 @@ export function TicketShortcuts({ role, status, closedOnly, onSelect }: TicketSh
         Tickets fechados
       </button>
     </div>
+  );
+}
+
+/** Atalho de um filtro booleano já existente (mine, unassigned, overdue, paused): liga com o recorte limpo e desliga no segundo clique. */
+function FilterShortcut({
+  label,
+  icon: Icon,
+  filter,
+  active,
+  onSelect,
+}: {
+  label: string;
+  icon: typeof Clock;
+  filter: BooleanFilter;
+  active: boolean;
+  onSelect: (patch: ShortcutPatch) => void;
+}) {
+  return (
+    <button
+      type="button"
+      aria-pressed={active}
+      className={buttonClass(active)}
+      onClick={() => onSelect(active ? { [filter]: undefined } : { ...CLEAR_STATUS_FILTERS, [filter]: true })}
+    >
+      <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+      {label}
+    </button>
   );
 }
 

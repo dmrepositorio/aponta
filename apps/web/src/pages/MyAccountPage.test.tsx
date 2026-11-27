@@ -87,7 +87,7 @@ describe('MyAccountPage', () => {
 
     it('falls back to the profile tab when ?tab= is invalid', () => {
       renderMyAccountPage('/my-account?tab=nope');
-      expect(screen.getByRole('tab', { name: /minha conta/i })).toHaveAttribute('aria-selected', 'true');
+      expect(screen.getByRole('tab', { name: /^perfil$/i })).toHaveAttribute('aria-selected', 'true');
       expect(screen.getByRole('tabpanel')).toBeInTheDocument();
     });
 

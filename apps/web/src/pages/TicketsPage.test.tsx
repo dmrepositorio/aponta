@@ -771,7 +771,7 @@ describe('TicketsPage', () => {
 
       await user.click(screen.getByRole('button', { name: 'Vencidos' }));
 
-      await waitFor(() => expect(listParams()).toMatchObject({ overdue: 'true', page: '1' }));
+      await waitFor(() => expect(listParams()).toMatchObject({ overdue: 'true', page: 1 }));
       expect(url()).toHaveTextContent('overdue=true');
       expect(screen.getByRole('button', { name: 'Vencidos' })).toHaveAttribute('aria-pressed', 'true');
 
