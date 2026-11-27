@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { AppLayout } from './components/layout/AppLayout';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { RequirePermission } from './components/RequirePermission';
 import { CreateTicketPage } from './pages/CreateTicketPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { TicketsPage } from './pages/TicketsPage';
@@ -65,9 +66,30 @@ export function App() {
               <Route path="/docs" element={<DocsPage />} />
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="/settings/users" element={<UsersPage />} />
-              <Route path="/settings/technical-groups" element={<TechnicalGroupsPage />} />
-              <Route path="/settings/permission-groups" element={<PermissionGroupsPage />} />
-              <Route path="/settings/scheduled-jobs" element={<ScheduledJobsPage />} />
+              <Route
+                path="/settings/technical-groups"
+                element={
+                  <RequirePermission permission="MANAGE_USERS" title="Grupos de atendentes">
+                    <TechnicalGroupsPage />
+                  </RequirePermission>
+                }
+              />
+              <Route
+                path="/settings/permission-groups"
+                element={
+                  <RequirePermission permission="MANAGE_PERMISSION_GROUPS" title="Grupos de permissões">
+                    <PermissionGroupsPage />
+                  </RequirePermission>
+                }
+              />
+              <Route
+                path="/settings/scheduled-jobs"
+                element={
+                  <RequirePermission permission="MANAGE_SCHEDULED_JOBS" title="Tarefas agendadas">
+                    <ScheduledJobsPage />
+                  </RequirePermission>
+                }
+              />
               <Route path="/schedule" element={<SchedulePage />} />
               <Route path="/releases" element={<ReleasesRoute />} />
             </Route>
