@@ -182,6 +182,8 @@ type Rec = Record<string, any>;
 function matches(rec: Rec, where: Rec): boolean {
   return Object.entries(where).every(([key, cond]) => {
     if (key === 'OR') return (cond as Rec[]).some((w) => matches(rec, w));
+    // Prisma ignora condição `undefined`: não filtra nada.
+    if (cond === undefined) return true;
     const value = rec[key];
     if (cond !== null && typeof cond === 'object') {
       if ('some' in cond) return Array.isArray(value) && value.some((i: Rec) => matches(i, cond.some));
@@ -524,6 +526,10 @@ describe('TenantHelper: escopo por perfil (caracterização 0b-1)', () => {
     it('CLIENT_MASTER sem organização não enxerga compromisso nenhum', () => {
       // CARACTERIZAÇÃO: comportamento atual, pode ser defeito (ver #523)
       expect(ids(masterNoOrg)).toEqual([]);
+      // Sem a trava, `organizationId: undefined` seria ignorado pelo Prisma e vazaria tudo.
+      expect(TenantHelper.getAppointmentWhere(masterNoOrg)).toEqual({
+        id: '00000000-0000-0000-0000-000000000000',
+      });
     });
 
     it('AGENT enxerga só os compromissos em que é o usuário, de qualquer organização, inclusive ausência', () => {
