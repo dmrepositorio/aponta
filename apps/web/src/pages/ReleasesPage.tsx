@@ -62,9 +62,15 @@ function buildColumns(onDetails: (row: WorklogApproval) => void): ColumnDef<Work
 
 /** DMTE-462 T5: liberações pendentes dos tipos que a pessoa decide; decide só o registro escolhido. */
 export function ReleasesPage() {
-  const { data, isLoading, isError } = useWorklogApprovals();
+  const { data, isLoading, isError, refetch } = useWorklogApprovals();
   const decide = useDecideWorklogApproval();
   const [selected, setSelected] = useState<WorklogApproval[]>([]);
+  // A grade guarda a seleção pela posição da linha em `data`; guardamos a posição para detectar seleção obsoleta.
+  const [selectedIndex, setSelectedIndex] = useState(-1);
+  // Só muda quando a seleção precisa ser zerada: a grade mantém identidade (e rolagem) nas demais atualizações.
+  const [gridEpoch, setGridEpoch] = useState(0);
+  // A grade fixa a página no nº de linhas do primeiro render; lista maior que isso só aparece inteira em grade nova.
+  const [gridCapacity, setGridCapacity] = useState(0);
   const [open, setOpen] = useState<WorklogApproval | null>(null);
   const [rejecting, setRejecting] = useState(false);
   const [note, setNote] = useState('');
@@ -75,11 +81,35 @@ export function ReleasesPage() {
 
   const rows = useMemo(() => data ?? [], [data]);
   const missingNote = rejecting && error === NOTE_REQUIRED;
-  const only = selected.length === 1 ? selected[0] : null;
+  if (rows.length > gridCapacity) {
+    setGridCapacity(rows.length);
+    setSelected([]);
+    setSelectedIndex(-1);
+  }
+  const selectionStale =
+    selected.length > 0 &&
+    (selected.some((row) => !rows.some((item) => item.id === row.id)) ||
+      (selected.length === 1 && rows[selectedIndex]?.id !== selected[0].id));
+  const only = selected.length === 1 && !selectionStale ? selected[0] : null;
+
+  const resetSelection = () => {
+    setSelected([]);
+    setSelectedIndex(-1);
+    setGridEpoch((epoch) => epoch + 1);
+  };
+  // A lista mudou sob a seleção (registro decidido, ou linhas reordenadas): zera para não agir na linha errada.
+  useEffect(() => {
+    if (selectionStale) resetSelection();
+  }, [selectionStale]);
+
+  const handleSelectionChange = (picked: WorklogApproval[]) => {
+    setSelected(picked);
+    setSelectedIndex(picked.length === 1 ? rows.findIndex((row) => row.id === picked[0].id) : -1);
+  };
 
   const close = () => {
     setOpen(null);
-    setSelected([]);
+    resetSelection();
     setRejecting(false);
     setNote('');
     setError(null);
@@ -136,7 +166,13 @@ export function ReleasesPage() {
       {isLoading ? (
         <div className="p-8"><EzSpinner label="Carregando liberações…" /></div>
       ) : isError ? (
-        <EzAlert variant="error" className="m-4">Erro ao carregar as liberações.</EzAlert>
+        <EzAlert
+          variant="error"
+          className="m-4"
+          action={<EzButton variant="secondary" size="small" label="Tentar novamente" onClick={() => void refetch()} />}
+        >
+          Erro ao carregar as liberações.
+        </EzAlert>
       ) : rows.length === 0 ? (
         <EzEmptyCard title="Nenhuma liberação pendente." />
       ) : (
@@ -153,12 +189,12 @@ export function ReleasesPage() {
           {pageError && <EzAlert variant="error">{pageError}</EzAlert>}
           <EzEntityGrid
             tableLabel="Liberações"
-            key={rows.map((row) => row.id).join(',')}
+            key={`${gridEpoch}:${gridCapacity}`}
             data={rows}
             columns={columns}
             selectable
             zebraStriping
-            onSelectionChange={setSelected}
+            onSelectionChange={handleSelectionChange}
             onRowDoubleClick={(row) => openDecision(row, false)}
           />
         </div>

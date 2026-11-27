@@ -23,8 +23,11 @@ const ROWS = [
   },
 ];
 
+let lastQueryClient: QueryClient;
+
 function renderPage() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  lastQueryClient = queryClient;
   return render(
     <QueryClientProvider client={queryClient}>
       <MemoryRouter>
@@ -177,5 +180,107 @@ describe('ReleasesPage (DMTE-462 T5)', () => {
     vi.mocked(api.get).mockRejectedValue(new Error('403'));
     renderPage();
     expect(await screen.findByRole('alert')).toHaveTextContent(/erro ao carregar/i);
+  });
+
+  it('REL-09: a falha de carga traz Tentar novamente, que refaz a consulta', async () => {
+    vi.mocked(api.get).mockRejectedValueOnce(new Error('500'));
+    renderPage();
+    const alert = await screen.findByRole('alert', {}, { timeout: 5000 });
+    expect(alert).toHaveTextContent(/erro ao carregar/i);
+    expect(api.get).toHaveBeenCalledTimes(1);
+
+    await userEvent.click(within(alert).getByRole('button', { name: 'Tentar novamente' }));
+
+    expect(await screen.findByText('Ana Consultora', {}, { timeout: 5000 })).toBeInTheDocument();
+    expect(api.get).toHaveBeenCalledTimes(2);
+  });
+
+  it('REL-08: atualizar a lista não remonta a grade (mesmo nó DOM)', async () => {
+    renderPage();
+    await screen.findByText('Ana Consultora', {}, { timeout: 5000 });
+    const table = screen.getByRole('table');
+    const extra = { ...ROWS[0], id: 'w-3', ticketId: 't-3', ticket: { id: 't-3', protocol: 'T-1003', title: 'Fila parada' }, author: { id: 'u-4', name: 'Caio Consultor', email: 'caio@aponta.test' } };
+    // Mesma quantidade de linhas, outro conjunto de ids (a Bia saiu, o Caio entrou).
+    vi.mocked(api.get).mockResolvedValue({ data: [ROWS[0], extra] });
+
+    await lastQueryClient.invalidateQueries();
+
+    expect(await screen.findByText('Caio Consultor', {}, { timeout: 5000 })).toBeInTheDocument();
+    expect(screen.queryByText('Bia Consultora')).not.toBeInTheDocument();
+    expect(screen.getByRole('table')).toBe(table);
+  });
+
+  it('REL-08: uma liberação nova na lista aparece mesmo com a grade já montada', async () => {
+    renderPage();
+    await screen.findByText('Ana Consultora', {}, { timeout: 5000 });
+    const extra = { ...ROWS[0], id: 'w-3', ticketId: 't-3', ticket: { id: 't-3', protocol: 'T-1003', title: 'Fila parada' }, author: { id: 'u-4', name: 'Caio Consultor', email: 'caio@aponta.test' } };
+    vi.mocked(api.get).mockResolvedValue({ data: [...ROWS, extra] });
+
+    await lastQueryClient.invalidateQueries();
+
+    expect(await screen.findByText('Caio Consultor', {}, { timeout: 5000 })).toBeInTheDocument();
+    expect(screen.getByText('Ana Consultora')).toBeInTheDocument();
+  });
+
+  it('REL-08: depois de decidir a linha selecionada, a seleção é limpa e Liberar selecionado não age em outra linha', async () => {
+    renderPage();
+    await screen.findByText('Ana Consultora', {}, { timeout: 5000 });
+    const row = screen.getByText('Ana Consultora').closest('tr') as HTMLElement;
+    await userEvent.click(within(row).getByRole('checkbox'));
+    expect(screen.getByRole('button', { name: 'Liberar selecionado' })).toBeEnabled();
+    vi.mocked(api.get).mockResolvedValue({ data: [ROWS[1]] });
+
+    await userEvent.click(screen.getByRole('button', { name: 'Liberar selecionado' }));
+
+    await waitFor(() => expect(screen.queryByText('Ana Consultora')).not.toBeInTheDocument(), { timeout: 5000 });
+    expect(screen.getByRole('button', { name: 'Liberar selecionado' })).toBeDisabled();
+    const left = screen.getByText('Bia Consultora').closest('tr') as HTMLElement;
+    expect(within(left).getByRole('checkbox')).not.toBeChecked();
+  });
+
+  describe('REL-08: seleção obsoleta depois que a lista muda por fora', () => {
+    const checkedBoxes = () => screen.queryAllByRole('checkbox').filter((box) => (box as HTMLInputElement).checked);
+
+    it('a linha selecionada some por atualização externa: nada fica marcado e Liberar selecionado desativa', async () => {
+      renderPage();
+      await screen.findByText('Ana Consultora', {}, { timeout: 5000 });
+      await userEvent.click(within(screen.getByText('Ana Consultora').closest('tr') as HTMLElement).getByRole('checkbox'));
+      expect(screen.getByRole('button', { name: 'Liberar selecionado' })).toBeEnabled();
+      vi.mocked(api.get).mockResolvedValue({ data: [ROWS[1]] });
+
+      await lastQueryClient.invalidateQueries();
+
+      await waitFor(() => expect(screen.queryByText('Ana Consultora')).not.toBeInTheDocument(), { timeout: 5000 });
+      await waitFor(() => expect(screen.getByRole('button', { name: 'Liberar selecionado' })).toBeDisabled(), { timeout: 5000 });
+      expect(checkedBoxes()).toHaveLength(0);
+      expect(api.post).not.toHaveBeenCalled();
+    });
+
+    it('duas linhas selecionadas e uma some: a seleção inteira é zerada', async () => {
+      renderPage();
+      await screen.findByText('Ana Consultora', {}, { timeout: 5000 });
+      for (const name of ['Ana Consultora', 'Bia Consultora']) {
+        await userEvent.click(within(screen.getByText(name).closest('tr') as HTMLElement).getByRole('checkbox'));
+      }
+      vi.mocked(api.get).mockResolvedValue({ data: [ROWS[1]] });
+
+      await lastQueryClient.invalidateQueries();
+
+      await waitFor(() => expect(screen.queryByText('Ana Consultora')).not.toBeInTheDocument(), { timeout: 5000 });
+      await waitFor(() => expect(checkedBoxes()).toHaveLength(0), { timeout: 5000 });
+    });
+
+    it('lista reordenada com a mesma linha selecionada em outra posição: zera e não decide a linha errada', async () => {
+      renderPage();
+      await screen.findByText('Ana Consultora', {}, { timeout: 5000 });
+      await userEvent.click(within(screen.getByText('Ana Consultora').closest('tr') as HTMLElement).getByRole('checkbox'));
+      vi.mocked(api.get).mockResolvedValue({ data: [ROWS[1], ROWS[0]] });
+
+      await lastQueryClient.invalidateQueries();
+
+      await waitFor(() => expect(screen.getByRole('button', { name: 'Liberar selecionado' })).toBeDisabled(), { timeout: 5000 });
+      await waitFor(() => expect(checkedBoxes()).toHaveLength(0), { timeout: 5000 });
+      expect(api.post).not.toHaveBeenCalled();
+    });
   });
 });

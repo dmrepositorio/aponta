@@ -10,6 +10,8 @@ import {
   EzActionsButton,
   EzAlert,
   EzButton,
+  EzCheck,
+  EzEmptyCard,
   EzPageLayout,
   EzSelect,
   EzSpinner,
@@ -37,6 +39,7 @@ const TYPE_LABELS: Record<AppointmentType, string> = {
 };
 
 const GRID_START_HOUR = 0;
+const TODAY_SCROLL_MARGIN_HOURS = 2;
 const HOURS = Array.from({ length: 24 }, (_, i) => i + GRID_START_HOUR); // 00 to 23
 
 // Pontos de atendente na barra lateral: tokens do DS (o nome vem sempre ao lado, a cor não é o único canal).
@@ -106,13 +109,6 @@ export function SchedulePage() {
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [modalInitialDate, setModalInitialDate] = useState<string | null>(null);
   const [modalInitialType, setModalInitialType] = useState<AppointmentType>('AGENDA');
-
-  // On mount, scroll the time grid to business hours instead of midnight
-  useEffect(() => {
-    if (gridBodyRef.current) {
-      gridBodyRef.current.scrollTop = Math.max((6 - GRID_START_HOUR) * 56, 0);
-    }
-  }, []);
 
   // Compute week start (Sunday = DOM) and end (Saturday = SÁB) of currentDate's week
   const { weekDays, weekStartISO, weekEndISO } = useMemo(() => {
@@ -230,6 +226,13 @@ export function SchedulePage() {
     updateMutation,
     removeMutation,
   } = useAppointments(queryFilters);
+
+  // A grade só existe depois da carga e em Semana/Dia: ao (re)aparecer, rola para o horário comercial em vez da meia-noite.
+  useEffect(() => {
+    if (gridBodyRef.current) {
+      gridBodyRef.current.scrollTop = Math.max((6 - GRID_START_HOUR) * 56, 0);
+    }
+  }, [isLoading, isError, viewMode]);
 
   // Extract unique attendants from appointments & logged user
   const attendantsList = useMemo(() => {
@@ -380,7 +383,13 @@ export function SchedulePage() {
         : { prev: 'Semana anterior', next: 'Próxima semana' };
 
   const handleToday = () => {
-    setCurrentDate(new Date());
+    const today = new Date();
+    setCurrentDate(today);
+    // Rola até a hora atual com uma folga de TODAY_SCROLL_MARGIN_HOURS para ver o que vem antes.
+    if (gridBodyRef.current) {
+      const hour = today.getHours() + today.getMinutes() / 60;
+      gridBodyRef.current.scrollTop = Math.max((hour - TODAY_SCROLL_MARGIN_HOURS - GRID_START_HOUR) * 56, 0);
+    }
   };
 
   // Célula de hora que concentra o Tab: a última focada, se ainda visível; senão 08:00 do 1º dia.
@@ -438,6 +447,9 @@ export function SchedulePage() {
   const currentTimeTop = (currentHour - GRID_START_HOUR) * 56;
   const todayDateStr = formatDateKey(now);
 
+  const allTypesChecked = showAgenda && showFerias && showAusencias;
+  const someTypesChecked = showAgenda || showFerias || showAusencias;
+
   const toggleAllAttendants = () => {
     if (selectAllAttendants) {
       setSelectedAttendantIds(new Set());
@@ -474,7 +486,6 @@ export function SchedulePage() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Agenda</h1>
-              <span className="sr-only">Agenda & Alocação</span>
             </div>
 
             <div className="flex items-center gap-2">
@@ -531,20 +542,18 @@ export function SchedulePage() {
           {/* Card 2: Filtrar */}
           <div className="bg-white border border-gray-200 rounded-[10px] p-3 shadow-2xs space-y-2.5">
             <div className="pb-2 border-b border-gray-100">
-              <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-gray-800 select-none">
-                <input
-                  type="checkbox"
-                  checked={showAgenda && showFerias && showAusencias}
-                  onChange={(e) => {
-                    const checked = e.target.checked;
-                    setShowAgenda(checked);
-                    setShowFerias(checked);
-                    setShowAusencias(checked);
-                  }}
-                  className="w-3.5 h-3.5 rounded accent-brand-600"
-                />
-                <span>Filtrar</span>
-              </label>
+              <EzCheck
+                label="Filtrar"
+                labelClassName="text-xs font-bold text-gray-800"
+                checked={allTypesChecked}
+                indeterminate={someTypesChecked && !allTypesChecked}
+                onChange={(e) => {
+                  const checked = e.target.checked;
+                  setShowAgenda(checked);
+                  setShowFerias(checked);
+                  setShowAusencias(checked);
+                }}
+              />
             </div>
 
             <div className="space-y-2 text-xs">
@@ -586,15 +595,13 @@ export function SchedulePage() {
           {/* Card 3: Atendentes */}
           <div className="bg-white border border-gray-200 rounded-[10px] p-3 shadow-2xs space-y-2">
             <div className="flex items-center justify-between pb-2 border-b border-gray-100">
-              <label className="flex items-center gap-2 cursor-pointer text-xs font-bold text-gray-800 select-none">
-                <input
-                  type="checkbox"
-                  checked={selectAllAttendants}
-                  onChange={toggleAllAttendants}
-                  className="w-3.5 h-3.5 rounded accent-brand-600"
-                />
-                <span>Atendentes</span>
-              </label>
+              <EzCheck
+                label="Atendentes"
+                labelClassName="text-xs font-bold text-gray-800"
+                checked={selectAllAttendants}
+                indeterminate={!selectAllAttendants && selectedAttendantIds.size > 0}
+                onChange={toggleAllAttendants}
+              />
             </div>
 
             {/* Filtro por atendente (só ADMIN): a API restringe a consulta ao atendente escolhido */}
@@ -773,7 +780,11 @@ export function SchedulePage() {
               onSelectAppointment={handleOpenDetail}
             />
           ) : viewMode === 'lista' ? (
-            <ListView appointments={filteredAppointments} onSelectAppointment={handleOpenDetail} />
+            <ListView
+              appointments={filteredAppointments}
+              onSelectAppointment={handleOpenDetail}
+              onCreate={canCreate ? () => handleOpenCreate() : undefined}
+            />
           ) : (
             <div className="overflow-x-auto flex-1 flex flex-col">
               <div
@@ -1116,9 +1127,11 @@ function MonthView({ monthWeeks, currentDate, todayDateStr, appointments, onSele
 interface ListViewProps {
   appointments: Appointment[];
   onSelectAppointment: (appointment: Appointment) => void;
+  /** Só para quem pode criar (canCreate); sem ele o estado vazio não oferece o botão. */
+  onCreate?: () => void;
 }
 
-function ListView({ appointments, onSelectAppointment }: ListViewProps) {
+function ListView({ appointments, onSelectAppointment, onCreate }: ListViewProps) {
   const sorted = useMemo(
     () => [...appointments].sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime()),
     [appointments]
@@ -1126,8 +1139,11 @@ function ListView({ appointments, onSelectAppointment }: ListViewProps) {
 
   if (sorted.length === 0) {
     return (
-      <div className="flex-1 flex items-center justify-center text-sm text-gray-400 p-8">
-        Nenhum compromisso no período selecionado.
+      <div className="flex-1 flex items-center justify-center p-8">
+        <EzEmptyCard
+          title="Nenhum compromisso no período selecionado."
+          action={onCreate ? <EzButton size="small" label="Novo agendamento" onClick={onCreate} /> : undefined}
+        />
       </div>
     );
   }

@@ -185,7 +185,7 @@ export function SettingsPage() {
             <section key={title} aria-labelledby={`settings-${title}`}>
               <h2
                 id={`settings-${title}`}
-                className="px-4 pb-1 pt-3 text-xs font-semibold uppercase tracking-wide text-gray-500"
+                className="px-4 pb-1 pt-3 text-[13px] font-semibold uppercase leading-4 tracking-wide text-gray-600"
               >
                 {title}
               </h2>

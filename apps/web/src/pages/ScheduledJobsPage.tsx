@@ -27,8 +27,9 @@ const RUN_STATUS: Record<JobRun['status'], { label: string; variant: 'petroleum'
 };
 const TOAST_MS = 4000;
 
-const when = (iso: string | null) =>
-  iso ? new Date(iso).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }) : '—';
+const when = (iso: string) => new Date(iso).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+/** Data com o fuso explícito; o texto de ausência diz o motivo em vez de "—". */
+const whenWithZone = (iso: string | null, empty: string) => (iso ? `${when(iso)} (Brasília)` : empty);
 
 function errorMessage(error: unknown): string {
   const message = (error as { response?: { data?: { message?: string | string[] } } })?.response?.data?.message;
@@ -100,7 +101,8 @@ function JobCard({ job }: { job: ScheduledJob }) {
       </div>
       {error && <EzAlert variant="error">{error}</EzAlert>}
       <p className="text-[13px] text-gray-600">
-        <span>Próxima execução: {when(job.nextRunAt)}</span> · <span>Última execução: {when(job.lastRunAt)}</span>
+        <span>Próxima execução: {job.enabled ? whenWithZone(job.nextRunAt, '—') : 'Desativada'}</span> ·{' '}
+        <span>Última execução: {whenWithZone(job.lastRunAt, 'Nunca executada')}</span>
       </p>
       {job.runs.length > 0 && (
         <table className="w-full text-left text-[13px]">
@@ -109,7 +111,7 @@ function JobCard({ job }: { job: ScheduledJob }) {
           </caption>
           <thead>
             <tr className="text-gray-600">
-              <th scope="col" className="py-1">Início</th>
+              <th scope="col" className="py-1">Início (Brasília)</th>
               <th scope="col" className="py-1">Estado</th>
               <th scope="col" className="py-1">Tentativa</th>
               <th scope="col" className="py-1">Erro</th>
@@ -166,7 +168,7 @@ export function ScheduledJobsPage() {
       ) : isError ? (
         <EzAlert variant="error">Erro ao carregar as tarefas agendadas.</EzAlert>
       ) : !jobs || jobs.length === 0 ? (
-        <EzEmptyCard title="Nenhuma tarefa agendada." />
+        <EzEmptyCard title="Nenhuma tarefa agendada." description="As tarefas são criadas pelo sistema." />
       ) : (
         <div className="space-y-4">
           {jobs.map((job) => (
