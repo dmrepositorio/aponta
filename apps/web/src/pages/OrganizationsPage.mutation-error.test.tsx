@@ -55,7 +55,7 @@ async function expectApiAlert() {
   expect(alert).toHaveTextContent(API_MESSAGE);
 }
 
-// ORG-02 (#463): as mutações da aba Geral, Relacionamentos e Usuários falhavam em silêncio.
+// ORG-02 (#463): as mutações da aba Geral, Mesas e grupos e Usuários falhavam em silêncio.
 describe('OrganizationsPage: falha das mutações do detalhe do cliente (ORG-02)', () => {
   beforeEach(() => {
     vi.resetAllMocks();
@@ -125,7 +125,7 @@ describe('OrganizationsPage: falha das mutações do detalhe do cliente (ORG-02)
     vi.mocked(api.post).mockRejectedValue(refusal);
     const user = userEvent.setup();
     await openDetail(user);
-    await user.click(screen.getByRole('tab', { name: /relacionamentos/i }));
+    await user.click(screen.getByRole('tab', { name: /mesas e grupos/i }));
 
     await user.selectOptions(screen.getByLabelText(/adicionar mesa de serviço/i, { selector: 'select' }), 'desk-2');
     await user.click(screen.getByRole('button', { name: /^vincular$/i }));
@@ -138,7 +138,7 @@ describe('OrganizationsPage: falha das mutações do detalhe do cliente (ORG-02)
     vi.mocked(api.delete).mockRejectedValue(refusal);
     const user = userEvent.setup();
     await openDetail(user);
-    await user.click(screen.getByRole('tab', { name: /relacionamentos/i }));
+    await user.click(screen.getByRole('tab', { name: /mesas e grupos/i }));
 
     await user.click(await screen.findByRole('button', { name: /desvincular/i }));
 
@@ -150,7 +150,7 @@ describe('OrganizationsPage: falha das mutações do detalhe do cliente (ORG-02)
     vi.mocked(api.post).mockRejectedValue(refusal);
     const user = userEvent.setup();
     await openDetail(user);
-    await user.click(screen.getByRole('tab', { name: /relacionamentos/i }));
+    await user.click(screen.getByRole('tab', { name: /mesas e grupos/i }));
 
     await user.type(await screen.findByLabelText(/nome do grupo/i), 'Grupo Vendas');
     await user.click(screen.getByRole('button', { name: /adicionar grupo de atendentes/i }));
@@ -163,7 +163,7 @@ describe('OrganizationsPage: falha das mutações do detalhe do cliente (ORG-02)
     vi.mocked(api.delete).mockRejectedValue(refusal);
     const user = userEvent.setup();
     await openDetail(user);
-    await user.click(screen.getByRole('tab', { name: /relacionamentos/i }));
+    await user.click(screen.getByRole('tab', { name: /mesas e grupos/i }));
 
     const row = (await screen.findByText('Grupo Suporte')).closest('li') as HTMLElement;
     await user.click(within(row).getByRole('button'));

@@ -42,4 +42,25 @@ describe('EzTextEdit', () => {
     await userEvent.click(screen.getByText('Original'));
     expect(screen.getByRole('textbox')).toHaveClass('ring-brand-600');
   });
+  describe('retorno do salvamento (ORG-15)', () => {
+    it('saving shows Salvando… and marks the button busy', () => {
+      render(<EzTextEdit value="Original" onChange={() => undefined} saving />);
+      expect(screen.getByText('Salvando…')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Original' })).toHaveAttribute('aria-busy', 'true');
+    });
+
+    it('error shows the message, marks the button invalid and describes it with the message', () => {
+      render(<EzTextEdit value="Original" onChange={() => undefined} error="Falha ao salvar" />);
+      const button = screen.getByRole('button', { name: 'Original' });
+      expect(screen.getByText('Falha ao salvar')).toBeInTheDocument();
+      expect(button).toHaveAttribute('aria-invalid', 'true');
+      expect(button).toHaveAccessibleDescription('Falha ao salvar');
+    });
+
+    it('shows neither indicator by default', () => {
+      render(<EzTextEdit value="Original" onChange={() => undefined} />);
+      expect(screen.queryByText('Salvando…')).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Original' })).not.toHaveAttribute('aria-busy');
+    });
+  });
 });

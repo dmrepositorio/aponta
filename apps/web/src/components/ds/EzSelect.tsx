@@ -64,7 +64,7 @@ const NATIVE_VALUE_SETTER = Object.getOwnPropertyDescriptor(HTMLSelectElement.pr
  */
 export const EzSelect = forwardRef<HTMLSelectElement, EzSelectProps>(
   (
-    { label, message, hasError, variant = 'default', className, disabled, required, id, children, value, defaultValue, onChange, ...props },
+    { label, message, hasError, variant = 'default', className, disabled, required, id, children, value, defaultValue, onChange, 'aria-describedby': describedBy, ...props },
     ref,
   ) => {
     const generatedId = useId();
@@ -264,6 +264,7 @@ export const EzSelect = forwardRef<HTMLSelectElement, EzSelectProps>(
               aria-activedescendant={open ? `${listId}-${active}` : undefined}
               aria-invalid={showError || undefined}
               aria-required={required || undefined}
+              aria-describedby={describedBy}
               aria-label={accessibleName}
               disabled={disabled}
               onClick={() => (open ? setOpen(false) : openList())}

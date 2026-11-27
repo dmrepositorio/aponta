@@ -55,6 +55,20 @@ export const Desabilitado: Story = {
   args: { id: 'sel-disabled', label: 'Status', defaultValue: 'CLOSED', disabled: true, children: statuses },
 };
 
+/** `aria-describedby` vai ao controle visível: o leitor de tela lê o motivo do campo desabilitado. */
+export const DesabilitadoComMotivo: Story = {
+  render: () => (
+    <div className="flex flex-col gap-1">
+      <EzSelect id="sel-reason" label="Status" defaultValue="CLOSED" disabled aria-describedby="sel-reason-why">
+        {statuses}
+      </EzSelect>
+      <p id="sel-reason-why" className="text-xs text-gray-700">
+        Requer permissão para alterar o status.
+      </p>
+    </div>
+  ),
+};
+
 /** `required` marca o asterisco e expõe `aria-required` no controle visível (leitor de tela anuncia "obrigatório"). */
 export const Obrigatorio: Story = {
   args: { id: 'sel-required', label: 'Status', required: true, defaultValue: 'OPEN', children: statuses },

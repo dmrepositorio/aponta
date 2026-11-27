@@ -579,7 +579,7 @@ describe('OrganizationsPage', { timeout: 15000 }, () => {
   ])('ORG-03: remover %s', (_label, buttonName, deleteUrl, tab, dialogName) => {
     async function openTab(user: ReturnType<typeof userEvent.setup>) {
       await openDetail(user);
-      if (tab === 'relationships') await user.click(screen.getByRole('tab', { name: /relacionamentos/i }));
+      if (tab === 'relationships') await user.click(screen.getByRole('tab', { name: /mesas e grupos/i }));
     }
 
     it('exposes a named button and deletes only after confirming', async () => {
@@ -820,7 +820,7 @@ describe('OrganizationsPage', { timeout: 15000 }, () => {
     });
   });
 
-  it('manages Mesas (N:N) and Grupo de Atendentes in the Relacionamentos tab (Tiflux-parity, issue #57)', async () => {
+  it('manages Mesas (N:N) and Grupo de Atendentes in the Mesas e grupos tab (Tiflux-parity, issue #57)', async () => {
     vi.mocked(api.post).mockResolvedValue({ data: {} });
     vi.mocked(api.delete).mockResolvedValue({ data: {} });
     loginAs('ADMIN');
@@ -829,7 +829,7 @@ describe('OrganizationsPage', { timeout: 15000 }, () => {
 
     await openDetail(user);
 
-    await user.click(screen.getByRole('tab', { name: /relacionamentos/i }));
+    await user.click(screen.getByRole('tab', { name: /mesas e grupos/i }));
 
     await waitFor(() => {
       expect(screen.getByText('Avulso')).toBeInTheDocument();
@@ -877,7 +877,7 @@ describe('OrganizationsPage', { timeout: 15000 }, () => {
 
     await openDetail(user);
     expect(document.body.textContent).not.toMatch(jargon);
-    for (const tab of [/recursos/i, /relacionamentos/i, /faturamento/i]) {
+    for (const tab of [/recursos/i, /mesas e grupos/i, /faturamento/i]) {
       await user.click(screen.getByRole('tab', { name: tab }));
       expect(document.body.textContent).not.toMatch(jargon);
       if (tab.source === 'relationships') {
@@ -886,13 +886,13 @@ describe('OrganizationsPage', { timeout: 15000 }, () => {
     }
   });
 
-  it('DMTE-560 AC-29: o título do vínculo N:N de mesas na aba Relacionamentos não cita o Tiflux', async () => {
+  it('DMTE-560 AC-29: o título do vínculo N:N de mesas na aba Mesas e grupos não cita o Tiflux', async () => {
     loginAs('ADMIN');
     const user = userEvent.setup();
     renderPage();
 
     await openDetail(user);
-    await user.click(screen.getByRole('tab', { name: /relacionamentos/i }));
+    await user.click(screen.getByRole('tab', { name: /mesas e grupos/i }));
 
     const heading = await screen.findByRole('heading', { name: /Mesa↔Cliente/ });
     expect(heading).toHaveTextContent('Mesas (Mesa↔Cliente é N:N)');
@@ -1464,6 +1464,76 @@ describe('OrganizationsPage', { timeout: 15000 }, () => {
     await editFirstCell('Saúde', 'OK', { healthStatus: 'OK' });
   });
 
+  // ORG-14 (#517): a aba mistura mesas vinculadas e grupos de atendentes; o nome diz isso.
+  it('ORG-14: the tab that holds Mesas and Grupos de atendentes is named Mesas e grupos, not Relacionamentos', async () => {
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    renderPage();
+    await openDetail(user);
+
+    expect(screen.getByRole('tab', { name: 'Mesas e grupos' })).toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: 'Relacionamentos' })).not.toBeInTheDocument();
+  });
+
+  // ORG-15 (#517): a edição inline da grade dá retorno na própria célula, além do alerta global.
+  describe('ORG-15: retorno por célula na edição inline da grade', () => {
+    async function openGridWithIeIm() {
+      mockApiGet({
+        grid: { columnVisibility: { stateRegistration: true, municipalRegistration: true }, density: 'compact' },
+        form: { layout: 'CASCADE' },
+        viewMode: 'GRID',
+        savedFilters: [],
+      });
+      loginAs('ADMIN');
+      const user = userEvent.setup();
+      renderPage();
+      await screen.findByText('Empresa A', undefined, { timeout: 5000 });
+      return user;
+    }
+    async function commitIe(user: ReturnType<typeof userEvent.setup>, text: string) {
+      await user.click(screen.getAllByRole('button', { name: 'IE' })[0]);
+      await user.type(screen.getAllByPlaceholderText('IE')[0], text);
+      await user.tab();
+    }
+    const rowOfEmpresaA = () => screen.getByText('Empresa A').closest('tr') as HTMLElement;
+
+    it('ORG-15: shows Salvando in the cell while the PATCH is pending, then clears it', async () => {
+      let resolvePatch: (value: unknown) => void = () => undefined;
+      vi.mocked(api.patch).mockReturnValue(new Promise((resolve) => { resolvePatch = resolve; }));
+      const user = await openGridWithIeIm();
+
+      await commitIe(user, '789');
+
+      const row = rowOfEmpresaA();
+      expect(await within(row).findByText('Salvando…', undefined, { timeout: 5000 })).toBeInTheDocument();
+      expect(within(row).getByRole('button', { name: /IE|789/ })).toHaveAttribute('aria-busy', 'true');
+
+      resolvePatch({ data: {} });
+      await waitFor(() => expect(within(rowOfEmpresaA()).queryByText('Salvando…')).not.toBeInTheDocument(), { timeout: 5000 });
+    });
+
+    it('ORG-15: shows the failure in the edited row, besides the global alert', async () => {
+      vi.mocked(api.patch).mockRejectedValue({ response: { status: 500, data: { message: 'Falha no servidor.' } } });
+      const user = await openGridWithIeIm();
+
+      await commitIe(user, '789');
+
+      expect(await within(rowOfEmpresaA()).findByText('Falha ao salvar', undefined, { timeout: 5000 })).toBeInTheDocument();
+      expect(await screen.findByRole('alert')).toHaveTextContent('Falha no servidor.');
+    });
+
+    it('ORG-15: the row error goes away when the user edits the cell again', async () => {
+      vi.mocked(api.patch).mockRejectedValueOnce({ response: { status: 500, data: {} } }).mockResolvedValue({ data: {} });
+      const user = await openGridWithIeIm();
+      await commitIe(user, '789');
+      await within(rowOfEmpresaA()).findByText('Falha ao salvar', undefined, { timeout: 5000 });
+
+      await commitIe(user, '1');
+
+      await waitFor(() => expect(within(rowOfEmpresaA()).queryByText('Falha ao salvar')).not.toBeInTheDocument(), { timeout: 5000 });
+    });
+  });
+
   it('restores default screen configuration from the config modal', async () => {
     loginAs('ADMIN');
     const user = userEvent.setup();
@@ -1692,7 +1762,7 @@ describe('OrganizationsPage DMTE-541', { timeout: 15000 }, () => {
     expect(drawer).toHaveClass('absolute', 'xl:relative');
   });
 
-  it('AC-11: the registration has the tabs Geral, Usuários, Recursos, Relacionamentos and Faturamento, with Geral open', async () => {
+  it('AC-11: the registration has the tabs Geral, Usuários, Recursos, Mesas e grupos and Faturamento, with Geral open', async () => {
     loginAs('ADMIN');
     const user = userEvent.setup();
     renderPage();
@@ -1704,7 +1774,7 @@ describe('OrganizationsPage DMTE-541', { timeout: 15000 }, () => {
       'Geral',
       'Usuários',
       'Recursos',
-      'Relacionamentos',
+      'Mesas e grupos',
       'Faturamento',
     ]);
     expect(screen.getByRole('tab', { name: 'Geral' })).toHaveAttribute('aria-selected', 'true');

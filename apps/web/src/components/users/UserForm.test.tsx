@@ -69,6 +69,42 @@ describe('UserForm', () => {
     });
   });
 
+  // USR-07 (#517): controle desabilitado por permissão diz o motivo, no padrão do convite (user-link-blocked).
+  describe('P3-G USR-07: controles desabilitados por permissão explicam o motivo', () => {
+    it('USR-07: without CHANGE_USER_ROLE the Tipo combobox is described by "Requer permissão"', () => {
+      permissions = ['MANAGE_USERS', 'ACTIVATE_DEACTIVATE_USERS'];
+      renderForm(USER);
+
+      const tipo = screen.getByRole('combobox', { name: /Tipo/ });
+      expect(tipo).toBeDisabled();
+      expect(tipo).toHaveAccessibleDescription(/Requer permissão/);
+    });
+
+    it('USR-07: with CHANGE_USER_ROLE the Tipo combobox has no permission description', () => {
+      renderForm(USER);
+
+      const tipo = screen.getByRole('combobox', { name: /Tipo/ });
+      expect(tipo).toBeEnabled();
+      expect(tipo).not.toHaveAccessibleDescription(/Requer permissão/);
+    });
+
+    it('USR-07: without ACTIVATE_DEACTIVATE_USERS Inativar is described by "Requer permissão"', async () => {
+      permissions = ['MANAGE_USERS', 'CHANGE_USER_ROLE'];
+      await openSecurity(USER);
+
+      const button = screen.getByRole('button', { name: 'Inativar' });
+      expect(button).toBeDisabled();
+      expect(button).toHaveAccessibleDescription(/Requer permissão/);
+    });
+
+    it('USR-07: without ACTIVATE_DEACTIVATE_USERS Ativar is described by "Requer permissão"', async () => {
+      permissions = ['MANAGE_USERS', 'CHANGE_USER_ROLE'];
+      await openSecurity({ ...USER, active: false });
+
+      expect(screen.getByRole('button', { name: 'Ativar' })).toHaveAccessibleDescription(/Requer permissão/);
+    });
+  });
+
   describe('F3-26 USR-09: obrigatórios e Salvar desabilitado explicados', () => {
     it('USR-09: the Tipo combobox is aria-required and its asterisk has the accessible text (obrigatório)', () => {
       renderForm(USER);
