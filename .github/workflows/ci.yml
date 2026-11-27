@@ -80,9 +80,9 @@ jobs:
         run: pnpm exec nx run-many -t typecheck --projects=api,web,web-e2e
 
       - name: Unit tests (with coverage thresholds)
-        # Em série e com saída em fluxo: o nx guarda a saída de cada projeto e a reimprime ao fim, e a do
+        # Saída em fluxo: o nx guarda a saída de cada projeto e a reimprime ao fim, e a do
         # web (~2800 testes, muito stderr) chegava truncada, escondendo o resultado real (#492).
-        run: pnpm exec nx run-many -t test --projects=api,web --parallel=1 --output-style=stream -- --coverage
+        run: pnpm exec nx run-many -t test --projects=api,web --output-style=stream -- --coverage
 
       - name: Build
         run: pnpm exec nx run-many -t build --projects=api,web
