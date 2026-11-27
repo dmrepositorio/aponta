@@ -168,9 +168,30 @@ describe('SetPasswordPage', () => {
     await fillAndSubmit(user);
 
     expect(await screen.findByText(/senha definida/i)).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /ir para o login/i })).toHaveAttribute('href', '/login');
+    const toLogin = screen.getByRole('button', { name: /ir para o login/i });
+    expect(toLogin).toHaveFocus();
+    expect(screen.queryByRole('link', { name: /ir para o login/i })).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/^nova senha/i)).not.toBeInTheDocument();
     expect(useAuthStore.getState().token).toBeNull();
+
+    await user.click(toLogin);
+    expect(window.location.pathname).toBe('/login');
+  });
+
+  it('SET-07: na fase de link inválido o título é "Link inválido" e a mensagem é anunciada como alerta', () => {
+    openLink('#t=abc123');
+    renderPage();
+
+    expect(screen.getByRole('heading', { level: 1, name: 'Link inválido' })).toBeInTheDocument();
+    expect(screen.getByRole('alert')).toHaveTextContent('Link inválido ou expirado.');
+    expect(screen.queryByRole('heading', { name: 'Definir senha' })).not.toBeInTheDocument();
+  });
+
+  it('SET-07: o formulário mantém o título "Definir senha" e não tem alerta', () => {
+    renderPage();
+
+    expect(screen.getByRole('heading', { level: 1, name: 'Definir senha' })).toBeInTheDocument();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
   it.each([400, 404])(

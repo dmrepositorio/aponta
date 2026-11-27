@@ -33,6 +33,32 @@ describe('PublicCsatPage', () => {
     vi.clearAllMocks();
   });
 
+  it('CSA-08: o carregamento é anunciado com role=status e texto de contraste AA', () => {
+    (api.get as ReturnType<typeof vi.fn>).mockReturnValue(new Promise(() => {}));
+
+    renderPage();
+
+    const status = screen.getByRole('status');
+    expect(status).toHaveTextContent(/carregando/i);
+    expect(status.className).not.toContain('text-gray-500');
+  });
+
+  it('CSA-09: após confirmar, o agradecimento é um status maior e recebe o foco', async () => {
+    (api.get as ReturnType<typeof vi.fn>).mockResolvedValue({
+      data: { protocol: '2026-0001', title: 'Impressora não funciona', score: null, comment: null },
+    });
+    (api.patch as ReturnType<typeof vi.fn>).mockResolvedValue({ data: { id: 'ticket-1', csatScore: 5, csatComment: null } });
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(await screen.findByRole('button', { name: /confirmar avaliação/i }, { timeout: 5000 }));
+
+    const thanks = await screen.findByRole('status', {}, { timeout: 5000 });
+    expect(thanks).toHaveTextContent(/obrigado/i);
+    expect(thanks).toHaveFocus();
+    expect(thanks.className).not.toContain('text-sm');
+  });
+
   it('shows the ticket summary and 5 stars pre-selected', async () => {
     (api.get as ReturnType<typeof vi.fn>).mockResolvedValue({
       data: {
