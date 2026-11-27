@@ -214,9 +214,9 @@ function EmptyState({ label = 'Não há dados' }: { label?: string }) {
   );
 }
 
-function Th({ children }: { children: ReactNode }) {
+function Th({ children, numeric }: { children: ReactNode; numeric?: boolean }) {
   return (
-    <th scope="col" className="py-3 px-4 font-bold text-gray-600">
+    <th scope="col" className={cn('py-3 px-4 font-bold text-gray-600', numeric && 'text-right')}>
       {children}
     </th>
   );
@@ -322,19 +322,40 @@ function TicketsPieChart({ data }: { data: { name: string; count: number }[] }) 
   );
 }
 
-function NotificationsList({ items }: { items?: { id: string; protocol: string; title: string }[] }) {
+const RELATIVE_TIME = new Intl.RelativeTimeFormat('pt-BR', { numeric: 'auto' });
+
+/** "há 2 horas"; empty when the timestamp is missing or invalid. */
+function formatRelativeTime(iso?: string) {
+  const time = iso ? new Date(iso).getTime() : NaN;
+  if (Number.isNaN(time)) return '';
+  const minutes = Math.round((time - Date.now()) / 60000);
+  if (Math.abs(minutes) < 60) return RELATIVE_TIME.format(Math.min(minutes, 0), 'minute');
+  const hours = Math.round(minutes / 60);
+  if (Math.abs(hours) < 24) return RELATIVE_TIME.format(hours, 'hour');
+  return RELATIVE_TIME.format(Math.round(hours / 24), 'day');
+}
+
+function NotificationsList({ items }: { items?: { id: string; protocol: string; title: string; createdAt?: string }[] }) {
   if (!items || items.length === 0) return <EmptyState />;
   return (
-    <div className="space-y-2.5 max-h-48 overflow-y-auto no-scrollbar">
-      {items.map((notif) => (
-        <div key={notif.id} className="flex items-start gap-2.5 text-xs py-1.5">
-          <Bell className="w-3.5 h-3.5 text-gray-400 mt-0.5 shrink-0" />
-          <div className="min-w-0">
-            <span className="font-mono text-brand-700 font-bold mr-1.5 text-[11px]">{notif.protocol}</span>
-            <span className="text-gray-700">{notif.title}</span>
-          </div>
-        </div>
-      ))}
+    <div role="region" aria-label="Últimas notificações" tabIndex={0} className="max-h-48 overflow-y-auto ez-focus rounded-md">
+      <ul className="space-y-1">
+        {items.map((notif) => {
+          const when = formatRelativeTime(notif.createdAt);
+          return (
+            <li key={notif.id}>
+              <Link to={`/tickets/${notif.id}`} className="flex items-start gap-2.5 rounded-md py-1.5 text-[13px] transition-colors hover:bg-gray-80 ez-focus">
+                <Bell aria-hidden="true" className="w-3.5 h-3.5 text-gray-400 mt-0.5 shrink-0" />
+                <div className="min-w-0">
+                  <span className="font-mono text-brand-700 font-bold mr-1.5 text-[12px]">{notif.protocol}</span>
+                  <span className="text-gray-700">{notif.title}</span>
+                  {when && <span className="block text-[12px] text-gray-500">{when}</span>}
+                </div>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 }
@@ -347,9 +368,16 @@ function RatingCard({ title, rating, className }: { title: string; rating?: { av
       ) : (
         <div>
           <div className="flex items-baseline gap-2 mb-2">
-            <span className="text-[30px] font-black text-gray-900 leading-none">{rating.avg?.toFixed(1) ?? '—'}</span>
+            {rating.avg == null ? (
+              <>
+                <span aria-hidden="true" className="text-[30px] font-black text-gray-900 leading-none">—</span>
+                <span className="sr-only">Sem nota</span>
+              </>
+            ) : (
+              <span className="text-[30px] font-black text-gray-900 leading-none">{rating.avg.toFixed(1)}</span>
+            )}
             <span className="text-yellow-700 text-sm">
-              <Star className="w-4 h-4 inline fill-yellow-600" />
+              <Star aria-hidden="true" className="w-4 h-4 inline fill-yellow-600" />
             </span>
           </div>
           <p className="text-[12px] text-gray-500">
@@ -410,6 +438,7 @@ export function DashboardPage() {
   const weekDays = useMemo(() => monthlyDays.filter((d) => d.date <= todayKey).slice(-7), [monthlyDays, todayKey]);
 
   const trend30d = data?.ticketsTrend30d || [];
+  const byStatusTotal = Object.values(data?.byStatus ?? {}).reduce((sum, count) => sum + count, 0);
 
   return (
     <div className="space-y-5">
@@ -616,9 +645,17 @@ export function DashboardPage() {
                 ) : (
                   <ul className="divide-y divide-gray-100">
                     {Object.entries(data.byStatus).map(([status, count]) => (
-                      <li key={status} className="flex items-center justify-between py-2.5 text-sm">
-                        <span className="text-gray-700 font-medium">{(statusLabels as Record<string, string>)[status] ?? status}</span>
-                        <span className="font-bold text-gray-900">{count}</span>
+                      <li key={status}>
+                        <Link
+                          to={`/tickets?status=${status}`}
+                          className="flex items-center justify-between gap-3 rounded-md py-2.5 text-sm transition-colors hover:bg-gray-80 ez-focus"
+                        >
+                          <span className="text-gray-700 font-medium">{(statusLabels as Record<string, string>)[status] ?? status}</span>
+                          <span className="font-bold text-gray-900 tabular-nums">
+                            {count}
+                            <span className="ml-2 font-normal text-gray-600">{formatPercent(count / byStatusTotal)}</span>
+                          </span>
+                        </Link>
                       </li>
                     ))}
                   </ul>
@@ -705,28 +742,28 @@ export function DashboardPage() {
                   <EmptyState />
                 ) : (
                   <div className="overflow-x-auto">
-                    <table aria-label="Chats por departamentos" className="w-full text-left text-xs">
+                    <table aria-label="Chats por departamentos" className="w-full text-left text-[13px]">
                       <thead>
                         <tr className="bg-gray-80 border-y border-gray-100 text-gray-600">
                           <Th>Departamento</Th>
-                          <Th>Todos</Th>
-                          <Th>Em atendimento</Th>
-                          <Th>Fila de espera</Th>
-                          <Th>Aguardando resposta</Th>
-                          <Th>Média de espera</Th>
-                          <Th>Média de atendimento</Th>
+                          <Th numeric>Todos</Th>
+                          <Th numeric>Em atendimento</Th>
+                          <Th numeric>Fila de espera</Th>
+                          <Th numeric>Aguardando resposta</Th>
+                          <Th numeric>Média de espera</Th>
+                          <Th numeric>Média de atendimento</Th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-100">
-                        {data.chatsByDepartment.map((dept, idx) => (
-                          <tr key={idx} className="hover:bg-gray-80 transition-colors">
+                        {data.chatsByDepartment.map((dept) => (
+                          <tr key={dept.department} className="hover:bg-gray-80 transition-colors">
                             <td className="py-3 px-4 font-semibold text-gray-900">{dept.department}</td>
-                            <td className="py-3 px-4 text-gray-700">{dept.total}</td>
-                            <td className="py-3 px-4 text-gray-700">{dept.inProgress}</td>
-                            <td className="py-3 px-4 text-gray-700">{dept.waitingQueue}</td>
-                            <td className="py-3 px-4 text-gray-700">{dept.waitingResponse}</td>
-                            <td className="py-3 px-4 text-gray-700">{dept.avgWait ?? '—'}</td>
-                            <td className="py-3 px-4 text-gray-700">{dept.avgService ?? '—'}</td>
+                            <td className="py-3 px-4 text-right text-gray-700 tabular-nums">{dept.total}</td>
+                            <td className="py-3 px-4 text-right text-gray-700 tabular-nums">{dept.inProgress}</td>
+                            <td className="py-3 px-4 text-right text-gray-700 tabular-nums">{dept.waitingQueue}</td>
+                            <td className="py-3 px-4 text-right text-gray-700 tabular-nums">{dept.waitingResponse}</td>
+                            <td className="py-3 px-4 text-right text-gray-700 tabular-nums">{dept.avgWait ?? '—'}</td>
+                            <td className="py-3 px-4 text-right text-gray-700 tabular-nums">{dept.avgService ?? '—'}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -740,20 +777,20 @@ export function DashboardPage() {
                   <EmptyState />
                 ) : (
                   <div className="overflow-x-auto">
-                    <table aria-label="Chats por atendentes" className="w-full text-left text-xs">
+                    <table aria-label="Chats por atendentes" className="w-full text-left text-[13px]">
                       <thead>
                         <tr className="bg-gray-80 border-y border-gray-100 text-gray-600">
                           <Th>Atendente</Th>
                           <Th>Status</Th>
-                          <Th>Em andamento</Th>
+                          <Th numeric>Em andamento</Th>
                           <Th>Grupo de atendente</Th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-100">
-                        {data.chatsByAgent.map((ag, idx) => {
+                        {data.chatsByAgent.map((ag) => {
                           const status = ag.status ? AGENT_STATUS[ag.status] : undefined;
                           return (
-                            <tr key={idx} className="hover:bg-gray-80 transition-colors">
+                            <tr key={ag.name} className="hover:bg-gray-80 transition-colors">
                               <td className="py-3 px-4 font-semibold text-gray-900">{ag.name}</td>
                               <td className="py-3 px-4">
                                 <span className="inline-flex items-center gap-1.5">
@@ -761,7 +798,7 @@ export function DashboardPage() {
                                   <span className="text-gray-700">{status?.label ?? ag.status ?? '—'}</span>
                                 </span>
                               </td>
-                              <td className="py-3 px-4 text-gray-700">{ag.inProgress}</td>
+                              <td className="py-3 px-4 text-right text-gray-700 tabular-nums">{ag.inProgress}</td>
                               <td className="py-3 px-4 text-gray-700">{ag.group}</td>
                             </tr>
                           );
