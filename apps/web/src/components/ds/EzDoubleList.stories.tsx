@@ -81,6 +81,29 @@ export const ComBusca: Story = {
   },
 };
 
+/**
+ * `onAvailableSearch` liga a busca remota da lista disponível: o componente avisa o texto digitado e não
+ * filtra mais `available` (quem usa busca no servidor e faz o debounce). `availableStatus` mostra
+ * carregando ou erro no lugar da lista; a busca da lista de selecionados segue local.
+ */
+export const BuscaRemota: Story = {
+  args: {
+    available: tecnicosDisponiveis,
+    selected: tecnicosSelecionados,
+    onAvailableSearch: () => undefined,
+    onAdd: () => undefined,
+    onRemove: () => undefined,
+  },
+};
+
+export const BuscaRemotaCarregando: Story = {
+  args: { ...BuscaRemota.args, availableStatus: 'loading' },
+};
+
+export const BuscaRemotaComErro: Story = {
+  args: { ...BuscaRemota.args, availableStatus: 'error' },
+};
+
 /** `searchable={false}` remove as buscas (listas curtas). */
 export const SemBusca: Story = {
   args: {

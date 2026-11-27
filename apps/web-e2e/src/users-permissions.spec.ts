@@ -86,6 +86,8 @@ test.describe('grupo de permissões concede MANAGE_USERS e a mudança reflete nu
       expect((await savedPermissions).status()).toBe(200);
 
       await page.getByRole('tab', { name: 'Vínculos' }).click();
+      // F4-07 PG-08: a lista de usuários traz só a primeira página; o alvo vem pela busca remota (nome ou e-mail).
+      await page.getByRole('searchbox', { name: 'Buscar em Usuários disponíveis' }).fill(targetEmail);
       const availableRow = page
         .locator('div.flex.items-center.gap-2.mb-1')
         .filter({ hasText: targetEmail });

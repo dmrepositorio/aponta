@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useQuery, type UseMutationResult } from '@tanstack/react-query';
+import { keepPreviousData, useQuery, type UseMutationResult } from '@tanstack/react-query';
 import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
 import {
   EzButton,
@@ -70,13 +70,21 @@ interface SimpleRef {
   name: string;
 }
 
-function useAllUsers() {
+const USER_SEARCH_DEBOUNCE_MS = 300;
+const USER_SEARCH_PAGE_SIZE = 20;
+
+// Primeira página de /users filtrada por `q` (nome ou e-mail). A chave é própria: ['users','all'] segue
+// sendo a lista completa de outra tela.
+function useUserSearch(term: string) {
   return useQuery({
-    queryKey: ['users', 'all'],
+    queryKey: ['users', 'search', term],
     queryFn: async () => {
-      const { data } = await api.get<SimpleUser[]>('/users');
-      return data;
+      const { data } = await api.get<{ data: SimpleUser[] }>('/users', {
+        params: { ...(term ? { q: term } : {}), page: 1, pageSize: USER_SEARCH_PAGE_SIZE },
+      });
+      return data.data;
     },
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -149,7 +157,19 @@ function GroupDetail({
   const { addUser, removeUser } = usePermissionGroupUserMutations(groupId);
   const { addTechnicalGroup, removeTechnicalGroup } = usePermissionGroupTechnicalGroupMutations(groupId);
 
-  const { data: allUsers } = useAllUsers();
+  const [userSearch, setUserSearch] = useState('');
+  const [debouncedUserSearch, setDebouncedUserSearch] = useState('');
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedUserSearch(userSearch.trim()), USER_SEARCH_DEBOUNCE_MS);
+    return () => clearTimeout(timer);
+  }, [userSearch]);
+  const { data: foundUsers, isError: isUserSearchError, isFetching: isUserSearchFetching } =
+    useUserSearch(debouncedUserSearch);
+  const userListStatus = isUserSearchError
+    ? 'error'
+    : isUserSearchFetching || userSearch.trim() !== debouncedUserSearch
+      ? 'loading'
+      : undefined;
   const { data: allTechnicalGroups } = useAllTechnicalGroups();
 
   const [confirmingSave, setConfirmingSave] = useState(false);
@@ -278,7 +298,7 @@ function GroupDetail({
   };
 
   const linkedUserIds = new Set(userMembers.map((m) => m.user.id));
-  const availableUsers = (allUsers ?? []).filter((u) => !linkedUserIds.has(u.id));
+  const availableUsers = (foundUsers ?? []).filter((u) => !linkedUserIds.has(u.id));
 
   const linkedTechnicalGroupIds = new Set(technicalGroupLinks.map((l) => l.technicalGroup.id));
   const availableTechnicalGroups = (allTechnicalGroups ?? []).filter(
@@ -383,6 +403,8 @@ function GroupDetail({
                 label: m.user.name,
                 description: m.user.email,
               }))}
+              onAvailableSearch={setUserSearch}
+              availableStatus={userListStatus}
               onAdd={(item) => void run(addUser, String(item.id), 'Usuário vinculado')}
               onRemove={(item) =>
                 setPendingRemoval({ kind: 'user', id: String(item.id), name: String(item.label) })
