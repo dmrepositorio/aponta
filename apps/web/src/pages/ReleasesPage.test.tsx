@@ -237,4 +237,50 @@ describe('ReleasesPage (DMTE-462 T5)', () => {
     const left = screen.getByText('Bia Consultora').closest('tr') as HTMLElement;
     expect(within(left).getByRole('checkbox')).not.toBeChecked();
   });
+
+  describe('REL-08: seleção obsoleta depois que a lista muda por fora', () => {
+    const checkedBoxes = () => screen.queryAllByRole('checkbox').filter((box) => (box as HTMLInputElement).checked);
+
+    it('a linha selecionada some por atualização externa: nada fica marcado e Liberar selecionado desativa', async () => {
+      renderPage();
+      await screen.findByText('Ana Consultora', {}, { timeout: 5000 });
+      await userEvent.click(within(screen.getByText('Ana Consultora').closest('tr') as HTMLElement).getByRole('checkbox'));
+      expect(screen.getByRole('button', { name: 'Liberar selecionado' })).toBeEnabled();
+      vi.mocked(api.get).mockResolvedValue({ data: [ROWS[1]] });
+
+      await lastQueryClient.invalidateQueries();
+
+      await waitFor(() => expect(screen.queryByText('Ana Consultora')).not.toBeInTheDocument(), { timeout: 5000 });
+      await waitFor(() => expect(screen.getByRole('button', { name: 'Liberar selecionado' })).toBeDisabled(), { timeout: 5000 });
+      expect(checkedBoxes()).toHaveLength(0);
+      expect(api.post).not.toHaveBeenCalled();
+    });
+
+    it('duas linhas selecionadas e uma some: a seleção inteira é zerada', async () => {
+      renderPage();
+      await screen.findByText('Ana Consultora', {}, { timeout: 5000 });
+      for (const name of ['Ana Consultora', 'Bia Consultora']) {
+        await userEvent.click(within(screen.getByText(name).closest('tr') as HTMLElement).getByRole('checkbox'));
+      }
+      vi.mocked(api.get).mockResolvedValue({ data: [ROWS[1]] });
+
+      await lastQueryClient.invalidateQueries();
+
+      await waitFor(() => expect(screen.queryByText('Ana Consultora')).not.toBeInTheDocument(), { timeout: 5000 });
+      await waitFor(() => expect(checkedBoxes()).toHaveLength(0), { timeout: 5000 });
+    });
+
+    it('lista reordenada com a mesma linha selecionada em outra posição: zera e não decide a linha errada', async () => {
+      renderPage();
+      await screen.findByText('Ana Consultora', {}, { timeout: 5000 });
+      await userEvent.click(within(screen.getByText('Ana Consultora').closest('tr') as HTMLElement).getByRole('checkbox'));
+      vi.mocked(api.get).mockResolvedValue({ data: [ROWS[1], ROWS[0]] });
+
+      await lastQueryClient.invalidateQueries();
+
+      await waitFor(() => expect(screen.getByRole('button', { name: 'Liberar selecionado' })).toBeDisabled(), { timeout: 5000 });
+      await waitFor(() => expect(checkedBoxes()).toHaveLength(0), { timeout: 5000 });
+      expect(api.post).not.toHaveBeenCalled();
+    });
+  });
 });
