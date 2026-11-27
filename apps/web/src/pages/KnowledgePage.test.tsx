@@ -506,9 +506,9 @@ describe('KnowledgePage', () => {
     });
 
     expect(screen.queryByText('Artigo 11')).not.toBeInTheDocument();
-    expect(screen.getByText('Página 1 de 2')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Página 1' })).toHaveAttribute('aria-current', 'page');
 
-    await user.click(screen.getByRole('button', { name: /próxima/i }));
+    await user.click(screen.getByRole('button', { name: 'Próxima página' }));
 
     expect(screen.getByText('Artigo 11')).toBeInTheDocument();
     expect(screen.queryByText('Artigo 0')).not.toBeInTheDocument();
@@ -1482,7 +1482,7 @@ describe('KnowledgePage F3-29', () => {
       renderAt('/knowledge?folder=folder-1&page=2');
 
       expect(await screen.findByText('Artigo 11')).toBeInTheDocument();
-      expect(screen.getByText('Página 2 de 2')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Página 2' })).toHaveAttribute('aria-current', 'page');
       expect(screen.queryByText('Artigo 0')).not.toBeInTheDocument();
     });
 
@@ -1500,8 +1500,8 @@ describe('KnowledgePage F3-29', () => {
       loginAs('CLIENT');
       renderAt('/knowledge?folder=folder-1&page=9');
 
-      expect(await screen.findByText('Página 2 de 2')).toBeInTheDocument();
-      expect(screen.getByText('Artigo 11')).toBeInTheDocument();
+      expect(await screen.findByText('Artigo 11')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Página 2' })).toHaveAttribute('aria-current', 'page');
     });
 
     it('falls back to the folders grid when the folder in the URL does not exist', async () => {
@@ -1708,6 +1708,151 @@ describe('KnowledgePage F3-29', () => {
 
       expect(screen.getByRole('button', { name: 'Compartilhar' })).toBeInTheDocument();
       expect(screen.queryByText(/^[0-9]+ (grupos?|clientes?)/)).not.toBeInTheDocument();
+    });
+  });
+
+  describe('KNW-05: paginação com EzPagination no cliente', () => {
+    const many = (n: number) =>
+      Array.from({ length: n }, (_, i) => ({
+        id: `extra-${i}`,
+        title: `Artigo ${i}`,
+        content: 'Conteúdo',
+        visibility: 'PUBLIC',
+        tags: [],
+        updatedAt: '2026-01-01T00:00:00.000Z',
+      }));
+    const realMatchMedia = window.matchMedia;
+    const realScrollIntoView = Element.prototype.scrollIntoView;
+    const scrollIntoView = vi.fn();
+    const T = { timeout: 5000 };
+
+    function setReducedMotion(reduce: boolean) {
+      window.matchMedia = vi.fn().mockImplementation((query: string) => ({
+        matches: reduce && query.includes('prefers-reduced-motion'),
+        media: query,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+      })) as unknown as typeof window.matchMedia;
+    }
+
+    beforeEach(() => {
+      scrollIntoView.mockClear();
+      Element.prototype.scrollIntoView = scrollIntoView;
+    });
+    afterEach(() => {
+      window.matchMedia = realMatchMedia;
+      Element.prototype.scrollIntoView = realScrollIntoView;
+    });
+
+    it('renders the DS pagination nav instead of the old Anterior/Próxima buttons', async () => {
+      mockArticleList(many(12));
+      loginAs('CLIENT');
+      renderAt('/knowledge?folder=folder-1');
+
+      expect(await screen.findByText('Artigo 0', {}, T)).toBeInTheDocument();
+      expect(screen.getByRole('navigation', { name: 'Paginação' })).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Anterior' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Próxima' })).not.toBeInTheDocument();
+      expect(screen.queryByText(/^Página \d+ de \d+$/)).not.toBeInTheDocument();
+    });
+
+    it('announces the article count in a polite live region, in the plural', async () => {
+      mockArticleList(many(12));
+      loginAs('CLIENT');
+      renderAt('/knowledge?folder=folder-1');
+
+      const count = await screen.findByText('12 artigos', {}, T);
+      expect(count).toHaveAttribute('aria-live', 'polite');
+    });
+
+    it('uses the singular for a single article and shows no pagination', async () => {
+      mockArticleList(many(1));
+      loginAs('CLIENT');
+      renderAt('/knowledge?folder=folder-1');
+
+      expect(await screen.findByText('1 artigo', {}, T)).toHaveAttribute('aria-live', 'polite');
+      expect(screen.queryByRole('navigation', { name: 'Paginação' })).not.toBeInTheDocument();
+    });
+
+    it('shows neither pagination nor a count for an empty folder', async () => {
+      mockArticleList([]);
+      loginAs('CLIENT');
+      renderAt('/knowledge?folder=folder-1');
+
+      expect(await screen.findByText('Esta pasta ainda não tem artigos.', {}, T)).toBeInTheDocument();
+      expect(screen.queryByRole('navigation', { name: 'Paginação' })).not.toBeInTheDocument();
+      expect(screen.queryByText(/^\d+ artigos?$/)).not.toBeInTheDocument();
+    });
+
+    it('goes to the chosen page, writes it to the URL and keeps the total', async () => {
+      mockArticleList(many(25));
+      loginAs('CLIENT');
+      const user = userEvent.setup();
+      renderAt('/knowledge?folder=folder-1');
+      await screen.findByText('Artigo 0', {}, T);
+
+      await user.click(screen.getByRole('button', { name: 'Página 3' }));
+
+      expect(await screen.findByText('Artigo 24', {}, T)).toBeInTheDocument();
+      expect(screen.queryByText('Artigo 0')).not.toBeInTheDocument();
+      expect(screen.getByTestId('location')).toHaveTextContent('page=3');
+      expect(screen.getByText('25 artigos')).toBeInTheDocument();
+    });
+
+    it('returns to page 1 when the sort changes', async () => {
+      mockArticleList(many(25));
+      loginAs('CLIENT');
+      const user = userEvent.setup();
+      renderAt('/knowledge?folder=folder-1&page=3');
+      await screen.findByText('Artigo 24', {}, T);
+
+      await user.selectOptions(screen.getByLabelText('Ordenar por', { selector: 'select' }), 'title_asc');
+
+      await waitFor(() => expect(screen.getByTestId('location')).not.toHaveTextContent('page='), T);
+      expect(screen.getByRole('button', { name: 'Página 1' })).toHaveAttribute('aria-current', 'page');
+    });
+
+    it('scrolls the list into view smoothly when the page changes and motion is allowed', async () => {
+      setReducedMotion(false);
+      mockArticleList(many(12));
+      loginAs('CLIENT');
+      const user = userEvent.setup();
+      renderAt('/knowledge?folder=folder-1');
+      await screen.findByText('Artigo 0', {}, T);
+      scrollIntoView.mockClear();
+
+      await user.click(screen.getByRole('button', { name: 'Próxima página' }));
+
+      await waitFor(
+        () => expect(scrollIntoView).toHaveBeenCalledWith(expect.objectContaining({ behavior: 'smooth', block: 'start' })),
+        T,
+      );
+    });
+
+    it('scrolls without animation when the user prefers reduced motion', async () => {
+      setReducedMotion(true);
+      mockArticleList(many(12));
+      loginAs('CLIENT');
+      const user = userEvent.setup();
+      renderAt('/knowledge?folder=folder-1');
+      await screen.findByText('Artigo 0', {}, T);
+      scrollIntoView.mockClear();
+
+      await user.click(screen.getByRole('button', { name: 'Próxima página' }));
+
+      await waitFor(() => expect(scrollIntoView).toHaveBeenCalledWith(expect.objectContaining({ behavior: 'auto' })), T);
+      expect(scrollIntoView.mock.calls.some((c) => (c[0] as { behavior?: string }).behavior === 'smooth')).toBe(false);
+    });
+
+    it('does not scroll on first render', async () => {
+      mockArticleList(many(12));
+      loginAs('CLIENT');
+      renderAt('/knowledge?folder=folder-1&page=2');
+      await screen.findByText('Artigo 11', {}, T);
+
+      expect(scrollIntoView).not.toHaveBeenCalled();
     });
   });
 });
