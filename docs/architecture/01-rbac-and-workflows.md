@@ -20,6 +20,8 @@ Atualmente no Schema: `OPEN`, `IN_PROGRESS`, `RESOLVED`, `CLOSED`.
 **Expansão Projetada (Versão 1.5):** `PENDING_CUSTOMER`, `ON_HOLD`, `PENDING_APPROVAL`, `ESCALATED`.
 **Status adicional (DMTE-490):** `PENDING_SANKHYA` ("Aguardando Sankhya"): ticket parado à espera de um chamado aberto na Sankhya. Entra a partir de `IN_PROGRESS`, volta para `IN_PROGRESS` ou vai a `RESOLVED`, pausa o SLA como `ON_HOLD` e conta em "Pausados".
 
+**Transições válidas no GET (GH-494):** `GET /tickets/:id` devolve `allowedStatuses` (aditivo; ausente para `CLIENT`), a lista de status que `PATCH /tickets/:id/status` aceita para quem lê, considerando papel, política da mesa (pausa do SLA, reabertura, mesa restrita) e a máquina de estados. A lista e o PATCH usam a mesma função (`apps/api/src/tickets/ticket-status-transitions.ts`); a API continua sendo a única que valida e a tela só reflete (sem `allowedStatuses`, a tela lista todos os status). O Status atual sempre aparece como opção selecionada.
+
 ### Cenários de Fluxo (Workflows de Vida Real)
 
 #### C1. O Caminho Feliz (Happy Path)

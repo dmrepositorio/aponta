@@ -1303,6 +1303,7 @@ describe('TicketsService', () => {
         id: 't1',
         requesterId: 'someone-else',
         nextStages: [],
+        allowedStatuses: [],
         serviceDesk: {},
         responseSlaStatus: null,
         resolveSlaStatus: null,
@@ -1362,6 +1363,7 @@ describe('TicketsService', () => {
         id: 't1',
         requesterId: 'someone-else',
         nextStages: [],
+        allowedStatuses: [],
         serviceDesk: { allowCrossDeskInteraction: true, ticketSections: [] },
         responseSlaStatus: null,
         resolveSlaStatus: null,
@@ -1414,6 +1416,182 @@ describe('TicketsService', () => {
       expect(result.responseSlaStatus).toBeNull();
       expect(result.resolveSlaStatus).toBeNull();
     });
+  });
+
+  // GH-494 (DET-07): findOne expõe allowedStatuses, calculado pela mesma regra que o changeStatus valida.
+  describe('findOne allowedStatuses (GH-494)', () => {
+    type DeskPolicy = {
+      listedGroupsOnly: boolean;
+      allowPauseResumeSla: boolean;
+      allowReopenUnbilled: boolean;
+      allowReopenBilled: boolean;
+      listed: boolean;
+    };
+    const openPolicy: DeskPolicy = {
+      listedGroupsOnly: false,
+      allowPauseResumeSla: true,
+      allowReopenUnbilled: true,
+      allowReopenBilled: false,
+      listed: true,
+    };
+
+    const deskFor = (policy: DeskPolicy, userId: string) => ({
+      listedGroupsOnly: policy.listedGroupsOnly,
+      allowPauseResumeSla: policy.allowPauseResumeSla,
+      allowReopenUnbilled: policy.allowReopenUnbilled,
+      allowReopenBilled: policy.allowReopenBilled,
+      allowCrossDeskInteraction: true,
+      ticketSections: [],
+      agents: policy.listed ? [{ id: userId }] : [],
+      agentGroups: [],
+    });
+
+    function arrange(
+      status: TicketStatus,
+      policy: DeskPolicy,
+      user: { id: string; role: Role },
+      billed = false,
+    ) {
+      mockPrismaService.ticket.findUnique.mockImplementation(async () => ({
+        id: 't1',
+        status,
+        requesterId: user.id,
+        serviceDeskId: 'desk-1',
+        serviceDesk: deskFor(policy, user.id),
+      }));
+      mockPrismaService.serviceDesk.findUnique.mockImplementation(async () => ({
+        ...deskFor(policy, user.id),
+        reopenDefaultReplyBilled: null,
+        reopenDefaultReplyUnbilled: null,
+      }));
+      mockPrismaService.worklog.findMany.mockResolvedValue(
+        billed ? [{ billable: true, valuationType: 'CONTRACT', value: null }] : [],
+      );
+      mockPrismaService.ticket.update.mockResolvedValue({ id: 't1', status });
+    }
+
+    async function allowedFor(
+      status: TicketStatus,
+      policy: DeskPolicy,
+      user: { id: string; role: Role },
+      billed = false,
+    ) {
+      arrange(status, policy, user, billed);
+      const result = (await service.findOne('t1', user)) as unknown as {
+        allowedStatuses?: TicketStatus[];
+      };
+      return result.allowedStatuses;
+    }
+
+    const agent = { id: 'agent-1', role: Role.AGENT };
+    const agentMaster = { id: 'agent-2', role: Role.AGENT_MASTER };
+    const admin = { id: 'admin-1', role: Role.ADMIN };
+
+    it('AGENT em OPEN recebe só Em Andamento e Escalado (sem Resolvido)', async () => {
+      expect(await allowedFor(TicketStatus.OPEN, openPolicy, agent)).toEqual([
+        TicketStatus.IN_PROGRESS,
+        TicketStatus.ESCALATED,
+      ]);
+    });
+
+    it('CLOSED fica sem transição para AGENT e só reabre (OPEN) para ADMIN', async () => {
+      expect(await allowedFor(TicketStatus.CLOSED, openPolicy, agent)).toEqual([]);
+      expect(await allowedFor(TicketStatus.CLOSED, openPolicy, admin)).toEqual([TicketStatus.OPEN]);
+    });
+
+    it('a política de reabertura da mesa tira OPEN da lista do ADMIN (faturado bloqueado)', async () => {
+      expect(await allowedFor(TicketStatus.CLOSED, openPolicy, admin, true)).toEqual([]);
+      expect(
+        await allowedFor(
+          TicketStatus.CLOSED,
+          { ...openPolicy, allowReopenUnbilled: false },
+          admin,
+          false,
+        ),
+      ).toEqual([]);
+    });
+
+    it('sair de PENDING_APPROVAL exige perfil administrativo ou MASTER', async () => {
+      expect(await allowedFor(TicketStatus.PENDING_APPROVAL, openPolicy, agent)).toEqual([]);
+      expect(await allowedFor(TicketStatus.PENDING_APPROVAL, openPolicy, agentMaster)).toEqual([
+        TicketStatus.IN_PROGRESS,
+        TicketStatus.RESOLVED,
+      ]);
+    });
+
+    it('entrar em PENDING_APPROVAL continua permitido ao AGENT', async () => {
+      expect(await allowedFor(TicketStatus.IN_PROGRESS, openPolicy, agent)).toContain(
+        TicketStatus.PENDING_APPROVAL,
+      );
+    });
+
+    it('mesa que não permite pausar o SLA omite os status de pausa', async () => {
+      const noPause = { ...openPolicy, allowPauseResumeSla: false };
+      expect(await allowedFor(TicketStatus.IN_PROGRESS, noPause, agent)).toEqual([
+        TicketStatus.RESOLVED,
+        TicketStatus.PENDING_APPROVAL,
+        TicketStatus.ESCALATED,
+      ]);
+      expect(await allowedFor(TicketStatus.ON_HOLD, noPause, agent)).toEqual([]);
+    });
+
+    it('agente fora da lista de uma mesa restrita não recebe transição', async () => {
+      const restricted = { ...openPolicy, listedGroupsOnly: true, listed: false };
+      expect(await allowedFor(TicketStatus.OPEN, restricted, agent)).toEqual([]);
+      expect(await allowedFor(TicketStatus.OPEN, restricted, admin)).toEqual([
+        TicketStatus.IN_PROGRESS,
+        TicketStatus.ESCALATED,
+      ]);
+    });
+
+    it('CLIENT não recebe allowedStatuses (a tela só mostra a etiqueta)', async () => {
+      const client = { id: 'client-1', role: Role.CLIENT };
+      mockPrismaService.ticket.findUnique.mockResolvedValue({
+        id: 't1',
+        status: TicketStatus.OPEN,
+        requesterId: client.id,
+      });
+      const result = await service.findOne('t1', client);
+      expect(result).not.toHaveProperty('allowedStatuses');
+    });
+
+    // O que a lista permite o PATCH aceita; o que ela omite o PATCH recusa.
+    const policies: Record<string, DeskPolicy> = {
+      aberta: openPolicy,
+      'sem pausa': { ...openPolicy, allowPauseResumeSla: false },
+      'agente não listado': { ...openPolicy, listedGroupsOnly: true, listed: false },
+      'reabertura liberada para faturado': { ...openPolicy, allowReopenBilled: true },
+      'sem reabertura': { ...openPolicy, allowReopenUnbilled: false },
+    };
+    const everyStatus = Object.values(TicketStatus) as TicketStatus[];
+
+    it.each(Object.keys(policies))(
+      'lista e changeStatus nunca divergem (mesa %s, todos os papéis, status e destinos)',
+      async (policyName) => {
+        const policy = policies[policyName];
+        for (const user of [agent, agentMaster, admin, { id: 'cm-1', role: Role.CLIENT_MASTER }]) {
+          for (const from of everyStatus) {
+            for (const billed of [false, true]) {
+              const allowed = await allowedFor(from, policy, user, billed);
+              expect(allowed).toBeDefined();
+              for (const to of everyStatus) {
+                arrange(from, policy, user, billed);
+                mockPrismaService.ticket.update.mockClear();
+                let accepted = true;
+                try {
+                  await service.changeStatus('t1', to, user);
+                } catch {
+                  accepted = false;
+                }
+                const label = `${policyName} ${user.role} ${from}->${to} billed=${billed}`;
+                expect({ label, listed: allowed?.includes(to) }).toEqual({ label, listed: accepted });
+              }
+            }
+          }
+        }
+      },
+      60000,
+    );
   });
 
   describe('update', () => {

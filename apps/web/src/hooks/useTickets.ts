@@ -84,6 +84,11 @@ export interface Ticket {
     isFinal: boolean;
     position: number;
   }[];
+  /**
+   * Statuses the API accepts as the next one for this reader (GET /tickets/:id only; absent for
+   * CLIENT and from older API versions). The server validates; the UI only reflects.
+   */
+  allowedStatuses?: TicketStatus[];
   createdAt: string;
   updatedAt: string;
 }

@@ -556,6 +556,8 @@ describe('TicketDetailPage', () => {
 
       const select = await screen.findByLabelText(/^status$/i, { selector: 'select' });
       await user.selectOptions(select, 'CLOSED');
+      // GH-494: Fechado pede confirmação antes do PATCH.
+      await user.click(await screen.findByRole('button', { name: 'Confirmar' }, { timeout: 5000 }));
 
       await waitFor(() => {
         expect(
