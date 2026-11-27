@@ -111,10 +111,6 @@ function lastCredentialsCallParams() {
   return (lastCall?.[1] as { params?: Record<string, unknown> } | undefined)?.params;
 }
 
-async function openActionsMenu(user: ReturnType<typeof userEvent.setup>) {
-  await user.click(screen.getByRole('button', { name: 'Ações' }));
-}
-
 describe('VaultPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -327,8 +323,7 @@ describe('VaultPage', () => {
       expect(screen.getByText('Servidor FTP')).toBeInTheDocument();
     });
 
-    await openActionsMenu(user);
-    await user.click(screen.getByRole('menuitem', { name: 'Nova pasta' }));
+    await user.click(screen.getByRole('button', { name: 'Nova pasta' }));
 
     const createDialog = screen.getByRole('dialog');
     await user.type(fieldFor(createDialog, 'Nome da pasta'), 'Rede');
@@ -399,8 +394,7 @@ describe('VaultPage', () => {
       expect(screen.getByText('Servidor FTP')).toBeInTheDocument();
     });
 
-    await openActionsMenu(user);
-    await user.click(screen.getByRole('menuitem', { name: 'Nova senha' }));
+    await user.click(screen.getByRole('button', { name: 'Nova senha' }));
 
     const createDialog = screen.getByRole('dialog');
     await user.type(fieldFor(createDialog, 'Nome'), 'Novo Serviço');
@@ -445,8 +439,7 @@ describe('VaultPage', () => {
       expect(screen.getByText('Servidor FTP')).toBeInTheDocument();
     });
 
-    await openActionsMenu(user);
-    await user.click(screen.getByRole('menuitem', { name: 'Nova senha' }));
+    await user.click(screen.getByRole('button', { name: 'Nova senha' }));
     const dialog = screen.getByRole('dialog');
 
     // Whitespace-only name (passes the native "required" check, but fails `name.trim()`).
@@ -596,14 +589,12 @@ describe('VaultPage', () => {
       expect(screen.getByText('Servidor FTP')).toBeInTheDocument();
     });
 
-    await openActionsMenu(user);
-    await user.click(screen.getByRole('menuitem', { name: 'Nova pasta' }));
+    await user.click(screen.getByRole('button', { name: 'Nova pasta' }));
     await user.click(screen.getByRole('button', { name: 'Cancelar' }));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(api.post).not.toHaveBeenCalledWith('/vault/folders', expect.anything());
 
-    await openActionsMenu(user);
-    await user.click(screen.getByRole('menuitem', { name: 'Nova senha' }));
+    await user.click(screen.getByRole('button', { name: 'Nova senha' }));
     await user.click(screen.getByRole('button', { name: 'Cancelar' }));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(api.post).not.toHaveBeenCalledWith('/vault/credentials', expect.anything());
@@ -652,7 +643,7 @@ describe('VaultPage — header, toolbar and table at the app scale (DMTE-546)', 
 
     const toolbar = screen.getByPlaceholderText('Buscar senha...').closest('div.border-b') as HTMLElement;
     expect(within(toolbar).getByText('Pasta:')).toBeInTheDocument();
-    expect(within(toolbar).getByRole('button', { name: 'Ações' })).toBeInTheDocument();
+    expect(within(toolbar).getByRole('button', { name: 'Nova senha' })).toBeInTheDocument();
 
     const card = toolbar.parentElement as HTMLElement;
     expect(card.querySelectorAll(':scope > div.border-b')).toHaveLength(1);
@@ -1101,16 +1092,14 @@ describe('VaultPage modals and load error (DMTE-545)', () => {
   }
 
   async function openNewFolder(user: ReturnType<typeof userEvent.setup>) {
-    await openActionsMenu(user);
-    await user.click(screen.getByRole('menuitem', { name: 'Nova pasta' }));
+    await user.click(screen.getByRole('button', { name: 'Nova pasta' }));
     const dialog = screen.getByRole('dialog');
     await user.type(fieldFor(dialog, 'Nome da pasta'), 'Rede');
     return dialog;
   }
 
   async function openNewCredential(user: ReturnType<typeof userEvent.setup>) {
-    await openActionsMenu(user);
-    await user.click(screen.getByRole('menuitem', { name: 'Nova senha' }));
+    await user.click(screen.getByRole('button', { name: 'Nova senha' }));
     const dialog = screen.getByRole('dialog');
     await user.type(fieldFor(dialog, 'Nome'), 'Novo Serviço');
     await user.type(fieldFor(dialog, 'Senha'), 'fake-password-123');
@@ -1128,16 +1117,14 @@ describe('VaultPage modals and load error (DMTE-545)', () => {
   it('uses the DS modal for folder and credential, with an accessible name and a discard prompt on Esc', async () => {
     const user = await loaded();
 
-    await openActionsMenu(user);
-    await user.click(screen.getByRole('menuitem', { name: 'Nova pasta' }));
+    await user.click(screen.getByRole('button', { name: 'Nova pasta' }));
     const folderDialog = screen.getByRole('dialog', { name: 'Nova pasta' });
     // The DS gives the first Esc to the focused text field; leave it first so Esc reaches the modal.
     await user.click(within(folderDialog).getByText('Nova pasta'));
     await user.keyboard('{Escape}');
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
 
-    await openActionsMenu(user);
-    await user.click(screen.getByRole('menuitem', { name: 'Nova senha' }));
+    await user.click(screen.getByRole('button', { name: 'Nova senha' }));
     const credentialDialog = screen.getByRole('dialog', { name: 'Nova senha' });
     expect(within(credentialDialog).getByRole('button', { name: 'Cancelar' })).toBeInTheDocument();
     expect(within(credentialDialog).getByRole('button', { name: 'Salvar' })).toBeInTheDocument();
@@ -1284,8 +1271,7 @@ describe('VaultPage modals and load error (DMTE-545)', () => {
 
     await user.click(within(dialog).getByRole('button', { name: 'Cancelar' }));
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
-    await openActionsMenu(user);
-    await user.click(screen.getByRole('menuitem', { name: 'Nova pasta' }));
+    await user.click(screen.getByRole('button', { name: 'Nova pasta' }));
     const reopened = screen.getByRole('dialog', { name: 'Nova pasta' });
     expect(within(reopened).queryByRole('alert')).not.toBeInTheDocument();
     expect(fieldFor(reopened, 'Nome da pasta')).toHaveValue('');
@@ -1339,8 +1325,7 @@ describe('VaultPage modals and load error (DMTE-545)', () => {
     await closeDiscarding(user, folderDialog);
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
 
-    await openActionsMenu(user);
-    await user.click(screen.getByRole('menuitem', { name: 'Nova senha' }));
+    await user.click(screen.getByRole('button', { name: 'Nova senha' }));
     const newer = screen.getByRole('dialog', { name: 'Nova senha' });
     expect(save(newer)).toBeEnabled();
 
@@ -1879,7 +1864,8 @@ describe('VaultPage — estados vazios e erro de carga por região (VLT-09, VLT-
 
       expect(await screen.findByText('Nenhuma senha encontrada para "zzz"')).toBeInTheDocument();
       expect(screen.queryByText('Esta pasta ainda não tem senhas')).not.toBeInTheDocument();
-      expect(screen.queryByRole('button', { name: 'Nova senha' })).not.toBeInTheDocument();
+      // VLT-12: "Nova senha" mora só na barra da lista; o estado vazio da busca não repete a ação.
+      expect(screen.getAllByRole('button', { name: 'Nova senha' })).toHaveLength(1);
 
       await user.click(screen.getByRole('button', { name: 'Limpar busca' }));
 
@@ -1918,8 +1904,7 @@ describe('VaultPage — campo de senha do modal (VLT-11)', () => {
     const user = userEvent.setup();
     renderPage();
     await screen.findByText('Servidor FTP');
-    await openActionsMenu(user);
-    await user.click(screen.getByRole('menuitem', { name: 'Nova senha' }));
+    await user.click(screen.getByRole('button', { name: 'Nova senha' }));
     return { user, dialog: screen.getByRole('dialog', { name: 'Nova senha' }) };
   }
 
@@ -2023,8 +2008,7 @@ describe('VaultPage — campo de senha do modal (VLT-11)', () => {
     await user.click(within(dialog).getByRole('button', { name: 'Fechar' }));
     await user.click(within(await screen.findByRole('dialog', { name: 'Descartar alterações?' })).getByRole('button', { name: 'Confirmar' }));
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
-    await openActionsMenu(user);
-    await user.click(screen.getByRole('menuitem', { name: 'Nova senha' }));
+    await user.click(screen.getByRole('button', { name: 'Nova senha' }));
     expect(fieldFor(screen.getByRole('dialog', { name: 'Nova senha' }), 'Senha')).toHaveValue('');
     consoleSpies.forEach((spy) => spy.mockRestore());
   });
@@ -2036,5 +2020,84 @@ describe('VaultPage — campo de senha do modal (VLT-11)', () => {
 
     const edited = await openEdit();
     expect(fieldFor(edited.dialog, 'Senha')).not.toBeRequired();
+  });
+});
+
+describe('VaultPage — auditoria de design P3-I (VLT-08, VLT-12, VLT-13)', () => {
+  const searchParamsSent = () =>
+    vi
+      .mocked(api.get)
+      .mock.calls.filter(([url]) => url === '/vault/credentials')
+      .map(([, config]) => (config as { params?: { search?: string } } | undefined)?.params?.search)
+      .filter((search): search is string => search !== undefined);
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    useAuthStore.setState({ token: null, user: null });
+    window.confirm = vi.fn(() => true);
+    mockDefaultGets();
+  });
+
+  it('VLT-08: consulta uma só vez depois de digitar em sequência (debounce)', async () => {
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    renderPage();
+    await screen.findByText('Servidor FTP', undefined, { timeout: 5000 });
+
+    await user.type(screen.getByPlaceholderText('Buscar senha...'), 'ftp');
+
+    await waitFor(() => expect(searchParamsSent()).toContain('ftp'), { timeout: 5000 });
+    expect(searchParamsSent()).toEqual(['ftp']);
+  });
+
+  it('VLT-08: mostra a contagem de senhas da lista', async () => {
+    loginAs('ADMIN');
+    renderPage();
+
+    expect(await screen.findByText('2 senhas', undefined, { timeout: 5000 })).toBeInTheDocument();
+  });
+
+  it('VLT-08: usa o singular com uma senha', async () => {
+    vi.mocked(api.get).mockImplementation(async (url: string) => {
+      if (url === '/vault/folders') return { data: folders };
+      return { data: { data: [credentials[0]], meta: { total: 1, page: 1, limit: 10, totalPages: 1 } } };
+    });
+    loginAs('ADMIN');
+    renderPage();
+
+    expect(await screen.findByText('1 senha', undefined, { timeout: 5000 })).toBeInTheDocument();
+  });
+
+  it('VLT-12: ADMIN vê Nova senha e Nova pasta sem abrir menu algum', async () => {
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    renderPage();
+    await screen.findByText('Servidor FTP', undefined, { timeout: 5000 });
+
+    expect(screen.queryByRole('button', { name: 'Ações' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Nova pasta' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Nova senha' }));
+
+    expect(await screen.findByRole('dialog', { name: 'Nova senha' })).toBeInTheDocument();
+  });
+
+  it('VLT-12: AGENT não vê Nova senha nem Nova pasta', async () => {
+    loginAs('AGENT');
+    renderPage();
+    await screen.findByText('Servidor FTP', undefined, { timeout: 5000 });
+
+    expect(screen.queryByRole('button', { name: 'Nova senha' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Nova pasta' })).not.toBeInTheDocument();
+  });
+
+  it('VLT-13: a tabela tem nome acessível e os cabeçalhos de coluna têm scope="col"', async () => {
+    loginAs('ADMIN');
+    renderPage();
+    await screen.findByText('Servidor FTP', undefined, { timeout: 5000 });
+
+    const table = screen.getByRole('table', { name: 'Senhas do cofre' });
+    const headers = within(table).getAllByRole('columnheader');
+    expect(headers.length).toBeGreaterThan(0);
+    for (const header of headers) expect(header).toHaveAttribute('scope', 'col');
   });
 });

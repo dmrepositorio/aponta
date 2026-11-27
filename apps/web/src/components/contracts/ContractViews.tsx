@@ -221,7 +221,7 @@ export function ContractDetail({
   contract: Contract;
   showFinancial: boolean;
 }) {
-  const rows = [
+  const identification = [
     ['Nome', c.name || 'Sem nome'],
     ['Empresa', c.organization?.name || '—'],
     ['Modalidade', modality(c)],
@@ -238,6 +238,8 @@ export function ContractDetail({
           ['Estimativa total', hoursLabel((c.estimatedMinutes || 0) / 60)],
         ]
       : []),
+  ];
+  const validity = [
     [
       'Início da vigência',
       validityDay(c.startsAt).split('-').reverse().join('/') || 'Não informada',
@@ -247,47 +249,53 @@ export function ContractDetail({
       validityDay(c.endsAt, true).split('-').reverse().join('/') ||
         'Não informada',
     ],
-    ...(showFinancial
-      ? [
-          [
-            'Valor mensal',
-            contractMoney(
-              c.monthlyFeeCents != null
-                ? c.monthlyFeeCents / 100
-                : c.monthlyValue,
-            ),
-          ],
-          ...(c.type === 'FIXED_PROJECT'
-            ? [
-                [
-                  'Preço fechado',
-                  contractMoney(
-                    c.fixedPriceCents == null ? null : c.fixedPriceCents / 100,
-                  ),
-                ],
-              ]
-            : []),
-          ...(c.type === 'HOURLY'
-            ? [
-                [
-                  'Hora avulsa',
-                  contractMoney(
-                    c.hourlyRateCents == null ? null : c.hourlyRateCents / 100,
-                  ),
-                ],
-              ]
-            : []),
-          [
-            'Hora excedente',
-            contractMoney(
-              c.excessHourlyRateCents == null
-                ? null
-                : c.excessHourlyRateCents / 100,
-            ),
-          ],
-          ['Reajuste', dateLabel(c.adjustmentDate)],
-        ]
-      : []),
+  ];
+  const financial = showFinancial
+    ? [
+        [
+          'Valor mensal',
+          contractMoney(
+            c.monthlyFeeCents != null
+              ? c.monthlyFeeCents / 100
+              : c.monthlyValue,
+          ),
+        ],
+        ...(c.type === 'FIXED_PROJECT'
+          ? [
+              [
+                'Preço fechado',
+                contractMoney(
+                  c.fixedPriceCents == null ? null : c.fixedPriceCents / 100,
+                ),
+              ],
+            ]
+          : []),
+        ...(c.type === 'HOURLY'
+          ? [
+              [
+                'Hora avulsa',
+                contractMoney(
+                  c.hourlyRateCents == null ? null : c.hourlyRateCents / 100,
+                ),
+              ],
+            ]
+          : []),
+        [
+          'Hora excedente',
+          contractMoney(
+            c.excessHourlyRateCents == null
+              ? null
+              : c.excessHourlyRateCents / 100,
+          ),
+        ],
+        ['Reajuste', dateLabel(c.adjustmentDate)],
+      ]
+    : [];
+  // Mesmo padrão fieldset/legend do formulário; o grupo Financeiro só existe com showFinancial.
+  const groups: Array<[string, string[][]]> = [
+    ['Identificação', identification],
+    ['Vigência', validity],
+    ...(showFinancial ? [['Financeiro', financial] as [string, string[][]]] : []),
   ];
   return (
     <div className="space-y-4">
@@ -297,14 +305,19 @@ export function ContractDetail({
           vigência e mesas do contrato. Dados históricos são preservados.
         </EzAlert>
       )}
-      <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        {rows.map(([label, value]) => (
-          <div key={label}>
-            <dt className="text-gray-500">{label}</dt>
-            <dd className="font-medium text-gray-900">{value}</dd>
-          </div>
-        ))}
-      </dl>
+      {groups.map(([legend, rows]) => (
+        <fieldset key={legend} className="min-w-0">
+          <legend className={legendClass}>{legend}</legend>
+          <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {rows.map(([label, value]) => (
+              <div key={label}>
+                <dt className="text-gray-500">{label}</dt>
+                <dd className="font-medium text-gray-900">{value}</dd>
+              </div>
+            ))}
+          </dl>
+        </fieldset>
+      ))}
       {showFinancial && isLegacy(c) && c.excessHourlyRateCents == null && (
         <EzAlert variant="info">
           Tarifa de excedente não informada. Os excedentes ficam sem valor
