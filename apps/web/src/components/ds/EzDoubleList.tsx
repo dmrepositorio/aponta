@@ -38,6 +38,10 @@ export interface EzDoubleListProps extends Omit<HTMLAttributes<HTMLDivElement>, 
   searchable?: boolean;
   /** Altura máxima (CSS) de cada lista antes de rolar. @default '15rem' */
   listMaxHeight?: string;
+  /** Busca remota da lista disponível: recebe o texto digitado (quem usa faz o debounce) e `available` deixa de ser filtrada aqui. */
+  onAvailableSearch?: (query: string) => void;
+  /** Só com `onAvailableSearch`: troca a lista disponível por carregando ou erro. */
+  availableStatus?: 'loading' | 'error';
 }
 
 export const EzDoubleList = forwardRef<HTMLDivElement, EzDoubleListProps>(
@@ -51,6 +55,8 @@ export const EzDoubleList = forwardRef<HTMLDivElement, EzDoubleListProps>(
       selectedLabel = 'Selecionados',
       searchable = true,
       listMaxHeight = '15rem',
+      onAvailableSearch: _onAvailableSearch,
+      availableStatus: _availableStatus,
       className,
       ...props
     },

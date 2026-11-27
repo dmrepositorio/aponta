@@ -166,4 +166,86 @@ describe('EzDoubleList', () => {
     expect(scrollers).toHaveLength(2);
     scrollers.forEach((el) => expect((el as HTMLElement).style.maxHeight).toBe('30rem'));
   });
+
+  describe('busca remota da lista disponível', () => {
+    it('avisa o texto digitado e não filtra a lista localmente', async () => {
+      const onAvailableSearch = vi.fn();
+      render(
+        <EzDoubleList
+          available={available}
+          selected={selected}
+          onAdd={vi.fn()}
+          onRemove={vi.fn()}
+          availableLabel="Usuários"
+          onAvailableSearch={onAvailableSearch}
+        />
+      );
+      await userEvent.type(screen.getByRole('searchbox', { name: 'Buscar em Usuários' }), 'zzz');
+
+      expect(onAvailableSearch).toHaveBeenLastCalledWith('zzz');
+      expect(screen.getByText('Item A')).toBeInTheDocument();
+      expect(screen.getByText('Item B')).toBeInTheDocument();
+    });
+
+    it('a busca da lista de selecionados continua local', async () => {
+      const onAvailableSearch = vi.fn();
+      render(
+        <EzDoubleList
+          available={available}
+          selected={selected}
+          onAdd={vi.fn()}
+          onRemove={vi.fn()}
+          selectedLabel="Vinculados"
+          onAvailableSearch={onAvailableSearch}
+        />
+      );
+      await userEvent.type(screen.getByRole('searchbox', { name: 'Buscar em Vinculados' }), 'zzz');
+
+      expect(onAvailableSearch).not.toHaveBeenCalled();
+      expect(screen.queryByText('Item C')).not.toBeInTheDocument();
+    });
+
+    it('sem resultado para um termo digitado mostra o aviso de busca', async () => {
+      render(
+        <EzDoubleList
+          available={[]}
+          selected={selected}
+          onAdd={vi.fn()}
+          onRemove={vi.fn()}
+          availableLabel="Usuários"
+          onAvailableSearch={vi.fn()}
+        />
+      );
+      await userEvent.type(screen.getByRole('searchbox', { name: 'Buscar em Usuários' }), 'zzz');
+
+      expect(screen.getByText('Nenhum resultado para a busca')).toBeInTheDocument();
+    });
+
+    it('mostra o estado de carregando e o de erro no lugar da lista disponível', () => {
+      const { rerender } = render(
+        <EzDoubleList
+          available={available}
+          selected={selected}
+          onAdd={vi.fn()}
+          onRemove={vi.fn()}
+          onAvailableSearch={vi.fn()}
+          availableStatus="loading"
+        />
+      );
+      expect(screen.getByText('Carregando…')).toBeInTheDocument();
+
+      rerender(
+        <EzDoubleList
+          available={available}
+          selected={selected}
+          onAdd={vi.fn()}
+          onRemove={vi.fn()}
+          onAvailableSearch={vi.fn()}
+          availableStatus="error"
+        />
+      );
+      expect(screen.getByRole('alert')).toHaveTextContent('Não foi possível carregar a lista');
+      expect(screen.queryByText('Item A')).not.toBeInTheDocument();
+    });
+  });
 });
