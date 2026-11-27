@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AxiosError } from 'axios';
 import { api } from '../lib/api';
@@ -465,6 +465,23 @@ describe('TicketDetailPage', () => {
     expect(screen.getByTestId('worklog-pre-end')).not.toHaveTextContent('--');
   });
 
+  it('DET-18: o botão do cronômetro mostra rótulo visível, com dica do pré-apontamento', async () => {
+    setRole('AGENT');
+    const user = userEvent.setup();
+    renderPage();
+
+    await screen.findByText('Printer not working', undefined, { timeout: 5000 });
+    const play = screen.getByTestId('ticket-header-play-btn');
+    expect(play).toHaveTextContent('Iniciar apontamento');
+    expect(play).toHaveAccessibleName('Iniciar apontamento');
+    expect(play.getAttribute('title')).toMatch(/pré-apontamento/i);
+
+    await user.click(play);
+    const stop = await screen.findByTestId('ticket-header-stop-btn', undefined, { timeout: 5000 });
+    expect(stop).toHaveTextContent('Parar');
+    expect(stop.getAttribute('aria-label')).toMatch(/^Parar/);
+  });
+
   describe('Agent assignment', () => {
     it('hides the assignment dropdown from clients', async () => {
       setRole('CLIENT');
@@ -848,6 +865,60 @@ describe('TicketDetailPage', () => {
       expect(alert).not.toHaveTextContent(/pode não existir/i);
       expect(screen.getByRole('button', { name: /tentar novamente/i })).toBeInTheDocument();
       expect(screen.getByRole('link', { name: /voltar para tickets/i })).toBeInTheDocument();
+    });
+  });
+
+  describe('Voltar com a origem (DET-19)', () => {
+    function LocationProbe() {
+      const location = useLocation();
+      return <div data-testid="location-probe">{location.pathname + location.search}</div>;
+    }
+
+    function renderFrom(entries: string[]) {
+      const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+      return render(
+        <QueryClientProvider client={queryClient}>
+          <MemoryRouter initialEntries={entries} initialIndex={entries.length - 1}>
+            <Routes>
+              <Route path="/" element={<LocationProbe />} />
+              <Route path="/tickets/:id" element={<TicketDetailPage />} />
+            </Routes>
+          </MemoryRouter>
+        </QueryClientProvider>,
+      );
+    }
+
+    it('volta para a lista com os filtros de origem quando houve navegação interna', async () => {
+      setRole('AGENT');
+      const user = userEvent.setup();
+      renderFrom(['/?status=OPEN', '/tickets/t-1']);
+
+      await screen.findByText('Printer not working', undefined, { timeout: 5000 });
+      await user.click(screen.getByRole('link', { name: /voltar/i }));
+
+      expect(await screen.findByTestId('location-probe', undefined, { timeout: 5000 })).toHaveTextContent('/?status=OPEN');
+    });
+
+    it('sem histórico anterior (acesso direto) cai em "/"', async () => {
+      setRole('AGENT');
+      const user = userEvent.setup();
+      renderFrom(['/tickets/t-1']);
+
+      await screen.findByText('Printer not working', undefined, { timeout: 5000 });
+      await user.click(screen.getByRole('link', { name: /voltar/i }));
+
+      expect(await screen.findByTestId('location-probe', undefined, { timeout: 5000 })).toHaveTextContent(/^\/$/);
+    });
+
+    it('o Esc leva ao mesmo destino do Voltar', async () => {
+      setRole('AGENT');
+      const user = userEvent.setup();
+      renderFrom(['/?status=OPEN', '/tickets/t-1']);
+
+      await screen.findByText('Printer not working', undefined, { timeout: 5000 });
+      await user.keyboard('{Escape}');
+
+      expect(await screen.findByTestId('location-probe', undefined, { timeout: 5000 })).toHaveTextContent('/?status=OPEN');
     });
   });
 

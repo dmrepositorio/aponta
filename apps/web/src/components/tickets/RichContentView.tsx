@@ -47,12 +47,22 @@ export function isSafeMediaUrl(raw: string | null | undefined): boolean {
   return /^https?:\/\//i.test(url);
 }
 
+const NEW_TAB_HINT = 'Abre em nova aba';
+
+// DET-20: sem texto alternativo a imagem é decorativa (alt vazio); o título do link, que
+// também serve de nome acessível, diz que abre em nova aba.
 function InlineImage({ src, alt }: { src: string; alt: string }) {
   return (
-    <a href={src} target="_blank" rel="noreferrer" className="block my-4">
+    <a
+      href={src}
+      target="_blank"
+      rel="noreferrer"
+      title={NEW_TAB_HINT}
+      className="block my-4"
+    >
       <img
         src={src}
-        alt={alt || 'Evidência'}
+        alt={alt}
         className="block mx-auto w-auto max-w-full h-auto rounded-lg object-contain"
         loading="lazy"
       />
@@ -103,6 +113,7 @@ function renderNode(node: ChildNode, key: number): ReactNode {
         href={href!}
         target="_blank"
         rel="noreferrer"
+        title={NEW_TAB_HINT}
         className="text-brand-600 underline hover:text-brand-800"
       >
         {children}
