@@ -56,13 +56,35 @@ function apiError(message: string) {
   return Object.assign(new Error(message), { isAxiosError: true, response: { status: 400, data: { message } } });
 }
 
+interface UsersParams {
+  q?: string;
+  page?: number;
+  pageSize?: number;
+}
+
+// Procura como a API: `q` casa nome ou e-mail e a resposta paginada vem com `meta`.
+function usersResponse(config?: { params?: UsersParams }) {
+  const params = config?.params;
+  if (!params) return { data: ALL_USERS };
+  const q = (params.q ?? '').toLowerCase();
+  const rows = ALL_USERS.filter((u) => `${u.name} ${u.email}`.toLowerCase().includes(q));
+  return { data: { data: rows, meta: { total: rows.length, page: 1, pageSize: params.pageSize ?? 20, totalPages: 1 } } };
+}
+
+function usersCalls() {
+  return vi
+    .mocked(api.get)
+    .mock.calls.filter(([url]) => url === '/users')
+    .map(([, config]) => (config as { params?: UsersParams } | undefined)?.params);
+}
+
 function mockGets(detail: unknown = GROUP_DETAIL, calls?: string[]) {
-  vi.mocked(api.get).mockImplementation(((url: string) => {
+  vi.mocked(api.get).mockImplementation(((url: string, config?: { params?: UsersParams }) => {
     calls?.push(url);
     if (url === '/permission-groups') return Promise.resolve({ data: GROUP_LIST });
     if (url === '/permission-groups/pg-1') return Promise.resolve({ data: detail });
     if (url === '/permission-groups/catalog') return Promise.resolve({ data: CATALOG });
-    if (url === '/users') return Promise.resolve({ data: ALL_USERS });
+    if (url === '/users') return Promise.resolve(usersResponse(config));
     if (url === '/technical-groups') return Promise.resolve({ data: TECH_GROUPS });
     return Promise.reject(new Error(`Unexpected GET ${url}`));
   }) as never);
@@ -154,6 +176,76 @@ describe('PermissionGroupsPage', () => {
     await waitFor(() =>
       expect(api.post).toHaveBeenCalledWith('/permission-groups/pg-1/users/user-2'),
     );
+  });
+
+  describe('PG-08: busca remota de usuários na lista dupla', () => {
+    const searchUsers = () => screen.getByRole('searchbox', { name: 'Buscar em Usuários disponíveis' });
+
+    it('abre os vínculos pedindo só a primeira página, sem a lista completa de /users', async () => {
+      renderPage();
+      await openLinksTab();
+      await screen.findByText('Carlos Dias', undefined, { timeout: 5000 });
+
+      const calls = usersCalls();
+      expect(calls.length).toBeGreaterThan(0);
+      expect(calls.every((params) => params?.page === 1 && params.pageSize === 20)).toBe(true);
+    });
+
+    it('digitar busca no servidor por q com pageSize, uma vez só depois da pausa', async () => {
+      renderPage();
+      await openLinksTab();
+      await screen.findByText('Carlos Dias', undefined, { timeout: 5000 });
+
+      await userEvent.type(searchUsers(), 'Carl');
+
+      await waitFor(() => expect(usersCalls().at(-1)).toEqual({ q: 'Carl', page: 1, pageSize: 20 }), {
+        timeout: 5000,
+      });
+      expect(usersCalls().filter((params) => params?.q === 'C' || params?.q === 'Ca')).toHaveLength(0);
+    });
+
+    it('os vinculados continuam na lista de membros mesmo fora da busca', async () => {
+      renderPage();
+      await openLinksTab();
+      await screen.findByText('Carlos Dias', undefined, { timeout: 5000 });
+
+      await userEvent.type(searchUsers(), 'Carlos');
+      await waitFor(() => expect(usersCalls().at(-1)?.q).toBe('Carlos'), { timeout: 5000 });
+
+      const linked = screen.getByRole('button', { name: 'Remover Ana Silva' });
+      expect(linked).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Adicionar Ana Silva' })).not.toBeInTheDocument();
+      expect(await screen.findByRole('button', { name: 'Adicionar Carlos Dias' })).toBeInTheDocument();
+    });
+
+    it('vincular um resultado da busca envia o mesmo POST de antes', async () => {
+      renderPage();
+      await openLinksTab();
+      await userEvent.type(await screen.findByRole('searchbox', { name: 'Buscar em Usuários disponíveis' }), 'carlos@');
+
+      await userEvent.click(await screen.findByRole('button', { name: 'Adicionar Carlos Dias' }, { timeout: 5000 }));
+
+      await waitFor(() => expect(api.post).toHaveBeenCalledWith('/permission-groups/pg-1/users/user-2'));
+    });
+
+    it('busca sem resultado mostra o aviso de busca e falha da busca mostra o erro', async () => {
+      renderPage();
+      await openLinksTab();
+      await screen.findByText('Carlos Dias', undefined, { timeout: 5000 });
+
+      await userEvent.type(searchUsers(), 'zzz');
+      expect(await screen.findByText('Nenhum resultado para a busca', undefined, { timeout: 5000 })).toBeInTheDocument();
+
+      const original = vi.mocked(api.get).getMockImplementation()!;
+      vi.mocked(api.get).mockImplementation(((url: string, config?: { params?: UsersParams }) =>
+        url === '/users' ? Promise.reject(new Error('boom')) : original(url, config)) as never);
+      await userEvent.clear(searchUsers());
+      await userEvent.type(searchUsers(), 'ana');
+
+      expect(await screen.findByRole('alert', undefined, { timeout: 5000 })).toHaveTextContent(
+        'Não foi possível carregar a lista',
+      );
+    });
   });
 
   describe('PG-01: confirmação e retorno ao salvar permissões', () => {

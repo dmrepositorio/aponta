@@ -38,6 +38,10 @@ export interface EzDoubleListProps extends Omit<HTMLAttributes<HTMLDivElement>, 
   searchable?: boolean;
   /** Altura máxima (CSS) de cada lista antes de rolar. @default '15rem' */
   listMaxHeight?: string;
+  /** Busca remota da lista disponível: recebe o texto digitado (quem usa faz o debounce) e `available` deixa de ser filtrada aqui. */
+  onAvailableSearch?: (query: string) => void;
+  /** Só com `onAvailableSearch`: troca a lista disponível por carregando ou erro. */
+  availableStatus?: 'loading' | 'error';
 }
 
 export const EzDoubleList = forwardRef<HTMLDivElement, EzDoubleListProps>(
@@ -51,6 +55,8 @@ export const EzDoubleList = forwardRef<HTMLDivElement, EzDoubleListProps>(
       selectedLabel = 'Selecionados',
       searchable = true,
       listMaxHeight = '15rem',
+      onAvailableSearch,
+      availableStatus,
       className,
       ...props
     },
@@ -58,7 +64,8 @@ export const EzDoubleList = forwardRef<HTMLDivElement, EzDoubleListProps>(
   ) => {
     const [availableQuery, setAvailableQuery] = useState('');
     const [selectedQuery, setSelectedQuery] = useState('');
-    const shownAvailable = available.filter((i) => matches(i, availableQuery));
+    const remote = !!onAvailableSearch;
+    const shownAvailable = remote ? available : available.filter((i) => matches(i, availableQuery));
     const shownSelected = selected.filter((i) => matches(i, selectedQuery));
 
     const searchBox = (name: string, value: string, onChange: (v: string) => void) =>
@@ -83,13 +90,22 @@ export const EzDoubleList = forwardRef<HTMLDivElement, EzDoubleListProps>(
           <div className="px-4 py-3 border-b border-gray-200 bg-gray-90 text-[14px] font-semibold text-gray-900">
             {availableLabel} <span className="text-gray-500 font-normal ml-1">({available.length})</span>
           </div>
-          {searchBox(availableLabel, availableQuery, setAvailableQuery)}
+          {searchBox(availableLabel, availableQuery, (value) => {
+            setAvailableQuery(value);
+            onAvailableSearch?.(value);
+          })}
           <div
             data-testid="ez-double-list-scroll"
             className="flex-1 overflow-y-auto p-2"
             style={{ maxHeight: listMaxHeight }}
           >
-            {available.length === 0 ? (
+            {remote && availableStatus === 'loading' ? (
+              <div className="p-4 text-center text-sm text-gray-500">Carregando…</div>
+            ) : remote && availableStatus === 'error' ? (
+              <div role="alert" className="p-4 text-center text-sm text-red-600">
+                Não foi possível carregar a lista
+              </div>
+            ) : available.length === 0 && !(remote && availableQuery.trim()) ? (
               <div className="p-4 text-center text-sm text-gray-500">Nenhum item disponível</div>
             ) : shownAvailable.length === 0 ? (
               <div className="p-4 text-center text-sm text-gray-500">Nenhum resultado para a busca</div>
