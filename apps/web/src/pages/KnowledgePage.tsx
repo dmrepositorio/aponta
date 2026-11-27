@@ -17,6 +17,7 @@ import {
   EzMultiSelect,
   EzPageHeader,
   EzPageLayout,
+  EzPagination,
   EzRichText,
   EzSpinner,
   EzTag,
@@ -157,10 +158,17 @@ export function KnowledgePage() {
     updateParams({ sort: value === 'updated_desc' ? null : value, page: null });
   const setViewMode = (value: ViewMode) => updateParams({ view: value === 'grid' ? 'grid' : null });
   const setPage = (value: number) => updateParams({ page: value > 1 ? String(value) : null });
+  // KNW-05: ao trocar de página a lista volta ao topo; sem animação com prefers-reduced-motion.
+  const changePage = (value: number) => {
+    setPage(value);
+    const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+    listTopRef.current?.scrollIntoView?.({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
+  };
 
   const searchRef = useRef<HTMLInputElement>(null);
   const titleRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
+  const listTopRef = useRef<HTMLParagraphElement>(null);
   const [articleToDelete, setArticleToDelete] = useState<Article | null>(null);
 
   // Reutiliza a mesma queryKey da KnowledgeFoldersGrid para ler o nome da
@@ -267,7 +275,8 @@ export function KnowledgePage() {
   );
 
   const hasCachedList = !!articles?.length;
-  const totalPages = Math.max(1, Math.ceil((articles?.length ?? 0) / PAGE_SIZE));
+  const totalArticles = articles?.length ?? 0;
+  const totalPages = Math.max(1, Math.ceil(totalArticles / PAGE_SIZE));
   // Uma página além do fim (link antigo, artigo excluído) mostra a última.
   const currentPage = Math.min(page, totalPages);
   const pagedArticles = useMemo(
@@ -779,6 +788,9 @@ export function KnowledgePage() {
           Não foi possível atualizar os artigos. A lista abaixo pode estar desatualizada.
         </EzAlert>
       )}
+      <p ref={listTopRef} aria-live="polite" className="text-[14px] text-gray-500">
+        {totalArticles > 0 ? `${totalArticles} ${totalArticles === 1 ? 'artigo' : 'artigos'}` : ''}
+      </p>
       <div
         data-testid="knowledge-articles"
         data-view-mode={viewMode}
@@ -889,31 +901,12 @@ export function KnowledgePage() {
         </div>
       )}
 
-      {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2 mt-6">
-          <EzButton
-            type="button"
-            variant="tertiary"
-            size="small"
-            disabled={currentPage <= 1}
-            onClick={() => setPage(Math.max(1, currentPage - 1))}
-          >
-            Anterior
-          </EzButton>
-          <span className="text-sm text-gray-600">
-            Página {currentPage} de {totalPages}
-          </span>
-          <EzButton
-            type="button"
-            variant="tertiary"
-            size="small"
-            disabled={currentPage >= totalPages}
-            onClick={() => setPage(Math.min(totalPages, currentPage + 1))}
-          >
-            Próxima
-          </EzButton>
-        </div>
-      )}
+      <EzPagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onChange={changePage}
+        className="mt-6 justify-center"
+      />
     </EzPageLayout>
   );
 }
