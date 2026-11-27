@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor, fireEvent, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { api } from '../lib/api';
 import { useAuthStore } from '../stores/authStore';
 import { KnowledgePage } from './KnowledgePage';
@@ -252,7 +252,7 @@ describe('KnowledgePage', () => {
     editable.innerHTML = '<p>Conteúdo do artigo</p>';
     editable.dispatchEvent(new Event('input', { bubbles: true }));
 
-    await user.type(screen.getByLabelText(/tags/i), 'tag1, tag2');
+    await user.type(screen.getByRole('combobox', { name: 'Tags' }), 'tag1{Enter}tag2{Enter}');
 
     await user.click(screen.getByRole('button', { name: /salvar/i }));
 
@@ -346,7 +346,11 @@ describe('KnowledgePage', () => {
 
     // form must be prepopulated
     expect(screen.getByLabelText(/título/i)).toHaveValue('Como abrir um chamado');
-    expect(screen.getByLabelText(/tags/i)).toHaveValue('senha, ajuda');
+    const tagsField = screen.getByRole('combobox', { name: 'Tags' });
+    expect(tagsField).toHaveValue('');
+    const chips = tagsField.closest('div.flex-wrap') as HTMLElement;
+    expect(within(chips).getByText('senha')).toBeInTheDocument();
+    expect(within(chips).getByText('ajuda')).toBeInTheDocument();
     expect(screen.getByLabelText(/tipo de acesso/i, { selector: 'select' })).toHaveValue('PUBLIC');
 
     // edit title
@@ -626,7 +630,7 @@ describe('KnowledgePage', () => {
     await user.click(within(card).getByRole('button', { name: /editar/i }));
 
     expect(screen.getAllByText('Selecionar arquivo')).toHaveLength(1);
-    await user.click(screen.getByRole('button', { name: /remover/i }));
+    await user.click(screen.getByRole('button', { name: 'Remover' }));
 
     await waitFor(() => {
       expect(api.delete).toHaveBeenCalledWith('/articles/article-1/attachments/att-1');
@@ -1704,6 +1708,231 @@ describe('KnowledgePage F3-29', () => {
 
       expect(screen.getByRole('button', { name: 'Compartilhar' })).toBeInTheDocument();
       expect(screen.queryByText(/^[0-9]+ (grupos?|clientes?)/)).not.toBeInTheDocument();
+    });
+  });
+});
+
+
+// F3-30 (#480): Base de Conhecimento, parte 2 (KNW-07, 08, 10, 11).
+describe('KnowledgePage F3-30', () => {
+  function LocationProbe() {
+    const location = useLocation();
+    return <div data-testid="location">{location.search}</div>;
+  }
+
+  function renderAt(entry: string) {
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    return render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={[entry]}>
+          <Routes>
+            <Route
+              path="/knowledge"
+              element={
+                <>
+                  <KnowledgePage />
+                  <LocationProbe />
+                </>
+              }
+            />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>,
+    );
+  }
+
+  function mockArticles(pick: (url: string) => unknown[] = () => articles) {
+    vi.mocked(api.get).mockImplementation((url: string) => {
+      if (url.startsWith('/knowledge-folders')) return Promise.resolve({ data: folders });
+      if (url.startsWith('/articles')) return Promise.resolve({ data: pick(url) });
+      if (url.startsWith('/organizations')) return Promise.resolve({ data: organizations });
+      if (url.startsWith('/service-catalog-items')) return Promise.resolve({ data: catalogItems });
+      return Promise.reject(new Error(`Unexpected GET ${url}`));
+    });
+  }
+
+  const realMatchMedia = window.matchMedia;
+  const realScrollIntoView = Element.prototype.scrollIntoView;
+  const scrollIntoView = vi.fn();
+
+  function setReducedMotion(reduce: boolean) {
+    window.matchMedia = vi.fn().mockImplementation((query: string) => ({
+      matches: reduce && query.includes('prefers-reduced-motion'),
+      media: query,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+    })) as unknown as typeof window.matchMedia;
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockArticles();
+    useAuthStore.setState({ token: null, user: null });
+    window.scrollTo = vi.fn();
+    Element.prototype.scrollIntoView = scrollIntoView;
+  });
+
+  afterEach(() => {
+    window.matchMedia = realMatchMedia;
+    Element.prototype.scrollIntoView = realScrollIntoView;
+  });
+
+  async function openFolderAs(role: 'ADMIN' | 'AGENT' | 'CLIENT' | 'anonymous', entry = '/knowledge?folder=folder-1') {
+    loginAs(role);
+    const user = userEvent.setup();
+    renderAt(entry);
+    await screen.findByText('Como abrir um chamado');
+    return user;
+  }
+
+  function cardOf(title: string) {
+    return screen.getByRole('heading', { name: title }).closest('article')!;
+  }
+
+  describe('KNW-07: tags com sugestões e lista para filtrar', () => {
+    it('suggests the tags already used when typing in the tags field', async () => {
+      const user = await openFolderAs('AGENT');
+      await user.click(screen.getByRole('button', { name: /\+ novo artigo/i }));
+
+      await user.type(screen.getByRole('combobox', { name: 'Tags' }), 'sen');
+
+      expect(screen.getByRole('option', { name: 'senha' })).toBeInTheDocument();
+      expect(screen.queryByRole('option', { name: 'ajuda' })).not.toBeInTheDocument();
+    });
+
+    it('does not duplicate a tag typed with another casing and saves it with the existing casing', async () => {
+      vi.mocked(api.post).mockResolvedValue({ data: { id: 'article-3' } });
+      const user = await openFolderAs('AGENT');
+      await user.click(screen.getByRole('button', { name: /\+ novo artigo/i }));
+      await user.type(screen.getByLabelText(/título/i), 'Novo');
+
+      const field = screen.getByRole('combobox', { name: 'Tags' });
+      await user.type(field, 'Senha{Enter}');
+      await user.type(field, 'SENHA{Enter}');
+      await user.click(screen.getByRole('button', { name: /salvar/i }));
+
+      await waitFor(() => {
+        expect(api.post).toHaveBeenCalledWith('/articles', expect.objectContaining({ tags: ['senha'] }));
+      });
+    });
+
+    it('keeps the text typed in the tags field when the user goes straight to Salvar', async () => {
+      vi.mocked(api.post).mockResolvedValue({ data: { id: 'article-3' } });
+      const user = await openFolderAs('AGENT');
+      await user.click(screen.getByRole('button', { name: /\+ novo artigo/i }));
+      await user.type(screen.getByLabelText(/título/i), 'Novo');
+
+      await user.type(screen.getByRole('combobox', { name: 'Tags' }), 'rh');
+      await user.click(screen.getByRole('button', { name: /salvar/i }));
+
+      await waitFor(() => {
+        expect(api.post).toHaveBeenCalledWith('/articles', expect.objectContaining({ tags: ['rh'] }));
+      });
+    });
+
+    it('lists the existing tags as a filter without opening any card', async () => {
+      const user = await openFolderAs('CLIENT');
+      const group = screen.getByRole('group', { name: 'Filtrar por tag' });
+
+      expect(within(group).getAllByRole('button').map((b) => b.textContent)).toEqual(['ajuda', 'interno', 'senha']);
+      expect(within(group).getByRole('button', { name: 'senha' })).toHaveAttribute('aria-pressed', 'false');
+
+      await user.click(within(group).getByRole('button', { name: 'senha' }));
+
+      await waitFor(() => expect(screen.getByTestId('location')).toHaveTextContent('tags=senha'));
+      expect(within(group).getByRole('button', { name: 'senha' })).toHaveAttribute('aria-pressed', 'true');
+      await user.click(within(group).getByRole('button', { name: 'senha' }));
+      await waitFor(() => expect(screen.getByTestId('location')).not.toHaveTextContent('tags='));
+    });
+
+    it('keeps offering every tag of the folder while a tag filter narrows the list', async () => {
+      mockArticles((url) => (url.includes('tags=') ? [articles[0]] : articles));
+      loginAs('CLIENT');
+      renderAt('/knowledge?folder=folder-1&tags=senha');
+      await screen.findByText('Como abrir um chamado');
+
+      const group = await screen.findByRole('group', { name: 'Filtrar por tag' });
+      await waitFor(() => {
+        expect(within(group).getByRole('button', { name: 'interno' })).toBeInTheDocument();
+      });
+      expect(screen.queryByText('Artigo interno')).not.toBeInTheDocument();
+    });
+
+    it('shows no tag filter when the folder has no tags', async () => {
+      mockArticles(() => [{ ...articles[0], tags: [] }]);
+      await openFolderAs('CLIENT');
+      expect(screen.queryByRole('group', { name: 'Filtrar por tag' })).not.toBeInTheDocument();
+    });
+  });
+
+  describe('KNW-08: alvo do botão de remover filtro', () => {
+    it('gives the remove button of an active tag filter a 24x24 px target', async () => {
+      await openFolderAs('CLIENT', '/knowledge?folder=folder-1&tags=senha');
+      const remove = await screen.findByRole('button', { name: 'Remover filtro de tag senha' });
+      expect(remove).toHaveClass('h-6', 'w-6');
+      expect(remove).not.toHaveClass('h-4');
+    });
+  });
+
+  describe('KNW-10: EzPageLayout e EzPageHeader', () => {
+    it('puts the title, breadcrumb, search and Novo artigo in the page header, without its own padding', async () => {
+      await openFolderAs('AGENT');
+
+      const heading = screen.getByRole('heading', { level: 1, name: 'Base de Conhecimento (FAQ)' });
+      expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
+      const header = heading.closest('div.border-b') as HTMLElement;
+      expect(header).not.toBeNull();
+      expect(within(header).getByText('Pastas')).toBeInTheDocument();
+      expect(within(header).getByRole('searchbox')).toBeInTheDocument();
+      expect(within(header).getByRole('button', { name: /\+ novo artigo/i })).toBeInTheDocument();
+      expect(document.body.querySelector('.p-8')).toBeNull();
+    });
+
+    it('keeps the public-only notice for an anonymous visitor', async () => {
+      await openFolderAs('anonymous');
+      expect(screen.getByText('Exibindo apenas artigos públicos')).toBeInTheDocument();
+    });
+
+    it('uses the page header on the folders grid too, with Nova pasta as its action', async () => {
+      loginAs('AGENT');
+      renderAt('/knowledge');
+      const heading = await screen.findByRole('heading', { level: 1, name: 'Base de Conhecimento' });
+      const header = heading.closest('div.border-b') as HTMLElement;
+      expect(header).not.toBeNull();
+      expect(within(header).getByRole('button', { name: /\+ nova pasta/i })).toBeInTheDocument();
+      expect(document.body.querySelector('.p-8')).toBeNull();
+    });
+  });
+
+  describe('KNW-11: edição com barra de ações fixa e sem animação forçada', () => {
+    async function startEdit(reduceMotion: boolean) {
+      setReducedMotion(reduceMotion);
+      const user = await openFolderAs('AGENT');
+      await user.click(within(cardOf('Como abrir um chamado')).getByRole('button', { name: 'Editar' }));
+      await screen.findByRole('button', { name: 'Atualizar' });
+      return user;
+    }
+
+    it('does not scroll smoothly when the user prefers reduced motion', async () => {
+      await startEdit(true);
+      const smooth = (call: unknown[]) => (call[0] as { behavior?: string } | undefined)?.behavior === 'smooth';
+      expect(vi.mocked(window.scrollTo).mock.calls.some(smooth)).toBe(false);
+      expect(scrollIntoView.mock.calls.some(smooth)).toBe(false);
+    });
+
+    it('brings the form into view smoothly when motion is allowed', async () => {
+      await startEdit(false);
+      expect(scrollIntoView).toHaveBeenCalledWith(expect.objectContaining({ behavior: 'smooth' }));
+    });
+
+    it('keeps Atualizar and Cancelar in the same sticky bar', async () => {
+      await startEdit(false);
+      const bar = screen.getByRole('button', { name: 'Atualizar' }).closest('.sticky') as HTMLElement;
+      expect(bar).not.toBeNull();
+      expect(bar).toHaveClass('bottom-0');
+      expect(within(bar).getByRole('button', { name: 'Cancelar' })).toBeInTheDocument();
     });
   });
 });
