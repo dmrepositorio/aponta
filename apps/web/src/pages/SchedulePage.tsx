@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
+import { useMediaQuery } from '../hooks/useMediaQuery';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../lib/api';
 import { useAuthStore } from '../stores/authStore';
@@ -71,7 +72,14 @@ export function SchedulePage() {
 
   // Selected date anchor (defaults to current date)
   const [currentDate, setCurrentDate] = useState(() => new Date());
-  const [viewMode, setViewMode] = useState<'mes' | 'semana' | 'dia' | 'lista'>('semana');
+  // Abaixo de lg a grade semanal não cabe: abre em Dia e os filtros viram painel recolhível.
+  const isNarrow = useMediaQuery('(max-width: 1023px)');
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<'mes' | 'semana' | 'dia' | 'lista'>(() =>
+    typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 1023px)').matches
+      ? 'dia'
+      : 'semana',
+  );
 
   // Filter types toggles (TiFlux "Filtrar" panel)
   const [showAgenda, setShowAgenda] = useState(true);
@@ -503,11 +511,23 @@ export function SchedulePage() {
         </div>
       }
     >
-      <div className="flex gap-4 items-start w-full py-2">
+      <div className="flex flex-col lg:flex-row gap-4 items-start w-full py-2">
+        {isNarrow && (
+          <button
+            type="button"
+            aria-expanded={filtersOpen}
+            aria-controls="schedule-filters"
+            onClick={() => setFiltersOpen((open) => !open)}
+            className="px-3 h-11 text-xs font-semibold rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 ez-focus"
+          >
+            Filtros
+          </button>
+        )}
         {/* ============================================================== */}
         {/* LEFT SIDEBAR: TiFlux Filter Panels */}
         {/* ============================================================== */}
-        <aside className="w-[230px] shrink-0 space-y-3.5">
+        {(!isNarrow || filtersOpen) && (
+        <aside id="schedule-filters" className="w-full lg:w-[230px] shrink-0 space-y-3.5">
           {/* Card 2: Filtrar */}
           <div className="bg-white border border-gray-200 rounded-[10px] p-3 shadow-2xs space-y-2.5">
             <div className="pb-2 border-b border-gray-100">
@@ -629,11 +649,12 @@ export function SchedulePage() {
             </div>
           </div>
         </aside>
+        )}
 
         {/* ============================================================== */}
         {/* MAIN CALENDAR AREA: TiFlux Weekly Time-Grid */}
         {/* ============================================================== */}
-        <main className="flex-1 min-w-0 bg-white border border-gray-200 rounded-[12px] shadow-2xs overflow-hidden flex flex-col">
+        <main className="w-full lg:w-auto flex-1 min-w-0 bg-white border border-gray-200 rounded-[12px] shadow-2xs overflow-hidden flex flex-col">
           {/* Calendar Navigation Toolbar */}
           <div className="flex flex-wrap items-center justify-between p-3.5 border-b border-gray-200 gap-3">
             {/* Left navigation: < > Hoje */}
@@ -757,7 +778,7 @@ export function SchedulePage() {
             <div className="overflow-x-auto flex-1 flex flex-col">
               <div
                 ref={gridBodyRef}
-                className="min-w-[800px] flex flex-col flex-1 overflow-y-auto max-h-[640px]"
+                className={`${viewMode === 'dia' ? '' : 'min-w-[800px] '}flex flex-col flex-1 overflow-y-auto max-h-[640px]`}
               >
                 {/* Day Header Row: Time gutter header + day columns (sticky so it scrolls in lockstep with the body, keeping columns aligned) */}
                 <div
@@ -1028,6 +1049,13 @@ function MonthView({ monthWeeks, currentDate, todayDateStr, appointments, onSele
           return (
             <div
               key={dateStr}
+              role="group"
+              aria-label={`${day.toLocaleDateString('pt-BR', {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
+              })}, ${dayApps.length === 1 ? '1 compromisso' : `${dayApps.length} compromissos`}`}
               onClick={() => onSelectDay(day)}
               className={`min-h-[96px] border-r border-b border-gray-100 p-1.5 cursor-pointer hover:bg-gray-50 transition-colors last:border-r-0 ${
                 isCurrentMonth ? 'bg-white' : 'bg-gray-50/50'
@@ -1057,7 +1085,7 @@ function MonthView({ monthWeeks, currentDate, todayDateStr, appointments, onSele
                       e.stopPropagation();
                       onSelectAppointment(app);
                     }}
-                    className={`w-full truncate text-left text-xs px-1 py-0.5 rounded text-white ${TYPE_BG[app.type]}`}
+                    className={`w-full truncate text-left text-xs px-1 py-0.5 min-h-6 rounded text-white ${TYPE_BG[app.type]}`}
                     
                     title={app.title}
                   >
@@ -1065,7 +1093,16 @@ function MonthView({ monthWeeks, currentDate, todayDateStr, appointments, onSele
                   </button>
                 ))}
                 {overflow > 0 && (
-                  <span className="block text-[10px] text-gray-500 px-1">+{overflow} mais</span>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onSelectDay(day);
+                    }}
+                    className="block w-full text-left text-xs text-gray-600 hover:text-gray-900 px-1 min-h-6 rounded ez-focus"
+                  >
+                    +{overflow} mais
+                  </button>
                 )}
               </div>
             </div>
