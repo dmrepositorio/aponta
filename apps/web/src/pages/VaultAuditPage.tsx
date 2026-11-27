@@ -186,8 +186,16 @@ export function VaultAuditPage() {
       {applied && !auditQuery.isLoading && !auditQuery.isError && (
         <EzCardItem flat className="overflow-hidden">
           <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 px-4 py-2 text-[13px] text-gray-600">
-            <span>Filtros aplicados: {describeFilters(applied, agentName)}</span>
-            {meta && <span>{meta.total === 1 ? '1 registro' : `${meta.total} registros`}</span>}
+            {/* Durante a transição a tabela ainda mostra a consulta anterior: o rótulo e o total só
+                aparecem quando descrevem os dados exibidos. */}
+            {auditQuery.isPlaceholderData ? (
+              <span role="status">Atualizando resultados...</span>
+            ) : (
+              <>
+                <span>Filtros aplicados: {describeFilters(applied, agentName)}</span>
+                {meta && <span>{meta.total === 1 ? '1 registro' : `${meta.total} registros`}</span>}
+              </>
+            )}
           </div>
           <div
             aria-busy={auditQuery.isPlaceholderData || undefined}
