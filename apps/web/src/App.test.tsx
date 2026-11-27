@@ -1,8 +1,13 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { configure, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { App } from './App';
 import { api } from './lib/api';
 import { useAuthStore } from './stores/authStore';
+
+// Estas telas são carregadas por import dinâmico (lazy); no runner lento do CI o primeiro carregamento
+// passa de 1s (padrão do waitFor/findBy) e o teste falhava por tempo, não por asserção (#492). Só o
+// prazo de espera sobe (testTimeout do vitest é 15s); nenhuma asserção muda.
+configure({ asyncUtilTimeout: 10000 });
 
 vi.mock('./lib/api', () => ({
   api: {
