@@ -8,7 +8,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 
 /**
- * Deliberately NOT guarded by JwtOrTokenAuthGuard/RolesGuard — health check
+ * Deliberately NOT guarded by JwtOrTokenAuthGuard/PermissionsGuard — health check
  * endpoints must be reachable by infra (load balancers, uptime monitors,
  * container orchestrators) without credentials. It exposes only a boolean
  * "up"/"down" status, never business data.

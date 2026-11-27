@@ -5,8 +5,8 @@ import { PERMISSIONS_KEY } from '../decorators/require-permission.decorator';
 import { PermissionsService } from '../../permissions/permissions.service';
 
 /**
- * Granular authorization (DMTE-84, Tarefa 2), checked alongside RolesGuard
- * on every controller. ADMIN keeps a full bypass — equivalent to holding
+ * Granular authorization (DMTE-84, Tarefa 2), the sole
+ * action guard on every controller (the old role-based guard was removed). ADMIN keeps a full bypass — equivalent to holding
  * every catalog permission — so a misconfigured PermissionGroup can never
  * lock an ADMIN out. TenantHelper/Role still decide tenant *visibility*;
  * this guard only decides *action* authorization.

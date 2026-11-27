@@ -12,11 +12,11 @@ const GROUP_ONLY_KEYS = ['VIEW_TICKET_VALUES', 'EDIT_WORKLOG_START_TIME', 'RELEA
  *
  * DMTE-126 (retrabalho da Tarefa 2, QA rejeitou DMTE-121): a primeira
  * versão só copiou o que fazia sentido "à mão" e deixou buracos reais —
- * o enforcement já trocou de `RolesGuard`/`@Roles` para `PermissionsGuard`/
+ * o enforcement já trocou do guard por perfil (removido) para `PermissionsGuard`/
  * `@RequirePermission` nesta mesma branch, então uma chave ausente aqui é
  * perda de acesso em produção, não hipotética. As listas abaixo foram
  * recalculadas pelo cruzamento completo de `grep -rn "@RequirePermission("
- * apps/api/src` contra o `@Roles(...)` que existia no commit `d729bf9`
+ * apps/api/src` contra o antigo decorator de perfis que existia no commit `d729bf9`
  * (pré-Tarefa 2, 105 ocorrências em 20 controllers) — ver o comentário em
  * `seed.spec.ts` para a tabela completa chave-por-chave.
  *
