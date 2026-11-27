@@ -31,11 +31,23 @@ describe('TechnicalGroupsService', () => {
   });
 
   describe('findAll', () => {
-    it('lists groups ordered by name', async () => {
+    it('lists groups ordered by name with only the member and service desk counts', async () => {
       await service.findAll();
+      // Contrato aditivo: _count (so numeros), sem include/select de membros ou mesas.
       expect(mockPrisma.technicalGroup.findMany).toHaveBeenCalledWith({
         orderBy: { name: 'asc' },
+        include: { _count: { select: { members: true, serviceDeskLinks: true } } },
       });
+    });
+
+    it('returns the groups with their _count as the database gave them', async () => {
+      const rows = [
+        { id: 'tg-1', name: 'A', _count: { members: 2, serviceDeskLinks: 3 } },
+        { id: 'tg-2', name: 'B', _count: { members: 0, serviceDeskLinks: 1 } },
+      ];
+      mockPrisma.technicalGroup.findMany.mockResolvedValue(rows);
+
+      await expect(service.findAll()).resolves.toEqual(rows);
     });
   });
 
