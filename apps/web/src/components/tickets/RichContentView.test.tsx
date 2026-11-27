@@ -68,6 +68,47 @@ describe('RichContentView', () => {
     expect(document.querySelector('script')).toBeNull();
   });
 
+  it('DET-20: imagem sem alt é decorativa (alt vazio), sem o rótulo genérico repetido', () => {
+    const { container } = render(
+      <RichContentView content={'<p>Veja</p><img src="/uploads/a.png"><img src="/uploads/b.png" alt="">'} />,
+    );
+
+    const images = Array.from(container.querySelectorAll('img'));
+    expect(images).toHaveLength(2);
+    images.forEach((image) => expect(image).toHaveAttribute('alt', ''));
+    expect(screen.queryByAltText('Evidência')).not.toBeInTheDocument();
+  });
+
+  it('DET-20: markdown sem texto alternativo também fica com alt vazio', () => {
+    const { container } = render(<RichContentView content={'Erro:\n![](https://cdn.aponta.com/tela.png)'} />);
+
+    expect(container.querySelector('img')).toHaveAttribute('alt', '');
+  });
+
+  it('DET-20: link e imagem avisam que abrem em nova aba', () => {
+    const { container } = render(
+      <RichContentView content='<p>Veja <a href="https://aponta.dev">o portal</a></p><img src="/uploads/a.png" alt="Tela">' />,
+    );
+
+    expect(screen.getByRole('link', { name: 'o portal' })).toHaveAttribute('title', 'Abre em nova aba');
+    expect(container.querySelector('img')?.closest('a')).toHaveAttribute('title', 'Abre em nova aba');
+  });
+
+  it('DET-20: continua removendo script, handlers e URLs perigosas', () => {
+    const { container } = render(
+      <RichContentView
+        content={
+          '<p onclick="x()">Ok</p><img src="/uploads/a.png" onerror="alert(1)" style="x"><a href="javascript:alert(1)" onclick="y()">mau</a><iframe src="https://e.com"></iframe><img src="data:image/png;base64,abc">'
+        }
+      />,
+    );
+
+    expect(container.querySelector('script, iframe, object')).toBeNull();
+    expect(container.querySelector('[onclick], [onerror], [style]')).toBeNull();
+    expect(container.querySelectorAll('img')).toHaveLength(1);
+    expect(screen.getByText('mau').closest('a')).toBeNull();
+  });
+
   it('keeps safe links and unwraps unknown tags', () => {
     render(
       <RichContentView content='<p>Veja <a href="https://aponta.dev">o portal</a> e <unknown>texto</unknown></p>' />,

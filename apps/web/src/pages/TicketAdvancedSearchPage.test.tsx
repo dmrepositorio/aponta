@@ -64,6 +64,30 @@ describe('TicketAdvancedSearchPage (D4)', () => {
     expect(screen.getByRole('heading', { name: 'Busca avançada' }).closest('[class*="max-w-"]')).toBeNull();
   });
 
+  it('ADV-07: sem mesa o Estágio explica por que está desabilitado, e a ajuda some ao escolher a mesa', async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    expect(screen.getByLabelText(/estágio/i, { selector: 'select' })).toBeDisabled();
+    expect(screen.getByText('Selecione uma mesa de serviço primeiro')).toBeInTheDocument();
+
+    await screen.findByRole('option', { name: 'Suporte N1', hidden: true }, { timeout: 5000 });
+    await user.selectOptions(screen.getByLabelText(/mesa de serviço/i, { selector: 'select' }), 'sd-1');
+
+    await waitFor(() => expect(screen.queryByText('Selecione uma mesa de serviço primeiro')).not.toBeInTheDocument(), {
+      timeout: 5000,
+    });
+  });
+
+  it('ADV-09: "Voltar para Tickets" no topo leva à lista', async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(screen.getByRole('link', { name: 'Voltar para Tickets' }));
+
+    expect(await screen.findByTestId('location-probe', undefined, { timeout: 5000 })).toHaveTextContent(/^\/$/);
+  });
+
   it('renders every D4 field for AGENT/ADMIN', async () => {
     renderPage();
 
