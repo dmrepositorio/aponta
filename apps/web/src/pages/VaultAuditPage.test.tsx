@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { AxiosError } from 'axios';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { api } from '../lib/api';
 import { VaultAuditPage } from './VaultAuditPage';
@@ -539,5 +539,62 @@ describe('VaultAuditPage — rótulo e total acompanham os dados exibidos (QA B1
     expect(screen.queryByText(/filtros aplicados/i)).not.toBeInTheDocument();
     expect(screen.queryByText('40 registros')).not.toBeInTheDocument();
     expect(screen.queryByText('Servidor FTP')).not.toBeInTheDocument();
+  });
+});
+
+describe('VaultAuditPage — auditoria de design P3-I (AUD-09, AUD-10)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('AUD-09: ação fora do mapa aparece como "Ação desconhecida (CÓDIGO)", nunca só o código cru', async () => {
+    vi.mocked(api.get).mockImplementation(async (url: string) => {
+      if (url === '/users/agents') return { data: agents };
+      if (url === '/vault/audit') {
+        return {
+          data: {
+            data: [{ ...auditLogs[0], id: 'log-2', action: 'NEW_ACTION' }],
+            meta: { total: 1, page: 1, limit: 20, totalPages: 1 },
+          },
+        };
+      }
+      throw new Error(`Unexpected GET ${url}`);
+    });
+    const user = userEvent.setup();
+    renderPage();
+
+    await screen.findByRole('combobox', { name: 'Atendente' }, { timeout: 5000 });
+    await user.click(screen.getByRole('button', { name: /exibir/i }));
+
+    const table = await screen.findByRole('table', undefined, { timeout: 5000 });
+    expect(within(table).getByText('Ação desconhecida (NEW_ACTION)')).toBeInTheDocument();
+  });
+
+  it('AUD-10: o cabeçalho tem Voltar que leva ao Cofre', async () => {
+    mockGets();
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={['/vault/audit']}>
+          <Routes>
+            <Route path="/vault/audit" element={<VaultAuditPage />} />
+            <Route path="/vault" element={<div>Tela do cofre</div>} />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>,
+    );
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole('button', { name: 'Voltar' }));
+
+    expect(await screen.findByText('Tela do cofre', undefined, { timeout: 5000 })).toBeInTheDocument();
+  });
+
+  it('AUD-10: o aviso de IP e horário é texto de apoio, não um alerta de status permanente', () => {
+    mockGets();
+    renderPage();
+
+    const notice = screen.getByText(/o endereço ip de origem e o horário de cada ação são registrados/i);
+    expect(notice.closest('[role="status"], [role="alert"]')).toBeNull();
   });
 });

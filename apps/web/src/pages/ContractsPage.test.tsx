@@ -1521,3 +1521,81 @@ describe('ContractsPage F3-34', () => {
     });
   });
 });
+
+describe('ContractsPage — auditoria de design P3-I (CTR-05, CTR-10, CTR-11)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    useAuthStore.setState({ token: null, user: null });
+    localStorage.clear();
+    vi.mocked(api.get).mockImplementation(async (url) => ({
+      data: url === '/contracts/c1' ? contracts[0] : contracts,
+    }));
+  });
+
+  const openFirstDetail = async () => {
+    await screen.findByText('Empresa A', undefined, { timeout: 5000 });
+    fireEvent.click(screen.getAllByRole('button', { name: /Ver detalhes/ })[0]);
+    await screen.findByText('Mesas cobertas', undefined, { timeout: 5000 });
+  };
+
+  it('CTR-05: a configuração da tela tem um só ponto de entrada (a engrenagem), sem item duplicado no menu de modo', async () => {
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    renderPage();
+    await screen.findByText('Empresa A', undefined, { timeout: 5000 });
+
+    await user.click(screen.getByTestId('ez-toolbar-mode-menu-button'));
+
+    expect(screen.queryByTestId('ez-toolbar-open-grid-config')).not.toBeInTheDocument();
+    expect(screen.queryByRole('menuitem', { name: /configurar grade/i })).not.toBeInTheDocument();
+    await user.click(screen.getByTestId('ez-toolbar-screen-config-button'));
+    expect(await screen.findByTestId('ez-entity-screen-config-modal', undefined, { timeout: 5000 })).toBeInTheDocument();
+  });
+
+  it('CTR-10: o detalhe agrupa os dados em Identificação, Vigência e Financeiro para quem vê valores', async () => {
+    loginAs('ADMIN');
+    renderPage();
+    await openFirstDetail();
+
+    const identificacao = screen.getByRole('group', { name: 'Identificação' });
+    expect(within(identificacao).getByText('Empresa')).toBeInTheDocument();
+    expect(within(identificacao).getByText('Mesas cobertas')).toBeInTheDocument();
+    const vigencia = screen.getByRole('group', { name: 'Vigência' });
+    expect(within(vigencia).getByText('Início da vigência')).toBeInTheDocument();
+    const financeiro = screen.getByRole('group', { name: 'Financeiro' });
+    expect(within(financeiro).getByText('Valor mensal')).toBeInTheDocument();
+  });
+
+  it('CTR-10: o grupo Financeiro não existe para quem não vê valores', async () => {
+    loginAs('AGENT');
+    renderPage();
+    await openFirstDetail();
+
+    expect(screen.getByRole('group', { name: 'Identificação' })).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: 'Vigência' })).toBeInTheDocument();
+    expect(screen.queryByRole('group', { name: 'Financeiro' })).not.toBeInTheDocument();
+  });
+
+  it('CTR-11: "Editar contrato" fica no cabeçalho da página, acima do detalhe, e abre o formulário', async () => {
+    loginAs('ADMIN');
+    renderPage();
+    await openFirstDetail();
+
+    const edit = screen.getByRole('button', { name: 'Editar contrato' });
+    const header = screen.getByRole('heading', { level: 1 }).closest('div.border-b') as HTMLElement;
+    expect(within(header).getByRole('button', { name: 'Editar contrato' })).toBe(edit);
+    expect(screen.getAllByRole('button', { name: 'Editar contrato' })).toHaveLength(1);
+
+    fireEvent.click(edit);
+    expect(await screen.findByLabelText('Nome do contrato', undefined, { timeout: 5000 })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Editar contrato' })).not.toBeInTheDocument();
+  });
+
+  it('CTR-11: AGENT não vê "Editar contrato" no cabeçalho', async () => {
+    loginAs('AGENT');
+    renderPage();
+    await openFirstDetail();
+
+    expect(screen.queryByRole('button', { name: 'Editar contrato' })).not.toBeInTheDocument();
+  });
+});

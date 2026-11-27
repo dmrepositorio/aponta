@@ -2038,3 +2038,82 @@ describe('VaultPage — campo de senha do modal (VLT-11)', () => {
     expect(fieldFor(edited.dialog, 'Senha')).not.toBeRequired();
   });
 });
+
+describe('VaultPage — auditoria de design P3-I (VLT-08, VLT-12, VLT-13)', () => {
+  const searchParamsSent = () =>
+    vi
+      .mocked(api.get)
+      .mock.calls.filter(([url]) => url === '/vault/credentials')
+      .map(([, config]) => (config as { params?: { search?: string } } | undefined)?.params?.search)
+      .filter((search): search is string => search !== undefined);
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    useAuthStore.setState({ token: null, user: null });
+    window.confirm = vi.fn(() => true);
+    mockDefaultGets();
+  });
+
+  it('VLT-08: consulta uma só vez depois de digitar em sequência (debounce)', async () => {
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    renderPage();
+    await screen.findByText('Servidor FTP', undefined, { timeout: 5000 });
+
+    await user.type(screen.getByPlaceholderText('Buscar senha...'), 'ftp');
+
+    await waitFor(() => expect(searchParamsSent()).toContain('ftp'), { timeout: 5000 });
+    expect(searchParamsSent()).toEqual(['ftp']);
+  });
+
+  it('VLT-08: mostra a contagem de senhas da lista', async () => {
+    loginAs('ADMIN');
+    renderPage();
+
+    expect(await screen.findByText('2 senhas', undefined, { timeout: 5000 })).toBeInTheDocument();
+  });
+
+  it('VLT-08: usa o singular com uma senha', async () => {
+    vi.mocked(api.get).mockImplementation(async (url: string) => {
+      if (url === '/vault/folders') return { data: folders };
+      return { data: { data: [credentials[0]], meta: { total: 1, page: 1, limit: 10, totalPages: 1 } } };
+    });
+    loginAs('ADMIN');
+    renderPage();
+
+    expect(await screen.findByText('1 senha', undefined, { timeout: 5000 })).toBeInTheDocument();
+  });
+
+  it('VLT-12: ADMIN vê Nova senha e Nova pasta sem abrir menu algum', async () => {
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    renderPage();
+    await screen.findByText('Servidor FTP', undefined, { timeout: 5000 });
+
+    expect(screen.queryByRole('button', { name: 'Ações' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Nova pasta' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Nova senha' }));
+
+    expect(await screen.findByRole('dialog', { name: 'Nova senha' })).toBeInTheDocument();
+  });
+
+  it('VLT-12: AGENT não vê Nova senha nem Nova pasta', async () => {
+    loginAs('AGENT');
+    renderPage();
+    await screen.findByText('Servidor FTP', undefined, { timeout: 5000 });
+
+    expect(screen.queryByRole('button', { name: 'Nova senha' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Nova pasta' })).not.toBeInTheDocument();
+  });
+
+  it('VLT-13: a tabela tem nome acessível e os cabeçalhos de coluna têm scope="col"', async () => {
+    loginAs('ADMIN');
+    renderPage();
+    await screen.findByText('Servidor FTP', undefined, { timeout: 5000 });
+
+    const table = screen.getByRole('table', { name: 'Senhas do cofre' });
+    const headers = within(table).getAllByRole('columnheader');
+    expect(headers.length).toBeGreaterThan(0);
+    for (const header of headers) expect(header).toHaveAttribute('scope', 'col');
+  });
+});
