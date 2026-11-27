@@ -26,3 +26,8 @@ export function brasiliaDayStartIso(day: string): string {
 export function billingMonthStartIso(month: string): string {
   return brasiliaDayStartIso(`${month}-01`);
 }
+
+/** Last millisecond of a civil day in the contract timezone. Neutral stub; real implementation in the GREEN commit. */
+export function brasiliaDayEndIso(_day: string): string {
+  return '';
+}
