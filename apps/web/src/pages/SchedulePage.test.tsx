@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { api } from '../lib/api';
 import { useAuthStore } from '../stores/authStore';
 import { SchedulePage } from './SchedulePage';
@@ -484,5 +484,122 @@ describe('SchedulePage', () => {
         await screen.findAllByRole('button', { name: /adicionar compromisso às 09:00/i }),
       ).toHaveLength(1);
     });
+  });
+  describe('vista Mês: dia, excedente e alvos (SCH-10)', () => {
+    const sameDay = (title: string, hour: number, n: number) => ({
+      ...mockAppointments[0],
+      id: `app-${n}`,
+      title,
+      startTime: new Date(now.getFullYear(), now.getMonth(), now.getDate(), hour, 0, 0).toISOString(),
+      endTime: new Date(now.getFullYear(), now.getMonth(), now.getDate(), hour, 30, 0).toISOString(),
+    });
+    const fiveToday = [8, 9, 10, 11, 12].map((h, i) => sameDay(`Compromisso ${i + 1}`, h, i + 1));
+
+    it('"+N mais" é botão que abre o dia na vista Dia', async () => {
+      const user = userEvent.setup();
+      vi.mocked(api.get).mockResolvedValue({ data: fiveToday });
+      loginAs('AGENT');
+      renderPage();
+
+      await user.click(screen.getByRole('button', { name: 'Mês' }));
+      await screen.findByText('Compromisso 1', {}, { timeout: 5000 });
+      const more = screen.queryByRole('button', { name: /\+2 mais/i });
+      expect(more).toBeInTheDocument();
+      await user.click(more as HTMLElement);
+
+      await waitFor(
+        () => expect(screen.getByRole('button', { name: 'Dia' })).toHaveAttribute('aria-pressed', 'true'),
+        { timeout: 5000 },
+      );
+      const full = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' });
+      expect(screen.getByText(new RegExp(`^${full.split(',')[0]}`, 'i'))).toBeInTheDocument();
+    });
+
+    it('chips de compromisso têm altura mínima de 24 px', async () => {
+      const user = userEvent.setup();
+      vi.mocked(api.get).mockResolvedValue({ data: fiveToday });
+      loginAs('AGENT');
+      renderPage();
+
+      await user.click(screen.getByRole('button', { name: 'Mês' }));
+      await screen.findByText('Compromisso 1', {}, { timeout: 5000 });
+      expect(screen.getByRole('button', { name: 'Compromisso 1' })).toHaveClass('min-h-6');
+    });
+
+    it('cada célula do dia tem rótulo com a data completa e a quantidade de compromissos', async () => {
+      const user = userEvent.setup();
+      vi.mocked(api.get).mockResolvedValue({ data: fiveToday });
+      loginAs('AGENT');
+      renderPage();
+
+      await user.click(screen.getByRole('button', { name: 'Mês' }));
+      const full = new Date().toLocaleDateString('pt-BR', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      });
+      await screen.findByText('Compromisso 1', {}, { timeout: 5000 });
+      expect(screen.queryByRole('group', { name: `${full}, 5 compromissos` })).toBeInTheDocument();
+    });
+  });
+
+  describe('tela estreita (SCH-08)', () => {
+    const originalMatchMedia = window.matchMedia;
+    beforeEach(() => {
+      Object.defineProperty(window, 'matchMedia', {
+        configurable: true,
+        writable: true,
+        value: (query: string) => ({
+          matches: query.includes('max-width'),
+          media: query,
+          addEventListener: () => undefined,
+          removeEventListener: () => undefined,
+        }),
+      });
+    });
+    afterEach(() => {
+      Object.defineProperty(window, 'matchMedia', {
+        configurable: true,
+        writable: true,
+        value: originalMatchMedia,
+      });
+    });
+
+    it('abre na vista Dia', async () => {
+      vi.mocked(api.get).mockResolvedValue({ data: [] });
+      loginAs('AGENT');
+      renderPage();
+
+      expect(screen.getByRole('button', { name: 'Dia' })).toHaveAttribute('aria-pressed', 'true');
+      expect(screen.getByRole('button', { name: 'Semana' })).toHaveAttribute('aria-pressed', 'false');
+    });
+
+    it('esconde os filtros por padrão e os revela no botão Filtros', async () => {
+      const user = userEvent.setup();
+      vi.mocked(api.get).mockResolvedValue({ data: [] });
+      loginAs('AGENT');
+      renderPage();
+
+      const toggle = screen.queryByRole('button', { name: /^filtros$/i }) as HTMLElement;
+      expect(toggle).toBeInTheDocument();
+      expect(toggle).toHaveAttribute('aria-expanded', 'false');
+      expect(screen.queryByRole('checkbox', { name: /agenda/i })).not.toBeInTheDocument();
+
+      await user.click(toggle);
+
+      expect(toggle).toHaveAttribute('aria-expanded', 'true');
+      expect(screen.getAllByRole('checkbox').length).toBeGreaterThan(0);
+    });
+  });
+
+  it('em tela larga abre na vista Semana, com filtros visíveis e sem botão Filtros', () => {
+    vi.mocked(api.get).mockResolvedValue({ data: [] });
+    loginAs('AGENT');
+    renderPage();
+
+    expect(screen.getByRole('button', { name: 'Semana' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.queryByRole('button', { name: /^filtros$/i })).not.toBeInTheDocument();
+    expect(screen.getAllByRole('checkbox').length).toBeGreaterThan(0);
   });
 });
