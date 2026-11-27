@@ -27,7 +27,14 @@ export function billingMonthStartIso(month: string): string {
   return brasiliaDayStartIso(`${month}-01`);
 }
 
-/** Last millisecond of a civil day in the contract timezone. Neutral stub; real implementation in the GREEN commit. */
-export function brasiliaDayEndIso(_day: string): string {
-  return '';
+/**
+ * Last millisecond of a civil day in the contract timezone: the start of the
+ * following day minus 1 ms, so an inclusive "até" filter takes the whole day.
+ */
+export function brasiliaDayEndIso(day: string): string {
+  brasiliaDayStartIso(day); // valida o dia antes de somar
+  const next = new Date(`${day}T00:00:00.000Z`);
+  next.setUTCDate(next.getUTCDate() + 1);
+  const nextStart = Date.parse(brasiliaDayStartIso(next.toISOString().slice(0, 10)));
+  return new Date(nextStart - 1).toISOString();
 }

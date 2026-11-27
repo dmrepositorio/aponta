@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { AxiosError } from 'axios';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
@@ -94,8 +94,8 @@ describe('VaultAuditPage', () => {
     await waitFor(() => {
       expect(screen.getByText('Servidor FTP')).toBeInTheDocument();
     });
-    expect(screen.getByText('Bruno Agente')).toBeInTheDocument();
-    expect(screen.getByText('Revelou a senha')).toBeInTheDocument();
+    expect(within(screen.getByRole('table')).getByText('Bruno Agente')).toBeInTheDocument();
+    expect(within(screen.getByRole('table')).getByText('Revelou a senha')).toBeInTheDocument();
     expect(screen.getByText('10.0.0.5')).toBeInTheDocument();
   });
 
@@ -330,7 +330,7 @@ describe('VaultAuditPage — Atendente e Ação de seleção única (AUD-03)', (
     await waitFor(() => expect(auditCalls()).toHaveLength(1));
     expect(auditCalls()[0].actorId).toBe('agent-1');
 
-    await chooseOption(user, 'Atendente', 'Todos');
+    await chooseOption(user, 'Atendente', 'Todos os atendentes');
     await user.click(screen.getByRole('button', { name: /exibir/i }));
     await waitFor(() => expect(auditCalls()).toHaveLength(2));
     expect(auditCalls()[1].actorId).toBeUndefined();

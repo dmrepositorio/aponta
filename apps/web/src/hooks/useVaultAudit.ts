@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { api } from '../lib/api';
 import { VaultListMeta } from './useVault';
 
@@ -39,6 +39,11 @@ export interface VaultAuditFilters {
  * GET /vault/audit (ADMIN only). `enabled` defaults to false so the screen
  * only fetches once the user presses "Exibir" (Tiflux parity: filters are
  * staged client-side first, matching the real vault audit screen).
+ *
+ * `filters` must be the filters already applied (never the draft being
+ * typed): they are the query key, so pagination keeps the same filters that
+ * produced the result. `keepPreviousData` keeps the previous page on screen
+ * while the next one loads (same pattern as useUsers).
  */
 export function useVaultAudit(filters: VaultAuditFilters, enabled: boolean) {
   return useQuery({
@@ -50,6 +55,7 @@ export function useVaultAudit(filters: VaultAuditFilters, enabled: boolean) {
       return data;
     },
     enabled,
+    placeholderData: keepPreviousData,
   });
 }
 
