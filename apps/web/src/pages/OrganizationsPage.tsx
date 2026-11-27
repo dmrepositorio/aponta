@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { api } from '../lib/api';
 import { useAuthStore } from '../stores/authStore';
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { createContext, useContext, useState, useMemo, useRef, useEffect } from 'react';
 import { Search, Trash2, CreditCard, Plus, RefreshCw, FilePlus } from 'lucide-react';
 import type { ColumnDef } from '@tanstack/react-table';
 import {
@@ -30,6 +30,7 @@ import {
   EzTextEdit,
   EzTextInput,
 } from '../components/ds';
+import type { EzTextEditProps } from '../components/ds/EzTextEdit';
 import { EzEmptyCard as EzErrorCard } from '../components/ds/EzEmptyCard';
 import { applyDynamicFilters } from '../components/ds/EzDynamicFilter';
 import type { EzDynamicFilterField, EzDynamicFilterRule } from '../components/ds/EzDynamicFilter';
@@ -144,6 +145,16 @@ function apiErrorMessage(err: unknown, fallback: string): string {
 function duplicateDocumentMessage(err: unknown): string | null {
   const response = (err as { response?: { status?: number; data?: { message?: string } } }).response;
   return response?.status === 409 && response.data?.message ? response.data.message : null;
+}
+
+/** ORG-15 (#517): estado de salvamento de cada célula editável da grade, por `${clienteId}:${campo}`. */
+type InlineCellState = Record<string, 'saving' | 'error'>;
+const InlineCellContext = createContext<InlineCellState>({});
+
+/** Célula editável da grade que mostra "Salvando…" ou a falha na própria linha (lê o contexto sem remontar a célula). */
+function OrgInlineEdit({ orgId, field, ...props }: EzTextEditProps & { orgId: string; field: string }) {
+  const state = useContext(InlineCellContext)[`${orgId}:${field}`];
+  return <EzTextEdit {...props} saving={state === 'saving'} error={state === 'error' ? 'Falha ao salvar' : undefined} />;
 }
 
 const orgFormSchema = z.object({
@@ -302,6 +313,7 @@ export function OrganizationsPage() {
   // A grade guarda a seleção por posição da linha; sem falha, remontá-la limpa a seleção das linhas que saíram da lista.
   const [gridKey, setGridKey] = useState(0);
   const [inlineError, setInlineError] = useState<string | null>(null);
+  const [inlineCells, setInlineCells] = useState<InlineCellState>({});
   const [createError, setCreateError] = useState<string | null>(null);
   const [duplicateDocument, setDuplicateDocument] = useState<string | null>(null);
   const duplicateTitle = `${duplicateDocument?.includes('CPF') ? 'CPF' : 'CNPJ'} já cadastrado`;
@@ -493,19 +505,34 @@ export function OrganizationsPage() {
     },
   });
 
+  const markInlineCells = (id: string, data: Partial<Organization>, state: 'saving' | 'error' | null) =>
+    setInlineCells((prev) => {
+      const next = { ...prev };
+      for (const field of Object.keys(data)) {
+        if (state) next[`${id}:${field}`] = state;
+        else delete next[`${id}:${field}`];
+      }
+      return next;
+    });
+
   const inlinePatchMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<Organization> }) => {
       const res = await api.patch<Organization>(`/organizations/${id}`, data);
       return res.data;
     },
-    onMutate: () => setInlineError(null),
-    onSuccess: () => {
+    onMutate: ({ id, data }) => {
+      setInlineError(null);
+      markInlineCells(id, data, 'saving');
+    },
+    onSuccess: (_data, { id, data }) => {
+      markInlineCells(id, data, null);
       void queryClient.invalidateQueries({ queryKey: ['organizations'] });
       if (detailOrgId) {
         void queryClient.invalidateQueries({ queryKey: ['organizations', detailOrgId] });
       }
     },
-    onError: (err) => {
+    onError: (err, { id, data }) => {
+      markInlineCells(id, data, 'error');
       const duplicate = duplicateDocumentMessage(err);
       if (duplicate) {
         setDuplicateDocument(duplicate);
@@ -611,7 +638,7 @@ export function OrganizationsPage() {
     onError: showOperationError,
   });
 
-  // Tiflux-parity (#57): aba "Relacionamentos" — Mesa<->Cliente N:N.
+  // Tiflux-parity (#57): aba "Mesas e grupos" — Mesa<->Cliente N:N.
   const linkDeskMutation = useMutation({
     mutationFn: async (deskId: string) => {
       await api.post(`/organizations/${detailOrgId}/service-desks/${deskId}`);
@@ -748,7 +775,9 @@ export function OrganizationsPage() {
         size: 240,
         meta: { truncate: true, hideBelowSm: true },
         cell: ({ row }) => (
-          <EzTextEdit
+          <OrgInlineEdit
+            orgId={row.original.id}
+            field="legalName"
             value={row.original.legalName || ''}
             placeholder="Razão Social"
             className="max-w-full text-xs text-gray-900 [&>span]:truncate"
@@ -769,7 +798,9 @@ export function OrganizationsPage() {
           const isCpf = row.original.documentType === 'CPF';
           const doc = isCpf ? row.original.cpf : row.original.cnpj;
           return (
-            <EzTextEdit
+            <OrgInlineEdit
+              orgId={row.original.id}
+              field={isCpf ? 'cpf' : 'cnpj'}
               value={doc ? (isCpf ? formatCpf(doc) : formatCnpj(doc)) : ''}
               placeholder={isCpf ? 'CPF' : 'CNPJ'}
               className="font-mono text-xs text-gray-700 whitespace-nowrap"
@@ -804,7 +835,9 @@ export function OrganizationsPage() {
         accessorKey: 'stateRegistration',
         header: 'Inscrição Estadual',
         cell: ({ row }) => (
-          <EzTextEdit
+          <OrgInlineEdit
+            orgId={row.original.id}
+            field="stateRegistration"
             value={row.original.stateRegistration || ''}
             placeholder="IE"
             className="text-xs text-gray-600"
@@ -820,7 +853,9 @@ export function OrganizationsPage() {
         accessorKey: 'municipalRegistration',
         header: 'Inscrição Municipal',
         cell: ({ row }) => (
-          <EzTextEdit
+          <OrgInlineEdit
+            orgId={row.original.id}
+            field="municipalRegistration"
             value={row.original.municipalRegistration || ''}
             placeholder="IM"
             className="text-xs text-gray-600"
@@ -836,7 +871,9 @@ export function OrganizationsPage() {
         accessorKey: 'workFolder',
         header: 'Pasta de Trabalho',
         cell: ({ row }) => (
-          <EzTextEdit
+          <OrgInlineEdit
+            orgId={row.original.id}
+            field="workFolder"
             value={row.original.workFolder || ''}
             placeholder="/pasta"
             className="text-xs font-mono text-gray-500"
@@ -852,7 +889,9 @@ export function OrganizationsPage() {
         accessorKey: 'serviceType',
         header: 'Perfil',
         cell: ({ row }) => (
-          <EzTextEdit
+          <OrgInlineEdit
+            orgId={row.original.id}
+            field="serviceType"
             value={row.original.serviceType || ''}
             placeholder="Perfil"
             className="text-xs text-gray-600"
@@ -868,7 +907,9 @@ export function OrganizationsPage() {
         accessorKey: 'healthStatus',
         header: 'Saúde',
         cell: ({ row }) => (
-          <EzTextEdit
+          <OrgInlineEdit
+            orgId={row.original.id}
+            field="healthStatus"
             value={row.original.healthStatus || ''}
             placeholder="Saúde"
             className="text-xs text-gray-600"
@@ -1233,34 +1274,36 @@ className="isolate flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll
                       />
                     </div>
                   ) : (
-                    <EzEntityGrid
-                      tableLabel="Organizações"
-                      key={gridKey}
-                      columns={orgColumns}
-                      data={filteredOrgs}
-                      showRowNumbers
-                      compactBelowSm
-                      enableColumnGrouping={false}
-                      selectable
-                      showGridCornerMenu
-                      enableColumnMenu
-                      enableColumnFilters
-                      zebraStriping
-                      density={screenConfig.grid.density}
-                      initialColumnVisibility={screenConfig.grid.columnVisibility}
-                      showStatusBar={false}
-                      enableColumnReorder
-                      columnOrder={screenConfig.grid.columnOrder}
-                      onColumnOrderChange={setColumnOrder}
-                      pageSize={10}
-                      onSelectionChange={(selected) => {
-                        setSelectedOrgs(selected);
-                        if (selected.length > 0) {
-                          const idx = filteredOrgs.findIndex((o) => o.id === selected[0].id);
-                          if (idx !== -1) setFocusedIndex(idx);
-                        }
-                      }}
-                    />
+                    <InlineCellContext.Provider value={inlineCells}>
+                      <EzEntityGrid
+                        tableLabel="Organizações"
+                        key={gridKey}
+                        columns={orgColumns}
+                        data={filteredOrgs}
+                        showRowNumbers
+                        compactBelowSm
+                        enableColumnGrouping={false}
+                        selectable
+                        showGridCornerMenu
+                        enableColumnMenu
+                        enableColumnFilters
+                        zebraStriping
+                        density={screenConfig.grid.density}
+                        initialColumnVisibility={screenConfig.grid.columnVisibility}
+                        showStatusBar={false}
+                        enableColumnReorder
+                        columnOrder={screenConfig.grid.columnOrder}
+                        onColumnOrderChange={setColumnOrder}
+                        pageSize={10}
+                        onSelectionChange={(selected) => {
+                          setSelectedOrgs(selected);
+                          if (selected.length > 0) {
+                            const idx = filteredOrgs.findIndex((o) => o.id === selected[0].id);
+                            if (idx !== -1) setFocusedIndex(idx);
+                          }
+                        }}
+                      />
+                    </InlineCellContext.Provider>
                   )}
                 </div>
               </div>
@@ -1512,7 +1555,7 @@ className="isolate flex-1 p-3 overflow-x-auto touch-pan-x touch-pan-y overscroll
                   { id: 'general', label: 'Geral' },
                   { id: 'users', label: 'Usuários' },
                   { id: 'resources', label: 'Recursos' },
-                  { id: 'relationships', label: 'Relacionamentos' },
+                  { id: 'relationships', label: 'Mesas e grupos' },
                   { id: 'billing', label: 'Faturamento' },
                 ]}
                 activeTab={detailTab}

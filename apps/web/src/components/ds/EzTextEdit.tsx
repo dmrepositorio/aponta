@@ -1,4 +1,4 @@
-import { InputHTMLAttributes, KeyboardEvent, forwardRef, useState } from 'react';
+import { InputHTMLAttributes, KeyboardEvent, forwardRef, useId, useState } from 'react';
 import { cn } from './utils';
 import { Pencil } from 'lucide-react';
 
@@ -16,6 +16,14 @@ export interface EzTextEditProps
    * Optional extra callback fired alongside `onChange` when the value is saved.
    */
   onSave?: (value: string) => void;
+  /**
+   * The saved value is being persisted: shows "Salvando…" next to the text and marks the button busy.
+   */
+  saving?: boolean;
+  /**
+   * Message of the last failed save, shown next to the text and linked to the button.
+   */
+  error?: string;
 }
 
 /**
@@ -23,7 +31,8 @@ export interface EzTextEditProps
  * Clickable text that turns into an inline editable input; Enter or blur saves it.
  */
 export const EzTextEdit = forwardRef<HTMLInputElement, EzTextEditProps>(
-  ({ value, onChange, onSave, className, disabled, placeholder, ...props }, ref) => {
+  ({ value, onChange, onSave, saving, error, className, disabled, placeholder, ...props }, ref) => {
+    const feedbackId = useId();
     const [editing, setEditing] = useState(false);
     const [draft, setDraft] = useState(value);
 
@@ -75,23 +84,36 @@ export const EzTextEdit = forwardRef<HTMLInputElement, EzTextEditProps>(
     }
 
     return (
-      <button
-        type="button"
-        onClick={startEdit}
-        disabled={disabled}
-        className={cn(
-          'group inline-flex items-center gap-1.5 px-2 py-1 rounded-[8px] text-[14px] text-gray-900 text-left transition-colors',
-          'hover:bg-gray-90 disabled:text-gray-400 disabled:cursor-not-allowed disabled:hover:bg-transparent',
-          className
-        )}
-      >
-        <span className={cn(!value && 'text-gray-400')}>
-          {value || placeholder || 'Clique para editar'}
+      <>
+        <button
+          type="button"
+          onClick={startEdit}
+          disabled={disabled}
+          aria-busy={saving || undefined}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? feedbackId : undefined}
+          className={cn(
+            'group inline-flex items-center gap-1.5 px-2 py-1 rounded-[8px] text-[14px] text-gray-900 text-left transition-colors',
+            'hover:bg-gray-90 disabled:text-gray-400 disabled:cursor-not-allowed disabled:hover:bg-transparent',
+            className
+          )}
+        >
+          <span className={cn(!value && 'text-gray-400')}>
+            {value || placeholder || 'Clique para editar'}
+          </span>
+          {!disabled && (
+            <Pencil className="w-3.5 h-3.5 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+          )}
+        </button>
+        <span aria-live="polite" className="contents">
+          {saving && <span className="ml-1 text-xs text-gray-600">Salvando…</span>}
+          {!saving && error && (
+            <span id={feedbackId} className="ml-1 text-xs text-red-700">
+              {error}
+            </span>
+          )}
         </span>
-        {!disabled && (
-          <Pencil className="w-3.5 h-3.5 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-        )}
-      </button>
+      </>
     );
   }
 );

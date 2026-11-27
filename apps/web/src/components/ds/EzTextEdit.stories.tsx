@@ -51,6 +51,24 @@ export const Disabled: Story = {
   },
 };
 
+export const Salvando: Story = {
+  args: {
+    id: 'text-edit-saving',
+    value: 'Inscrição 123',
+    onChange: () => undefined,
+    saving: true,
+  },
+};
+
+export const ComErro: Story = {
+  args: {
+    id: 'text-edit-error',
+    value: 'Inscrição 123',
+    onChange: () => undefined,
+    error: 'Falha ao salvar',
+  },
+};
+
 export const Interactive: Story = {
   render: () => {
     function Demo() {

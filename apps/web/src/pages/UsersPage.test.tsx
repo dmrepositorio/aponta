@@ -1102,8 +1102,8 @@ describe('UsersPage', () => {
       renderUsersPage();
       await screen.findByText('Ana Silva');
 
-      const tag = within(rowOf('Ana Silva')).getByText('Atendente');
-      expect(tag).toHaveAttribute('data-ez-tag');
+      const tag = within(rowOf('Ana Silva')).getByText('Atendente').closest('[data-ez-tag]');
+      expect(tag).not.toBeNull();
     });
 
     it('USR-11: the Nome column no longer has the fixed 170px cap and keeps the title', async () => {
@@ -1119,7 +1119,7 @@ describe('UsersPage', () => {
       renderUsersPage();
       await screen.findByText('Ana Silva');
 
-      expect(screen.queryByText('Marque usuários na grade para ativar ou inativar.')).not.toBeInTheDocument();
+      expect(screen.queryByText('Marque usuários na grade para ativar ou inativar.', { ignore: '[hidden]' })).not.toBeInTheDocument();
       expect(screen.queryByText(/selecionado\(s\)/)).not.toBeInTheDocument();
       for (const name of ['Ativar', 'Inativar']) {
         const button = screen.getByRole('button', { name });
@@ -1145,7 +1145,7 @@ describe('UsersPage', () => {
       await screen.findByText('Ana Silva');
 
       const pagination = screen.getByRole('button', { name: 'Página 2' }).closest('nav') as HTMLElement;
-      expect(within(pagination).getByText(/de 45/)).toBeInTheDocument();
+      expect(within(pagination).getByText('Mostrando 1–20 de 45')).toBeInTheDocument();
     });
   });
 

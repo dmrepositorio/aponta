@@ -75,6 +75,8 @@ const FILTER_FIELDS: EzDynamicFilterField[] = [
   { id: 'technicalGroup', label: 'Grupo de atendentes', getValue: (u: UserListItem) => u.technicalGroup?.name },
 ];
 
+const SELECT_HINT = 'Marque usuários na grade para ativar ou inativar.';
+
 const statusOf = (u: UserListItem) => (!u.active ? 'Inativo' : u.pending ? 'Convite pendente' : 'Ativo');
 
 function userColumns(onOpen: (id: string) => void): ColumnDef<UserListItem>[] {
@@ -82,11 +84,11 @@ function userColumns(onOpen: (id: string) => void): ColumnDef<UserListItem>[] {
     {
       id: 'name',
       header: 'Nome',
-      size: 170,
+      size: 240,
       meta: { truncate: true },
       accessorFn: (u) => u.name,
       cell: ({ row }) => (
-        <div className="min-w-0 max-w-[170px]">
+        <div className="min-w-0">
           <button
             type="button"
             title={row.original.name}
@@ -142,6 +144,7 @@ function userColumns(onOpen: (id: string) => void): ColumnDef<UserListItem>[] {
       size: 170,
       meta: { hideBelowSm: true },
       accessorFn: (u) => ROLE_LABELS[u.role] ?? u.role,
+      cell: ({ row }) => <EzTag label={ROLE_LABELS[row.original.role] ?? row.original.role} variant="gray" />,
     },
   ];
 }
@@ -359,6 +362,7 @@ function UsersPageContent() {
                   size="small"
                   label="Ativar"
                   disabled={selected.length === 0 || setUsersActive.isPending}
+                  disabledReason={selected.length === 0 ? SELECT_HINT : undefined}
                   onClick={() => setBatch(true)}
                 />
                 <EzButton
@@ -367,10 +371,11 @@ function UsersPageContent() {
                   size="small"
                   label="Inativar"
                   disabled={selected.length === 0 || setUsersActive.isPending}
+                  disabledReason={selected.length === 0 ? SELECT_HINT : undefined}
                   onClick={() => setBatch(false)}
                 />
                 <span aria-live="polite" className="text-xs text-gray-600">
-                  {selected.length === 0 ? 'Marque usuários na grade para ativar ou inativar.' : `${selected.length} selecionado(s)`}
+                  {selected.length > 0 && `${selected.length} selecionado(s)`}
                 </span>
               </div>
             )}

@@ -259,6 +259,7 @@ function GeneralPanel({ user, onCreated }: { user?: UserListItem; onCreated?: (u
             required
             value={draft.role}
             disabled={!isNew && !canChangeRole}
+            aria-describedby={!isNew && !canChangeRole ? 'user-role-blocked' : undefined}
             onChange={(e) => set('role', e.target.value)}
             hasError={!!errors.role}
             message={errors.role}
@@ -270,6 +271,11 @@ function GeneralPanel({ user, onCreated }: { user?: UserListItem; onCreated?: (u
               </option>
             ))}
           </EzComboBox>
+          {!isNew && !canChangeRole && (
+            <p id="user-role-blocked" className="text-xs text-gray-700">
+              Requer permissão para alterar o tipo de usuário.
+            </p>
+          )}
           {roleChanged && (
             <p className="text-xs text-gray-700">
               Trocar o tipo não troca os grupos de permissões já vinculados. Revise-os abaixo, se for preciso.
@@ -444,7 +450,13 @@ function SecurityPanel({ user }: { user: UserListItem }) {
             size="small"
             label={verb}
             disabled={!canToggle || selfBlocked || setActive.isPending}
-            disabledReason={canToggle && selfBlocked ? 'Você não pode inativar a si mesmo.' : undefined}
+            disabledReason={
+              !canToggle
+                ? 'Requer permissão para ativar e inativar usuários.'
+                : selfBlocked
+                  ? 'Você não pode inativar a si mesmo.'
+                  : undefined
+            }
             onClick={() => setConfirming(true)}
           />
         </div>

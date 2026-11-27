@@ -877,7 +877,7 @@ describe('OrganizationsPage', { timeout: 15000 }, () => {
 
     await openDetail(user);
     expect(document.body.textContent).not.toMatch(jargon);
-    for (const tab of [/recursos/i, /relacionamentos/i, /faturamento/i]) {
+    for (const tab of [/recursos/i, /mesas e grupos/i, /faturamento/i]) {
       await user.click(screen.getByRole('tab', { name: tab }));
       expect(document.body.textContent).not.toMatch(jargon);
       if (tab.source === 'relationships') {
