@@ -28,7 +28,6 @@ import { useAuthStore } from '../stores/authStore';
 import {
   EzAlert,
   EzButton,
-  EzActionsButton,
   EzCardItem,
   EzDialog,
   EzEmptyCard,
@@ -44,6 +43,7 @@ import {
 } from '../components/ds';
 
 const ROOT_FOLDER_ID = 'root';
+const SEARCH_DEBOUNCE_MS = 300;
 const PAGE_SIZE = 10;
 const REVEAL_TTL_MS = 30_000;
 const FEEDBACK_TTL_MS = 4_000;
@@ -300,7 +300,10 @@ export function VaultPage() {
   const canEdit = user?.role === 'ADMIN';
 
   const [selectedFolderId, setSelectedFolderId] = useState<string>(ROOT_FOLDER_ID);
+  // `searchInput` é o que está digitado; `search` é o termo aplicado à consulta, depois do debounce.
+  const [searchInput, setSearchInput] = useState('');
   const [search, setSearch] = useState('');
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const [page, setPage] = useState(1);
   // Keyed by `<credentialId>:<field>`; each revealed value hides itself after REVEAL_TTL_MS.
   const [revealed, setRevealed] = useState<Record<string, string>>({});
@@ -368,6 +371,7 @@ export function VaultPage() {
       clearTimeout(feedbackTimer.current);
       clearTimeout(announceTimer.current);
       clearTimeout(copiedTimer.current);
+      clearTimeout(searchTimer.current);
     };
   }, []);
 
@@ -424,10 +428,17 @@ export function VaultPage() {
     hideAllFields();
   };
 
+  // Os segredos revelados somem a cada tecla; só a consulta espera o debounce. Limpar aplica na hora.
   const handleSearch = (value: string) => {
-    setSearch(value);
-    setPage(1);
+    setSearchInput(value);
     hideAllFields();
+    clearTimeout(searchTimer.current);
+    const apply = () => {
+      setSearch(value);
+      setPage(1);
+    };
+    if (value === '') apply();
+    else searchTimer.current = setTimeout(apply, SEARCH_DEBOUNCE_MS);
   };
 
   const handleChangePage = (next: number) => {
@@ -671,7 +682,7 @@ export function VaultPage() {
               <EzTextInput
                 type="search"
                 placeholder="Buscar senha..."
-                value={search}
+                value={searchInput}
                 onChange={(e) => handleSearch(e.target.value)}
                 leftIcon={<Search className="h-4 w-4" />}
                 className="max-w-xs"
@@ -701,15 +712,19 @@ export function VaultPage() {
                 </div>
               )}
             </div>
-            {canEdit && (
-              <EzActionsButton
-                label="Ações"
-                actions={[
-                  { label: 'Nova pasta', icon: <FolderPlus className="h-4 w-4" />, onClick: () => openFolderModal({}) },
-                  { label: 'Nova senha', icon: <KeyRound className="h-4 w-4" />, onClick: () => openCredentialModal({}) },
-                ]}
-              />
-            )}
+            <div className="flex flex-wrap items-center gap-3">
+              {meta && !credentialsQuery.isPlaceholderData && (
+                <span className="text-sm text-gray-600">
+                  {meta.total === 1 ? '1 senha' : `${meta.total} senhas`}
+                </span>
+              )}
+              {canEdit && (
+                <>
+                  <EzButton variant="secondary" label="Nova pasta" leftIcon={FolderPlus} onClick={() => openFolderModal({})} />
+                  <EzButton variant="primary" label="Nova senha" leftIcon={KeyRound} onClick={() => openCredentialModal({})} />
+                </>
+              )}
+            </div>
           </div>
 
           <div role="status" aria-live="polite">
@@ -741,25 +756,19 @@ export function VaultPage() {
                 action={<EzButton variant="secondary" label="Limpar busca" onClick={() => handleSearch('')} />}
               />
             ) : (
-              <EzEmptyCard
-                title="Esta pasta ainda não tem senhas"
-                action={
-                  canEdit ? (
-                    <EzButton variant="primary" label="Nova senha" leftIcon={KeyRound} onClick={() => openCredentialModal({})} />
-                  ) : undefined
-                }
-              />
+              <EzEmptyCard title="Esta pasta ainda não tem senhas" />
             )
           ) : (
           <div className="overflow-x-auto">
           <table className="w-full text-left text-[14px]">
+            <caption className="sr-only">Senhas do cofre</caption>
             <thead className="bg-gray-90/60 text-gray-600">
               <tr>
-                <th className="px-4 py-2 font-medium">Nome</th>
-                <th className="px-4 py-2 font-medium">Usuário</th>
-                <th className="px-4 py-2 font-medium">Senha</th>
-                <th className="px-4 py-2 font-medium">URL</th>
-                {canEdit && <th className="px-4 py-2 font-medium text-right">Ações</th>}
+                <th scope="col" className="px-4 py-2 font-medium">Nome</th>
+                <th scope="col" className="px-4 py-2 font-medium">Usuário</th>
+                <th scope="col" className="px-4 py-2 font-medium">Senha</th>
+                <th scope="col" className="px-4 py-2 font-medium">URL</th>
+                {canEdit && <th scope="col" className="px-4 py-2 font-medium text-right">Ações</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">

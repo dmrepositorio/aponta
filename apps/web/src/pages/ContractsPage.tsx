@@ -392,6 +392,21 @@ export function ContractsPage() {
           }
           showBackButton={mode === 'form'}
           onBack={() => confirmFormExit(backToList)}
+          actions={
+            canManage &&
+            mode === 'form' &&
+            !creating &&
+            !editing &&
+            detail.data ? (
+              <EzButton
+                label="Editar contrato"
+                onClick={() => {
+                  save.reset();
+                  setEditing(true);
+                }}
+              />
+            ) : undefined
+          }
         />
       }
     >
@@ -428,7 +443,6 @@ export function ContractsPage() {
             onNext={handleNext}
             selectedCount={mode === 'list' ? selectedContracts.length : 0}
             onDelete={canManage ? handleDelete : undefined}
-            onOpenGridConfig={() => setIsScreenConfigModalOpen(true)}
             onOpenScreenConfig={() => setIsScreenConfigModalOpen(true)}
             recordCountText={
               mode === 'form' && selectedContractId
@@ -477,21 +491,10 @@ export function ContractsPage() {
                 />
               ) : (
                 detail.data && (
-                  <div className="space-y-6">
-                    <ContractDetail
-                      contract={detail.data}
-                      showFinancial={showFinancial}
-                    />
-                    {canManage && (
-                      <EzButton
-                        label="Editar contrato"
-                        onClick={() => {
-                          save.reset();
-                          setEditing(true);
-                        }}
-                      />
-                    )}
-                  </div>
+                  <ContractDetail
+                    contract={detail.data}
+                    showFinancial={showFinancial}
+                  />
                 )
               )}
             </div>

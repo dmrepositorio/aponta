@@ -1,5 +1,6 @@
 import { FormEvent, useState } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import {
   useVaultAudit,
   useVaultAgents,
@@ -7,7 +8,6 @@ import {
   CredentialAction,
 } from '../hooks/useVaultAudit';
 import {
-  EzAlert,
   EzButton,
   EzCardItem,
   EzComboBox,
@@ -27,11 +27,11 @@ import { formatDateTime } from '../lib/formatDateTime';
 const PAGE_SIZE = 20;
 
 /**
- * Ação labels (pt-BR), Tiflux-parity. Only actions that have a real emitter
- * in the Aponta vault are listed — "Restaurou a senha" / "Viu o histórico" /
- * "Abriu um anexo" from the Tiflux reference screen have no backing feature
- * here (no version history/attachments) and are intentionally left out of
- * this select, per the spec's "fora do escopo" note.
+ * Rótulos das ações (pt-BR), em paridade com o Tiflux. Só entram as ações que
+ * têm emissor real no cofre do Aponta: "Restaurou a senha", "Viu o histórico"
+ * e "Abriu um anexo" da tela de referência do Tiflux não têm funcionalidade
+ * correspondente aqui (sem histórico de versões nem anexos) e ficam de fora
+ * deste filtro, conforme a nota "fora do escopo" da especificação.
  */
 const ACTION_LABELS: Record<CredentialAction, string> = {
   CREATE_FOLDER: 'Criou a pasta',
@@ -56,6 +56,11 @@ interface DraftFilters {
 
 const EMPTY_FILTERS: DraftFilters = { from: '', to: '', actorId: '', action: '', query: '' };
 
+/** Uma ação que a API passe a emitir sem rótulo aqui não pode vazar o código técnico para a tela. */
+function actionLabel(action: string) {
+  return ACTION_LABELS[action as CredentialAction] ?? `Ação desconhecida (${action})`;
+}
+
 function formatDay(day: string) {
   const [year, month, date] = day.split('-');
   return `${date}/${month}/${year}`;
@@ -67,13 +72,14 @@ function describeFilters(filters: DraftFilters, agentName: (id: string) => strin
     filters.from && `de ${formatDay(filters.from)}`,
     filters.to && `até ${formatDay(filters.to)}`,
     filters.actorId && `atendente ${agentName(filters.actorId)}`,
-    filters.action && `ação ${ACTION_LABELS[filters.action as CredentialAction] ?? filters.action}`,
+    filters.action && `ação ${actionLabel(filters.action)}`,
     filters.query && `busca "${filters.query}"`,
   ].filter(Boolean);
   return parts.length ? parts.join(' · ') : 'nenhum';
 }
 
 export function VaultAuditPage() {
+  const navigate = useNavigate();
   // Rascunho: o que está digitado. Aplicado: o que gerou a tabela (null = ainda não consultou).
   const [draft, setDraft] = useState<DraftFilters>(EMPTY_FILTERS);
   const [applied, setApplied] = useState<DraftFilters | null>(null);
@@ -115,12 +121,14 @@ export function VaultAuditPage() {
   const forbidden = axios.isAxiosError(auditQuery.error) && auditQuery.error.response?.status === 403;
 
   return (
-    <EzPageLayout header={<EzPageHeader title="Auditoria do Cofre de Senhas" />}>
+    <EzPageLayout header={
+        <EzPageHeader title="Auditoria do Cofre de Senhas" showBackButton onBack={() => navigate('/vault')} />
+      }>
     <div className="space-y-6">
-      <EzAlert variant="info">
+      <p className="text-[13px] text-gray-600">
         O endereço IP de origem e o horário de cada ação são registrados e exibidos na tabela abaixo (horário de
         Brasília).
-      </EzAlert>
+      </p>
 
       <EzCardItem flat className="p-4">
         <form onSubmit={handleSubmit} aria-label="Filtros da auditoria">
@@ -220,7 +228,7 @@ export function VaultAuditPage() {
                     <tr key={log.id} className="hover:bg-gray-90/40">
                       <td className="px-4 py-3 text-gray-700">{formatDateTime(log.createdAt)}</td>
                       <td className="px-4 py-3 text-gray-700">{log.actorName}</td>
-                      <td className="px-4 py-3 text-gray-700">{ACTION_LABELS[log.action] ?? log.action}</td>
+                      <td className="px-4 py-3 text-gray-700">{actionLabel(log.action)}</td>
                       <td className="px-4 py-3 font-medium text-gray-900">{log.targetName}</td>
                       <td className="px-4 py-3 text-gray-500">{log.ipAddress ?? '—'}</td>
                     </tr>
