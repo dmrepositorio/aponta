@@ -32,12 +32,16 @@ import {
   assertDeskAllowsAddSlaHours,
   assertDeskAllowsCancel,
   assertDeskAllowsOpen,
-  assertDeskAllowsPauseResume,
-  assertDeskAllowsReopen,
   assertListedAgentMayMutate,
   isTicketBilled,
   SLA_PAUSE_STATUSES,
 } from '../service-desks/desk-policy';
+import {
+  allowedStatusesFor,
+  assertStatusChangeAllowed,
+  isReopenByAdmin as isReopenByAdminTransition,
+  StatusDeskPolicy,
+} from './ticket-status-transitions';
 
 const UNIQUE_CONSTRAINT_VIOLATION = 'P2002';
 const FOREIGN_KEY_VIOLATION = 'P2003';
@@ -149,32 +153,6 @@ function buildSlaOverrides(desk: {
     },
   };
 }
-
-/**
- * Allowed forward transitions in the ticket lifecycle state machine:
- *   OPEN -> IN_PROGRESS -> RESOLVED -> CLOSED
- * Backward transitions are rejected for everyone EXCEPT the single
- * "reopen" exception: CLOSED -> OPEN, and only for ADMIN. All other
- * backward/sideways/same-state jumps are rejected regardless of role.
- */
-const FORWARD_TRANSITIONS: Record<TicketStatus, TicketStatus[]> = {
-  OPEN: [TicketStatus.IN_PROGRESS, TicketStatus.ESCALATED],
-  IN_PROGRESS: [
-    TicketStatus.RESOLVED,
-    TicketStatus.PENDING_CUSTOMER,
-    TicketStatus.PENDING_APPROVAL,
-    TicketStatus.ON_HOLD,
-    TicketStatus.PENDING_SANKHYA,
-    TicketStatus.ESCALATED,
-  ],
-  PENDING_CUSTOMER: [TicketStatus.IN_PROGRESS, TicketStatus.RESOLVED],
-  PENDING_APPROVAL: [TicketStatus.IN_PROGRESS, TicketStatus.RESOLVED],
-  ON_HOLD: [TicketStatus.IN_PROGRESS, TicketStatus.RESOLVED],
-  PENDING_SANKHYA: [TicketStatus.IN_PROGRESS, TicketStatus.RESOLVED],
-  ESCALATED: [TicketStatus.IN_PROGRESS, TicketStatus.RESOLVED],
-  RESOLVED: [TicketStatus.CLOSED, TicketStatus.IN_PROGRESS],
-  CLOSED: [],
-};
 
 const MAX_PROTOCOL_RETRY_ATTEMPTS = 3;
 
@@ -759,6 +737,8 @@ export class TicketsService {
             allowCancelTicket: true,
             allowAddSlaHours: true,
             allowPauseResumeSla: true,
+            allowReopenUnbilled: true,
+            allowReopenBilled: true,
             evaluationEnabled: true,
             slaControlEnabled: true,
             listedGroupsOnly: true,
@@ -843,6 +823,12 @@ export class TicketsService {
       throw new NotFoundException(`Ticket with ID ${id} not found`);
     }
 
+    // GH-494: antes de apagar agents/agentGroups da mesa, calcula as transições que o PATCH aceitaria.
+    const allowedStatuses =
+      currentUser.role === Role.CLIENT
+        ? undefined
+        : await this.allowedStatusesForReader(ticket, currentUser);
+
     delete (ticket as Ticket & { requester?: any }).requester;
     const desk = (
       ticket as Ticket & {
@@ -875,7 +861,38 @@ export class TicketsService {
     withNextStages.nextStages =
       withNextStages.stage?.transitionsFrom?.map((item) => item.toStage) ?? [];
 
+    if (allowedStatuses) {
+      (withNextStages as { allowedStatuses?: TicketStatus[] }).allowedStatuses =
+        allowedStatuses;
+    }
+
     return this.decorateWithSlaStatus(withNextStages);
+  }
+
+  /** allowedStatuses do GET: a mesma regra do changeStatus (ticket-status-transitions.ts). */
+  private async allowedStatusesForReader(
+    ticket: Ticket & { serviceDesk?: unknown },
+    currentUser: CurrentUserPayload,
+  ): Promise<TicketStatus[]> {
+    const desk = (ticket.serviceDesk ?? null) as StatusDeskPolicy | null;
+    let billed = false;
+    if (
+      desk &&
+      ticket.status === TicketStatus.CLOSED &&
+      currentUser.role === Role.ADMIN
+    ) {
+      const worklogs = await this.prisma.worklog.findMany({
+        where: { ticketId: ticket.id, voidedAt: null },
+        select: { billable: true, valuationType: true, value: true },
+      });
+      billed = isTicketBilled(worklogs);
+    }
+    return allowedStatusesFor({
+      desk,
+      user: currentUser,
+      from: ticket.status,
+      billed,
+    });
   }
 
   /**
@@ -1079,24 +1096,20 @@ export class TicketsService {
     }
 
     const desk = await this.loadDeskPolicy(existing.serviceDeskId);
-    if (desk) {
-      assertListedAgentMayMutate({ desk, user: currentUser });
-      assertDeskAllowsPauseResume(desk, existing.status, newStatus);
-    }
-
-    const isReopenByAdmin =
-      existing.status === TicketStatus.CLOSED &&
-      newStatus === TicketStatus.OPEN &&
-      currentUser.role === 'ADMIN';
+    const isReopenByAdmin = isReopenByAdminTransition(
+      existing.status,
+      newStatus,
+      currentUser.role,
+    );
 
     let reopenReply: string | null = null;
+    let billed = false;
     if (isReopenByAdmin && desk) {
       const worklogs = await this.prisma.worklog.findMany({
         where: { ticketId: id, voidedAt: null },
         select: { billable: true, valuationType: true, value: true },
       });
-      const billed = isTicketBilled(worklogs);
-      assertDeskAllowsReopen(desk, billed);
+      billed = isTicketBilled(worklogs);
       const reply = billed
         ? desk.reopenDefaultReplyBilled
         : desk.reopenDefaultReplyUnbilled;
@@ -1105,33 +1118,14 @@ export class TicketsService {
       }
     }
 
-    // RBAC Security Check: Only ADMIN or CLIENT_MASTER can approve/move out of PENDING_APPROVAL
-    if (
-      existing.status === TicketStatus.PENDING_APPROVAL ||
-      newStatus === TicketStatus.PENDING_APPROVAL
-    ) {
-      if (
-        currentUser.role !== 'ADMIN' &&
-        currentUser.role !== 'CLIENT_MASTER' &&
-        currentUser.role !== 'AGENT_MASTER'
-      ) {
-        // Agents can move it to PENDING_APPROVAL, but let's say only ADMIN, AGENT_MASTER, CLIENT_MASTER can approve. Wait, this is controller logic. I'll just check if they are transitioning out of pending_approval.
-        if (existing.status === TicketStatus.PENDING_APPROVAL) {
-          throw new ForbiddenException(
-            'Somente perfis administrativos ou responsáveis MASTER podem liberar um chamado comercial.',
-          );
-        }
-      }
-    }
-
-    const isValidForwardTransition =
-      FORWARD_TRANSITIONS[existing.status]?.includes(newStatus);
-
-    if (!isValidForwardTransition && !isReopenByAdmin) {
-      throw new BadRequestException(
-        `Cannot transition ticket from ${existing.status} to ${newStatus}`,
-      );
-    }
+    // Regra única (mesma do allowedStatuses do GET): mesa, papel e máquina de estados.
+    assertStatusChangeAllowed({
+      desk,
+      user: currentUser,
+      from: existing.status,
+      to: newStatus,
+      billed,
+    });
 
     const updateData: Prisma.TicketUpdateInput = { status: newStatus };
 
