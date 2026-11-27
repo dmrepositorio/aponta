@@ -33,7 +33,7 @@ import {
 } from '../components/knowledge/KnowledgeArticleAttachments';
 import { KnowledgeArticleCard } from '../components/knowledge/KnowledgeArticleCard';
 import { knowledgeApiError } from '../components/knowledge/knowledgeApiError';
-import { FOCUS_RING, KNOWLEDGE_PRIMARY } from '../components/knowledge/knowledgeStyles';
+import { FOCUS_RING } from '../components/knowledge/knowledgeStyles';
 
 type ArticleVisibility = 'PUBLIC' | 'PRIVATE';
 
@@ -477,7 +477,7 @@ export function KnowledgePage() {
                   onClick={openNewForm}
                   disabled={isFormOpen}
                   title={isFormOpen ? 'O formulário de artigo já está aberto.' : undefined}
-                  className={cn('shrink-0', KNOWLEDGE_PRIMARY)}
+                  className="shrink-0"
                 >
                   + Novo artigo
                 </EzButton>
@@ -648,7 +648,6 @@ export function KnowledgePage() {
                   <EzButton
                     type="button"
                     size="small"
-                    className={KNOWLEDGE_PRIMARY}
                     disabled={!newCatalogItemName.trim() || createCatalogItemMutation.isPending}
                     onClick={() => createCatalogItemMutation.mutate()}
                   >
@@ -676,7 +675,7 @@ export function KnowledgePage() {
               </EzAlert>
             )}
             <div className="sticky bottom-0 z-10 -mx-4 -mb-4 flex gap-2 rounded-b-[inherit] border-t border-gray-200 bg-white px-4 py-3">
-              <EzButton type="submit" className={KNOWLEDGE_PRIMARY} disabled={saveMutation.isPending}>
+              <EzButton type="submit" disabled={saveMutation.isPending}>
                 {editingId ? 'Atualizar' : 'Salvar'}
               </EzButton>
               <EzButton type="button" variant="secondary" onClick={cancelForm}>
@@ -842,7 +841,7 @@ export function KnowledgePage() {
             description={canAuthor ? undefined : 'Quando houver artigos, eles aparecem aqui.'}
             action={
               canAuthor && !isFormOpen ? (
-                <EzButton type="button" size="small" className={KNOWLEDGE_PRIMARY} onClick={openNewForm}>
+                <EzButton type="button" size="small" onClick={openNewForm}>
                   + Novo artigo
                 </EzButton>
               ) : undefined

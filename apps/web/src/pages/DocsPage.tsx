@@ -375,7 +375,7 @@ const SECTIONS: DocSection[] = [
           segurança usado pela interface web — a IA nunca acessa mais dados do que o usuário que
           gerou o token teria acesso.
         </p>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-700">
           Problemas comuns: se a IA relatar &quot;acesso negado&quot; ao tentar uma ação
           administrativa (ex: criar credencial no Cofre), confirme que o token foi gerado por um
           usuário com o papel (Role) necessário.
@@ -582,7 +582,7 @@ export function DocsPage() {
                   {section.icon}
                   {section.title}
                 </h2>
-                <div className="prose prose-sm max-w-none text-gray-900 space-y-3">
+                <div className="max-w-none text-[15px] leading-relaxed text-gray-900 space-y-3">
                   {section.body(go)}
                 </div>
               </section>
