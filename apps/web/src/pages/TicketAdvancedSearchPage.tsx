@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../lib/api';
 import { useAuthStore } from '../stores/authStore';
@@ -151,6 +152,9 @@ export function TicketAdvancedSearchPage() {
 
   return (
     <div className="space-y-6">
+      <Link to="/" className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900">
+        <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Voltar para Tickets
+      </Link>
       <h1 className="text-[20px] font-semibold text-gray-900">Busca avançada</h1>
 
       <form onSubmit={handleSearch} className="space-y-4">
@@ -295,7 +299,13 @@ export function TicketAdvancedSearchPage() {
             value={form.stageId}
             disabled={!form.serviceDeskId || stagesLoading}
             hasError={stagesError}
-            message={stagesError ? 'Não foi possível carregar os estágios' : undefined}
+            message={
+              stagesError
+                ? 'Não foi possível carregar os estágios'
+                : !form.serviceDeskId
+                  ? 'Selecione uma mesa de serviço primeiro'
+                  : undefined
+            }
             onChange={(e) => setForm((f) => ({ ...f, stageId: e.target.value }))}
           >
             <option value="">{stagesLoading ? 'Carregando estágios…' : 'Todos os estágios'}</option>
