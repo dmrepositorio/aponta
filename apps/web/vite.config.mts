@@ -64,6 +64,10 @@ export default defineConfig(() => {
       setupFiles: ['./src/test-setup.ts'],
       include: ['{src,tests}/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
       reporters: ['default'],
+      // O runner do CI (2 vCPU, ~7 GB) encerrava o processo sem falha de teste quando o vitest
+      // abria um worker jsdom + cobertura v8 por CPU, em paralelo com a API (nx run-many). Limita a
+      // memória simultânea só no CI; localmente segue o padrão do vitest. Ver #492.
+      ...(process.env.CI ? { maxWorkers: 2 } : {}),
       coverage: {
         reportsDirectory: '../../coverage/apps/web',
         provider: 'v8' as const,
