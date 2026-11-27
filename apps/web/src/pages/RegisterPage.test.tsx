@@ -160,6 +160,33 @@ describe('RegisterPage', () => {
     expect(screen.queryByRole('button', { name: /criar conta/i })).not.toBeInTheDocument();
   });
 
+  it('REG-08: nome só com espaços é rejeitado com "Nome é obrigatório" e nada é enviado', async () => {
+    const user = userEvent.setup();
+    renderRegisterPage();
+    await user.type(screen.getByLabelText(/nome/i), '   ');
+    await user.type(screen.getByLabelText(/e-mail/i), 'jane@example.com');
+    await user.type(screen.getByLabelText(/^senha$/i), VALID_PASSWORD);
+    await user.type(screen.getByLabelText(/confirmar senha/i), VALID_PASSWORD);
+    await user.click(screen.getByRole('button', { name: /criar conta/i }));
+
+    expect(await screen.findByText('Nome é obrigatório')).toBeInTheDocument();
+    expect(api.post).not.toHaveBeenCalled();
+  });
+
+  it('REG-08: o nome é enviado sem os espaços das pontas', async () => {
+    const user = userEvent.setup();
+    vi.mocked(api.post).mockResolvedValueOnce({ data: {} }).mockResolvedValueOnce({ data: { access_token: 't' } });
+    renderRegisterPage();
+    await user.type(screen.getByLabelText(/nome/i), '  Jane Doe  ');
+    await user.type(screen.getByLabelText(/e-mail/i), 'jane@example.com');
+    await user.type(screen.getByLabelText(/^senha$/i), VALID_PASSWORD);
+    await user.type(screen.getByLabelText(/confirmar senha/i), VALID_PASSWORD);
+    await user.click(screen.getByRole('button', { name: /criar conta/i }));
+
+    await waitFor(() => expect(api.post).toHaveBeenCalled());
+    expect(vi.mocked(api.post).mock.calls[0][1]).toMatchObject({ name: 'Jane Doe' });
+  });
+
   it('REG-02: não envia senha que cumpre só o tamanho e mostra erro no campo', async () => {
     const user = userEvent.setup();
     renderRegisterPage();

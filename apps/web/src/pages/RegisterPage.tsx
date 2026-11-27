@@ -17,7 +17,7 @@ import { allRulesMet, policyMessages } from '../lib/passwordRules';
  */
 const registerSchema = z
   .object({
-    name: z.string().min(1, 'Nome é obrigatório'),
+    name: z.string().trim().min(1, 'Nome é obrigatório'),
     email: z.string().email('E-mail inválido'),
     password: z.string().min(1, 'Senha é obrigatória'),
     confirmPassword: z.string(),
@@ -99,7 +99,7 @@ export function RegisterPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-80 text-gray-900">
+    <div className="flex min-h-screen items-center justify-center bg-gray-80 px-4 text-gray-900">
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="w-full max-w-sm">
         <EzCardItem className="space-y-4 p-6">
           <h1 className="text-[20px] font-semibold text-gray-900">Criar conta</h1>

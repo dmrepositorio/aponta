@@ -210,6 +210,41 @@ describe('LoginPage', () => {
       expect(message.textContent).not.toContain('quem-nao-existe@example.com');
     });
 
+    it('LOG-12: com o POST pendente o botão vira "Enviando…" e fica desabilitado', async () => {
+      const user = userEvent.setup();
+      vi.mocked(api.post).mockReturnValueOnce(new Promise(() => {}));
+      const dialog = await openModal(user);
+
+      await user.type(within(dialog).getByLabelText(/e-mail/i), 'jane@example.com');
+      await user.click(within(dialog).getByRole('button', { name: 'Enviar' }));
+
+      expect(await within(dialog).findByRole('button', { name: 'Enviando…' })).toBeDisabled();
+    });
+
+    it('LOG-12: 429 mostra a frase de limite, distinta da falha genérica, sem citar o e-mail', async () => {
+      const user = userEvent.setup();
+      vi.mocked(api.post).mockRejectedValueOnce({ isAxiosError: true, response: { status: 429 } });
+      const dialog = await openModal(user);
+
+      await user.type(within(dialog).getByLabelText(/e-mail/i), 'jane@example.com');
+      await user.click(within(dialog).getByRole('button', { name: 'Enviar' }));
+
+      const alert = await within(dialog).findByText('Muitas tentativas. Aguarde um minuto e tente de novo.');
+      expect(alert.textContent).not.toContain('jane@example.com');
+      expect(within(dialog).queryByText(/algo deu errado/i)).not.toBeInTheDocument();
+    });
+
+    it('LOG-12: falha que não é 429 continua com a frase genérica', async () => {
+      const user = userEvent.setup();
+      vi.mocked(api.post).mockRejectedValueOnce(new Error('Network Error'));
+      const dialog = await openModal(user);
+
+      await user.type(within(dialog).getByLabelText(/e-mail/i), 'jane@example.com');
+      await user.click(within(dialog).getByRole('button', { name: 'Enviar' }));
+
+      expect(await within(dialog).findByText(/algo deu errado\. tente novamente/i)).toBeInTheDocument();
+    });
+
     it('AC-24: Escape closes the modal and the focus goes back to Esqueci minha senha', async () => {
       const user = userEvent.setup();
       const dialog = await openModal(user);

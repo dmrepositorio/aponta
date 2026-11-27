@@ -1,5 +1,5 @@
 import { FormEvent, ReactNode, useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { api } from '../lib/api';
 import { EzAlert, EzButton, EzCardItem, EzTextInput } from '../components/ds';
@@ -28,6 +28,7 @@ function consumeToken(): { token: string | null; missing: boolean } {
 }
 
 export function SetPasswordPage() {
+  const navigate = useNavigate();
   // `undefined` = ainda não lido. Ref, não state: o StrictMode roda o efeito duas vezes e o fragmento só existe na primeira.
   const token = useRef<string | null | undefined>(undefined);
   const missing = useRef(false);
@@ -39,6 +40,11 @@ export function SetPasswordPage() {
   const [sending, setSending] = useState(false);
   const passwordInput = useRef<HTMLInputElement>(null);
   const confirmationInput = useRef<HTMLInputElement>(null);
+  const toLoginButton = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (phase === 'done') toLoginButton.current?.focus();
+  }, [phase]);
 
   useEffect(() => {
     if (token.current === undefined) ({ token: token.current, missing: missing.current } = consumeToken());
@@ -85,7 +91,7 @@ export function SetPasswordPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-80 px-4 text-gray-900">
       <EzCardItem className="w-full max-w-sm space-y-4 p-6">
-        <h1 className="text-[20px] font-semibold text-gray-900">Definir senha</h1>
+        <h1 className="text-[20px] font-semibold text-gray-900">{phase === 'invalid' ? 'Link inválido' : 'Definir senha'}</h1>
 
         {phase === 'form' && (
           <form onSubmit={submit} noValidate className="space-y-4">
@@ -123,7 +129,9 @@ export function SetPasswordPage() {
 
         {phase === 'invalid' && (
           <div className="space-y-3">
-            <p className="font-medium text-red-700">Link inválido ou expirado.</p>
+            <p role="alert" className="font-medium text-red-700">
+              Link inválido ou expirado.
+            </p>
             <p className="text-sm text-gray-700">
               Peça outro: na tela de entrada, use Esqueci minha senha, ou peça um novo convite ao administrador.
             </p>
@@ -151,9 +159,7 @@ export function SetPasswordPage() {
             <p role="status" className="font-medium text-gray-900">
               Senha definida.
             </p>
-            <Link to="/login" className="text-sm font-medium text-brand-700 hover:underline">
-              Ir para o login
-            </Link>
+            <EzButton ref={toLoginButton} type="button" label="Ir para o login" onClick={() => navigate('/login')} />
           </div>
         )}
       </EzCardItem>
