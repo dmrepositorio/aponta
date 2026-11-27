@@ -29,12 +29,12 @@ const emptied: KnowledgeArticleCardData = {
   attachments: [],
 };
 
-function renderCard(article: KnowledgeArticleCardData) {
+function renderCard(article: KnowledgeArticleCardData, access = { canAuthor: false, canDelete: false }) {
   const props = {
     selectedTags: [],
     onToggleTag: vi.fn(),
-    canAuthor: false,
-    canDelete: false,
+    canAuthor: access.canAuthor,
+    canDelete: access.canDelete,
     onEdit: vi.fn(),
     onDelete: vi.fn(),
   };
@@ -49,6 +49,16 @@ function renderCard(article: KnowledgeArticleCardData) {
 }
 
 describe('KnowledgeArticleCard', () => {
+  it('KNW-13: Editar e Excluir levam ícone e ficam afastados em 24px, sem trocar o nome acessível', () => {
+    renderCard(full, { canAuthor: true, canDelete: true });
+    const edit = screen.getByRole('button', { name: 'Editar' });
+    const remove = screen.getByRole('button', { name: 'Excluir' });
+    expect(edit.querySelector('svg')).not.toBeNull();
+    expect(remove.querySelector('svg')).not.toBeNull();
+    expect(edit.parentElement).toBe(remove.parentElement);
+    expect(edit.parentElement).toHaveClass('gap-6');
+  });
+
   it('collapses back when an update removes everything that was hidden, never staying expanded without the button', async () => {
     const user = userEvent.setup();
     const { rerender } = renderCard(full);

@@ -13,7 +13,6 @@ import {
   EzTextInput,
 } from '../ds';
 import { knowledgeApiError } from './knowledgeApiError';
-import { KNOWLEDGE_PRIMARY } from './knowledgeStyles';
 
 export interface KnowledgeFolder {
   id: string;
@@ -105,7 +104,7 @@ export function KnowledgeFoldersGrid({ onOpenFolder, canAuthor }: KnowledgeFolde
       title="Base de Conhecimento"
       actions={
         canAuthor && !form && !isLoading ? (
-          <EzButton type="button" onClick={openNewForm} className={KNOWLEDGE_PRIMARY}>
+          <EzButton type="button" onClick={openNewForm}>
             + Nova pasta
           </EzButton>
         ) : undefined
@@ -154,7 +153,7 @@ export function KnowledgeFoldersGrid({ onOpenFolder, canAuthor }: KnowledgeFolde
               </EzAlert>
             )}
             <div className="flex gap-2 pt-2">
-              <EzButton type="submit" className={KNOWLEDGE_PRIMARY} disabled={saveMutation.isPending}>
+              <EzButton type="submit" disabled={saveMutation.isPending}>
                 {form.id ? 'Atualizar' : 'Salvar'}
               </EzButton>
               <EzButton type="button" variant="secondary" onClick={() => setForm(null)}>

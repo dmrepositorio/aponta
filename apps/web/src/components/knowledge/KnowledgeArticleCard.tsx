@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Check, Lock, Paperclip } from 'lucide-react';
+import { Check, Lock, Paperclip, Pencil, Trash2 } from 'lucide-react';
 import { EzButton, EzCardItem, EzTag } from '../ds';
 import { cn } from '../ds/utils';
 import { articleExcerpt } from './articleExcerpt';
@@ -167,8 +167,8 @@ export function KnowledgeArticleCard({
               </EzButton>
             )}
             {canAuthor && (
-              <div className="ml-auto flex flex-wrap gap-4">
-                <EzButton variant="tertiary" size="small" className="px-0" onClick={onEdit}>
+              <div className="ml-auto flex flex-wrap gap-6">
+                <EzButton variant="tertiary" size="small" className="px-0" leftIcon={Pencil} onClick={onEdit}>
                   Editar
                 </EzButton>
                 {canDelete && (
@@ -176,6 +176,7 @@ export function KnowledgeArticleCard({
                     variant="tertiary"
                     size="small"
                     className="px-0 text-red-600 hover:text-red-700"
+                    leftIcon={Trash2}
                     onClick={onDelete}
                   >
                     Excluir
