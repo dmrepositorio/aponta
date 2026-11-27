@@ -455,3 +455,89 @@ describe('VaultAuditPage — paginação sem piscar (AUD-06)', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'Página 2' })).toHaveAttribute('aria-current', 'page'));
   });
 });
+
+describe('VaultAuditPage — rótulo e total acompanham os dados exibidos (QA B1)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  function mockControlled() {
+    const pending: Record<string, (value: unknown) => void> = {};
+    vi.mocked(api.get).mockImplementation(async (url: string, config?: unknown) => {
+      if (url === '/users/agents') return { data: agents };
+      const params = (config as { params: { query?: string; page: number } }).params;
+      if (params.query === 'a' && params.page === 1) {
+        return { data: { data: auditLogs, meta: { total: 40, page: 1, limit: 20, totalPages: 2 } } };
+      }
+      return new Promise((resolve) => {
+        pending[`${params.query}-${params.page}`] = resolve;
+      });
+    });
+    return pending;
+  }
+
+  it('com filtro novo pendente, não mostra o rótulo e o total do filtro novo sobre os dados antigos', async () => {
+    const pending = mockControlled();
+    const user = userEvent.setup();
+    renderPage();
+
+    const search = screen.getByLabelText(/buscar \(cofre, pasta ou senha\)/i);
+    await user.type(search, 'a');
+    await user.click(screen.getByRole('button', { name: /exibir/i }));
+    await screen.findByText('40 registros');
+
+    await user.clear(search);
+    await user.type(search, 'b');
+    await user.click(screen.getByRole('button', { name: /exibir/i }));
+    await waitFor(() => expect(auditCalls()).toHaveLength(2));
+
+    expect(screen.queryByText('Servidor FTP')).toBeInTheDocument();
+    expect(screen.queryByText(/busca "b"/)).not.toBeInTheDocument();
+    expect(screen.queryByText('40 registros')).not.toBeInTheDocument();
+
+    pending['b-1']({ data: { data: auditLogs, meta: { total: 7, page: 1, limit: 20, totalPages: 1 } } });
+    expect(await screen.findByText(/busca "b"/)).toBeInTheDocument();
+    expect(screen.getByText('7 registros')).toBeInTheDocument();
+  });
+
+  it('durante a paginação pendente não afirma filtros nem total para dados que ainda não chegaram', async () => {
+    const pending = mockControlled();
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.type(screen.getByLabelText(/buscar \(cofre, pasta ou senha\)/i), 'a');
+    await user.click(screen.getByRole('button', { name: /exibir/i }));
+    await screen.findByText('40 registros');
+
+    await user.click(screen.getByRole('button', { name: 'Página 2' }));
+    await waitFor(() => expect(auditCalls()).toHaveLength(2));
+
+    expect(screen.queryByText(/filtros aplicados/i)).not.toBeInTheDocument();
+    expect(screen.queryByText('40 registros')).not.toBeInTheDocument();
+
+    pending['a-2']({ data: { data: auditLogs, meta: { total: 40, page: 2, limit: 20, totalPages: 2 } } });
+    expect(await screen.findByText(/filtros aplicados/i)).toHaveTextContent('busca "a"');
+    expect(screen.getByText('40 registros')).toBeInTheDocument();
+  });
+
+  it('Limpar filtros durante a transição não deixa rótulo nem total na tela', async () => {
+    mockControlled();
+    const user = userEvent.setup();
+    renderPage();
+
+    const search = screen.getByLabelText(/buscar \(cofre, pasta ou senha\)/i);
+    await user.type(search, 'a');
+    await user.click(screen.getByRole('button', { name: /exibir/i }));
+    await screen.findByText('40 registros');
+    await user.clear(search);
+    await user.type(search, 'b');
+    await user.click(screen.getByRole('button', { name: /exibir/i }));
+    await waitFor(() => expect(auditCalls()).toHaveLength(2));
+
+    await user.click(screen.getByRole('button', { name: /limpar filtros/i }));
+
+    expect(screen.queryByText(/filtros aplicados/i)).not.toBeInTheDocument();
+    expect(screen.queryByText('40 registros')).not.toBeInTheDocument();
+    expect(screen.queryByText('Servidor FTP')).not.toBeInTheDocument();
+  });
+});
