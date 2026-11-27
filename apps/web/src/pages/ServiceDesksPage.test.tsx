@@ -794,7 +794,7 @@ describe('DMTE-533: um só modelo de salvamento, com retorno', () => {
     await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Cancelar' }));
     expect(screen.getByRole('tab', { name: 'Parâmetros' })).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: 'Nova Mesa' }));
+    await user.click(screen.getByRole('button', { name: 'Nova mesa' }));
     await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Cancelar' }));
     expect(screen.getByRole('tab', { name: 'Parâmetros' })).toBeInTheDocument();
 
@@ -1134,6 +1134,39 @@ describe('F3-23: ServiceDesksPage (MSA-01 a MSA-09)', () => {
     expect(await screen.findByText('Suporte N1')).toBeInTheDocument();
     expect(screen.getByText('Infraestrutura')).toBeInTheDocument();
     expect(screen.queryByText('Nenhuma mesa encontrada')).not.toBeInTheDocument();
+  });
+
+  it('MSA-10: ao abrir o cadastro o foco vai para o campo Nome', async () => {
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    renderPage();
+    await screen.findByText('Suporte N1');
+
+    await user.click(screen.getByTestId('ez-toolbar-insert-button'));
+
+    const nameInput = await screen.findByRole('textbox', { name: /^nome$/i });
+    expect(nameInput).toHaveFocus();
+  });
+
+  it('MSA-11: filtro de status usa Ativa/Inativa, igual à coluna e ao filtro dinâmico', async () => {
+    loginAs('ADMIN');
+    const user = userEvent.setup();
+    renderPage();
+    await screen.findByText('Suporte N1');
+
+    await user.click(screen.getByTestId('ez-toolbar-filter-panel-button'));
+    const drawer = within(screen.getByTestId('ez-filter-drawer'));
+    await user.click(drawer.getAllByRole('combobox')[0]);
+    const labels = (await screen.findAllByRole('option')).map((o) => o.textContent);
+    expect(labels).toEqual(['Todos os status', 'Ativa', 'Inativa']);
+  });
+
+  it('MSA-12: o botão de inclusão da toolbar se chama Nova mesa', async () => {
+    loginAs('ADMIN');
+    renderPage();
+    await screen.findByText('Suporte N1');
+
+    expect(screen.getByTestId('ez-toolbar-insert-button')).toHaveAccessibleName('Nova mesa');
   });
 
   it('MSA-05: o contador da toolbar acompanha o total filtrado e a faixa da página', async () => {
