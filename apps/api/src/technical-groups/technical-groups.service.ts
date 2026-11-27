@@ -15,7 +15,11 @@ export class TechnicalGroupsService {
   constructor(private readonly prisma: PrismaService) {}
 
   findAll() {
-    return this.prisma.technicalGroup.findMany({ orderBy: { name: 'asc' } });
+    // Aditivo: só os números (_count), sem dados de membros ou mesas. Mesmo escopo do findOne.
+    return this.prisma.technicalGroup.findMany({
+      orderBy: { name: 'asc' },
+      include: { _count: { select: { members: true, serviceDeskLinks: true } } },
+    });
   }
 
   async findOne(id: string) {

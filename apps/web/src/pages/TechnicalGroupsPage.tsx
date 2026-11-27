@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { useQuery, type UseMutationResult } from '@tanstack/react-query';
-import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, ChevronRight, Plus, Search, Trash2 } from 'lucide-react';
 import {
   EzAlert,
   EzButton,
@@ -50,6 +50,8 @@ const sameInfo = (a: InfoDraft, b: InfoDraft) =>
 
 const TOAST_MS = 4000;
 const plural = (count: number, one: string, many: string) => `${count} ${count === 1 ? one : many}`;
+// Busca por nome sem caixa e sem acento.
+const normalize = (text: string) => text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 const ACTION_ERROR_FALLBACK = 'Não foi possível concluir a ação. Tente novamente.';
 
 interface SimpleUser {
@@ -430,6 +432,9 @@ export function TechnicalGroupsPage() {
   const [notice, setNotice] = useState<string | null>(null);
   const [detailDirty, setDetailDirty] = useState(false);
   const [discardOpen, setDiscardOpen] = useState(false);
+  const [query, setQuery] = useState('');
+  const term = normalize(query.trim());
+  const visibleGroups = (groups ?? []).filter((group) => !term || normalize(group.name).includes(term));
 
   const leaveDetail = () => {
     setDiscardOpen(false);
@@ -470,7 +475,18 @@ export function TechnicalGroupsPage() {
       ) : (
         <EzCardItem flat className="overflow-hidden p-0">
           {groups && groups.length > 0 && (
-            <div className="flex items-center justify-end gap-3 border-b border-gray-100 px-4 py-3">
+            <div className="flex items-center justify-between gap-3 border-b border-gray-100 px-4 py-3">
+              <div className="w-full max-w-xs">
+                <EzTextInput
+                  type="search"
+                  size="slim"
+                  aria-label="Buscar grupo"
+                  placeholder="Buscar grupo"
+                  leftIcon={<Search className="h-4 w-4" aria-hidden="true" />}
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                />
+              </div>
               <EzButton size="small" leftIcon={Plus} onClick={() => setIsCreateOpen(true)}>
                 Novo grupo
               </EzButton>
@@ -492,16 +508,38 @@ export function TechnicalGroupsPage() {
                 </EzButton>
               }
             />
+          ) : visibleGroups.length === 0 ? (
+            <EzEmptyCard
+              icon={Search}
+              title="Nenhum grupo encontrado"
+              description="Tente outro nome."
+              action={<EzButton variant="secondary" size="small" label="Limpar busca" onClick={() => setQuery('')} />}
+            />
           ) : (
             <div className="divide-y divide-gray-100 p-2">
-              {groups.map((group) => (
+              {visibleGroups.map((group) => (
                 <button
                   key={group.id}
                   type="button"
                   onClick={() => setSelectedGroupId(group.id)}
                   className="block w-full text-left"
                 >
-                  <EzListItem description={group.description ?? undefined} className="rounded-[8px]">
+                  <EzListItem
+                    description={group.description ?? undefined}
+                    className="rounded-[8px]"
+                    trailing={
+                      <>
+                        {group._count && (
+                          <span className="flex items-center gap-1.5 text-[12px] font-medium text-gray-500">
+                            <span>{plural(group._count.members, 'membro', 'membros')}</span>
+                            <span aria-hidden="true">·</span>
+                            <span>{plural(group._count.serviceDeskLinks, 'mesa', 'mesas')}</span>
+                          </span>
+                        )}
+                        <ChevronRight className="h-4 w-4 text-gray-400" aria-hidden="true" data-testid="group-row-chevron" />
+                      </>
+                    }
+                  >
                     {group.name}
                   </EzListItem>
                 </button>

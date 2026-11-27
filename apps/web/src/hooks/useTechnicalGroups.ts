@@ -7,6 +7,8 @@ export interface TechnicalGroupListItem {
   description: string | null;
   dailyWorklogEmailEnabled: boolean;
   scheduleEnabled: boolean;
+  /** Só na listagem (GET /technical-groups); ausente em API antiga e no detalhe. */
+  _count?: { members: number; serviceDeskLinks: number };
 }
 
 export interface TechnicalGroupMember {
