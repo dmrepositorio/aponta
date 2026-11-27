@@ -169,6 +169,122 @@ describe('TechnicalGroupsPage', () => {
       expect(api.post).toHaveBeenCalledWith('/technical-groups/tg-1/service-desks/desk-1'),
     );
   });
+
+  describe('lista: contagens, busca e indicação de clique (TG-09)', () => {
+    const WAIT = { timeout: 5000 };
+    const COUNTED = [
+      { id: 'tg-1', name: 'Suporte N1', description: 'Primeira linha', dailyWorklogEmailEnabled: false, scheduleEnabled: true, _count: { members: 2, serviceDeskLinks: 3 } },
+      { id: 'tg-2', name: 'Gestão', description: null, dailyWorklogEmailEnabled: false, scheduleEnabled: true, _count: { members: 1, serviceDeskLinks: 1 } },
+      { id: 'tg-3', name: 'Projetos', description: null, dailyWorklogEmailEnabled: false, scheduleEnabled: true, _count: { members: 0, serviceDeskLinks: 0 } },
+    ];
+
+    function mockList(list: object[]) {
+      const base = vi.mocked(api.get).getMockImplementation()!;
+      vi.mocked(api.get).mockImplementation((url: string) =>
+        url === '/technical-groups' ? Promise.resolve({ data: list }) : base(url),
+      );
+    }
+
+    function rowOf(name: string) {
+      return screen.getByText(name).closest('button') as HTMLElement;
+    }
+
+    it('mostra o número de membros e de mesas de cada grupo, vindos do payload da lista', async () => {
+      mockList(COUNTED);
+      renderPage();
+      await screen.findByText('Suporte N1', undefined, WAIT);
+
+      expect(within(rowOf('Suporte N1')).getByText('2 membros')).toBeInTheDocument();
+      expect(within(rowOf('Suporte N1')).getByText('3 mesas')).toBeInTheDocument();
+    });
+
+    it('usa o singular com 1 e o plural com 0', async () => {
+      mockList(COUNTED);
+      renderPage();
+      await screen.findByText('Gestão', undefined, WAIT);
+
+      expect(within(rowOf('Gestão')).getByText('1 membro')).toBeInTheDocument();
+      expect(within(rowOf('Gestão')).getByText('1 mesa')).toBeInTheDocument();
+      expect(within(rowOf('Projetos')).getByText('0 membros')).toBeInTheDocument();
+      expect(within(rowOf('Projetos')).getByText('0 mesas')).toBeInTheDocument();
+    });
+
+    it('sem _count no payload (API antiga) a linha segue sem contagens, sem quebrar', async () => {
+      renderPage();
+      await screen.findByText('Suporte N1', undefined, WAIT);
+
+      expect(screen.queryByText(/membros?$/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/mesas?$/)).not.toBeInTheDocument();
+    });
+
+    it('cada linha tem um chevron que indica que ela abre o detalhe', async () => {
+      mockList(COUNTED);
+      renderPage();
+      await screen.findByText('Suporte N1', undefined, WAIT);
+
+      for (const name of ['Suporte N1', 'Gestão', 'Projetos']) {
+        expect(within(rowOf(name)).getByTestId('group-row-chevron')).toBeInTheDocument();
+      }
+    });
+
+    it('filtra por nome ignorando caixa e acento, no cliente, sem nova chamada à API', async () => {
+      mockList(COUNTED);
+      renderPage();
+      await screen.findByText('Suporte N1', undefined, WAIT);
+      const callsBefore = vi.mocked(api.get).mock.calls.length;
+
+      await userEvent.type(screen.getByPlaceholderText('Buscar grupo'), 'GESTAO');
+
+      expect(screen.getByText('Gestão')).toBeInTheDocument();
+      expect(screen.queryByText('Suporte N1')).not.toBeInTheDocument();
+      expect(screen.queryByText('Projetos')).not.toBeInTheDocument();
+      expect(vi.mocked(api.get).mock.calls.length).toBe(callsBefore);
+    });
+
+    it('a busca não olha a descrição, só o nome', async () => {
+      mockList(COUNTED);
+      renderPage();
+      await screen.findByText('Suporte N1', undefined, WAIT);
+
+      await userEvent.type(screen.getByPlaceholderText('Buscar grupo'), 'primeira');
+
+      expect(await screen.findByText('Nenhum grupo encontrado', undefined, WAIT)).toBeInTheDocument();
+    });
+
+    it('sem resultado mostra o estado vazio da busca e Limpar busca devolve a lista', async () => {
+      mockList(COUNTED);
+      renderPage();
+      await screen.findByText('Suporte N1', undefined, WAIT);
+
+      await userEvent.type(screen.getByPlaceholderText('Buscar grupo'), 'zzz');
+      expect(await screen.findByText('Nenhum grupo encontrado', undefined, WAIT)).toBeInTheDocument();
+      expect(screen.queryByText('Nenhum grupo de atendentes cadastrado.')).not.toBeInTheDocument();
+
+      await userEvent.click(screen.getByRole('button', { name: 'Limpar busca' }));
+      expect(await screen.findByText('Suporte N1', undefined, WAIT)).toBeInTheDocument();
+      expect(screen.getByPlaceholderText('Buscar grupo')).toHaveValue('');
+    });
+
+    it('abrir um grupo da lista filtrada abre o detalhe do grupo certo', async () => {
+      mockList(COUNTED);
+      renderPage();
+      await screen.findByText('Suporte N1', undefined, WAIT);
+
+      await userEvent.type(screen.getByPlaceholderText('Buscar grupo'), 'suporte');
+      await userEvent.click(screen.getByText('Suporte N1'));
+
+      expect(await screen.findByRole('tablist', undefined, WAIT)).toBeInTheDocument();
+      expect(api.get).toHaveBeenCalledWith('/technical-groups/tg-1');
+    });
+
+    it('sem nenhum grupo cadastrado não mostra o campo de busca', async () => {
+      mockList([]);
+      renderPage();
+
+      await screen.findByText('Nenhum grupo de atendentes cadastrado.', undefined, WAIT);
+      expect(screen.queryByPlaceholderText('Buscar grupo')).not.toBeInTheDocument();
+    });
+  });
 });
 
 describe('TechnicalGroupsPage: feedback das mutações (TG-01)', () => {
