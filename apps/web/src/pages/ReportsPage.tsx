@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import axios from 'axios';
 import { useSearchParams } from 'react-router-dom';
-import { ArrowDown, ArrowUp, Users, DollarSign, Clock } from 'lucide-react';
+import { ArrowDown, ArrowUp } from 'lucide-react';
 import {
   useReportWorkload,
   useReportBilling,
@@ -231,7 +231,10 @@ export function ReportsPage() {
             </div>
           )}
           {!workloadQ.isLoading && workloadQ.data?.length === 0 && (
-            <EzEmptyCard title="Nenhum apontamento registrado." />
+            <EzEmptyCard
+              title="Nenhum apontamento registrado."
+              description="Quando houver horas apontadas, elas aparecem aqui."
+            />
           )}
           {workloadQ.data && workloadQ.data.length > 0 && (
             <EzGridWrapper tableLabel="Carga de trabalho por usuário">
@@ -240,7 +243,6 @@ export function ReportsPage() {
                   <SortableTh
                     columnKey="agent"
                     label="Atendente"
-                    icon={<Users className="h-4 w-4" />}
                     sort={workloadSort}
                     onSort={(key) => setWorkloadSort(nextSort(workloadSort, key))}
                   />
@@ -259,8 +261,7 @@ export function ReportsPage() {
                   minutes: (item) => item.totalMinutes,
                 }).map((item) => (
                   <tr key={item.agentId} className="hover:bg-gray-90">
-                    <td className="px-4 py-3 font-medium flex items-center gap-2 text-gray-900">
-                      <Clock className="w-4 h-4 text-gray-400" />
+                    <td className="px-4 py-3 font-medium text-gray-900">
                       {item.agentName}
                     </td>
                     <td className="px-4 py-3 text-right text-gray-500 tabular-nums">
@@ -362,7 +363,10 @@ export function ReportsPage() {
             </div>
           )}
           {!billingQ.isLoading && billingQ.data?.length === 0 && (
-            <EzEmptyCard title="Nenhum dado financeiro processado." />
+            <EzEmptyCard
+              title="Nenhum dado financeiro no período."
+              description="Amplie o período ou escolha outro contrato."
+            />
           )}
           {billingQ.data && billingQ.data.length > 0 && (
             <>
@@ -372,7 +376,6 @@ export function ReportsPage() {
                   <SortableTh
                     columnKey="organization"
                     label="Cliente / Organização"
-                    icon={<DollarSign className="h-4 w-4" />}
                     sort={billingSort}
                     onSort={(key) => setBillingSort(nextSort(billingSort, key))}
                   />
