@@ -116,6 +116,41 @@ describe('TwoFactorSection', () => {
     expect(screen.getByText(/ativado/i)).toBeInTheDocument();
   });
 
+  // ACC-07
+  it('ACC-07: a falha em /auth/2fa/disable aparece dentro do formulário de desativar', async () => {
+    const user = userEvent.setup();
+    enabled = true;
+    vi.mocked(api.post).mockRejectedValue(badRequest('Senha ou código inválido.'));
+    renderSection();
+
+    const password = await screen.findByLabelText(/senha atual/i);
+    await user.type(password, 'errada');
+    await user.type(screen.getByLabelText(/código/i), '123456');
+    await user.click(screen.getByRole('button', { name: /desativar/i }));
+    await user.click(within(await screen.findByRole('dialog')).getByRole('button', { name: /desativar/i }));
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent(/senha ou código inválido/i);
+    expect(password.closest('form')).toContainElement(alert);
+  });
+
+  it('ACC-07: o código recusado na confirmação aparece dentro do formulário de ativação', async () => {
+    const user = userEvent.setup();
+    vi.mocked(api.post).mockImplementation((url: string) =>
+      url === '/auth/2fa/setup' ? Promise.resolve({ data: { secret: SECRET, otpauthUri: URI } }) : Promise.reject(badRequest('Código inválido.')),
+    );
+    renderSection();
+
+    await user.click(await screen.findByRole('button', { name: /ativar segundo fator/i }));
+    const input = await screen.findByLabelText(/código do aplicativo/i);
+    await user.type(input, '000000');
+    await user.click(screen.getByRole('button', { name: /^confirmar$/i }));
+
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent(/código inválido/i);
+    expect(input.closest('form')).toContainElement(alert);
+  });
+
   // ACC-04
   it('ACC-04: desativar só chama /auth/2fa/disable depois de confirmar no diálogo com o aviso de segurança', async () => {
     const user = userEvent.setup();

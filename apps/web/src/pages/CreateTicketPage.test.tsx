@@ -735,6 +735,22 @@ describe('CreateTicketPage', () => {
         expect(navigateMock).not.toHaveBeenCalled();
       });
 
+      // NEW-14
+      it('NEW-14: com o envio em andamento uma região role=status anuncia "Criando chamado…" e some ao terminar', async () => {
+        const user = userEvent.setup();
+        await openBlankAndFill(user);
+        let release: (value: unknown) => void = () => undefined;
+        vi.mocked(api.post).mockImplementationOnce(
+          () => new Promise((resolve) => { release = resolve; }) as never,
+        );
+
+        await user.click(screen.getByRole('button', { name: /abrir ticket/i }));
+
+        await waitFor(() => expect(screen.queryByRole('status')).toHaveTextContent(/criando chamado/i), { timeout: 5000 });
+        release({ data: { id: 't-1', title: 'x' } });
+        await waitFor(() => expect(screen.queryByText(/criando chamado/i)).not.toBeInTheDocument(), { timeout: 5000 });
+      });
+
       it('duplo clique cria um único chamado', async () => {
         const user = userEvent.setup();
         await openBlankAndFill(user);

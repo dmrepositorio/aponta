@@ -62,12 +62,12 @@ describe('MyAccountPage', () => {
     expect(screen.getByDisplayValue('jane@example.com')).toBeInTheDocument();
   });
 
-  it('renders tabs for Minha Conta and Segurança, defaulting to Minha Conta', () => {
+  // ACC-14: o título da página segue "Minha Conta"; a primeira aba passa a se chamar "Perfil".
+  it('renders tabs for Perfil, Segurança and Tokens de API, defaulting to Perfil under the "Minha Conta" title', () => {
     renderMyAccountPage();
-    expect(
-      screen.getByRole('tab', { name: /minha conta/i }),
-    ).toHaveAttribute('aria-selected', 'true');
-    expect(screen.getByRole('tab', { name: /segurança/i })).toBeInTheDocument();
+    expect(screen.getAllByRole('tab').map((tab) => tab.textContent)).toEqual(['Perfil', 'Segurança', 'Tokens de API']);
+    expect(screen.getByRole('tab', { name: 'Perfil' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Minha Conta');
     // Profile fields visible by default; password fields not yet.
     expect(screen.getByLabelText(/^nome$/i)).toBeInTheDocument();
     expect(screen.queryByLabelText(/senha atual/i)).not.toBeInTheDocument();
@@ -99,7 +99,7 @@ describe('MyAccountPage', () => {
     });
   });
 
-  describe('Minha Conta tab (profile)', () => {
+  describe('Perfil tab (profile)', () => {
     // ACC-09
     it('shows an error alert with retry when GET /auth/me fails, and keeps Salvar disabled', async () => {
       const user = userEvent.setup();
@@ -122,6 +122,8 @@ describe('MyAccountPage', () => {
       await user.click(screen.getByRole('button', { name: /tentar novamente/i }));
       expect(await screen.findByDisplayValue('Jane Doe')).toBeInTheDocument();
       expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+      // ACC-11: com o formulário sem alterações o Salvar fica desabilitado; a primeira edição o habilita.
+      await user.type(screen.getByLabelText(/^nome$/i), '!');
       expect(screen.getByRole('button', { name: /salvar/i })).toBeEnabled();
     });
 
@@ -181,6 +183,72 @@ describe('MyAccountPage', () => {
           email: 'jane.updated@example.com',
         });
       });
+    });
+
+    // ACC-11
+    it('ACC-11: Salvar começa desabilitado, habilita ao editar o nome e volta a desabilitar ao desfazer', async () => {
+      const user = userEvent.setup();
+      renderMyAccountPage();
+      await screen.findByDisplayValue('Jane Doe');
+
+      expect(screen.getByRole('button', { name: /^salvar$/i })).toBeDisabled();
+      await user.type(screen.getByLabelText(/^nome$/i), '!');
+      expect(screen.getByRole('button', { name: /^salvar$/i })).toBeEnabled();
+      await user.type(screen.getByLabelText(/^nome$/i), '{Backspace}');
+      expect(screen.getByRole('button', { name: /^salvar$/i })).toBeDisabled();
+    });
+
+    it('ACC-11: durante o envio o botão mostra "Salvando…"', async () => {
+      const user = userEvent.setup();
+      let release: (value: unknown) => void = () => undefined;
+      vi.mocked(api.patch).mockImplementationOnce(() => new Promise((resolve) => { release = resolve; }));
+      renderMyAccountPage();
+      await screen.findByDisplayValue('Jane Doe');
+      await user.type(screen.getByLabelText(/^nome$/i), '!');
+      await user.click(screen.getByRole('button', { name: /^salvar$/i }));
+
+      expect(await screen.findByRole('button', { name: /salvando/i }, { timeout: 5000 })).toBeDisabled();
+      await act(async () => release({ data: {} }));
+      expect(await screen.findByText(/dados atualizados com sucesso/i, undefined, { timeout: 5000 })).toBeInTheDocument();
+    });
+
+    it('ACC-11: Salvar e Trocar senha não ocupam a largura toda no desktop', async () => {
+      const user = userEvent.setup();
+      renderMyAccountPage();
+      await screen.findByDisplayValue('Jane Doe');
+      expect(screen.getByRole('button', { name: /^salvar$/i }).className).not.toMatch(/(^|\s)w-full/);
+
+      await user.click(screen.getByRole('tab', { name: /segurança/i }));
+      expect(screen.getByRole('button', { name: /trocar senha/i }).className).not.toMatch(/(^|\s)w-full/);
+    });
+
+    // ACC-12
+    it('ACC-12: o aviso de sucesso do perfil some ao voltar a editar um campo', async () => {
+      const user = userEvent.setup();
+      vi.mocked(api.patch).mockResolvedValueOnce({ data: {} });
+      renderMyAccountPage();
+      await screen.findByDisplayValue('Jane Doe');
+      await user.type(screen.getByLabelText(/^nome$/i), '!');
+      await user.click(screen.getByRole('button', { name: /^salvar$/i }));
+      expect(await screen.findByText(/dados atualizados com sucesso/i)).toBeInTheDocument();
+
+      await user.type(screen.getByLabelText(/^nome$/i), 'x');
+
+      expect(screen.queryByText(/dados atualizados com sucesso/i)).not.toBeInTheDocument();
+    });
+
+    it('ACC-12: o erro do perfil some ao voltar a editar um campo', async () => {
+      const user = userEvent.setup();
+      vi.mocked(api.patch).mockRejectedValueOnce({ isAxiosError: true, response: { status: 409 } });
+      renderMyAccountPage();
+      await screen.findByDisplayValue('Jane Doe');
+      await user.type(screen.getByLabelText(/^e-mail$/i), 'x');
+      await user.click(screen.getByRole('button', { name: /^salvar$/i }));
+      expect(await screen.findByText(/e-mail já está em uso/i)).toBeInTheDocument();
+
+      await user.type(screen.getByLabelText(/^e-mail$/i), 'y');
+
+      expect(screen.queryByText(/e-mail já está em uso/i)).not.toBeInTheDocument();
     });
 
     it('shows an error when the email is already in use (409)', async () => {
@@ -244,6 +312,42 @@ describe('MyAccountPage', () => {
       expect(
         await screen.findByText(/senha atualizada com sucesso/i),
       ).toBeInTheDocument();
+    });
+
+    it('ACC-12: o aviso de sucesso da senha some ao voltar a editar um campo', async () => {
+      const user = userEvent.setup();
+      vi.mocked(api.post).mockResolvedValueOnce({ data: { message: 'ok' } });
+      renderMyAccountPage();
+      await fillAndSubmitPassword(user);
+      expect(await screen.findByText(/senha atualizada com sucesso/i)).toBeInTheDocument();
+
+      await user.type(screen.getByLabelText(/senha atual/i), 'x');
+
+      expect(screen.queryByText(/senha atualizada com sucesso/i)).not.toBeInTheDocument();
+    });
+
+    it('ACC-12: o erro da senha some ao voltar a editar um campo', async () => {
+      const user = userEvent.setup();
+      vi.mocked(api.post).mockRejectedValueOnce({ isAxiosError: true, response: { status: 401 } });
+      renderMyAccountPage();
+      await fillAndSubmitPassword(user);
+      expect(await screen.findByText(/senha atual incorreta/i)).toBeInTheDocument();
+
+      await user.type(screen.getByLabelText(/senha atual/i), 'x');
+
+      expect(screen.queryByText(/senha atual incorreta/i)).not.toBeInTheDocument();
+    });
+
+    it('ACC-11: durante o envio Trocar senha mostra "Salvando…"', async () => {
+      const user = userEvent.setup();
+      let release: (value: unknown) => void = () => undefined;
+      vi.mocked(api.post).mockImplementationOnce(() => new Promise((resolve) => { release = resolve; }));
+      renderMyAccountPage();
+      await fillAndSubmitPassword(user);
+
+      expect(await screen.findByRole('button', { name: /salvando/i }, { timeout: 5000 })).toBeDisabled();
+      await act(async () => release({ data: {} }));
+      expect(await screen.findByText(/senha atualizada com sucesso/i, undefined, { timeout: 5000 })).toBeInTheDocument();
     });
 
     // ACC-10
@@ -370,6 +474,44 @@ describe('MyAccountPage', () => {
       await user.type(screen.getByLabelText(/nome do token/i), 'Claude Desktop');
       await user.click(screen.getByRole('button', { name: /gerar token/i }));
     };
+
+    // ACC-14
+    it('ACC-14: os rótulos da aba de tokens usam caixa de frase ("Gerar token")', async () => {
+      const user = userEvent.setup();
+      renderMyAccountPage();
+      await user.click(screen.getByRole('tab', { name: /tokens de api/i }));
+
+      expect(screen.queryByRole('button', { name: 'Gerar token' })).toBeInTheDocument();
+    });
+
+    // ACC-15
+    it('ACC-15: as datas do token saem em dd/MM/aaaa HH:mm, sem segundos, e "Nunca usado" só vale para o último uso', async () => {
+      const user = userEvent.setup();
+      vi.mocked(api.get).mockImplementation((url: string) => {
+        if (url === '/auth/me') {
+          return Promise.resolve({ data: { id: 'u-1', name: 'Jane Doe', email: 'jane@example.com', role: 'AGENT' } });
+        }
+        if (url === '/api-tokens') {
+          return Promise.resolve({
+            data: [
+              { id: 'tok-1', name: 'Usado', createdAt: '2026-01-01T12:34:56.000Z', lastUsedAt: '2026-02-03T08:09:10.000Z' },
+              { id: 'tok-2', name: 'Virgem', createdAt: '2026-01-02T12:34:56.000Z', lastUsedAt: null },
+            ],
+          });
+        }
+        return Promise.reject(new Error(`Unexpected GET ${url}`));
+      });
+      renderMyAccountPage();
+      await user.click(screen.getByRole('tab', { name: /tokens de api/i }));
+
+      const used = (await screen.findByText('Usado', undefined, { timeout: 5000 })).parentElement as HTMLElement;
+      const never = screen.getByText('Virgem').parentElement as HTMLElement;
+      expect(used).toHaveTextContent(/Criado em \d{2}\/\d{2}\/\d{4} \d{2}:\d{2} · Último uso: \d{2}\/\d{2}\/\d{4} \d{2}:\d{2}$/);
+      expect(used).not.toHaveTextContent(/\d{2}:\d{2}:\d{2}/);
+      expect(never).toHaveTextContent(/Criado em \d{2}\/\d{2}\/\d{4} \d{2}:\d{2} · Último uso: Nunca usado$/);
+      expect(never).not.toHaveTextContent(/\d{2}:\d{2}:\d{2}/);
+      expect(never.textContent?.match(/Nunca usado/g)).toHaveLength(1);
+    });
 
     // ACC-02
     it('revoking asks for confirmation in a dialog naming the token and only then calls DELETE', async () => {

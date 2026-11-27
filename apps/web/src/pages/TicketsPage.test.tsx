@@ -762,6 +762,23 @@ describe('TicketsPage', () => {
       expect(fechados()).toHaveAttribute('aria-pressed', 'false');
     });
 
+    it('TKT-15: Vencidos pede overdue à API, grava na URL, volta à página 1 e desliga no segundo clique', async () => {
+      loginAs('ADMIN');
+      mockTickets();
+      const user = userEvent.setup();
+      renderDashboard(['/?view=list']);
+      await screen.findByText('Printer not working');
+
+      await user.click(screen.getByRole('button', { name: 'Vencidos' }));
+
+      await waitFor(() => expect(listParams()).toMatchObject({ overdue: 'true', page: '1' }));
+      expect(url()).toHaveTextContent('overdue=true');
+      expect(screen.getByRole('button', { name: 'Vencidos' })).toHaveAttribute('aria-pressed', 'true');
+
+      await user.click(screen.getByRole('button', { name: 'Vencidos' }));
+      await waitFor(() => expect(listParams()).not.toHaveProperty('overdue'));
+    });
+
     it('DMTE-503 AC-07: botões com aria-pressed, ícone aria-hidden e contador aria-live com tabular-nums', async () => {
       loginAs('ADMIN');
       mockTickets(3);
@@ -777,6 +794,34 @@ describe('TicketsPage', () => {
       expect(live).toHaveAttribute('aria-live', 'polite');
       expect(count.className).toContain('tabular-nums');
     });
+  });
+});
+
+describe('TKT-10: contagem total sempre visível', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    useAuthStore.setState({ token: null, user: null });
+  });
+
+  const tickets3 = [tickets[0], tickets[1], { ...tickets[0], id: 't-3', protocol: 'AP-000003', title: 'Terceiro chamado' }];
+
+  it('TKT-10: na Lista com uma só página mostra "3 chamados"', async () => {
+    mockApiGet(tickets3);
+    renderDashboard(['/?view=list']);
+
+    await screen.findByText('Printer not working', undefined, { timeout: 5000 });
+
+    expect(screen.getByText('3 chamados')).toBeInTheDocument();
+    expect(screen.queryByRole('navigation', { name: /paginação/i })).not.toBeInTheDocument();
+  });
+
+  it('TKT-10: no Kanban sem aviso de corte também mostra "3 chamados"', async () => {
+    mockApiGet(tickets3);
+    renderDashboard(['/?view=kanban']);
+
+    await screen.findAllByTestId('kanban-column', undefined, { timeout: 5000 });
+
+    expect(await screen.findByText('3 chamados', undefined, { timeout: 5000 })).toBeInTheDocument();
   });
 });
 
