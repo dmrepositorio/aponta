@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -71,7 +71,9 @@ function stubIntersectionObserver() {
   }
   vi.stubGlobal('IntersectionObserver', FakeObserver);
   const intersect = (id: string) =>
-    state.callback?.([{ target: document.getElementById(id) as Element, isIntersecting: true }]);
+    act(() => {
+      state.callback?.([{ target: document.getElementById(id) as Element, isIntersecting: true }]);
+    });
   return { state, intersect };
 }
 
@@ -366,7 +368,7 @@ describe('DocsPage', () => {
       const copied = writeText.mock.calls[0][0] as string;
       expect(copied).toBe(configBlock().textContent);
       expect(JSON.parse(copied).mcpServers.aponta.env.APONTA_API_TOKEN).toBe('apta_xxxxxxxxxxxxxxxxxxxxxxxx');
-      expect(await screen.findByRole('status')).toHaveTextContent('Copiado');
+      await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('Copiado'));
     });
 
     it('reports a failure when the clipboard is unavailable', async () => {
@@ -377,7 +379,7 @@ describe('DocsPage', () => {
 
       await user.click(copyButton());
 
-      expect(await screen.findByRole('status')).toHaveTextContent('Não foi possível copiar');
+      await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent('Não foi possível copiar'));
       expect(screen.queryByText('Copiado')).not.toBeInTheDocument();
     });
   });
