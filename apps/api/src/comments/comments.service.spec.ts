@@ -178,11 +178,15 @@ describe('CommentsService', () => {
   });
 
   describe('findByTicket', () => {
-    it('should return all comments (including internal) for AGENT', async () => {
+    const authorSelect = { select: { id: true, name: true, role: true } };
+    const agentAuthor = { id: 'agent-1', name: 'Ana Agente', role: Role.AGENT };
+    const clientAuthor = { id: 'client-1', name: 'Carla Cliente', role: Role.CLIENT };
+
+    it('should return all comments (including internal) for AGENT, with the author resolved', async () => {
       mockPrismaService.ticket.findUnique.mockResolvedValue(ownedTicket);
       const comments = [
-        { id: 'c1', isInternal: false },
-        { id: 'c2', isInternal: true },
+        { id: 'c1', isInternal: false, author: clientAuthor },
+        { id: 'c2', isInternal: true, author: agentAuthor },
       ];
       mockPrismaService.comment.findMany.mockResolvedValue(comments);
 
@@ -191,6 +195,7 @@ describe('CommentsService', () => {
       expect(mockPrismaService.comment.findMany).toHaveBeenCalledWith({
         where: { ticketId: 'ticket-1' },
         orderBy: { createdAt: 'asc' },
+        include: { author: authorSelect },
       });
       expect(result).toEqual(comments);
     });
@@ -204,13 +209,14 @@ describe('CommentsService', () => {
       expect(mockPrismaService.comment.findMany).toHaveBeenCalledWith({
         where: { ticketId: 'ticket-1' },
         orderBy: { createdAt: 'asc' },
+        include: { author: authorSelect },
       });
     });
 
     it('should filter out internal comments for a CLIENT reader (isInternal: false in the query)', async () => {
       mockPrismaService.ticket.findUnique.mockResolvedValue(ownedTicket);
       mockPrismaService.comment.findMany.mockResolvedValue([
-        { id: 'c1', isInternal: false },
+        { id: 'c1', isInternal: false, author: clientAuthor },
       ]);
 
       const result = await service.findByTicket('ticket-1', clientUser);
@@ -218,8 +224,76 @@ describe('CommentsService', () => {
       expect(mockPrismaService.comment.findMany).toHaveBeenCalledWith({
         where: { ticketId: 'ticket-1', isInternal: false },
         orderBy: { createdAt: 'asc' },
+        include: { author: authorSelect },
       });
-      expect(result).toEqual([{ id: 'c1', isInternal: false }]);
+      expect(result).toEqual([
+        { id: 'c1', isInternal: false, author: clientAuthor },
+      ]);
+    });
+
+    it('should expose only id, name and role of the author, never any other user field', async () => {
+      mockPrismaService.ticket.findUnique.mockResolvedValue(ownedTicket);
+      mockPrismaService.comment.findMany.mockResolvedValue([
+        {
+          id: 'c1',
+          isInternal: false,
+          author: {
+            ...agentAuthor,
+            email: 'ana@example.test',
+            phone: '000',
+            password: 'hash',
+            organizationId: 'org-1',
+          },
+        },
+      ]);
+
+      const result = await service.findByTicket('ticket-1', agentUser);
+
+      expect(Object.keys(result[0].author!).sort()).toEqual(['id', 'name', 'role']);
+    });
+
+    it('should hide the name of team authors from a CLIENT reader but keep id and role', async () => {
+      mockPrismaService.ticket.findUnique.mockResolvedValue(ownedTicket);
+      mockPrismaService.comment.findMany.mockResolvedValue([
+        { id: 'c1', isInternal: false, author: agentAuthor },
+        { id: 'c2', isInternal: false, author: { id: 'm-1', name: 'Mario Master', role: Role.AGENT_MASTER } },
+        { id: 'c3', isInternal: false, author: { id: 'a-1', name: 'Alice Admin', role: Role.ADMIN } },
+        { id: 'c4', isInternal: false, author: clientAuthor },
+        { id: 'c5', isInternal: false, author: { id: 'cm-1', name: 'Cleo Master', role: Role.CLIENT_MASTER } },
+      ]);
+
+      const result = await service.findByTicket('ticket-1', clientUser);
+
+      expect(result.map((c) => c.author)).toEqual([
+        { id: 'agent-1', name: null, role: Role.AGENT },
+        { id: 'm-1', name: null, role: Role.AGENT_MASTER },
+        { id: 'a-1', name: null, role: Role.ADMIN },
+        clientAuthor,
+        { id: 'cm-1', name: 'Cleo Master', role: Role.CLIENT_MASTER },
+      ]);
+    });
+
+    it('should keep team author names for AGENT readers', async () => {
+      mockPrismaService.ticket.findUnique.mockResolvedValue(ownedTicket);
+      mockPrismaService.comment.findMany.mockResolvedValue([
+        { id: 'c1', isInternal: false, author: agentAuthor },
+      ]);
+
+      const result = await service.findByTicket('ticket-1', agentUser);
+
+      expect(result[0].author).toEqual(agentAuthor);
+    });
+
+    it('should return author null (not crash) when the author is missing', async () => {
+      mockPrismaService.ticket.findUnique.mockResolvedValue(ownedTicket);
+      mockPrismaService.comment.findMany.mockResolvedValue([
+        { id: 'c1', isInternal: false, author: null },
+        { id: 'c2', isInternal: false },
+      ]);
+
+      const result = await service.findByTicket('ticket-1', agentUser);
+
+      expect(result.map((c) => c.author)).toEqual([null, null]);
     });
 
     it('should throw NotFoundException when the ticket does not exist', async () => {

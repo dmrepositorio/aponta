@@ -10,7 +10,23 @@ export interface TicketComment {
   isInternal: boolean;
   ticketId: string;
   authorId: string;
+  /** Nulo/ausente: comentário sem autor resolvido (exibido como "Sistema"). */
+  author?: TicketCommentAuthor | null;
   createdAt: string;
+}
+
+export interface TicketCommentAuthor {
+  id: string;
+  /** Nulo quando a API oculta o nome da equipe para o leitor CLIENT. */
+  name: string | null;
+  role: 'ADMIN' | 'AGENT_MASTER' | 'AGENT' | 'CLIENT_MASTER' | 'CLIENT';
+}
+
+function authorRoleLabel(author: TicketCommentAuthor | null | undefined) {
+  if (!author) return 'Sistema';
+  return author.role === 'CLIENT' || author.role === 'CLIENT_MASTER'
+    ? 'Cliente'
+    : 'Equipe';
 }
 
 export const commentsQueryKey = (ticketId: string) =>
@@ -66,8 +82,16 @@ export function TicketComments({ ticketId }: TicketCommentsProps) {
           className="space-y-2 rounded-lg border border-gray-200 bg-white p-4"
         >
           <div className="flex items-center justify-between gap-2">
-            <span className="text-xs text-gray-500">
-              {formatDateTime(comment.createdAt)}
+            <span className="flex flex-wrap items-center gap-2">
+              {comment.author?.name && (
+                <span className="text-sm font-medium text-gray-900">
+                  {comment.author.name}
+                </span>
+              )}
+              <EzTag label={authorRoleLabel(comment.author)} variant="gray" />
+              <span className="text-xs text-gray-500">
+                {formatDateTime(comment.createdAt)}
+              </span>
             </span>
             {comment.isInternal && (
               <EzTag label="Nota interna" variant="petroleum" />
