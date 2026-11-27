@@ -262,4 +262,32 @@ describe('ScheduledJobsPage (DMTE-462 T3)', () => {
       expect(cell).toHaveTextContent(longError);
     });
   });
+
+  it('JOB-05: tarefa desativada mostra "Desativada" no lugar da próxima execução', async () => {
+    vi.mocked(api.get).mockResolvedValue({ data: [{ ...JOBS[0], enabled: false }] });
+    renderPage();
+    await screen.findByText(LABEL, {}, { timeout: 5000 });
+    expect(screen.getByText(/próxima execução: desativada/i)).toBeInTheDocument();
+  });
+
+  it('JOB-05: sem última execução mostra "Nunca executada"', async () => {
+    vi.mocked(api.get).mockResolvedValue({ data: [{ ...JOBS[0], lastRunAt: null, runs: [] }] });
+    renderPage();
+    await screen.findByText(LABEL, {}, { timeout: 5000 });
+    expect(screen.getByText(/última execução: nunca executada/i)).toBeInTheDocument();
+  });
+
+  it('JOB-05: as datas indicam o fuso (horário de Brasília)', async () => {
+    renderPage();
+    await screen.findByText(LABEL, {}, { timeout: 5000 });
+    expect(screen.getByText(/próxima execução: .*brasília/i)).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: /início.*brasília/i })).toBeInTheDocument();
+  });
+
+  it('JOB-08: a lista vazia explica a origem das tarefas', async () => {
+    vi.mocked(api.get).mockResolvedValue({ data: [] });
+    renderPage();
+    expect(await screen.findByText('Nenhuma tarefa agendada.', {}, { timeout: 5000 })).toBeInTheDocument();
+    expect(screen.getByText('As tarefas são criadas pelo sistema.')).toBeInTheDocument();
+  });
 });

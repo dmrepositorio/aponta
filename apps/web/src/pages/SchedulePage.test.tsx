@@ -69,7 +69,8 @@ describe('SchedulePage', () => {
     loginAs('AGENT');
     renderPage();
 
-    expect(screen.getByText('Agenda & Alocação')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'Agenda' })).toBeInTheDocument();
+    expect(screen.queryByText('Agenda & Alocação')).not.toBeInTheDocument();
     expect(screen.getByText('Hoje')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /novo agendamento/i })).toBeInTheDocument();
   });
@@ -205,6 +206,34 @@ describe('SchedulePage', () => {
     await user.click(screen.getByRole('button', { name: 'Lista' }));
 
     expect(screen.getByText(/nenhum compromisso no período selecionado/i)).toBeInTheDocument();
+  });
+
+  it('SCH-15: o estado vazio da Lista oferece Novo agendamento para AGENT e ADMIN e abre o modal de criação', async () => {
+    for (const role of ['AGENT', 'ADMIN'] as const) {
+      const user = userEvent.setup();
+      vi.mocked(api.get).mockResolvedValue({ data: [] });
+      loginAs(role);
+      const view = renderPage();
+      await user.click(screen.getByRole('button', { name: 'Lista' }));
+      await screen.findByText(/nenhum compromisso no período selecionado/i, {}, { timeout: 5000 });
+      // O botão do cabeçalho mais o do estado vazio (último na ordem do documento).
+      const buttons = screen.getAllByRole('button', { name: /novo agendamento/i });
+      expect(buttons).toHaveLength(2);
+      await user.click(buttons[1]);
+      expect(await screen.findByPlaceholderText(/ex: reunião com cliente/i, {}, { timeout: 5000 })).toBeInTheDocument();
+      view.unmount();
+    }
+  });
+
+  it('SCH-15: o estado vazio da Lista não oferece Novo agendamento para CLIENT e usa texto legível', async () => {
+    const user = userEvent.setup();
+    vi.mocked(api.get).mockResolvedValue({ data: [] });
+    loginAs('CLIENT');
+    renderPage();
+    await user.click(screen.getByRole('button', { name: 'Lista' }));
+    const text = await screen.findByText(/nenhum compromisso no período selecionado/i, {}, { timeout: 5000 });
+    expect(screen.queryAllByRole('button', { name: /novo agendamento/i })).toHaveLength(0);
+    expect(text.className).not.toContain('text-gray-400');
   });
 
   it('navigates to the previous and next week, and back to today', async () => {
@@ -601,5 +630,87 @@ describe('SchedulePage', () => {
     expect(screen.getByRole('button', { name: 'Semana' })).toHaveAttribute('aria-pressed', 'true');
     expect(screen.queryByRole('button', { name: /^filtros$/i })).not.toBeInTheDocument();
     expect(screen.getAllByRole('checkbox').length).toBeGreaterThan(0);
+  });
+});
+
+describe('SchedulePage: rolagem, filtros e estados (P3-E)', () => {
+  const scrollTopOf = new WeakMap<Element, number>();
+  const original = Object.getOwnPropertyDescriptor(Element.prototype, 'scrollTop');
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    useAuthStore.setState({ token: null, user: null });
+    // jsdom não faz layout: registra o scrollTop atribuído a cada elemento.
+    Object.defineProperty(Element.prototype, 'scrollTop', {
+      configurable: true,
+      get() {
+        return scrollTopOf.get(this) ?? 0;
+      },
+      set(value: number) {
+        scrollTopOf.set(this, value);
+      },
+    });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    if (original) Object.defineProperty(Element.prototype, 'scrollTop', original);
+  });
+
+  const timeGrid = () => document.querySelector('[class~="overflow-y-auto"][class~="max-h-[640px]"]') as HTMLElement;
+
+  it('SCH-11: a rolagem inicial do grid é 06:00, mesmo quando a agenda carrega depois do primeiro render', async () => {
+    vi.mocked(api.get).mockResolvedValue({ data: [] });
+    loginAs('AGENT');
+    renderPage();
+    await waitFor(() => expect(timeGrid()).not.toBeNull(), { timeout: 5000 });
+    expect(timeGrid().scrollTop).toBe(6 * 56);
+  });
+
+  it('SCH-11: ao clicar em Hoje às 15:00 o grid rola até a hora atual menos uma folga, além das 06:00', async () => {
+    vi.useFakeTimers({ toFake: ['Date'], now: new Date(2026, 10, 12, 15, 0, 0) });
+    vi.mocked(api.get).mockResolvedValue({ data: [] });
+    loginAs('AGENT');
+    renderPage();
+    await waitFor(() => expect(timeGrid()).not.toBeNull(), { timeout: 5000 });
+    const grid = timeGrid();
+
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Hoje' }));
+
+    expect(grid.scrollTop).toBeGreaterThan(6 * 56);
+    expect(grid.scrollTop).toBeLessThanOrEqual(15 * 56);
+  });
+
+  it('SCH-12: "Filtrar" fica indeterminado quando só parte dos tipos está marcada', async () => {
+    vi.mocked(api.get).mockResolvedValue({ data: [] });
+    loginAs('ADMIN');
+    renderPage();
+    const filtrar = screen.getByLabelText('Filtrar') as HTMLInputElement;
+    expect(filtrar.indeterminate).toBe(false);
+
+    await userEvent.setup().click(screen.getByLabelText('Férias'));
+
+    expect(filtrar.indeterminate).toBe(true);
+    expect(filtrar.checked).toBe(false);
+  });
+
+  it('SCH-12: "Atendentes" fica indeterminado quando só parte dos atendentes está marcada', async () => {
+    const other = {
+      ...mockAppointments[0],
+      id: 'app-9',
+      title: 'Reunião da Bia',
+      userId: 'agent-2',
+      user: { id: 'agent-2', name: 'Bia Souza', email: 'bia@aponta.com' },
+    };
+    vi.mocked(api.get).mockResolvedValue({ data: [...mockAppointments, other] });
+    loginAs('AGENT');
+    renderPage();
+    const atendentes = screen.getByLabelText('Atendentes') as HTMLInputElement;
+    expect(await screen.findByLabelText('Bia Souza', {}, { timeout: 5000 })).toBeInTheDocument();
+    expect(atendentes.indeterminate).toBe(false);
+
+    await userEvent.setup().click(screen.getByLabelText('Bia Souza'));
+
+    await waitFor(() => expect(atendentes.indeterminate).toBe(true), { timeout: 5000 });
   });
 });

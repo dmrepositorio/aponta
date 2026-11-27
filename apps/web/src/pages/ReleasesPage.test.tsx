@@ -23,8 +23,11 @@ const ROWS = [
   },
 ];
 
+let lastQueryClient: QueryClient;
+
 function renderPage() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  lastQueryClient = queryClient;
   return render(
     <QueryClientProvider client={queryClient}>
       <MemoryRouter>
@@ -177,5 +180,47 @@ describe('ReleasesPage (DMTE-462 T5)', () => {
     vi.mocked(api.get).mockRejectedValue(new Error('403'));
     renderPage();
     expect(await screen.findByRole('alert')).toHaveTextContent(/erro ao carregar/i);
+  });
+
+  it('REL-09: a falha de carga traz Tentar novamente, que refaz a consulta', async () => {
+    vi.mocked(api.get).mockRejectedValueOnce(new Error('500'));
+    renderPage();
+    const alert = await screen.findByRole('alert', {}, { timeout: 5000 });
+    expect(alert).toHaveTextContent(/erro ao carregar/i);
+    expect(api.get).toHaveBeenCalledTimes(1);
+
+    await userEvent.click(within(alert).getByRole('button', { name: 'Tentar novamente' }));
+
+    expect(await screen.findByText('Ana Consultora', {}, { timeout: 5000 })).toBeInTheDocument();
+    expect(api.get).toHaveBeenCalledTimes(2);
+  });
+
+  it('REL-08: atualizar a lista não remonta a grade (mesmo nó DOM)', async () => {
+    renderPage();
+    await screen.findByText('Ana Consultora', {}, { timeout: 5000 });
+    const table = screen.getByRole('table');
+    const extra = { ...ROWS[0], id: 'w-3', ticketId: 't-3', ticket: { id: 't-3', protocol: 'T-1003', title: 'Fila parada' }, author: { id: 'u-4', name: 'Caio Consultor', email: 'caio@aponta.test' } };
+    vi.mocked(api.get).mockResolvedValue({ data: [...ROWS, extra] });
+
+    await lastQueryClient.invalidateQueries();
+
+    expect(await screen.findByText('Caio Consultor', {}, { timeout: 5000 })).toBeInTheDocument();
+    expect(screen.getByRole('table')).toBe(table);
+  });
+
+  it('REL-08: depois de decidir a linha selecionada, a seleção é limpa e Liberar selecionado não age em outra linha', async () => {
+    renderPage();
+    await screen.findByText('Ana Consultora', {}, { timeout: 5000 });
+    const row = screen.getByText('Ana Consultora').closest('tr') as HTMLElement;
+    await userEvent.click(within(row).getByRole('checkbox'));
+    expect(screen.getByRole('button', { name: 'Liberar selecionado' })).toBeEnabled();
+    vi.mocked(api.get).mockResolvedValue({ data: [ROWS[1]] });
+
+    await userEvent.click(screen.getByRole('button', { name: 'Liberar selecionado' }));
+
+    await waitFor(() => expect(screen.queryByText('Ana Consultora')).not.toBeInTheDocument(), { timeout: 5000 });
+    expect(screen.getByRole('button', { name: 'Liberar selecionado' })).toBeDisabled();
+    const left = screen.getByText('Bia Consultora').closest('tr') as HTMLElement;
+    expect(within(left).getByRole('checkbox')).not.toBeChecked();
   });
 });
