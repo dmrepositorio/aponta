@@ -121,7 +121,9 @@ export function ContractList({
             <button
               type="button"
               title={label}
-              aria-label={`Ver detalhes ${c.name || c.organization?.name || c.id}`}
+              aria-label={`Ver detalhes ${
+                c.name ? label : [label, c.organization?.name].filter(Boolean).join(', ')
+              }`}
               onClick={() => onDetail(c.id)}
               style={textMaxWidth(COLUMN_SIZE.contract)}
               className="block truncate rounded-sm text-left font-medium text-brand-700 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"
