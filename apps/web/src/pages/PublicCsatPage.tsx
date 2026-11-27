@@ -1,4 +1,4 @@
-import { useRef, useState, type KeyboardEvent } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { useParams } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import axios from 'axios';
@@ -25,6 +25,7 @@ export function PublicCsatPage() {
   const [score, setScore] = useState(5);
   const [comment, setComment] = useState('');
   const starRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const thanksRef = useRef<HTMLParagraphElement>(null);
 
   const { data, isLoading, isError, error, refetch } = useQuery<PublicCsatSummary>({
     queryKey: ['public-csat', token],
@@ -45,10 +46,15 @@ export function PublicCsatPage() {
     },
   });
 
+  // Foco no agradecimento ao concluir: quem usa leitor de tela perde o botão que acabou de sumir.
+  useEffect(() => {
+    if (mutation.isSuccess) thanksRef.current?.focus();
+  }, [mutation.isSuccess]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-80">
-        <p className="text-gray-500">Carregando…</p>
+        <p role="status" className="text-gray-700">Carregando…</p>
       </div>
     );
   }
@@ -151,7 +157,7 @@ export function PublicCsatPage() {
         <p className="text-sm text-gray-500 mb-6">{data?.title}</p>
 
         {mutation.isSuccess ? (
-          <p className="text-center text-sm text-green-700 font-medium">
+          <p ref={thanksRef} role="status" tabIndex={-1} className="text-center text-lg text-green-700 font-medium focus:outline-none">
             Obrigado pela sua avaliação!
           </p>
         ) : alreadyRated ? (

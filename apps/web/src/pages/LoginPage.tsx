@@ -34,7 +34,7 @@ const forgotEmailSchema = z.string().trim().max(254).email();
 function ForgotPasswordModal({ onClose }: { onClose: () => void }) {
   const [email, setEmail] = useState('');
   const [invalid, setInvalid] = useState(false);
-  const [state, setState] = useState<'idle' | 'sending' | 'sent' | 'failed'>('idle');
+  const [state, setState] = useState<'idle' | 'sending' | 'sent' | 'failed' | 'limited'>('idle');
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
@@ -45,8 +45,9 @@ function ForgotPasswordModal({ onClose }: { onClose: () => void }) {
     try {
       await api.post('/auth/forgot-password', { email: parsed.data });
       setState('sent');
-    } catch {
-      setState('failed');
+    } catch (e) {
+      // 429 não revela se há conta: o limite vale para qualquer e-mail.
+      setState(axios.isAxiosError(e) && e.response?.status === 429 ? 'limited' : 'failed');
     }
   };
 
@@ -63,7 +64,7 @@ function ForgotPasswordModal({ onClose }: { onClose: () => void }) {
         ) : (
           <>
             <EzButton type="button" variant="tertiary" label="Cancelar" onClick={onClose} />
-            <EzButton type="submit" form="forgot-password-form" label="Enviar" disabled={state === 'sending'} />
+            <EzButton type="submit" form="forgot-password-form" label={state === 'sending' ? 'Enviando…' : 'Enviar'} disabled={state === 'sending'} />
           </>
         )
       }
@@ -87,6 +88,7 @@ function ForgotPasswordModal({ onClose }: { onClose: () => void }) {
           />
           <div aria-live="polite">
             {state === 'failed' && <EzAlert variant="error">Algo deu errado. Tente novamente.</EzAlert>}
+            {state === 'limited' && <EzAlert variant="error">Muitas tentativas. Aguarde um minuto e tente de novo.</EzAlert>}
           </div>
         </form>
       )}
@@ -169,9 +171,11 @@ export function LoginPage() {
   const [forgotOpen, setForgotOpen] = useState(false);
   const [challengeToken, setChallengeToken] = useState<string | null>(null);
   // Troca do código do login social em andamento (LOG-03): lida já na primeira renderização, antes do efeito apagar o fragmento.
+  // Provedor cujo redirecionamento já começou: o clique seguinte é ignorado (LOG-08).
+  const [redirecting, setRedirecting] = useState<string | null>(null);
   const [exchanging, setExchanging] = useState(() => new URLSearchParams(window.location.hash.slice(1)).has('social'));
   const canRecover = useFeatureFlag('convite-e-redefinicao-usuario');
-  const { data: social } = useQuery<string[]>({
+  const { data: social, isPending: socialPending } = useQuery<string[]>({
     queryKey: ['social-providers'],
     queryFn: async () => (await api.get<{ providers: string[] }>('/auth/social/providers')).data.providers,
     retry: false,
@@ -254,7 +258,7 @@ export function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-80 text-gray-900">
+    <div className="flex min-h-screen items-center justify-center bg-gray-80 px-4 text-gray-900">
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="w-full max-w-sm">
         <EzCardItem className="space-y-4 p-6">
           <h1 className="text-[20px] font-semibold text-gray-900">Entrar</h1>
@@ -300,6 +304,8 @@ export function LoginPage() {
             Entrar
           </EzButton>
 
+          {socialPending && <div data-testid="social-providers-placeholder" aria-hidden="true" className="min-h-[120px]" />}
+
           {!!social?.length && (
             <div className="space-y-2">
               <p className="text-center text-sm text-gray-700">ou</p>
@@ -307,13 +313,19 @@ export function LoginPage() {
                 <a
                   key={provider}
                   href={`/api/auth/social/${provider}/start`}
-                  aria-disabled={exchanging || undefined}
+                  aria-disabled={exchanging || redirecting !== null || undefined}
+                  aria-busy={redirecting === provider || undefined}
                   tabIndex={exchanging ? -1 : undefined}
-                  onClick={exchanging ? (e) => e.preventDefault() : undefined}
-                  className={`flex h-[42px] w-full items-center justify-center gap-2 rounded-[12px] border border-gray-300 bg-white text-sm font-medium text-gray-900 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600${exchanging ? ' pointer-events-none opacity-50' : ''}`}
+                  onClick={(e) => {
+                    if (exchanging || redirecting !== null) return e.preventDefault();
+                    // Ctrl/Cmd/Shift/botão do meio abrem em outra aba: a página atual não sai, então não há estado de espera.
+                    if (e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+                    setRedirecting(provider);
+                  }}
+                  className={`flex h-[42px] w-full items-center justify-center gap-2 rounded-[12px] border border-gray-300 bg-white text-sm font-medium text-gray-900 hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600${exchanging || (redirecting !== null && redirecting !== provider) ? ' pointer-events-none opacity-50' : ''}`}
                 >
                   <SocialProviderIcon provider={provider} />
-                  Entrar com {PROVIDER_LABELS[provider] ?? provider}
+                  {redirecting === provider ? 'Redirecionando…' : `Entrar com ${PROVIDER_LABELS[provider] ?? provider}`}
                 </a>
               ))}
             </div>
