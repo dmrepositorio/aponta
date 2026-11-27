@@ -200,12 +200,26 @@ describe('ReleasesPage (DMTE-462 T5)', () => {
     await screen.findByText('Ana Consultora', {}, { timeout: 5000 });
     const table = screen.getByRole('table');
     const extra = { ...ROWS[0], id: 'w-3', ticketId: 't-3', ticket: { id: 't-3', protocol: 'T-1003', title: 'Fila parada' }, author: { id: 'u-4', name: 'Caio Consultor', email: 'caio@aponta.test' } };
+    // Mesma quantidade de linhas, outro conjunto de ids (a Bia saiu, o Caio entrou).
+    vi.mocked(api.get).mockResolvedValue({ data: [ROWS[0], extra] });
+
+    await lastQueryClient.invalidateQueries();
+
+    expect(await screen.findByText('Caio Consultor', {}, { timeout: 5000 })).toBeInTheDocument();
+    expect(screen.queryByText('Bia Consultora')).not.toBeInTheDocument();
+    expect(screen.getByRole('table')).toBe(table);
+  });
+
+  it('REL-08: uma liberação nova na lista aparece mesmo com a grade já montada', async () => {
+    renderPage();
+    await screen.findByText('Ana Consultora', {}, { timeout: 5000 });
+    const extra = { ...ROWS[0], id: 'w-3', ticketId: 't-3', ticket: { id: 't-3', protocol: 'T-1003', title: 'Fila parada' }, author: { id: 'u-4', name: 'Caio Consultor', email: 'caio@aponta.test' } };
     vi.mocked(api.get).mockResolvedValue({ data: [...ROWS, extra] });
 
     await lastQueryClient.invalidateQueries();
 
     expect(await screen.findByText('Caio Consultor', {}, { timeout: 5000 })).toBeInTheDocument();
-    expect(screen.getByRole('table')).toBe(table);
+    expect(screen.getByText('Ana Consultora')).toBeInTheDocument();
   });
 
   it('REL-08: depois de decidir a linha selecionada, a seleção é limpa e Liberar selecionado não age em outra linha', async () => {
