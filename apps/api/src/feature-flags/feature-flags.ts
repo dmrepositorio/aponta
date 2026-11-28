@@ -72,6 +72,13 @@ export const FEATURE_FLAGS: readonly FeatureFlag[] = [
     defaultValue: true,
     removeBy: '2026-12-18',
   },
+  {
+    key: 'rbac-permission-only',
+    description: 'Tudo por regras (#523): autorização só por permissão do grupo, sem checagem por perfil; sem uso enquanto as fases seguintes não o lerem',
+    owner: 'alfredo',
+    defaultValue: false,
+    removeBy: '2027-03-31',
+  },
 ];
 
 /** Chave tipada da flag "tudo por regras" (#523); env FEATURE_RBAC_PERMISSION_ONLY. */
