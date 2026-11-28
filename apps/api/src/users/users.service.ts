@@ -4,6 +4,7 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
+  Optional,
   UnauthorizedException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
@@ -22,6 +23,7 @@ import {
 import { TenantHelper } from '../core/security/tenant.helper';
 import { CurrentUserPayload } from '../tickets/decorators/current-user.decorator';
 import { escapeLikePattern } from '../common/escape-like-pattern';
+import { UserAccess } from './user-access';
 
 const SALT_ROUNDS = 10;
 const UNIQUE_CONSTRAINT_VIOLATION = 'P2002';
@@ -72,7 +74,11 @@ const USER_GROUPS_INCLUDE = {
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    // Opcional: specs e modulos que montam o service sem a flag seguem com o comportamento por perfil.
+    @Optional() private readonly access?: UserAccess,
+  ) {}
 
   // E-mail é único sem diferença de caixa (DMTE-550): toda escrita o guarda em minúsculas, então a chave única
   // acha quase sempre. A varredura insensível só roda quando ela não acha (dado legado de caixa mista).
@@ -403,6 +409,18 @@ export class UsersService {
     return this.findOne(id);
   }
 
+  /** Quem conta como administrador ativo: membro do grupo protegido (flag ligada) ou perfil ADMIN (hoje). */
+  private adminWhere(): Prisma.UserWhereInput {
+    return this.access?.protectedAdminWhere() ?? { role: Role.ADMIN, active: true };
+  }
+
+  /** O lote inativa algum administrador ativo? Por grupo com a flag ligada; por perfil, sobre o que ja foi lido, sem ela. */
+  private async touchesAdmins(tx: Prisma.TransactionClient, found: User[], ids: string[]): Promise<boolean> {
+    const byGroup = this.access?.protectedAdminWhere();
+    if (!byGroup) return found.some((u) => u.role === Role.ADMIN && u.active);
+    return (await tx.user.count({ where: { ...byGroup, id: { in: ids } } })) > 0;
+  }
+
   async setActive(id: string, active: boolean, actorId: string): Promise<SafeUser> {
     const [user] = await this.setActiveMany([id], active, actorId);
     return user;
@@ -423,8 +441,8 @@ export class UsersService {
         if (unique.includes(actorId)) {
           throw new ConflictException('Você não pode inativar a si mesmo.');
         }
-        if (found.some((u) => u.role === Role.ADMIN && u.active)) {
-          const remaining = await tx.user.count({ where: { role: Role.ADMIN, active: true, id: { notIn: unique } } });
+        if (await this.touchesAdmins(tx, found, unique)) {
+          const remaining = await tx.user.count({ where: { ...this.adminWhere(), id: { notIn: unique } } });
           if (remaining === 0) throw new ConflictException('Não é possível inativar o último administrador ativo.');
         }
       }
@@ -443,7 +461,7 @@ export class UsersService {
    */
   async findAgents(currentUser: CurrentUserPayload): Promise<SafeUser[]> {
     const roleFilter: Prisma.UserWhereInput = {
-      role: { in: [Role.AGENT, Role.AGENT_MASTER, Role.ADMIN] },
+      ...(this.access?.agentsWhere() ?? { role: { in: [Role.AGENT, Role.AGENT_MASTER, Role.ADMIN] } }),
       // Inativo e convite pendente não são atribuíveis (DMTE-550); o nome em ticket antigo segue legível.
       active: true,
       password: { not: null },
