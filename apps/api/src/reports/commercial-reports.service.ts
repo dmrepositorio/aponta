@@ -26,7 +26,7 @@ export class CommercialReportsService {
     private readonly prisma: PrismaService,
     private readonly permissions: PermissionsService,
     private readonly flags: FeatureFlagsService,
-    @Optional() protected readonly scope?: ScopeAccess,
+    @Optional() private readonly scope?: ScopeAccess,
   ) {}
 
   async getCommercial(user: CurrentUserPayload, filters: { contractId?: string; month?: string } = {}) {
@@ -55,7 +55,7 @@ export class CommercialReportsService {
     if (!contracts.length) return [];
     const worklogs = await this.prisma.worklog.findMany({
       where: {
-        contractId: { in: contracts.map(contract => contract.id) }, voidedAt: null, ticket: TenantHelper.getTicketWhere(user),
+        contractId: { in: contracts.map(contract => contract.id) }, voidedAt: null, ticket: this.scope ? await this.scope.ticketWhere(user) : TenantHelper.getTicketWhere(user),
         ...(selectedBounds ? { startTime: { lt: selectedBounds.to }, endTime: { gt: selectedBounds.from } } : {}),
       },
       select: { contractId: true, minutes: true, startTime: true, billable: true, valuationType: true, valueCents: true, value: true, costCents: true, valuationSnapshot: true },

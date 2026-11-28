@@ -218,7 +218,7 @@ export class TicketsService {
     private readonly transitionAccess: TicketTransitionAccess,
     // Opcional: specs que montam o service sem a flag seguem com o ator da mesa por perfil.
     @Optional() private readonly deskAccess?: DeskAccess,
-    @Optional() protected readonly scope?: ScopeAccess,
+    @Optional() private readonly scope?: ScopeAccess,
   ) {}
 
   withTransaction(
@@ -233,7 +233,7 @@ export class TicketsService {
         return true;
       },
     } as EventEmitter2;
-    return new TicketsService(database as PrismaService, events, this.maskAccess, this.transitionAccess, this.deskAccess);
+    return new TicketsService(database as PrismaService, events, this.maskAccess, this.transitionAccess, this.deskAccess, this.scope);
   }
 
   /**
@@ -539,7 +539,7 @@ export class TicketsService {
     data: Ticket[];
     meta: { total: number; page: number; limit: number; totalPages: number };
   }> {
-    const baseWhere = TenantHelper.getTicketWhere(currentUser);
+    const baseWhere = await this.ticketWhere(currentUser);
     const where: Prisma.TicketWhereInput = { ...baseWhere };
     // `requester` is the one key both TenantHelper (CLIENT_MASTER's org
     // scope) and the Busca avançada filters (organizationId, requesterQuery)
@@ -808,7 +808,13 @@ export class TicketsService {
 
     let isAuthorized = false;
 
-    if (currentUser.role === Role.ADMIN) {
+    if (this.scope?.isPermissionOnly()) {
+      // Flag ligada: o mesmo escopo do findAll (ScopeResolver), aplicado ao chamado pedido.
+      isAuthorized =
+        (await this.prisma.ticket.count({
+          where: { id, AND: [await this.scope.ticketWhere(currentUser)] },
+        })) > 0;
+    } else if (currentUser.role === Role.ADMIN) {
       isAuthorized = true;
     } else if (currentUser.role === Role.CLIENT) {
       isAuthorized = ticket.requesterId === currentUser.id;
@@ -1411,6 +1417,11 @@ export class TicketsService {
     const desk = await this.loadDeskPolicy(serviceDeskId);
     if (!desk) return;
     assertListedAgentMayMutate({ desk, user: currentUser, actor: await this.deskActor(currentUser) });
+  }
+
+  /** Escopo de chamados: pelo ScopeAccess (flag ligada = permissoes) ou, sem ele, pelo perfil. */
+  private ticketWhere(user: CurrentUserPayload) {
+    return this.scope ? this.scope.ticketWhere(user) : TenantHelper.getTicketWhere(user);
   }
 
   /** Ator da politica de mesas (DeskAccess); sem ele, `undefined` e a politica decide pelo perfil. */

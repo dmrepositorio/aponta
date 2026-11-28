@@ -39,7 +39,7 @@ export class CommentsService {
     private readonly eventEmitter: EventEmitter2,
     private readonly maskAccess: MaskAccess,
     @Optional() private readonly deskAccess?: DeskAccess,
-    @Optional() protected readonly scope?: ScopeAccess,
+    @Optional() private readonly scope?: ScopeAccess,
   ) {}
 
   withTransaction(database: Prisma.TransactionClient, afterCommit: Array<() => void>) {
@@ -47,7 +47,7 @@ export class CommentsService {
       afterCommit.push(() => { this.eventEmitter.emit(name, payload); });
       return true;
     } } as EventEmitter2;
-    return new CommentsService(database as PrismaService, events, this.maskAccess, this.deskAccess);
+    return new CommentsService(database as PrismaService, events, this.maskAccess, this.deskAccess, this.scope);
   }
 
   /**
@@ -148,10 +148,10 @@ export class CommentsService {
    * they do not request gets NotFoundException (NOT ForbiddenException) so
    * the existence of other users' tickets is never leaked.
    *
-   * Escopo, fora do lote 2c (#547): continua por perfil (só CLIENT é barrado).
-   * As chaves de escopo (ScopeResolver) estreitariam CLIENT_MASTER (organização)
-   * e AGENT/AGENT_MASTER (mesas), o que muda o comportamento de hoje; a troca é
-   * do lote 2e junto com tickets.findOne.
+   * Escopo (lote 2e2, #584): ScopeAccess.ticketReadScope. Só quem fica restrito aos
+   * próprios chamados (CLIENT; ou, com a flag ligada, quem só tem VIEW_OWN_TICKETS)
+   * é barrado. CLIENT_MASTER de outra organização e AGENT sem vínculo à mesa ainda
+   * leem e comentam (CARACTERIZAÇÃO da Fase 0, sem decisão do dono para estreitar).
    */
   private async assertTicketVisibleTo(
     ticketId: string,
@@ -172,9 +172,14 @@ export class CommentsService {
     if (!ticket) {
       throw new NotFoundException(`Ticket with ID ${ticketId} not found`);
     }
+    const readScope = this.scope
+      ? await this.scope.ticketReadScope(currentUser)
+      : currentUser.role === Role.CLIENT
+        ? 'own'
+        : 'unrestricted';
     if (
-      currentUser.role === Role.CLIENT &&
-      ticket.requesterId !== currentUser.id
+      readScope === 'none' ||
+      (readScope === 'own' && ticket.requesterId !== currentUser.id)
     ) {
       // Deliberately NotFoundException (not Forbidden): do not leak the
       // existence of other users' tickets to a CLIENT.

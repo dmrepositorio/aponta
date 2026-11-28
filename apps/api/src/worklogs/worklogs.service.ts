@@ -45,7 +45,7 @@ export class WorklogsService {
     private readonly flags: FeatureFlagsService,
     private readonly approvals: WorklogApprovalsService,
     @Optional() private readonly deskAccess?: DeskAccess,
-    @Optional() protected readonly scope?: ScopeAccess,
+    @Optional() private readonly scope?: ScopeAccess,
   ) {}
 
   /** #542: decisão por perfil (flag desligada) ou por permissão (ligada); ver worklog-access.ts. */
@@ -54,6 +54,11 @@ export class WorklogsService {
       permissionOnly: this.flags.isRbacPermissionOnly(),
       hasPermission: (userId, key) => this.permissions.hasPermission(userId, key),
     });
+  }
+
+  /** Escopo de chamados: pelo ScopeAccess (flag ligada = permissoes) ou, sem ele, pelo perfil. */
+  private ticketWhere(user: CurrentUserPayload) {
+    return this.scope ? this.scope.ticketWhere(user) : TenantHelper.getTicketWhere(user);
   }
 
   async eligibleContracts(ticketId: string, startTime: string, endTime: string, user: CurrentUserPayload) {
@@ -82,7 +87,7 @@ export class WorklogsService {
     currentUser: CurrentUserPayload,
   ) {
     const ticket = await this.prisma.ticket.findUnique({
-      where: { id: ticketId, AND: [TenantHelper.getTicketWhere(currentUser)] },
+      where: { id: ticketId, AND: [await this.ticketWhere(currentUser)] },
       include: {
         requester: { include: { organization: true } },
         serviceDesk: {
@@ -356,7 +361,7 @@ export class WorklogsService {
 
   private async commercialContext(database: Prisma.TransactionClient, ticketId: string, user: CurrentUserPayload, start: Date, end: Date, contractId?: string) {
     await database.$queryRaw(Prisma.sql`SELECT id FROM "Ticket" WHERE id = ${ticketId} FOR UPDATE`);
-    const ticket = await database.ticket.findUnique({ where: { id: ticketId, AND: [TenantHelper.getTicketWhere(user)] },
+    const ticket = await database.ticket.findUnique({ where: { id: ticketId, AND: [await this.ticketWhere(user)] },
       include: { commercialOrganization: { select: { id: true, name: true } }, serviceDesk: { select: {
         listedGroupsOnly: true, agents: { select: { id: true } }, agentGroups: { select: { members: { select: { id: true } } } },
       } } } });
@@ -402,7 +407,7 @@ export class WorklogsService {
     currentUser: CurrentUserPayload,
   ) {
     const ticket = await this.prisma.ticket.findUnique({
-      where: { id: ticketId, AND: [TenantHelper.getTicketWhere(currentUser)] },
+      where: { id: ticketId, AND: [await this.ticketWhere(currentUser)] },
     });
 
     if (!ticket) {
@@ -479,7 +484,7 @@ export class WorklogsService {
     currentUser: CurrentUserPayload,
   ) {
     const ticket = await this.prisma.ticket.findUnique({
-      where: { id: ticketId, AND: [TenantHelper.getTicketWhere(currentUser)] },
+      where: { id: ticketId, AND: [await this.ticketWhere(currentUser)] },
       include: {
         serviceDesk: {
           select: {

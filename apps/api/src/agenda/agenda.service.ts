@@ -187,7 +187,7 @@ export class AgendaService {
    * independently editable on the appointment (DMTE-18 review feedback).
    */
   private async resolveTicketLinkage(ticketId: string, user: CurrentUserPayload) {
-    const ticketWhere = TenantHelper.getTicketWhere(user);
+    const ticketWhere = this.scope ? await this.scope.ticketWhere(user) : TenantHelper.getTicketWhere(user);
     const ticket = await this.prisma.ticket.findFirst({
       where: { id: ticketId, ...ticketWhere },
       select: {

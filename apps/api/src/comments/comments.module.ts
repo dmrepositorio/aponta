@@ -9,11 +9,12 @@ import { PermissionsModule } from '../permissions/permissions.module';
 import { FeatureFlagsModule } from '../feature-flags/feature-flags.module';
 import { MaskAccess } from './mask-access';
 import { DeskAccess } from '../service-desks/desk-access';
+import { ScopeAccess } from '../core/security/scope-access';
 
 @Module({
   imports: [PrismaModule, UsersModule, PermissionsModule, FeatureFlagsModule, EventEmitterModule.forRoot()],
   controllers: [CommentsController],
-  providers: [CommentsService, MailInboundListener, MaskAccess, DeskAccess],
+  providers: [CommentsService, MailInboundListener, MaskAccess, DeskAccess, ScopeAccess],
   exports: [CommentsService, MaskAccess],
 })
 export class CommentsModule {}
