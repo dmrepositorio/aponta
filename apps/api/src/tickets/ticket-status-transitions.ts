@@ -59,6 +59,8 @@ export interface StatusChangeCheck {
   to: TicketStatus;
   /** Só lido quando é a reabertura do ADMIN numa mesa existente. */
   billed: boolean;
+  /** Quem reabre chamado fechado, já resolvido (TicketTransitionAccess). */
+  canReopen?: boolean;
 }
 
 /**

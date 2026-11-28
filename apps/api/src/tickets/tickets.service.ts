@@ -25,6 +25,7 @@ import { UpdateTicketDto } from './dto/update-ticket.dto';
 import { TICKET_SORT_FIELDS, TicketQueryDto } from './dto/ticket-query.dto';
 import { CurrentUserPayload } from './decorators/current-user.decorator';
 import { MaskAccess } from '../comments/mask-access';
+import { TicketTransitionAccess } from './ticket-transition-access';
 import { TenantHelper } from '../core/security/tenant.helper';
 import { escapeLikePattern } from '../common/escape-like-pattern';
 import { addBusinessHours } from '../scheduling/business-hours';
@@ -211,6 +212,7 @@ export class TicketsService {
     private readonly prisma: PrismaService,
     private readonly eventEmitter: EventEmitter2,
     private readonly maskAccess: MaskAccess,
+    private readonly transitionAccess: TicketTransitionAccess,
   ) {}
 
   withTransaction(
@@ -225,7 +227,7 @@ export class TicketsService {
         return true;
       },
     } as EventEmitter2;
-    return new TicketsService(database as PrismaService, events, this.maskAccess);
+    return new TicketsService(database as PrismaService, events, this.maskAccess, this.transitionAccess);
   }
 
   /**
