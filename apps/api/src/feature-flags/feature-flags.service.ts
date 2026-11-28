@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { FEATURE_ENV_TOKEN, FEATURE_FLAGS_TOKEN, FeatureFlag, resolveFlags } from './feature-flags';
+import { FEATURE_ENV_TOKEN, FEATURE_FLAGS_TOKEN, FeatureFlag, RBAC_PERMISSION_ONLY_FLAG, resolveFlags } from './feature-flags';
 
 /** Lê as flags no momento da chamada: valor padrão da flag ou o `FEATURE_<CHAVE>` do ambiente. */
 @Injectable()
@@ -12,5 +12,10 @@ export class FeatureFlagsService {
   /** Flag que não existe fica desligada. */
   isEnabled(key: string): boolean {
     return resolveFlags(this.flags, this.env)[key] === true;
+  }
+
+  /** Leitura tipada de `rbac-permission-only` (#523). */
+  isRbacPermissionOnly(): boolean {
+    return this.isEnabled(RBAC_PERMISSION_ONLY_FLAG);
   }
 }
