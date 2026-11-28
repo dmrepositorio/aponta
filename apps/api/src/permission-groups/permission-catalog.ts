@@ -186,6 +186,10 @@ export const PERMISSION_CATALOG: PermissionDefinition[] = [
   { key: 'EDIT_ALL_KNOWLEDGE_ARTICLES', category: PermissionCategory.TECHNICAL, label: 'Editar artigos da base de conhecimento de outros autores' },
   { key: 'VIEW_OTHER_USERS_APPOINTMENTS', category: PermissionCategory.TECHNICAL, label: 'Visualizar a agenda de outro usuário' },
   { key: 'VIEW_INTERNAL_ABSENCES', category: PermissionCategory.TECHNICAL, label: 'Visualizar ausências internas' },
+
+  // Fase 1h do tracker #523 (#577): lista de agentes sem escopo de mesa (hoje ADMIN em UsersService.findAgents).
+  // Nenhum caller a consulta ainda; só o Administrador a recebe (migração 20261128150000_rbac_1h_agent_directory_key). Não é GROUP_ONLY.
+  { key: 'VIEW_AGENT_DIRECTORY', category: PermissionCategory.TECHNICAL, label: 'Visualizar a lista de agentes de todas as mesas' },
 ];
 
 export const PERMISSION_KEYS: readonly string[] = PERMISSION_CATALOG.map((p) => p.key);

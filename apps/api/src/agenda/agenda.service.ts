@@ -27,7 +27,7 @@ export class AgendaService {
     const where: Prisma.AppointmentWhereInput = { ...baseWhere };
 
     if (query.userId) {
-      if (user.role === Role.ADMIN || user.role === Role.AGENT_MASTER) {
+      if (await this.access.canViewOtherUsers(user)) {
         where.userId = query.userId;
       }
     }
@@ -39,8 +39,8 @@ export class AgendaService {
     }
 
     if (query.type) {
-      if (user.role === Role.CLIENT_MASTER && query.type === AppointmentType.ABSENCE) {
-        // CLIENT_MASTER cannot query internal absences
+      if (query.type === AppointmentType.ABSENCE && !(await this.access.canViewInternalAbsences(user))) {
+        // Quem nao ve ausencias internas (hoje o CLIENT_MASTER) recebe lista vazia
         return [];
       }
       where.type = query.type;

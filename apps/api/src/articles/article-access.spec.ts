@@ -34,10 +34,11 @@ describe('ArticleAccess: grupos padrao dao o mesmo resultado nos dois modos', ()
       const { access } = build(flagOn, { 'u-ADMIN': ['VIEW_ALL_KNOWLEDGE_ARTICLES'] });
       expect(await access.canViewAll(undefined)).toBe(false);
     });
-  });
 
-  it.each(roles)('%s: editar artigo de outro autor segue por perfil (lacuna #566)', (role) => {
-    expect(build(true, defaultGrants()).access.canEditOthers(user(role))).toBe(onlyAdmin[role]);
+    it.each(roles)('%s: editar artigo de outro autor (so ADMIN)', async (role) => {
+      const { access } = build(flagOn, defaultGrants());
+      expect(await access.canEditOthers(user(role))).toBe(onlyAdmin[role]);
+    });
   });
 });
 
@@ -45,6 +46,7 @@ describe('ArticleAccess: flag ligada decide so por permissao', () => {
   it.each([
     ['canViewAll', 'VIEW_ALL_KNOWLEDGE_ARTICLES'],
     ['canDeleteOthers', 'DELETE_KNOWLEDGE_ARTICLES'],
+    ['canEditOthers', 'EDIT_ALL_KNOWLEDGE_ARTICLES'],
   ] as const)('%s segue a chave %s e ignora o perfil', async (method, key) => {
     const withKey = build(true, { 'u-CLIENT': [key] });
     expect(await withKey.access[method](user(Role.CLIENT))).toBe(true);
@@ -56,8 +58,8 @@ describe('ArticleAccess: flag ligada decide so por permissao', () => {
 });
 
 describe('ArticleAccess: flag desligada decide so por perfil', () => {
-  it.each(['canViewAll', 'canDeleteOthers'] as const)('%s ignora as permissoes e nao as consulta', async (method) => {
-    const { access, hasPermission } = build(false, { 'u-CLIENT': ['VIEW_ALL_KNOWLEDGE_ARTICLES', 'DELETE_KNOWLEDGE_ARTICLES'], 'u-ADMIN': [] });
+  it.each(['canViewAll', 'canDeleteOthers', 'canEditOthers'] as const)('%s ignora as permissoes e nao as consulta', async (method) => {
+    const { access, hasPermission } = build(false, { 'u-CLIENT': ['VIEW_ALL_KNOWLEDGE_ARTICLES', 'DELETE_KNOWLEDGE_ARTICLES', 'EDIT_ALL_KNOWLEDGE_ARTICLES'], 'u-ADMIN': [] });
     expect(await access[method](user(Role.CLIENT))).toBe(false);
     expect(await access[method](user(Role.ADMIN))).toBe(true);
     expect(hasPermission).not.toHaveBeenCalled();

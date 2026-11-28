@@ -7,8 +7,8 @@ import { DEFAULT_PERMISSION_GROUPS } from '../permission-groups/default-permissi
 /**
  * Lote 2a5 (#545): artigos nos dois modos da flag `rbac-permission-only`. Com os grupos
  * padrao o resultado ligado e igual ao desligado (matriz da Fase 0); com grupos
- * customizados so a flag ligada segue as permissoes. Edicao de artigo alheio
- * segue por perfil (lacuna #566).
+ * customizados so a flag ligada segue as permissoes. Lote 2a5b (#575): editar artigo
+ * alheio passa a seguir EDIT_ALL_KNOWLEDGE_ARTICLES.
  */
 const roles = [Role.ADMIN, Role.AGENT_MASTER, Role.AGENT, Role.CLIENT_MASTER, Role.CLIENT] as const;
 const modes = [
@@ -110,13 +110,22 @@ describe('artigos com grupos customizados', () => {
     expect(prisma.article.findMany.mock.calls[1][0].where).toEqual(filtered('u-ADMIN'));
   });
 
-  it('flag ligada: DELETE_KNOWLEDGE_ARTICLES exclui artigo alheio; ADMIN sem a chave nao exclui, mas ainda edita (lacuna)', async () => {
+  it('flag ligada: DELETE_KNOWLEDGE_ARTICLES exclui artigo alheio sem editar; ADMIN sem a chave nao exclui', async () => {
     const { prisma, service } = setup(true, { 'u-AGENT': ['DELETE_KNOWLEDGE_ARTICLES'], 'u-ADMIN': [] });
     await service.remove('a1', actors[Role.AGENT]);
     expect(prisma.article.delete).toHaveBeenCalledTimes(1);
+    await expect(service.update('a1', { title: 'X' } as any, actors[Role.AGENT])).rejects.toThrow(ForbiddenException);
     await expect(service.remove('a1', actors[Role.ADMIN])).rejects.toThrow(ForbiddenException);
-    await service.update('a1', { title: 'X' } as any, actors[Role.ADMIN]);
+  });
+
+  it('flag ligada: EDIT_ALL_KNOWLEDGE_ARTICLES edita artigo alheio sem excluir; ADMIN sem a chave nao edita', async () => {
+    const { prisma, service } = setup(true, { 'u-AGENT': ['EDIT_ALL_KNOWLEDGE_ARTICLES'], 'u-ADMIN': [] });
+    await service.update('a1', { title: 'X' } as any, actors[Role.AGENT]);
     expect(prisma.article.update).toHaveBeenCalledTimes(1);
+    await expect(service.remove('a1', actors[Role.AGENT])).rejects.toThrow(ForbiddenException);
+    prisma.article.update.mockClear();
+    await expect(service.update('a1', { title: 'X' } as any, actors[Role.ADMIN])).rejects.toThrow(ForbiddenException);
+    expect(prisma.article.update).not.toHaveBeenCalled();
   });
 
   it('flag desligada: as chaves customizadas nao valem, o perfil decide', async () => {
@@ -126,5 +135,12 @@ describe('artigos com grupos customizados', () => {
     await expect(service.remove('a1', actors[Role.AGENT])).rejects.toThrow(ForbiddenException);
     await service.remove('a1', actors[Role.ADMIN]);
     expect(prisma.article.delete).toHaveBeenCalledTimes(1);
+  });
+
+  it('flag desligada: EDIT_ALL_KNOWLEDGE_ARTICLES nao vale, o perfil decide a edicao', async () => {
+    const { prisma, service } = setup(false, { 'u-AGENT': ['EDIT_ALL_KNOWLEDGE_ARTICLES'], 'u-ADMIN': [] });
+    await expect(service.update('a1', { title: 'X' } as any, actors[Role.AGENT])).rejects.toThrow(ForbiddenException);
+    await service.update('a1', { title: 'X' } as any, actors[Role.ADMIN]);
+    expect(prisma.article.update).toHaveBeenCalledTimes(1);
   });
 });

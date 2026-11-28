@@ -5,6 +5,8 @@ import { Role, TicketStatus } from '@prisma/client';
 import { TicketsService } from './tickets.service';
 import { MaskAccess } from '../comments/mask-access';
 import { legacyMaskAccess } from '../comments/mask-access.testing';
+import { TicketTransitionAccess } from './ticket-transition-access';
+import { legacyTransitionAccess } from './ticket-transition-access.testing';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -80,6 +82,7 @@ describe('TicketsService.create: não catalogado (DMTE-485)', () => {
         { provide: PrismaService, useValue: prisma },
         { provide: EventEmitter2, useValue: { emit: jest.fn() } },
         { provide: MaskAccess, useValue: legacyMaskAccess() },
+        { provide: TicketTransitionAccess, useValue: legacyTransitionAccess() },
       ],
     }).compile();
     service = module.get(TicketsService);

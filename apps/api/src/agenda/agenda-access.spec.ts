@@ -25,6 +25,10 @@ describe('AgendaAccess: grupos padrao dao o mesmo resultado nos dois modos', () 
   const expected = {
     manage: { ADMIN: true, AGENT_MASTER: false, AGENT: false, CLIENT_MASTER: false, CLIENT: false },
     orgScoped: { ADMIN: false, AGENT_MASTER: false, AGENT: false, CLIENT_MASTER: true, CLIENT: false },
+    others: { ADMIN: true, AGENT_MASTER: true, AGENT: false, CLIENT_MASTER: false, CLIENT: false },
+    // CLIENT: o perfil nunca vedou (so o CLIENT_MASTER); o grupo padrao nao da a chave. Sem efeito
+    // observavel: o escopo base do CLIENT ja nega tudo (ver agenda.permission-mode.spec).
+    absences: { ADMIN: true, AGENT_MASTER: true, AGENT: true, CLIENT_MASTER: false, CLIENT: { off: true, on: false } },
   } as const;
 
   describe.each(modes)('%s', (_label, flagOn) => {
@@ -32,6 +36,17 @@ describe('AgendaAccess: grupos padrao dao o mesmo resultado nos dois modos', () 
       const { access } = build(flagOn, defaultGrants());
       expect(await access.canManageSchedules(user(role))).toBe(expected.manage[role]);
       expect(await access.isOrganizationScoped(user(role))).toBe(expected.orgScoped[role]);
+    });
+
+    it.each(roles)('%s: ler a agenda de outro usuario (query.userId)', async (role) => {
+      const { access } = build(flagOn, defaultGrants());
+      expect(await access.canViewOtherUsers(user(role))).toBe(expected.others[role]);
+    });
+
+    it.each(roles)('%s: ver ausencias internas', async (role) => {
+      const { access } = build(flagOn, defaultGrants());
+      const want = expected.absences[role];
+      expect(await access.canViewInternalAbsences(user(role))).toBe(typeof want === 'boolean' ? want : flagOn ? want.on : want.off);
     });
   });
 });
@@ -47,13 +62,16 @@ describe('AgendaAccess: flag ligada decide so por permissao', () => {
   it.each([
     ['canManageSchedules', 'MANAGE_SCHEDULES_ADMIN'],
     ['isOrganizationScoped', 'VIEW_ORGANIZATION_APPOINTMENTS'],
+    ['canViewOtherUsers', 'VIEW_OTHER_USERS_APPOINTMENTS'],
+    ['canViewInternalAbsences', 'VIEW_INTERNAL_ABSENCES'],
   ] as const)('%s segue a chave %s e ignora o perfil', async (method, key) => {
     const withKey = build(true, { 'u-CLIENT': [key] });
     expect(await withKey.access[method](user(Role.CLIENT))).toBe(true);
     expect(withKey.hasPermission).toHaveBeenCalledWith('u-CLIENT', key);
 
-    const withoutKey = build(true, { 'u-ADMIN': [], 'u-CLIENT_MASTER': [] });
+    const withoutKey = build(true, { 'u-ADMIN': [], 'u-AGENT_MASTER': [], 'u-CLIENT_MASTER': [] });
     expect(await withoutKey.access[method](user(Role.ADMIN))).toBe(false);
+    expect(await withoutKey.access[method](user(Role.AGENT_MASTER))).toBe(false);
     expect(await withoutKey.access[method](user(Role.CLIENT_MASTER))).toBe(false);
   });
 });
@@ -63,6 +81,20 @@ describe('AgendaAccess: flag desligada decide so por perfil', () => {
     const { access, hasPermission } = build(false, { 'u-CLIENT': ['MANAGE_SCHEDULES_ADMIN', 'VIEW_ORGANIZATION_APPOINTMENTS'], 'u-ADMIN': [], 'u-CLIENT_MASTER': [] });
     expect(await access[method](user(Role.CLIENT))).toBe(false);
     expect(await access[method](user(method === 'canManageSchedules' ? Role.ADMIN : Role.CLIENT_MASTER))).toBe(true);
+    expect(hasPermission).not.toHaveBeenCalled();
+  });
+
+  it('canViewOtherUsers ignora as permissoes e nao as consulta', async () => {
+    const { access, hasPermission } = build(false, { 'u-AGENT': ['VIEW_OTHER_USERS_APPOINTMENTS'], 'u-ADMIN': [] });
+    expect(await access.canViewOtherUsers(user(Role.AGENT))).toBe(false);
+    expect(await access.canViewOtherUsers(user(Role.ADMIN))).toBe(true);
+    expect(hasPermission).not.toHaveBeenCalled();
+  });
+
+  it('canViewInternalAbsences ignora as permissoes e nao as consulta', async () => {
+    const { access, hasPermission } = build(false, { 'u-CLIENT_MASTER': ['VIEW_INTERNAL_ABSENCES'], 'u-AGENT': [] });
+    expect(await access.canViewInternalAbsences(user(Role.CLIENT_MASTER))).toBe(false);
+    expect(await access.canViewInternalAbsences(user(Role.AGENT))).toBe(true);
     expect(hasPermission).not.toHaveBeenCalled();
   });
 });
