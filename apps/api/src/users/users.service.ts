@@ -409,6 +409,18 @@ export class UsersService {
     return this.findOne(id);
   }
 
+  /** Quem conta como administrador ativo: membro do grupo protegido (flag ligada) ou perfil ADMIN (hoje). */
+  private adminWhere(): Prisma.UserWhereInput {
+    return this.access?.protectedAdminWhere() ?? { role: Role.ADMIN, active: true };
+  }
+
+  /** O lote inativa algum administrador ativo? Por grupo com a flag ligada; por perfil, sobre o que ja foi lido, sem ela. */
+  private async touchesAdmins(tx: Prisma.TransactionClient, found: User[], ids: string[]): Promise<boolean> {
+    const byGroup = this.access?.protectedAdminWhere();
+    if (!byGroup) return found.some((u) => u.role === Role.ADMIN && u.active);
+    return (await tx.user.count({ where: { ...byGroup, id: { in: ids } } })) > 0;
+  }
+
   async setActive(id: string, active: boolean, actorId: string): Promise<SafeUser> {
     const [user] = await this.setActiveMany([id], active, actorId);
     return user;
@@ -429,8 +441,8 @@ export class UsersService {
         if (unique.includes(actorId)) {
           throw new ConflictException('Você não pode inativar a si mesmo.');
         }
-        if (found.some((u) => u.role === Role.ADMIN && u.active)) {
-          const remaining = await tx.user.count({ where: { role: Role.ADMIN, active: true, id: { notIn: unique } } });
+        if (await this.touchesAdmins(tx, found, unique)) {
+          const remaining = await tx.user.count({ where: { ...this.adminWhere(), id: { notIn: unique } } });
           if (remaining === 0) throw new ConflictException('Não é possível inativar o último administrador ativo.');
         }
       }
@@ -449,7 +461,7 @@ export class UsersService {
    */
   async findAgents(currentUser: CurrentUserPayload): Promise<SafeUser[]> {
     const roleFilter: Prisma.UserWhereInput = {
-      role: { in: [Role.AGENT, Role.AGENT_MASTER, Role.ADMIN] },
+      ...(this.access?.agentsWhere() ?? { role: { in: [Role.AGENT, Role.AGENT_MASTER, Role.ADMIN] } }),
       // Inativo e convite pendente não são atribuíveis (DMTE-550); o nome em ticket antigo segue legível.
       active: true,
       password: { not: null },

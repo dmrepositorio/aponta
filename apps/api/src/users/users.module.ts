@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { PrismaModule } from '../prisma/prisma.module';
 import { UsersService } from './users.service';
+import { UserAccess } from './user-access';
 import { UsersController } from './users.controller';
 import { PermissionsModule } from '../permissions/permissions.module';
 import { MailModule } from '../mail/mail.module';
@@ -12,7 +13,7 @@ import { TwoFactorModule } from '../two-factor/two-factor.module';
 @Module({
   imports: [PrismaModule, PermissionsModule, MailModule, FeatureFlagsModule, TwoFactorModule],
   controllers: [UsersController],
-  providers: [UsersService, PasswordTokensService, PasswordFlowService],
+  providers: [UsersService, UserAccess, PasswordTokensService, PasswordFlowService],
   exports: [UsersService, PasswordFlowService],
 })
 export class UsersModule {}
