@@ -79,7 +79,7 @@ export class UsersService {
     private readonly prisma: PrismaService,
     // Opcional: specs e modulos que montam o service sem a flag seguem com o comportamento por perfil.
     @Optional() private readonly access?: UserAccess,
-    @Optional() _scope?: ScopeAccess,
+    @Optional() private readonly scope?: ScopeAccess,
   ) {}
 
   // E-mail é único sem diferença de caixa (DMTE-550): toda escrita o guarda em minúsculas, então a chave única
@@ -478,7 +478,7 @@ export class UsersService {
     }
 
     const desks = await this.prisma.serviceDesk.findMany({
-      where: TenantHelper.getServiceDeskWhere(currentUser),
+      where: this.scope ? await this.scope.serviceDeskWhere(currentUser) : TenantHelper.getServiceDeskWhere(currentUser),
       select: {
         agents: { select: { id: true } },
         agentGroups: { select: { members: { select: { id: true } } } },

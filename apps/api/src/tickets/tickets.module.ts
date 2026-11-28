@@ -14,6 +14,7 @@ import { AttachmentAccess } from './attachment-access';
 import { TicketTransitionAccess } from './ticket-transition-access';
 import { PermissionsModule } from '../permissions/permissions.module';
 import { CommentsModule } from '../comments/comments.module';
+import { DeskAccess } from '../service-desks/desk-access';
 
 @Module({
   imports: [PrismaModule, PermissionsModule, FeatureFlagsModule, CommentsModule, EventEmitterModule.forRoot()],
@@ -23,7 +24,7 @@ import { CommentsModule } from '../comments/comments.module';
     PublicCsatController,
     AttachmentsController,
   ],
-  providers: [TicketsService, CsatService, PublicCsatService, AttachmentsService, AttachmentAccess, TicketTransitionAccess],
+  providers: [TicketsService, CsatService, PublicCsatService, AttachmentsService, AttachmentAccess, TicketTransitionAccess, DeskAccess],
   exports: [TicketsService],
 })
 export class TicketsModule {}

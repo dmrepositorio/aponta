@@ -26,7 +26,7 @@ export class ReportsService {
     private readonly prisma: PrismaService,
     private readonly permissions: PermissionsService,
     private readonly flags: FeatureFlagsService,
-    @Optional() _scope?: ScopeAccess,
+    @Optional() private readonly scope?: ScopeAccess,
   ) {}
 
   async getWorkload(user: CurrentUserPayload, targetAgentId?: string): Promise<WorkloadReportItemDto[]> {
@@ -594,6 +594,7 @@ export class ReportsService {
     // the hardcoded constants this replaces. "my" is always scoped to the
     // current user; "all" reuses the same role-based visibility AgendaService
     // applies (TenantHelper.getAppointmentWhere).
+    const appointmentWhere = this.scope ? await this.scope.appointmentWhere(user) : TenantHelper.getAppointmentWhere(user);
     let myAppointmentRows: { startTime: Date }[] = [];
     let allAppointmentRows: { startTime: Date }[] = [];
     if (this.prisma.appointment?.findMany) {
@@ -604,7 +605,7 @@ export class ReportsService {
             select: { startTime: true },
           }),
           this.prisma.appointment.findMany({
-            where: TenantHelper.getAppointmentWhere(user),
+            where: appointmentWhere,
             select: { startTime: true },
           }),
         ]);

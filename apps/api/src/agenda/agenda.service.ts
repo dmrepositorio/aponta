@@ -22,11 +22,15 @@ export class AgendaService {
     private readonly prisma: PrismaService,
     private readonly permissions: PermissionsService,
     private readonly access: AgendaAccess,
-    @Optional() _scope?: ScopeAccess,
+    @Optional() private readonly scope?: ScopeAccess,
   ) {}
 
+  private appointmentWhere(user: CurrentUserPayload) {
+    return this.scope ? this.scope.appointmentWhere(user) : TenantHelper.getAppointmentWhere(user);
+  }
+
   async findAll(query: QueryAppointmentDto, user: CurrentUserPayload) {
-    const baseWhere = TenantHelper.getAppointmentWhere(user);
+    const baseWhere = await this.appointmentWhere(user);
     const where: Prisma.AppointmentWhereInput = { ...baseWhere };
 
     if (query.userId) {
@@ -81,7 +85,7 @@ export class AgendaService {
   }
 
   async findOne(id: string, user: CurrentUserPayload) {
-    const baseWhere = TenantHelper.getAppointmentWhere(user);
+    const baseWhere = await this.appointmentWhere(user);
     const appointment = await this.prisma.appointment.findFirst({
       where: {
         id,

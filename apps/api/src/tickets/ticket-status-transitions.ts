@@ -81,10 +81,11 @@ export function assertStatusChangeAllowed({
   to,
   billed,
   canReopen,
+  deskActor,
 }: StatusChangeCheck): void {
   const reopen = isReopenTransition(from, to) && (canReopen ?? user.role === 'ADMIN');
   if (desk) {
-    assertListedAgentMayMutate({ desk, user });
+    assertListedAgentMayMutate({ desk, user, actor: deskActor });
     assertDeskAllowsPauseResume(desk, from, to);
     if (reopen) assertDeskAllowsReopen(desk, billed);
   }

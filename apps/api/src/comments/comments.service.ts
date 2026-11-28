@@ -37,7 +37,7 @@ export class CommentsService {
     private readonly prisma: PrismaService,
     private readonly eventEmitter: EventEmitter2,
     private readonly maskAccess: MaskAccess,
-    @Optional() _deskAccess?: DeskAccess,
+    @Optional() private readonly deskAccess?: DeskAccess,
   ) {}
 
   withTransaction(database: Prisma.TransactionClient, afterCommit: Array<() => void>) {
@@ -45,7 +45,7 @@ export class CommentsService {
       afterCommit.push(() => { this.eventEmitter.emit(name, payload); });
       return true;
     } } as EventEmitter2;
-    return new CommentsService(database as PrismaService, events, this.maskAccess);
+    return new CommentsService(database as PrismaService, events, this.maskAccess, this.deskAccess);
   }
 
   /**
@@ -70,6 +70,7 @@ export class CommentsService {
       assertListedAgentMayMutate({
         desk: ticketForAuth.serviceDesk,
         user: currentUser,
+        actor: await this.deskAccess?.resolve(currentUser),
       });
     }
 

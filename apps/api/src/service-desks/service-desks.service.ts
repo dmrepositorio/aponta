@@ -15,7 +15,7 @@ export class ServiceDesksService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly holidaysImportService: HolidaysImportService,
-    @Optional() _scope?: ScopeAccess,
+    @Optional() private readonly scope?: ScopeAccess,
   ) {}
 
   async create(createServiceDeskDto: CreateServiceDeskDto, createdBy?: string) {
@@ -67,7 +67,7 @@ export class ServiceDesksService {
 
   async findAll(user: CurrentUserPayload) {
     return this.prisma.serviceDesk.findMany({
-      where: TenantHelper.getServiceDeskWhere(user),
+      where: this.scope ? await this.scope.serviceDeskWhere(user) : TenantHelper.getServiceDeskWhere(user),
       include: DESK_INCLUDE,
     });
   }

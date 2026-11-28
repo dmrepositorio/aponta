@@ -6,10 +6,11 @@ import { CommercialReportsController } from './commercial-reports.controller';
 import { CommercialReportsService } from './commercial-reports.service';
 import { PermissionsModule } from '../permissions/permissions.module';
 import { FeatureFlagsModule } from '../feature-flags/feature-flags.module';
+import { ScopeAccess } from '../core/security/scope-access';
 
 @Module({
   imports: [PrismaModule, PermissionsModule, FeatureFlagsModule],
   controllers: [ReportsController, CommercialReportsController],
-  providers: [ReportsService, CommercialReportsService],
+  providers: [ReportsService, CommercialReportsService, ScopeAccess],
 })
 export class ReportsModule {}

@@ -43,7 +43,7 @@ export class WorklogsService {
     private readonly permissions: PermissionsService,
     private readonly flags: FeatureFlagsService,
     private readonly approvals: WorklogApprovalsService,
-    @Optional() _deskAccess?: DeskAccess,
+    @Optional() private readonly deskAccess?: DeskAccess,
   ) {}
 
   /** #542: decisão por perfil (flag desligada) ou por permissão (ligada); ver worklog-access.ts. */
@@ -102,7 +102,7 @@ export class WorklogsService {
     }
 
     if (ticket.serviceDesk) {
-      assertListedAgentMayMutate({ desk: ticket.serviceDesk, user: currentUser });
+      assertListedAgentMayMutate({ desk: ticket.serviceDesk, user: currentUser, actor: await this.deskAccess?.resolve(currentUser) });
     }
 
     const start = new Date(dto.startTime);
@@ -360,7 +360,7 @@ export class WorklogsService {
       } } } });
     if (!ticket) throw new NotFoundException('Chamado não encontrado');
     if (!(await this.can('OPERATE', user))) throw new ForbiddenException('Acesso negado');
-    assertListedAgentMayMutate({ desk: ticket.serviceDesk, user });
+    assertListedAgentMayMutate({ desk: ticket.serviceDesk, user, actor: await this.deskAccess?.resolve(user) });
     const organizationId = ticket.commercialOrganizationId;
     if (!organizationId) throw new BadRequestException('Chamado sem empresa comercial; solicite regularização ao administrador');
     await database.$queryRaw(Prisma.sql`SELECT id FROM "Organization" WHERE id = ${organizationId} FOR UPDATE`);
@@ -498,7 +498,7 @@ export class WorklogsService {
     }
 
     if (ticket.serviceDesk) {
-      assertListedAgentMayMutate({ desk: ticket.serviceDesk, user: currentUser });
+      assertListedAgentMayMutate({ desk: ticket.serviceDesk, user: currentUser, actor: await this.deskAccess?.resolve(currentUser) });
     }
 
     return ticket;

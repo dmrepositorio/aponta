@@ -226,3 +226,21 @@ describe.each(modes)('ReportsService.getSummary (%s): compromissos do dashboard'
     expect(calls[1]).toEqual(flagOn ? {} : { userId: 'u-x' });
   });
 });
+
+describe('Modulos: o ScopeAccess e o DeskAccess estao registrados onde os services os pedem', () => {
+  const providersOf = (mod: unknown): unknown[] => Reflect.getMetadata('providers', mod as object) ?? [];
+
+  it.each([
+    ['AgendaModule', () => require('../../agenda/agenda.module').AgendaModule, ScopeAccess],
+    ['ContractsModule', () => require('../../contracts/contracts.module').ContractsModule, ScopeAccess],
+    ['ReportsModule', () => require('../../reports/reports.module').ReportsModule, ScopeAccess],
+    ['ServiceDesksModule', () => require('../../service-desks/service-desks.module').ServiceDesksModule, ScopeAccess],
+    ['UsersModule', () => require('../../users/users.module').UsersModule, ScopeAccess],
+    ['VaultModule', () => require('../../vault/vault.module').VaultModule, ScopeAccess],
+    ['TicketsModule', () => require('../../tickets/tickets.module').TicketsModule, require('../../service-desks/desk-access').DeskAccess],
+    ['CommentsModule', () => require('../../comments/comments.module').CommentsModule, require('../../service-desks/desk-access').DeskAccess],
+    ['WorklogsModule', () => require('../../worklogs/worklogs.module').WorklogsModule, require('../../service-desks/desk-access').DeskAccess],
+  ])('%s fornece a dependencia nova', (_name, load, provider) => {
+    expect(providersOf(load())).toContain(provider);
+  });
+});
