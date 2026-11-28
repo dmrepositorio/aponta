@@ -276,3 +276,49 @@ describe.each(others)('%s: ator da mesa', (_name, build) => {
     expect(await failure(build(true, { 'u-x': [...base, ASSIGNED] }, Role.ADMIN))).toMatch(NOT_LISTED_ANY);
   });
 });
+
+/**
+ * A copia transacional (`withTransaction`) usada pelo WorklogsService (changeStage e create de
+ * comentario) tem de carregar o DeskAccess: sem ele o ator fica `undefined` e a trava de mesa
+ * volta a decidir por `User.role` mesmo com a flag ligada.
+ */
+describe('withTransaction propaga o DeskAccess', () => {
+  const ticketsInTx = (flagOn: boolean, grants: Record<string, string[]>) => {
+    const prisma: any = strict({
+      ticket: { findUnique: async () => ticketRow },
+      serviceDesk: { findUnique: async () => deskRow() },
+    });
+    const root = new TicketsService(strict({}), { emit: jest.fn() } as any, legacyMaskAccess(), legacyTransitionAccess(), deskAccessOf(flagOn, grants));
+    return root.withTransaction(prisma, []);
+  };
+  const commentsInTx = async (flagOn: boolean, grants: Record<string, string[]>) => {
+    const prisma: any = strict({
+      ticket: { findUnique: async () => ({ id: 't1', requesterId: 'u-x', serviceDesk: listedOnlyDesk() }) },
+    });
+    const { MaskAccess } = await import('../comments/mask-access');
+    const permissions: any = { hasPermission: jest.fn(async (id: string, ...keys: string[]) => (grants[id] ?? []).some((k) => keys.includes(k))) };
+    const mask = new MaskAccess({ isRbacPermissionOnly: () => true } as any, permissions);
+    const root = new CommentsService(strict({}), { emit: jest.fn() } as any, mask, deskAccessOf(flagOn, grants));
+    return root.withTransaction(prisma, []);
+  };
+
+  it('tickets: flag ligada com perfil ADMIN e escopo de mesas em que atua fica preso a lista (changeStage)', async () => {
+    const tx = ticketsInTx(true, { 'u-x': [ASSIGNED] });
+    expect(await failure(() => tx.changeStage('t1', 's1', actor(Role.ADMIN)))).toMatch(NOT_LISTED);
+  });
+
+  it('tickets: flag ligada com perfil AGENT e escopo de todas as mesas nao fica preso (changeStage)', async () => {
+    const tx = ticketsInTx(true, { 'u-x': [ALL] });
+    expect(await failure(() => tx.changeStage('t1', 's1', actor(Role.AGENT)))).toBe(REACHED);
+  });
+
+  it('comentarios: flag ligada com perfil CLIENT e escopo de mesas em que atua fica preso a lista (create)', async () => {
+    const tx = await commentsInTx(true, { 'u-x': [INTERNAL, ASSIGNED] });
+    expect(await failure(() => tx.create('t1', { content: 'n', isInternal: true }, actor(Role.CLIENT)))).toMatch(NOT_LISTED);
+  });
+
+  it('comentarios: flag ligada com perfil AGENT e escopo de todas as mesas nao fica preso (create)', async () => {
+    const tx = await commentsInTx(true, { 'u-x': [INTERNAL, ALL] });
+    expect(await failure(() => tx.create('t1', { content: 'n', isInternal: true }, actor(Role.AGENT)))).toBe(REACHED);
+  });
+});

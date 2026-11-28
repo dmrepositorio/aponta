@@ -45,7 +45,7 @@ export class CommentsService {
       afterCommit.push(() => { this.eventEmitter.emit(name, payload); });
       return true;
     } } as EventEmitter2;
-    return new CommentsService(database as PrismaService, events, this.maskAccess, this.deskAccess);
+    return new CommentsService(database as PrismaService, events, this.maskAccess);
   }
 
   /**

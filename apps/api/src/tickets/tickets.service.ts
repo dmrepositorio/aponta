@@ -231,7 +231,7 @@ export class TicketsService {
         return true;
       },
     } as EventEmitter2;
-    return new TicketsService(database as PrismaService, events, this.maskAccess, this.transitionAccess, this.deskAccess);
+    return new TicketsService(database as PrismaService, events, this.maskAccess, this.transitionAccess);
   }
 
   /**
