@@ -1,6 +1,7 @@
 import { NotFoundException } from '@nestjs/common';
 import { Role, TicketStatus } from '@prisma/client';
 import { TicketsService } from './tickets.service';
+import { legacyMaskAccess } from '../comments/mask-access.testing';
 import type { CurrentUserPayload } from './decorators/current-user.decorator';
 
 /**
@@ -62,7 +63,7 @@ describe('TicketsService: findOne e listagem por perfil (caracterização)', () 
       },
       worklog: { findMany: jest.fn().mockResolvedValue([]) },
     };
-    service = new TicketsService(prisma as never, { emit: jest.fn() } as never);
+    service = new TicketsService(prisma as never, { emit: jest.fn() } as never, legacyMaskAccess());
   });
 
   describe('findOne: quem enxerga o chamado', () => {

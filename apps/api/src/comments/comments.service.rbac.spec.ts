@@ -1,6 +1,7 @@
 import { NotFoundException, ForbiddenException } from '@nestjs/common';
 import { Role } from '@prisma/client';
 import { CommentsService } from './comments.service';
+import { legacyMaskAccess } from './mask-access.testing';
 import { CurrentUserPayload } from '../tickets/decorators/current-user.decorator';
 
 /**
@@ -46,7 +47,7 @@ describe('CommentsService: matriz por perfil (caracterização)', () => {
       },
     };
     emit = jest.fn();
-    service = new CommentsService(prisma as never, { emit } as never);
+    service = new CommentsService(prisma as never, { emit } as never, legacyMaskAccess());
   });
 
   describe('create: isInternal por perfil', () => {

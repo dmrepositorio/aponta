@@ -3,6 +3,8 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { Role } from '@prisma/client';
 import { CommentsService } from './comments.service';
+import { MaskAccess } from './mask-access';
+import { legacyMaskAccess } from './mask-access.testing';
 import { PrismaService } from '../prisma/prisma.service';
 import { CurrentUserPayload } from '../tickets/decorators/current-user.decorator';
 
@@ -41,6 +43,7 @@ describe('CommentsService', () => {
         CommentsService,
         { provide: PrismaService, useValue: mockPrismaService },
         { provide: EventEmitter2, useValue: { emit: jest.fn() } },
+        { provide: MaskAccess, useValue: legacyMaskAccess() },
       ],
     }).compile();
 

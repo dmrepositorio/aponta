@@ -24,6 +24,7 @@ import { CreateTicketDto } from './dto/create-ticket.dto';
 import { UpdateTicketDto } from './dto/update-ticket.dto';
 import { TICKET_SORT_FIELDS, TicketQueryDto } from './dto/ticket-query.dto';
 import { CurrentUserPayload } from './decorators/current-user.decorator';
+import { MaskAccess } from '../comments/mask-access';
 import { TenantHelper } from '../core/security/tenant.helper';
 import { escapeLikePattern } from '../common/escape-like-pattern';
 import { addBusinessHours } from '../scheduling/business-hours';
@@ -192,8 +193,8 @@ const TICKET_LIST_INCLUDE = {
 } satisfies Prisma.TicketInclude;
 
 /** Telefone e ramal do solicitante são dado pessoal: só a equipe os recebe (DMTE-502). */
-function ticketListInclude(role: Role) {
-  if (role !== Role.ADMIN && role !== Role.AGENT_MASTER && role !== Role.AGENT) return TICKET_LIST_INCLUDE;
+function ticketListInclude(canViewContact: boolean) {
+  if (!canViewContact) return TICKET_LIST_INCLUDE;
   return {
     ...TICKET_LIST_INCLUDE,
     requester: {
@@ -209,6 +210,7 @@ export class TicketsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly eventEmitter: EventEmitter2,
+    private readonly maskAccess: MaskAccess,
   ) {}
 
   withTransaction(
@@ -223,7 +225,7 @@ export class TicketsService {
         return true;
       },
     } as EventEmitter2;
-    return new TicketsService(database as PrismaService, events);
+    return new TicketsService(database as PrismaService, events, this.maskAccess);
   }
 
   /**
@@ -656,6 +658,8 @@ export class TicketsService {
         ? { [query.sortBy]: sortDir }
         : { createdAt: 'desc' };
 
+    const listInclude = ticketListInclude(await this.maskAccess.canViewRequesterContact(currentUser));
+
     if (wantsOverdue) {
       // SLA breach ("Vencidos") depends on `now` and accumulated pause
       // time, so it can't be expressed as a Prisma `where` clause — it's
@@ -670,7 +674,7 @@ export class TicketsService {
       const candidates = await this.prisma.ticket.findMany({
         where,
         orderBy,
-        include: ticketListInclude(currentUser.role),
+        include: listInclude,
       });
       const breached = candidates
         .map((t) => this.decorateWithSlaStatus(t))
@@ -701,7 +705,7 @@ export class TicketsService {
         skip: (page - 1) * limit,
         take: limit,
         orderBy,
-        include: ticketListInclude(currentUser.role),
+        include: listInclude,
       }),
       this.prisma.ticket.count({ where }),
     ]);

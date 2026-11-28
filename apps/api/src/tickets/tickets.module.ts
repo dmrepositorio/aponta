@@ -12,9 +12,10 @@ import { PrismaModule } from '../prisma/prisma.module';
 import { FeatureFlagsModule } from '../feature-flags/feature-flags.module';
 import { AttachmentAccess } from './attachment-access';
 import { PermissionsModule } from '../permissions/permissions.module';
+import { CommentsModule } from '../comments/comments.module';
 
 @Module({
-  imports: [PrismaModule, PermissionsModule, FeatureFlagsModule, EventEmitterModule.forRoot()],
+  imports: [PrismaModule, PermissionsModule, FeatureFlagsModule, CommentsModule, EventEmitterModule.forRoot()],
   controllers: [
     TicketsController,
     CsatController,
