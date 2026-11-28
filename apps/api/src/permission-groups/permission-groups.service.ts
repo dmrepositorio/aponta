@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Role } from '@prisma/client';
 import { UserAccess } from '../users/user-access';
+import { assertAdminPermissions, assertAdminUpdate, isAdminGroup } from './admin-group-guard';
 import { DEFAULT_GROUP_KEY } from './default-permission-groups';
 import { CreatePermissionGroupDto } from './dto/create-permission-group.dto';
 import { UpdatePermissionGroupDto } from './dto/update-permission-group.dto';
@@ -51,12 +52,15 @@ export class PermissionGroupsService {
   }
 
   async update(id: string, dto: UpdatePermissionGroupDto) {
-    await this.findOne(id);
-    return this.prisma.permissionGroup.update({ where: { id }, data: dto });
+    const group = await this.findOne(id);
+    if (isAdminGroup(group)) assertAdminUpdate(dto);
+    // So nome e descricao: o corpo nunca grava `defaultKey` nem `permissions` por aqui (lote 2i).
+    return this.prisma.permissionGroup.update({ where: { id }, data: { ...(dto.name !== undefined && { name: dto.name }), ...(dto.description !== undefined && { description: dto.description }) } });
   }
 
   async updatePermissions(id: string, dto: UpdatePermissionGroupPermissionsDto) {
-    await this.findOne(id);
+    const group = await this.findOne(id);
+    if (isAdminGroup(group)) assertAdminPermissions(dto.permissions);
     return this.prisma.permissionGroup.update({
       where: { id },
       data: { permissions: dto.permissions },
