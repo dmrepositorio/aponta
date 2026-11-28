@@ -1,5 +1,6 @@
 import { ForbiddenException } from '@nestjs/common';
 import { ArticlesService } from './articles.service';
+import { legacyArticleAccess } from './article-access.testing';
 import { ArticleVisibility, Role } from '@prisma/client';
 
 describe('ArticlesService', () => {
@@ -15,7 +16,7 @@ describe('ArticlesService', () => {
         findUnique: jest.fn(),
       },
     };
-    service = new ArticlesService(mockPrisma as any);
+    service = new ArticlesService(mockPrisma as any, legacyArticleAccess());
   });
 
   describe('findAll', () => {

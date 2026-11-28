@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { unlink } from 'fs/promises';
 import { join } from 'path';
-import { ArticleVisibility, Prisma, Role } from '@prisma/client';
+import { ArticleVisibility, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';
@@ -13,6 +13,7 @@ import { ArticleQueryDto, ArticleSort } from './dto/article-query.dto';
 import { CurrentUserPayload } from '../tickets/decorators/current-user.decorator';
 import { sanitizeArticleContent } from './sanitize-article-content';
 import { escapeLikePattern } from '../common/escape-like-pattern';
+import { ArticleAccess } from './article-access';
 
 /**
  * Knowledge Base (FAQ) articles.
@@ -31,12 +32,15 @@ import { escapeLikePattern } from '../common/escape-like-pattern';
  */
 @Injectable()
 export class ArticlesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private readonly access: ArticleAccess,
+  ) {}
 
-  findAll(currentUser: CurrentUserPayload | undefined, query?: ArticleQueryDto) {
+  async findAll(currentUser: CurrentUserPayload | undefined, query?: ArticleQueryDto) {
     const andClauses: Prisma.ArticleWhereInput[] = [];
 
-    const visibilityOr = this.buildVisibilityOr(currentUser);
+    const visibilityOr = await this.buildVisibilityOr(currentUser);
     if (visibilityOr) {
       andClauses.push({ OR: visibilityOr });
     }
@@ -110,7 +114,7 @@ export class ArticlesService {
    * same anti-enumeration convention already used elsewhere for isPublic.
    */
   async findOne(id: string, currentUser: CurrentUserPayload | undefined) {
-    const visibilityOr = this.buildVisibilityOr(currentUser);
+    const visibilityOr = await this.buildVisibilityOr(currentUser);
 
     const article = await this.prisma.article.findFirst({
       where: {
@@ -139,10 +143,10 @@ export class ArticlesService {
    * exact same rule. Returns undefined for ADMIN, meaning "no filter at
    * all" (global access).
    */
-  private buildVisibilityOr(
+  private async buildVisibilityOr(
     currentUser: CurrentUserPayload | undefined,
-  ): Prisma.ArticleWhereInput[] | undefined {
-    if (currentUser?.role === Role.ADMIN) {
+  ): Promise<Prisma.ArticleWhereInput[] | undefined> {
+    if (await this.access.canViewAll(currentUser)) {
       return undefined;
     }
 
@@ -214,7 +218,7 @@ export class ArticlesService {
       throw new NotFoundException(`Article with ID ${id} not found`);
     }
 
-    this.assertCanModify(article.authorId, currentUser);
+    this.assertCanEdit(article.authorId, currentUser);
 
     const { agentGroupIds, organizationIds, serviceCatalogItemIds, ...rest } = dto;
 
@@ -251,7 +255,7 @@ export class ArticlesService {
       throw new NotFoundException(`Article with ID ${id} not found`);
     }
 
-    this.assertCanModify(article.authorId, currentUser);
+    await this.assertCanDelete(article.authorId, currentUser);
 
     const deleted = await this.prisma.article.delete({ where: { id } });
 
@@ -272,15 +276,18 @@ export class ArticlesService {
     return deleted;
   }
 
-  /**
-   * Only the article's own author or an ADMIN may edit/delete it — a
-   * different AGENT (not the author) cannot touch someone else's article.
-   */
-  private assertCanModify(authorId: string, currentUser: CurrentUserPayload) {
-    const isAuthor = authorId === currentUser.id;
-    const isAdmin = currentUser.role === Role.ADMIN;
+  /** Editar: o autor, ou quem edita artigo de outro (hoje so ADMIN; ver ArticleAccess.canEditOthers). */
+  private assertCanEdit(authorId: string, currentUser: CurrentUserPayload) {
+    if (authorId !== currentUser.id && !this.access.canEditOthers(currentUser)) {
+      throw new ForbiddenException(
+        'Só o autor do artigo ou um ADMIN podem editá-lo/excluí-lo',
+      );
+    }
+  }
 
-    if (!isAuthor && !isAdmin) {
+  /** Excluir: o autor, ou quem tem DELETE_KNOWLEDGE_ARTICLES (hoje so ADMIN). */
+  private async assertCanDelete(authorId: string, currentUser: CurrentUserPayload) {
+    if (authorId !== currentUser.id && !(await this.access.canDeleteOthers(currentUser))) {
       throw new ForbiddenException(
         'Só o autor do artigo ou um ADMIN podem editá-lo/excluí-lo',
       );

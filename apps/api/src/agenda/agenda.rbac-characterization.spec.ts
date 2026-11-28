@@ -1,6 +1,7 @@
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { AppointmentType, Role } from '@prisma/client';
 import { AgendaService } from './agenda.service';
+import { legacyAgendaAccess } from './agenda-access.testing';
 
 /**
  * Caracterização por perfil da agenda (#527, Fase 0b-3 do tracker #523).
@@ -38,7 +39,7 @@ describe('AgendaService: matriz por perfil (caracterização)', () => {
       ticket: { findFirst: jest.fn().mockResolvedValue(null) },
     };
     hasPermission = jest.fn().mockResolvedValue(false);
-    service = new AgendaService(prisma, { hasPermission } as any);
+    service = new AgendaService(prisma, { hasPermission } as any, legacyAgendaAccess());
   });
 
   const whereOfFindAll = () => prisma.appointment.findMany.mock.calls[0][0].where;
