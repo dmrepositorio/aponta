@@ -155,3 +155,124 @@ describe('assertStatusChangeAllowed: ator da mesa', () => {
     expect(check(Role.AGENT, { canUseInternalDesks: true, scope: 'ALL' })).not.toThrow();
   });
 });
+
+/**
+ * Demais callers do ator da mesa. Aqui o prisma e estrito: qualquer acesso nao previsto lanca
+ * REACHED; o que importa e se a trava de lista (mensagem NOT_LISTED / acesso de criacao) dispara.
+ */
+const NOT_LISTED_ANY = /Somente grupos ou agentes vinculados|Você não tem acesso para criar tickets/;
+const strict = (overrides: Record<string, any>) =>
+  new Proxy(overrides, {
+    get: (target, prop: string) =>
+      prop in target
+        ? target[prop]
+        : new Proxy({}, { get: () => async () => { throw new Error(REACHED); } }),
+  }) as any;
+const failure = async (run: () => Promise<unknown>) => {
+  try {
+    await run();
+    return '';
+  } catch (error) {
+    return (error as Error).message;
+  }
+};
+const deskRow = (agentIds: string[] = []) => ({
+  ...listedOnlyDesk(agentIds),
+  active: true,
+  acceptingNewTickets: true,
+  internalUse: false,
+  openByAgentsOnly: false,
+  unlistedCanCreateTicket: false,
+  allowAddSlaHours: true,
+  slaControlEnabled: true,
+  allowPauseResumeSla: true,
+  allowReopenUnbilled: true,
+  allowReopenBilled: true,
+  priorities: [],
+  stages: [],
+  agentGroups: [],
+});
+const ticketRow = { id: 't1', status: TicketStatus.OPEN, serviceDeskId: 'd1', requesterId: 'u-r' };
+
+const others: Array<[string, (flagOn: boolean, grants: Record<string, string[]>, role: Role) => () => Promise<unknown>]> = [
+  ['tickets.update', (flagOn, grants, role) => {
+    const prisma = strict({
+      ticket: { findUnique: async () => ticketRow },
+      serviceDesk: { findUnique: async () => deskRow() },
+    });
+    const service = new TicketsService(prisma, { emit: jest.fn() } as any, legacyMaskAccess(), legacyTransitionAccess(), deskAccessOf(flagOn, grants));
+    return () => service.update('t1', { title: 'novo' } as any, actor(role));
+  }],
+  ['tickets.addSlaHours', (flagOn, grants, role) => {
+    const prisma = strict({
+      ticket: { findUnique: async () => ticketRow },
+      serviceDesk: { findUnique: async () => deskRow() },
+    });
+    const service = new TicketsService(prisma, { emit: jest.fn() } as any, legacyMaskAccess(), legacyTransitionAccess(), deskAccessOf(flagOn, grants));
+    return () => service.addSlaHours('t1', 2, actor(role));
+  }],
+  ['tickets.changeStatus', (flagOn, grants, role) => {
+    const prisma = strict({
+      ticket: { findUnique: async () => ticketRow },
+      serviceDesk: { findUnique: async () => deskRow() },
+    });
+    const service = new TicketsService(prisma, { emit: jest.fn() } as any, legacyMaskAccess(), legacyTransitionAccess(), deskAccessOf(flagOn, grants));
+    return () => service.changeStatus('t1', TicketStatus.IN_PROGRESS, actor(role));
+  }],
+  ['tickets.allowedStatuses (leitura)', (flagOn, grants, role) => {
+    const service = new TicketsService(strict({}), { emit: jest.fn() } as any, legacyMaskAccess(), legacyTransitionAccess(), deskAccessOf(flagOn, grants));
+    return async () => {
+      const list: TicketStatus[] = await (service as any).allowedStatusesForReader({ ...ticketRow, serviceDesk: deskRow() }, actor(role));
+      if (list.length === 0) throw new Error('Somente grupos ou agentes vinculados (lista vazia)');
+    };
+  }],
+  ['tickets.create', (flagOn, grants, role) => {
+    const prisma = strict({
+      serviceDesk: { findUnique: async () => deskRow() },
+      businessHour: { findMany: async () => [] },
+      holiday: { findMany: async () => [] },
+      user: { findUnique: async () => ({ name: 'n', email: 'e@x', phone: null, extension: null }) },
+    });
+    const service = new TicketsService(prisma, { emit: jest.fn() } as any, legacyMaskAccess(), legacyTransitionAccess(), deskAccessOf(flagOn, grants));
+    return () => service.create({ title: 't', description: 'd', serviceDeskId: 'd1' } as any, actor(role));
+  }],
+  ['worklogs.create', (flagOn, grants, role) => {
+    const prisma = strict({ ticket: { findUnique: async () => ({ id: 't1', serviceDesk: listedOnlyDesk(), requester: {} }) } });
+    const service = worklogsOf(prisma, flagOn, grants);
+    return () => service.create('t1', { startTime: '2030-01-01T10:00:00Z', endTime: '2030-01-01T11:00:00Z' } as any, actor(role));
+  }],
+  ['worklogs.eligibleContracts (contexto comercial)', (flagOn, grants, role) => {
+    const db = strict({
+      $queryRaw: async () => [],
+      ticket: { findUnique: async () => ({ id: 't1', serviceDeskId: 'd1', serviceDesk: listedOnlyDesk(), commercialOrganizationId: null }) },
+    });
+    const prisma = strict({ $transaction: async (cb: any) => cb(db) });
+    const service = worklogsOf(prisma, flagOn, grants, { canViewTicketValues: async () => true });
+    return () => service.eligibleContracts('t1', '2030-01-01T10:00:00Z', '2030-01-01T11:00:00Z', actor(role));
+  }],
+];
+
+function worklogsOf(prisma: any, flagOn: boolean, grants: Record<string, string[]>, extra: Record<string, unknown> = {}) {
+  const permissions: any = {
+    hasPermission: jest.fn(async (id: string, ...keys: string[]) => (grants[id] ?? []).some((k) => keys.includes(k))),
+    getEffectivePermissions: jest.fn(async (id: string) => new Set(grants[id] ?? [])),
+    ...extra,
+  };
+  return new WorklogsService(prisma, {} as any, {} as any, permissions, { isRbacPermissionOnly: () => flagOn } as any, {} as any, deskAccessOf(flagOn, grants));
+}
+
+describe.each(others)('%s: ator da mesa', (_name, build) => {
+  const base = [OPERATE, 'EDIT_TICKETS', 'VIEW_AND_OPEN_TICKETS'];
+
+  it('flag desligada: AGENT decide por perfil (escopo ASSIGNED) e fica preso a lista', async () => {
+    expect(await failure(build(false, { 'u-x': [...base, ALL] }, Role.AGENT))).toMatch(NOT_LISTED_ANY);
+  });
+
+  it('flag ligada: AGENT com escopo de todas as mesas nao fica preso a lista', async () => {
+    expect(await failure(build(true, { 'u-x': [...base, ALL] }, Role.AGENT))).not.toMatch(NOT_LISTED_ANY);
+  });
+
+  it('flag ligada: perfil ADMIN com escopo de mesas em que atua fica preso a lista', async () => {
+    expect(await failure(build(true, { 'u-x': [...base, ASSIGNED] }, Role.ADMIN))).toMatch(NOT_LISTED_ANY);
+  });
+});
