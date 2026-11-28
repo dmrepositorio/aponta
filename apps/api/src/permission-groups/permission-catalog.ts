@@ -180,6 +180,12 @@ export const PERMISSION_CATALOG: PermissionDefinition[] = [
   // Fase 1f do tracker #523 (#566): chave complementar da Fase 2. Nenhum caller a consulta
   // ainda; só o grupo Administrador a recebe (migração 20261128130000_rbac_1f_audit_worklogs). Não é GROUP_ONLY.
   { key: 'AUDIT_WORKLOGS', category: PermissionCategory.TECHNICAL, label: 'Auditar os apontamentos de um ticket' },
+
+  // Fase 1g do tracker #523 (#571): chaves complementares do lote 2a5 (artigos e agenda). Nenhum caller as
+  // consulta ainda; atribuídas pela migração 20261128140000_rbac_1g_article_agenda_keys. Nenhuma é GROUP_ONLY.
+  { key: 'EDIT_ALL_KNOWLEDGE_ARTICLES', category: PermissionCategory.TECHNICAL, label: 'Editar artigos da base de conhecimento de outros autores' },
+  { key: 'VIEW_OTHER_USERS_APPOINTMENTS', category: PermissionCategory.TECHNICAL, label: 'Visualizar a agenda de outro usuário' },
+  { key: 'VIEW_INTERNAL_ABSENCES', category: PermissionCategory.TECHNICAL, label: 'Visualizar ausências internas' },
 ];
 
 export const PERMISSION_KEYS: readonly string[] = PERMISSION_CATALOG.map((p) => p.key);
