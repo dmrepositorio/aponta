@@ -218,7 +218,7 @@ export class ArticlesService {
       throw new NotFoundException(`Article with ID ${id} not found`);
     }
 
-    this.assertCanEdit(article.authorId, currentUser);
+    await this.assertCanEdit(article.authorId, currentUser);
 
     const { agentGroupIds, organizationIds, serviceCatalogItemIds, ...rest } = dto;
 
@@ -276,9 +276,9 @@ export class ArticlesService {
     return deleted;
   }
 
-  /** Editar: o autor, ou quem edita artigo de outro (hoje so ADMIN; ver ArticleAccess.canEditOthers). */
-  private assertCanEdit(authorId: string, currentUser: CurrentUserPayload) {
-    if (authorId !== currentUser.id && !this.access.canEditOthers(currentUser)) {
+  /** Editar: o autor, ou quem tem EDIT_ALL_KNOWLEDGE_ARTICLES (hoje so ADMIN). */
+  private async assertCanEdit(authorId: string, currentUser: CurrentUserPayload) {
+    if (authorId !== currentUser.id && !(await this.access.canEditOthers(currentUser))) {
       throw new ForbiddenException(
         'Só o autor do artigo ou um ADMIN podem editá-lo/excluí-lo',
       );
