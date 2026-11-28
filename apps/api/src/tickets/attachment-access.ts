@@ -17,6 +17,7 @@ export class AttachmentAccess {
   ) {}
 
   async canRemoveAny(user: CurrentUserPayload): Promise<boolean> {
-    return ([Role.ADMIN, Role.AGENT_MASTER, Role.AGENT] as Role[]).includes(user.role);
+    if (!this.flags.isRbacPermissionOnly()) return ([Role.ADMIN, Role.AGENT_MASTER, Role.AGENT] as Role[]).includes(user.role);
+    return this.permissions.hasPermission(user.id, 'REMOVE_TICKET_ATTACHMENTS');
   }
 }
