@@ -4,6 +4,7 @@ import {
   assertDeskAllowsPauseResume,
   assertDeskAllowsReopen,
   assertListedAgentMayMutate,
+  type DeskActor,
 } from '../service-desks/desk-policy';
 import type { CurrentUserPayload } from './decorators/current-user.decorator';
 
@@ -64,6 +65,8 @@ export interface StatusChangeCheck {
   billed: boolean;
   /** Quem reabre chamado fechado, já resolvido (TicketTransitionAccess). */
   canReopen?: boolean;
+  /** Ator da mesa já resolvido (DeskAccess); sem ele, decide pelo perfil. */
+  deskActor?: DeskActor;
 }
 
 /**

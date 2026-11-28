@@ -4,6 +4,7 @@ import {
   Injectable,
   NotFoundException,
   Logger,
+  Optional,
 } from '@nestjs/common';
 import { AttendanceType, Prisma, Role, ValuationType } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
@@ -13,6 +14,7 @@ import { StopPreAppointmentDto } from './dto/stop-pre-appointment.dto';
 import { CommentsService } from '../comments/comments.service';
 import { CurrentUserPayload } from '../tickets/decorators/current-user.decorator';
 import { assertListedAgentMayMutate } from '../service-desks/desk-policy';
+import { DeskAccess } from '../service-desks/desk-access';
 import { TenantHelper } from '../core/security/tenant.helper';
 import { TicketsService } from '../tickets/tickets.service';
 import { PermissionsService } from '../permissions/permissions.service';
@@ -41,6 +43,7 @@ export class WorklogsService {
     private readonly permissions: PermissionsService,
     private readonly flags: FeatureFlagsService,
     private readonly approvals: WorklogApprovalsService,
+    @Optional() _deskAccess?: DeskAccess,
   ) {}
 
   /** #542: decisão por perfil (flag desligada) ou por permissão (ligada); ver worklog-access.ts. */

@@ -3,6 +3,7 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
+  Optional,
 } from '@nestjs/common';
 import { AppointmentType, Prisma, Role } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
@@ -13,6 +14,7 @@ import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 import { QueryAppointmentDto } from './dto/query-appointment.dto';
 import { PermissionsService } from '../permissions/permissions.service';
 import { AgendaAccess } from './agenda-access';
+import { ScopeAccess } from '../core/security/scope-access';
 
 @Injectable()
 export class AgendaService {
@@ -20,6 +22,7 @@ export class AgendaService {
     private readonly prisma: PrismaService,
     private readonly permissions: PermissionsService,
     private readonly access: AgendaAccess,
+    @Optional() _scope?: ScopeAccess,
   ) {}
 
   async findAll(query: QueryAppointmentDto, user: CurrentUserPayload) {

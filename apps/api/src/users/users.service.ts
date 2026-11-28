@@ -24,6 +24,7 @@ import { TenantHelper } from '../core/security/tenant.helper';
 import { CurrentUserPayload } from '../tickets/decorators/current-user.decorator';
 import { escapeLikePattern } from '../common/escape-like-pattern';
 import { UserAccess } from './user-access';
+import { ScopeAccess } from '../core/security/scope-access';
 
 const SALT_ROUNDS = 10;
 const UNIQUE_CONSTRAINT_VIOLATION = 'P2002';
@@ -78,6 +79,7 @@ export class UsersService {
     private readonly prisma: PrismaService,
     // Opcional: specs e modulos que montam o service sem a flag seguem com o comportamento por perfil.
     @Optional() private readonly access?: UserAccess,
+    @Optional() _scope?: ScopeAccess,
   ) {}
 
   // E-mail é único sem diferença de caixa (DMTE-550): toda escrita o guarda em minúsculas, então a chave única

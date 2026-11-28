@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { CredentialAction } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateCredentialDto } from './dto/create-credential.dto';
@@ -12,6 +12,7 @@ import { CurrentUserPayload } from '../tickets/decorators/current-user.decorator
 import { TenantHelper } from '../core/security/tenant.helper';
 import { escapeLikePattern } from '../common/escape-like-pattern';
 import { VaultAccess } from './vault-access';
+import { ScopeAccess } from '../core/security/scope-access';
 
 const DENIED_SENTINEL = '00000000-0000-0000-0000-000000000000';
 
@@ -20,6 +21,8 @@ export class VaultService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly access: VaultAccess,
+    // Opcional: specs e modulos sem o escopo por permissao seguem com o TenantHelper (por perfil).
+    @Optional() _scope?: ScopeAccess,
   ) {}
 
   /** Throws ForbiddenException for roles fail-closed by TenantHelper.getCredentialWhere (CLIENT/CLIENT_MASTER). */

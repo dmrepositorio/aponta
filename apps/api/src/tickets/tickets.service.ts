@@ -5,6 +5,7 @@ import {
   Logger,
   NotFoundException,
   ForbiddenException,
+  Optional,
 } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { join } from 'path';
@@ -30,6 +31,7 @@ import { TenantHelper } from '../core/security/tenant.helper';
 import { escapeLikePattern } from '../common/escape-like-pattern';
 import { addBusinessHours } from '../scheduling/business-hours';
 import { getSlaStatus } from '../scheduling/sla-status';
+import { DeskAccess } from '../service-desks/desk-access';
 import {
   assertDeskAllowsAddSlaHours,
   assertDeskAllowsCancel,
@@ -213,6 +215,8 @@ export class TicketsService {
     private readonly eventEmitter: EventEmitter2,
     private readonly maskAccess: MaskAccess,
     private readonly transitionAccess: TicketTransitionAccess,
+    // Opcional: specs que montam o service sem a flag seguem com o ator da mesa por perfil.
+    @Optional() _deskAccess?: DeskAccess,
   ) {}
 
   withTransaction(

@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, ForbiddenException, NotFoundException, Optional } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateContractDto } from './dto/create-contract.dto';
 import { UpdateContractDto } from './dto/update-contract.dto';
@@ -6,6 +6,7 @@ import { CurrentUserPayload } from '../tickets/decorators/current-user.decorator
 import { TenantHelper } from '../core/security/tenant.helper';
 import { Contract, ContractType, Prisma } from '@prisma/client';
 import { ContractAccess } from './contract-access';
+import { ScopeAccess } from '../core/security/scope-access';
 import { escapeLikePattern } from '../common/escape-like-pattern';
 
 const conditions = ['type', 'includedMinutes', 'hourlyRateCents', 'excessHourlyRateCents', 'monthlyFeeCents', 'fixedPriceCents', 'estimatedMinutes', 'scope'] as const;
@@ -14,7 +15,11 @@ const relations = { organization: true, serviceDesks: { select: { id: true, name
 
 @Injectable()
 export class ContractsService {
-  constructor(private readonly prisma: PrismaService, private readonly access: ContractAccess) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly access: ContractAccess,
+    @Optional() _scope?: ScopeAccess,
+  ) {}
 
   private readableWhere(user: CurrentUserPayload) {
     const where = TenantHelper.getContractWhere(user);

@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateServiceDeskDto } from './dto/create-service-desk.dto';
@@ -7,6 +7,7 @@ import { UpdateBusinessHoursDto } from './dto/update-business-hours.dto';
 import { HolidaysImportService } from './holidays-import.service';
 import { DEFAULT_DESK_PRIORITIES, DEFAULT_DESK_SECTIONS, DEFAULT_DESK_STAGES, DESK_INCLUDE } from './desk-defaults';
 import { TenantHelper } from '../core/security/tenant.helper';
+import { ScopeAccess } from '../core/security/scope-access';
 import { CurrentUserPayload } from '../tickets/decorators/current-user.decorator';
 
 @Injectable()
@@ -14,6 +15,7 @@ export class ServiceDesksService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly holidaysImportService: HolidaysImportService,
+    @Optional() _scope?: ScopeAccess,
   ) {}
 
   async create(createServiceDeskDto: CreateServiceDeskDto, createdBy?: string) {

@@ -1,4 +1,4 @@
-import { Injectable, ForbiddenException, BadRequestException } from '@nestjs/common';
+import { Injectable, ForbiddenException, BadRequestException, Optional } from '@nestjs/common';
 import { BillingFilterDto } from './dto/billing-filter.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { CurrentUserPayload } from '../tickets/decorators/current-user.decorator';
@@ -11,6 +11,7 @@ import { PermissionsService } from '../permissions/permissions.service';
 import { getClosedMonthRanges } from './closed-month-range';
 import { compareResponseTimes } from './response-time-comparison';
 import { FeatureFlagsService } from '../feature-flags/feature-flags.service';
+import { ScopeAccess } from '../core/security/scope-access';
 
 const CLOSED_STATUSES: TicketStatus[] = [TicketStatus.RESOLVED, TicketStatus.CLOSED];
 
@@ -25,6 +26,7 @@ export class ReportsService {
     private readonly prisma: PrismaService,
     private readonly permissions: PermissionsService,
     private readonly flags: FeatureFlagsService,
+    @Optional() _scope?: ScopeAccess,
   ) {}
 
   async getWorkload(user: CurrentUserPayload, targetAgentId?: string): Promise<WorkloadReportItemDto[]> {
