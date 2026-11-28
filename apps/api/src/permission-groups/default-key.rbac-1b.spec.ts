@@ -26,7 +26,7 @@ function fakeDb(rows: Row[]) {
       findUnique: jest.fn(async ({ where }: { where: { defaultKey: string } }) => rows.find((r) => r.defaultKey === where.defaultKey) ?? null),
       findFirst: jest.fn(async ({ where }: { where: { name: string } }) => rows.find((r) => r.name === where.name) ?? null),
       create: jest.fn(async ({ data }: { data: Omit<Row, 'id'> }) => {
-        const row = { id: `g${rows.length + 1}`, defaultKey: null, ...data } as Row;
+        const row = { id: `g${rows.length + 1}`, ...data, defaultKey: data.defaultKey ?? null } as Row;
         rows.push(row);
         return row;
       }),

@@ -173,13 +173,17 @@ export const DEFAULT_GROUP_KEY: Record<Role, string> = {
   [Role.CLIENT]: 'default-client',
 };
 
-/** Acha (ou cria) o grupo padrão do papel; compartilhado por UsersService e pelo seed. */
+/** Acha (ou cria) o grupo padrão do papel pela chave, nunca pelo nome; compartilhado por UsersService e pelo seed. */
 export async function findOrCreateDefaultGroup(db: Pick<Prisma.TransactionClient, 'permissionGroup'>, role: Role): Promise<string> {
-  const name = ROLE_GROUP_NAME[role];
   const group =
-    (await db.permissionGroup.findFirst({ where: { name } })) ??
+    (await db.permissionGroup.findUnique({ where: { defaultKey: DEFAULT_GROUP_KEY[role] } })) ??
     (await db.permissionGroup.create({
-      data: { name, description: DEFAULT_PERMISSION_GROUPS[role].description, permissions: DEFAULT_PERMISSION_GROUPS[role].permissions },
+      data: {
+        name: ROLE_GROUP_NAME[role],
+        defaultKey: DEFAULT_GROUP_KEY[role],
+        description: DEFAULT_PERMISSION_GROUPS[role].description,
+        permissions: DEFAULT_PERMISSION_GROUPS[role].permissions,
+      },
     }));
   return group.id;
 }
