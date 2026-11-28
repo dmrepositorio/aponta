@@ -11,12 +11,16 @@ import { RevealCredentialDto } from './dto/reveal-credential.dto';
 import { CurrentUserPayload } from '../tickets/decorators/current-user.decorator';
 import { TenantHelper } from '../core/security/tenant.helper';
 import { escapeLikePattern } from '../common/escape-like-pattern';
+import { VaultAccess } from './vault-access';
 
 const DENIED_SENTINEL = '00000000-0000-0000-0000-000000000000';
 
 @Injectable()
 export class VaultService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly access: VaultAccess,
+  ) {}
 
   /** Throws ForbiddenException for roles fail-closed by TenantHelper.getCredentialWhere (CLIENT/CLIENT_MASTER). */
   private assertVaultAccess(user: CurrentUserPayload) {
