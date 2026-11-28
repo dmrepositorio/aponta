@@ -22,7 +22,7 @@ type UserRow = { id: string; role: Role; active: boolean; groups: string[]; name
 type GroupRow = { id: string; name: string; defaultKey: string | null };
 
 const user = (id: string, groups: string[], extra: Partial<UserRow> = {}): UserRow => ({
-  id, role: Role.ADMIN, active: true, groups, name: id, email: `${id}@exemplo.test`, password: 'hash-de-fixture', ...extra,
+  id, role: Role.AGENT, active: true, groups, name: id, email: `${id}@exemplo.test`, password: 'hash-de-fixture', ...extra,
 });
 const GROUPS: GroupRow[] = [
   { id: 'g-admin', name: 'Administrador', defaultKey: ADMIN_KEY },
@@ -241,62 +241,114 @@ describe.each(modes)('ultimo administrador: %s', (_label, flagOn) => {
   });
 });
 
-describe('modo desligado: perfil E grupo juntos (mais estrito que antes)', () => {
-  it('quem so tem o grupo, sem perfil ADMIN, nao sustenta o sistema', async () => {
-    const { db, users } = build(false, [user('a', ['g-admin']), user('b', ['g-admin'], { role: Role.AGENT })]);
-    await expect(users.update('a', { permissionGroupIds: [] }, false)).rejects.toThrow(ConflictException);
+describe('modo desligado: perfil OU grupo (uniao), o sistema so trava se nao sobrar nenhum dos dois', () => {
+  const admin = (id: string, groups: string[], extra: Partial<UserRow> = {}) => user(id, groups, { role: Role.ADMIN, ...extra });
+
+  it('A e ADMIN fora do grupo e B e ADMIN no grupo: remover B do grupo passa (A sustenta pelo perfil)', async () => {
+    const { db, groups } = build(false, [admin('a', []), admin('b', ['g-admin'])]);
+    await groups.removeUser('g-admin', 'b');
+    expect(groupsOf(db, 'b')).toEqual([]);
+  });
+
+  it('A e ADMIN fora do grupo e B e ADMIN no grupo: rebaixar B passa', async () => {
+    const { db, users } = build(false, [admin('a', []), admin('b', ['g-admin'])]);
+    await users.update('b', { role: Role.AGENT }, true);
+    expect(db.users[1].role).toBe(Role.AGENT);
+  });
+
+  it('A e ADMIN fora do grupo e B e ADMIN no grupo: rebaixar B e tira-lo do grupo passa', async () => {
+    const { db, users } = build(false, [admin('a', []), admin('b', ['g-admin'])]);
+    await users.update('b', { role: Role.AGENT, permissionGroupIds: [] }, true);
+    expect(groupsOf(db, 'b')).toEqual([]);
+  });
+
+  it('quem esta no grupo com perfil AGENT sustenta o sistema', async () => {
+    const { db, users } = build(false, [admin('a', ['g-admin']), user('b', ['g-admin'])]);
+    await users.update('a', { role: Role.AGENT, permissionGroupIds: [] }, true);
+    expect(groupsOf(db, 'a')).toEqual([]);
+  });
+
+  it('unico administrador: tirar do grupo mantendo o perfil ADMIN passa (segue administrador pelo perfil)', async () => {
+    const { db, users } = build(false, [admin('a', ['g-admin'])]);
+    await users.update('a', { permissionGroupIds: [] }, true);
+    expect(groupsOf(db, 'a')).toEqual([]);
+  });
+
+  it('unico administrador: rebaixar mantendo o grupo passa (segue administrador pelo grupo)', async () => {
+    const { db, users } = build(false, [admin('a', ['g-admin'])]);
+    await users.update('a', { role: Role.AGENT }, true);
+    expect(db.users[0].role).toBe(Role.AGENT);
+  });
+
+  it('unico administrador: rebaixar E tirar do grupo e barrado', async () => {
+    const { db, users } = build(false, [admin('a', ['g-admin'])]);
+    await expect(users.update('a', { role: Role.AGENT, permissionGroupIds: [] }, true)).rejects.toThrow(ConflictException);
+    expect(db.users[0].role).toBe(Role.ADMIN);
     expect(groupsOf(db, 'a')).toEqual(['g-admin']);
   });
 
-  it('quem so tem o perfil ADMIN, sem o grupo, nao sustenta o sistema', async () => {
-    const { db, groups } = build(false, [user('a', ['g-admin']), user('b', [])]);
+  it('unico administrador so por perfil (sem grupo): reenviar role ADMIN passa', async () => {
+    const { db, users } = build(false, [admin('a', [])]);
+    await users.update('a', { name: 'Novo nome', role: Role.ADMIN }, true);
+    expect(db.users[0].name).toBe('Novo nome');
+  });
+
+  it('unico administrador so por perfil (sem grupo): rebaixar e barrado', async () => {
+    const { db, users } = build(false, [admin('a', [])]);
+    await expect(users.update('a', { role: Role.AGENT }, true)).rejects.toThrow('Não é possível remover o último administrador ativo.');
+    expect(db.users[0].role).toBe(Role.ADMIN);
+  });
+
+  it('administrador inativo por perfil nao sustenta: remover o unico ativo do grupo e barrado', async () => {
+    const { db, groups } = build(false, [user('a', ['g-admin']), admin('b', [], { active: false })]);
     await expect(groups.removeUser('g-admin', 'a')).rejects.toThrow(ConflictException);
     expect(groupsOf(db, 'a')).toEqual(['g-admin']);
   });
 
-  it('trocar o perfil do ultimo administrador para outro tipo e barrado', async () => {
-    const { db, users } = build(false, [user('a', ['g-admin'])]);
-    await expect(users.update('a', { role: Role.AGENT }, true)).rejects.toThrow(ConflictException);
-    expect(db.users[0].role).toBe(Role.ADMIN);
-  });
-
-  it('reenviar o mesmo perfil ADMIN do ultimo administrador, sem tirar do grupo, passa (formulario de edicao completo)', async () => {
-    const { db, users } = build(false, [user('a', ['g-admin'])]);
-    await users.update('a', { name: 'Novo nome', role: Role.ADMIN }, true);
-    expect(db.users[0].name).toBe('Novo nome');
-    expect(groupsOf(db, 'a')).toEqual(['g-admin']);
-  });
-
   it('trocar o perfil de um administrador com outro ativo passa', async () => {
-    const { db, users } = build(false, [user('a', ['g-admin']), user('b', ['g-admin'])]);
-    await users.update('a', { role: Role.AGENT }, true);
+    const { db, users } = build(false, [admin('a', ['g-admin']), admin('b', ['g-admin'])]);
+    await users.update('a', { role: Role.AGENT, permissionGroupIds: [] }, true);
     expect(db.users[0].role).toBe(Role.AGENT);
   });
 });
 
 describe('modo ligado: so o grupo conta, o perfil e rotulo', () => {
+  const admin = (id: string, groups: string[], extra: Partial<UserRow> = {}) => user(id, groups, { role: Role.ADMIN, ...extra });
+
   it('quem esta no grupo sustenta o sistema mesmo com perfil AGENT', async () => {
-    const { db, users } = build(true, [user('a', ['g-admin']), user('b', ['g-admin'], { role: Role.AGENT })]);
+    const { db, users } = build(true, [admin('a', ['g-admin']), user('b', ['g-admin'])]);
     await users.update('a', { permissionGroupIds: [] }, false);
     expect(groupsOf(db, 'a')).toEqual([]);
   });
 
-  it('reenviar o mesmo perfil ADMIN do ultimo administrador, sem tirar do grupo, passa', async () => {
-    const { db, users } = build(true, [user('a', ['g-admin'])]);
-    await users.update('a', { name: 'Novo nome', role: Role.ADMIN }, true);
-    expect(db.users[0].name).toBe('Novo nome');
-    expect(groupsOf(db, 'a')).toEqual(['g-admin']);
-  });
-
   it('trocar o perfil do ultimo administrador nao e barrado (rotulo), o grupo segue', async () => {
-    const { db, users } = build(true, [user('a', ['g-admin'])]);
+    const { db, users } = build(true, [admin('a', ['g-admin'])]);
     await users.update('a', { role: Role.AGENT }, true);
     expect(db.users[0].role).toBe(Role.AGENT);
     expect(groupsOf(db, 'a')).toEqual(['g-admin']);
   });
 
+  it('reenviar o mesmo perfil ADMIN do ultimo administrador, sem tirar do grupo, passa', async () => {
+    const { db, users } = build(true, [admin('a', ['g-admin'])]);
+    await users.update('a', { name: 'Novo nome', role: Role.ADMIN }, true);
+    expect(db.users[0].name).toBe('Novo nome');
+    expect(groupsOf(db, 'a')).toEqual(['g-admin']);
+  });
+
+  it('A e ADMIN fora do grupo e B e ADMIN no grupo: remover B do grupo e barrado (o perfil nao conta)', async () => {
+    const { db, groups } = build(true, [admin('a', []), admin('b', ['g-admin'])]);
+    await expect(groups.removeUser('g-admin', 'b')).rejects.toThrow(ConflictException);
+    expect(groupsOf(db, 'b')).toEqual(['g-admin']);
+  });
+
+  it('unico administrador so por perfil (sem grupo): nao e protegido, rebaixar passa', async () => {
+    const { db, users } = build(true, [admin('a', [])]);
+    await users.update('a', { role: Role.AGENT }, true);
+    expect(db.users[0].role).toBe(Role.AGENT);
+  });
+
   it('quem tem o perfil ADMIN sem o grupo nao sustenta o sistema', async () => {
-    const { db, users } = build(true, [user('a', ['g-admin']), user('b', [])]);
+    const { db, users } = build(true, [admin('a', ['g-admin']), admin('b', [])]);
     await expect(users.update('a', { permissionGroupIds: [] }, false)).rejects.toThrow(ConflictException);
     expect(groupsOf(db, 'a')).toEqual(['g-admin']);
   });

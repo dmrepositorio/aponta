@@ -9,6 +9,12 @@ import { DEFAULT_GROUP_KEY } from '../permission-groups/default-permission-group
  * desligada: por perfil (comportamento de hoje). Ligada: por permissao e por grupo
  * protegido, sem olhar `User.role`, que passa a ser so rotulo.
  */
+/** O que o usuario que sai perde: o vinculo ao grupo Administrador e/ou o perfil ADMIN (lote 2h). */
+export interface AdminLoss {
+  group: boolean;
+  role: boolean;
+}
+
 @Injectable()
 export class UserAccess {
   constructor(private readonly flags: FeatureFlagsService) {}
@@ -51,7 +57,7 @@ export class UserAccess {
    * nenhum ativo. Quem sai e quem sobra usam a mesma regra; se ninguem que sai e administrador, nada a barrar.
    * shortcut: sem isolamento serializavel, como no `setActiveMany`; duas saidas simultaneas podem passar juntas.
    */
-  async assertAdminRemains(db: Pick<Prisma.TransactionClient, 'user'>, leavingIds: string[]): Promise<void> {
+  async assertAdminRemains(db: Pick<Prisma.TransactionClient, 'user'>, leavingIds: string[], _lose: AdminLoss = { group: true, role: true }): Promise<void> {
     const admin = this.lastAdminWhere();
     if ((await db.user.count({ where: { ...admin, id: { in: leavingIds } } })) === 0) return;
     if ((await db.user.count({ where: { ...admin, id: { notIn: leavingIds } } })) === 0) {
