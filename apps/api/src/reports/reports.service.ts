@@ -1,4 +1,4 @@
-import { Injectable, ForbiddenException, BadRequestException } from '@nestjs/common';
+import { Injectable, ForbiddenException, BadRequestException, Optional } from '@nestjs/common';
 import { BillingFilterDto } from './dto/billing-filter.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { CurrentUserPayload } from '../tickets/decorators/current-user.decorator';
@@ -11,6 +11,7 @@ import { PermissionsService } from '../permissions/permissions.service';
 import { getClosedMonthRanges } from './closed-month-range';
 import { compareResponseTimes } from './response-time-comparison';
 import { FeatureFlagsService } from '../feature-flags/feature-flags.service';
+import { ScopeAccess } from '../core/security/scope-access';
 
 const CLOSED_STATUSES: TicketStatus[] = [TicketStatus.RESOLVED, TicketStatus.CLOSED];
 
@@ -25,6 +26,7 @@ export class ReportsService {
     private readonly prisma: PrismaService,
     private readonly permissions: PermissionsService,
     private readonly flags: FeatureFlagsService,
+    @Optional() private readonly scope?: ScopeAccess,
   ) {}
 
   async getWorkload(user: CurrentUserPayload, targetAgentId?: string): Promise<WorkloadReportItemDto[]> {
@@ -592,6 +594,7 @@ export class ReportsService {
     // the hardcoded constants this replaces. "my" is always scoped to the
     // current user; "all" reuses the same role-based visibility AgendaService
     // applies (TenantHelper.getAppointmentWhere).
+    const appointmentWhere = this.scope ? await this.scope.appointmentWhere(user) : TenantHelper.getAppointmentWhere(user);
     let myAppointmentRows: { startTime: Date }[] = [];
     let allAppointmentRows: { startTime: Date }[] = [];
     if (this.prisma.appointment?.findMany) {
@@ -602,7 +605,7 @@ export class ReportsService {
             select: { startTime: true },
           }),
           this.prisma.appointment.findMany({
-            where: TenantHelper.getAppointmentWhere(user),
+            where: appointmentWhere,
             select: { startTime: true },
           }),
         ]);

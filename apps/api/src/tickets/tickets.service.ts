@@ -5,6 +5,7 @@ import {
   Logger,
   NotFoundException,
   ForbiddenException,
+  Optional,
 } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { join } from 'path';
@@ -30,6 +31,7 @@ import { TenantHelper } from '../core/security/tenant.helper';
 import { escapeLikePattern } from '../common/escape-like-pattern';
 import { addBusinessHours } from '../scheduling/business-hours';
 import { getSlaStatus } from '../scheduling/sla-status';
+import { DeskAccess } from '../service-desks/desk-access';
 import {
   assertDeskAllowsAddSlaHours,
   assertDeskAllowsCancel,
@@ -213,6 +215,8 @@ export class TicketsService {
     private readonly eventEmitter: EventEmitter2,
     private readonly maskAccess: MaskAccess,
     private readonly transitionAccess: TicketTransitionAccess,
+    // Opcional: specs que montam o service sem a flag seguem com o ator da mesa por perfil.
+    @Optional() private readonly deskAccess?: DeskAccess,
   ) {}
 
   withTransaction(
@@ -227,7 +231,7 @@ export class TicketsService {
         return true;
       },
     } as EventEmitter2;
-    return new TicketsService(database as PrismaService, events, this.maskAccess, this.transitionAccess);
+    return new TicketsService(database as PrismaService, events, this.maskAccess, this.transitionAccess, this.deskAccess);
   }
 
   /**
@@ -391,6 +395,7 @@ export class TicketsService {
       priority,
       resourceGroup: dto.resourceGroup,
       attachmentCount: dto.attachmentCount ?? 0,
+      actor: await this.deskActor(user),
     });
     // Depois das checagens de acesso e da mesa, antes de gravar (GH-368).
     const descriptionFields = ticketDescriptionFields(dto.description);
@@ -896,6 +901,7 @@ export class TicketsService {
       from: ticket.status,
       billed,
       canReopen,
+      deskActor: await this.deskActor(currentUser),
     });
   }
 
@@ -1038,7 +1044,7 @@ export class TicketsService {
 
     const desk = await this.loadDeskPolicy(existing.serviceDeskId);
     if (desk) {
-      assertListedAgentMayMutate({ desk, user: currentUser });
+      assertListedAgentMayMutate({ desk, user: currentUser, actor: await this.deskActor(currentUser) });
     }
 
     const target = await this.prisma.ticketStage.findFirst({
@@ -1127,6 +1133,7 @@ export class TicketsService {
       to: newStatus,
       billed,
       canReopen,
+      deskActor: await this.deskActor(currentUser),
     });
 
     const updateData: Prisma.TicketUpdateInput = { status: newStatus };
@@ -1297,7 +1304,7 @@ export class TicketsService {
       );
     }
     assertDeskAllowsCancel(desk);
-    assertListedAgentMayMutate({ desk, user: currentUser });
+    assertListedAgentMayMutate({ desk, user: currentUser, actor: await this.deskActor(currentUser) });
 
     const closedStatus = desk.defaultClosedStatus ?? TicketStatus.CLOSED;
     const ticket = await this.prisma.ticket.update({
@@ -1340,7 +1347,7 @@ export class TicketsService {
       );
     }
     assertDeskAllowsAddSlaHours(desk);
-    assertListedAgentMayMutate({ desk, user: currentUser });
+    assertListedAgentMayMutate({ desk, user: currentUser, actor: await this.deskActor(currentUser) });
 
     const [businessHours, holidays] = await Promise.all([
       this.prisma.businessHour.findMany({
@@ -1401,7 +1408,12 @@ export class TicketsService {
   ): Promise<void> {
     const desk = await this.loadDeskPolicy(serviceDeskId);
     if (!desk) return;
-    assertListedAgentMayMutate({ desk, user: currentUser });
+    assertListedAgentMayMutate({ desk, user: currentUser, actor: await this.deskActor(currentUser) });
+  }
+
+  /** Ator da politica de mesas (DeskAccess); sem ele, `undefined` e a politica decide pelo perfil. */
+  private deskActor(user: CurrentUserPayload) {
+    return this.deskAccess?.resolve(user);
   }
 
   /**

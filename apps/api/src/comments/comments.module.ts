@@ -8,11 +8,12 @@ import { MailInboundListener } from './listeners/mail-inbound.listener';
 import { PermissionsModule } from '../permissions/permissions.module';
 import { FeatureFlagsModule } from '../feature-flags/feature-flags.module';
 import { MaskAccess } from './mask-access';
+import { DeskAccess } from '../service-desks/desk-access';
 
 @Module({
   imports: [PrismaModule, UsersModule, PermissionsModule, FeatureFlagsModule, EventEmitterModule.forRoot()],
   controllers: [CommentsController],
-  providers: [CommentsService, MailInboundListener, MaskAccess],
+  providers: [CommentsService, MailInboundListener, MaskAccess, DeskAccess],
   exports: [CommentsService, MaskAccess],
 })
 export class CommentsModule {}

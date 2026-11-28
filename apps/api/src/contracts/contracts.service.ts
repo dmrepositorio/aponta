@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, ForbiddenException, NotFoundException, Optional } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateContractDto } from './dto/create-contract.dto';
 import { UpdateContractDto } from './dto/update-contract.dto';
@@ -6,6 +6,7 @@ import { CurrentUserPayload } from '../tickets/decorators/current-user.decorator
 import { TenantHelper } from '../core/security/tenant.helper';
 import { Contract, ContractType, Prisma } from '@prisma/client';
 import { ContractAccess } from './contract-access';
+import { ScopeAccess } from '../core/security/scope-access';
 import { escapeLikePattern } from '../common/escape-like-pattern';
 
 const conditions = ['type', 'includedMinutes', 'hourlyRateCents', 'excessHourlyRateCents', 'monthlyFeeCents', 'fixedPriceCents', 'estimatedMinutes', 'scope'] as const;
@@ -14,10 +15,14 @@ const relations = { organization: true, serviceDesks: { select: { id: true, name
 
 @Injectable()
 export class ContractsService {
-  constructor(private readonly prisma: PrismaService, private readonly access: ContractAccess) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly access: ContractAccess,
+    @Optional() private readonly scope?: ScopeAccess,
+  ) {}
 
-  private readableWhere(user: CurrentUserPayload) {
-    const where = TenantHelper.getContractWhere(user);
+  private async readableWhere(user: CurrentUserPayload) {
+    const where = this.scope ? await this.scope.contractWhere(user) : TenantHelper.getContractWhere(user);
     if (where.id === '00000000-0000-0000-0000-000000000000') {
       throw new ForbiddenException('Acesso negado');
     }
@@ -34,7 +39,7 @@ export class ContractsService {
   }
 
   async findAll(user: CurrentUserPayload, search?: string) {
-    const where = this.readableWhere(user);
+    const where = await this.readableWhere(user);
     const canViewFinancials = await this.access.canViewFinancials(user);
     if (search?.trim()) {
       where.OR = [
@@ -53,7 +58,7 @@ export class ContractsService {
   }
 
   async findOne(id: string, user: CurrentUserPayload) {
-    const where = this.readableWhere(user);
+    const where = await this.readableWhere(user);
     const contract = await this.prisma.contract.findFirst({
       where: { ...where, id }, include: relations,
     });

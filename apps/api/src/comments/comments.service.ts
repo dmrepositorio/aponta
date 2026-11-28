@@ -1,10 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Comment, Prisma, Role } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { CurrentUserPayload } from '../tickets/decorators/current-user.decorator';
 import { assertListedAgentMayMutate } from '../service-desks/desk-policy';
+import { DeskAccess } from '../service-desks/desk-access';
 import { MaskAccess } from './mask-access';
 
 /** Autor do comentário: SOMENTE id, nome e papel (nunca e-mail, telefone etc.). */
@@ -36,6 +37,7 @@ export class CommentsService {
     private readonly prisma: PrismaService,
     private readonly eventEmitter: EventEmitter2,
     private readonly maskAccess: MaskAccess,
+    @Optional() private readonly deskAccess?: DeskAccess,
   ) {}
 
   withTransaction(database: Prisma.TransactionClient, afterCommit: Array<() => void>) {
@@ -43,7 +45,7 @@ export class CommentsService {
       afterCommit.push(() => { this.eventEmitter.emit(name, payload); });
       return true;
     } } as EventEmitter2;
-    return new CommentsService(database as PrismaService, events, this.maskAccess);
+    return new CommentsService(database as PrismaService, events, this.maskAccess, this.deskAccess);
   }
 
   /**
@@ -68,6 +70,7 @@ export class CommentsService {
       assertListedAgentMayMutate({
         desk: ticketForAuth.serviceDesk,
         user: currentUser,
+        actor: await this.deskAccess?.resolve(currentUser),
       });
     }
 

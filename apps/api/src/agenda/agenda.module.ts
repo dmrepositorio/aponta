@@ -5,11 +5,12 @@ import { AgendaController } from './agenda.controller';
 import { PermissionsModule } from '../permissions/permissions.module';
 import { FeatureFlagsModule } from '../feature-flags/feature-flags.module';
 import { AgendaAccess } from './agenda-access';
+import { ScopeAccess } from '../core/security/scope-access';
 
 @Module({
   imports: [PrismaModule, PermissionsModule, FeatureFlagsModule],
   controllers: [AgendaController],
-  providers: [AgendaService, AgendaAccess],
+  providers: [AgendaService, AgendaAccess, ScopeAccess],
   exports: [AgendaService],
 })
 export class AgendaModule {}
