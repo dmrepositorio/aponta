@@ -16,7 +16,7 @@ describe('Billing valuation snapshots', () => {
   beforeEach(() => {
     findMany = jest.fn().mockResolvedValue([]);
     canViewTicketValues = jest.fn().mockResolvedValue(true);
-    service = new ReportsService({ worklog: { findMany } } as any, { canViewTicketValues } as any);
+    service = new ReportsService({ worklog: { findMany } } as any, { canViewTicketValues } as any, { isRbacPermissionOnly: () => false } as any);
   });
   it('DMTE-479 AC-01: recusa faturamento sem VIEW_TICKET_VALUES, ADMIN e CLIENT_MASTER inclusive', async () => {
     canViewTicketValues.mockResolvedValue(false);

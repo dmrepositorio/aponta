@@ -10,6 +10,7 @@ import { getSlaStatus } from '../scheduling/sla-status';
 import { PermissionsService } from '../permissions/permissions.service';
 import { getClosedMonthRanges } from './closed-month-range';
 import { compareResponseTimes } from './response-time-comparison';
+import { FeatureFlagsService } from '../feature-flags/feature-flags.service';
 
 const CLOSED_STATUSES: TicketStatus[] = [TicketStatus.RESOLVED, TicketStatus.CLOSED];
 
@@ -23,12 +24,11 @@ export class ReportsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly permissions: PermissionsService,
+    private readonly flags: FeatureFlagsService,
   ) {}
 
   async getWorkload(user: CurrentUserPayload, targetAgentId?: string): Promise<WorkloadReportItemDto[]> {
-    // AGENT can only see their own workload
-    const isBasicAgent = ([Role.AGENT] as Role[]).includes(user.role);
-    const filterAgentId = isBasicAgent ? user.id : targetAgentId;
+    const filterAgentId = (await this.isOwnWorkloadOnly(user)) ? user.id : targetAgentId;
 
     const baseWhere = TenantHelper.getTicketWhere(user);
     if (baseWhere.id === '00000000-0000-0000-0000-000000000000') {
@@ -58,12 +58,49 @@ export class ReportsService {
     })).sort((a, b) => b.totalMinutes - a.totalMinutes);
   }
 
-  async getBilling(user: CurrentUserPayload, filters: BillingFilterDto = {}): Promise<BillingReportItemDto[]> {
-    // AGENTs are forbidden from seeing billing reports
-    if (!([Role.ADMIN, Role.CLIENT_MASTER] as Role[]).includes(user.role) ||
-      (user.role === Role.CLIENT_MASTER && !user.organizationId)) {
-      throw new ForbiddenException('Restrito a visualização de faturamento');
+  /**
+   * Quem fica restrito ao próprio relatório de carga. Desligada a flag, só o perfil AGENT.
+   * Ligada, quem vê relatórios de atendentes mas não tem VIEW_USERS_IN_AGENT_REPORTS
+   * (grupo "Atendente"); quem nem vê relatórios de atendentes não é restrito, como hoje.
+   * Pergunta aberta ao dono: preservar que o gerente de atendimento não é restrito (#544).
+   */
+  private async isOwnWorkloadOnly(user: CurrentUserPayload): Promise<boolean> {
+    if (!this.flags.isRbacPermissionOnly()) return user.role === Role.AGENT;
+    const granted = await this.permissions.getEffectivePermissions(user.id);
+    return granted.has('VIEW_AGENT_REPORTS') && !granted.has('VIEW_USERS_IN_AGENT_REPORTS');
+  }
+
+  /**
+   * Autoriza o faturamento e diz se as linhas ficam restritas à organização do usuário.
+   * Desligada a flag: ADMIN ou CLIENT_MASTER com organização; só o CLIENT_MASTER é restrito.
+   * Ligada: exige o extrato de consumo; sem VIEW_ADMIN_REPORTS o relatório é da organização
+   * do usuário e, sem organização, é negado (falha fechada).
+   */
+  private async resolveBillingScope(user: CurrentUserPayload): Promise<boolean> {
+    const denied = () => new ForbiddenException('Restrito a visualização de faturamento');
+    if (!this.flags.isRbacPermissionOnly()) {
+      if (!([Role.ADMIN, Role.CLIENT_MASTER] as Role[]).includes(user.role) ||
+        (user.role === Role.CLIENT_MASTER && !user.organizationId)) {
+        throw denied();
+      }
+      return user.role === Role.CLIENT_MASTER;
     }
+    const granted = await this.permissions.getEffectivePermissions(user.id);
+    if (!granted.has('VIEW_CLIENT_CONSUMPTION_STATEMENT_REPORT')) throw denied();
+    const organizationScoped = !granted.has('VIEW_ADMIN_REPORTS');
+    if (organizationScoped && !user.organizationId) throw denied();
+    return organizationScoped;
+  }
+
+  /** Lista de agentes do dashboard: por perfil (flag desligada) ou por quem lança apontamento (ligada). */
+  private agentsListWhere() {
+    if (!this.flags.isRbacPermissionOnly()) return { role: { in: [Role.AGENT, Role.AGENT_MASTER, Role.ADMIN] } };
+    const group = { permissionGroup: { permissions: { has: 'CREATE_EDIT_WORKLOGS' } } };
+    return { OR: [{ permissionGroupLinks: { some: group } }, { technicalGroup: { permissionGroupLinks: { some: group } } }] };
+  }
+
+  async getBilling(user: CurrentUserPayload, filters: BillingFilterDto = {}): Promise<BillingReportItemDto[]> {
+    const organizationScoped = await this.resolveBillingScope(user);
     if (!(await this.permissions.canViewTicketValues(user.id))) {
       throw new ForbiddenException('Valores de tickets exigem a permissão VIEW_TICKET_VALUES');
     }
@@ -93,7 +130,7 @@ export class ReportsService {
       const hasHistoricalOrganization = snapshot != null && Object.prototype.hasOwnProperty.call(snapshot, 'organizationId');
       const orgId = (hasHistoricalOrganization ? snapshot.organizationId : org?.id) || 'SEM_EMPRESA';
       // Historical ownership must never leak after a requester moves organization.
-      if (user.role === Role.CLIENT_MASTER && orgId !== user.organizationId) continue;
+      if (organizationScoped && orgId !== user.organizationId) continue;
       const orgName = (hasHistoricalOrganization ? snapshot.organizationName : org?.name) || 'Cliente Sem Organização Vinculada';
       const hasPeriod = Boolean(filters.startDate || filters.endDate);
       // A cycle is selected by its start, preserving the recorded amount in full.
@@ -507,7 +544,7 @@ export class ReportsService {
     if (this.prisma.user?.findMany) {
       try {
         agentsList = await this.prisma.user.findMany({
-          where: { role: { in: [Role.AGENT, Role.AGENT_MASTER, Role.ADMIN] } },
+          where: this.agentsListWhere(),
           select: { id: true, name: true, agentGroups: { select: { name: true } } },
           take: 10,
         });

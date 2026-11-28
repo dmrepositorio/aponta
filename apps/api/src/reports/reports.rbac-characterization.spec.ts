@@ -33,7 +33,7 @@ describe('ReportsService: matriz por perfil (caracterização)', () => {
       appointment: { findMany: jest.fn().mockResolvedValue([]) },
     };
     canViewTicketValues = jest.fn().mockResolvedValue(true);
-    service = new ReportsService(prisma, { canViewTicketValues } as any);
+    service = new ReportsService(prisma, { canViewTicketValues } as any, { isRbacPermissionOnly: () => false } as any);
   });
 
   describe('getWorkload: só Role.AGENT é restrito ao próprio relatório (reports.service.ts:30)', () => {
@@ -210,7 +210,7 @@ describe('CommercialReportsService: ADMIN-only (commercial-reports.service.ts:29
   beforeEach(() => {
     db = { contract: { findMany: jest.fn().mockResolvedValue([]) }, worklog: { findMany: jest.fn().mockResolvedValue([]) } };
     canViewTicketValues = jest.fn().mockResolvedValue(true);
-    service = new CommercialReportsService(db, { canViewTicketValues } as any);
+    service = new CommercialReportsService(db, { canViewTicketValues } as any, { isRbacPermissionOnly: () => false } as any);
   });
 
   it.each([

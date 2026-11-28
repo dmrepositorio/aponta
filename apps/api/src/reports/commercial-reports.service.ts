@@ -5,6 +5,7 @@ import { CurrentUserPayload } from '../tickets/decorators/current-user.decorator
 import { TenantHelper } from '../core/security/tenant.helper';
 import { splitBillingCycles } from '../worklogs/contract-valuation';
 import { PermissionsService } from '../permissions/permissions.service';
+import { FeatureFlagsService } from '../feature-flags/feature-flags.service';
 
 interface RecordedSegment {
   cycleStart: string;
@@ -23,10 +24,14 @@ export class CommercialReportsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly permissions: PermissionsService,
+    private readonly flags: FeatureFlagsService,
   ) {}
 
   async getCommercial(user: CurrentUserPayload, filters: { contractId?: string; month?: string } = {}) {
-    if (user.role !== Role.ADMIN) throw new ForbiddenException('Resultado e custos são restritos ao administrador');
+    const allowed = this.flags.isRbacPermissionOnly()
+      ? await this.permissions.hasPermission(user.id, 'VIEW_COMMERCIAL_RESULT')
+      : user.role === Role.ADMIN;
+    if (!allowed) throw new ForbiddenException('Resultado e custos são restritos ao administrador');
     if (!(await this.permissions.canViewTicketValues(user.id))) throw new ForbiddenException('Valores de tickets exigem a permissão VIEW_TICKET_VALUES');
     if (filters.month && !/^(20\d{2}|21\d{2})-(0[1-9]|1[0-2])$/.test(filters.month)) throw new BadRequestException('Competência inválida; use YYYY-MM');
     const now = new Date();
