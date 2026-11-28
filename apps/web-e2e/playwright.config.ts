@@ -47,6 +47,9 @@ export default defineConfig({
       env: {
         API_PORT: E2E_API_PORT,
         WEB_ORIGIN: `http://localhost:${E2E_WEB_PORT}`,
+        // #589: `E2E_RBAC_PERMISSION_ONLY=1` sobe a API com a flag `rbac-permission-only` ligada
+        // (rbac-matrix.spec.ts roda nos dois modos). Sem a variavel nada muda: a flag fica no padrao.
+        ...(process.env['E2E_RBAC_PERMISSION_ONLY'] === '1' ? { FEATURE_RBAC_PERMISSION_ONLY: 'true' } : {}),
       },
     },
     {

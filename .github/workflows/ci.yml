@@ -179,6 +179,13 @@ jobs:
       - name: Run E2E suite
         run: pnpm exec nx run web-e2e:e2e
 
+      # #589: a matriz de acesso por grupo roda de novo com a flag rbac-permission-only ligada
+      # (servidores novos, depois da suíte acima; mesmo job, então os checks obrigatórios não mudam).
+      - name: Run RBAC matrix E2E with rbac-permission-only on
+        env:
+          E2E_RBAC_PERMISSION_ONLY: '1'
+        run: pnpm exec nx run web-e2e:e2e --skip-nx-cache rbac-matrix
+
       - name: Upload Playwright report
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
