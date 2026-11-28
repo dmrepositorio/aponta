@@ -11,7 +11,7 @@ SET "permissions" = "permissions" || ARRAY(
     ),
     "updatedAt" = CURRENT_TIMESTAMP
 WHERE "name" = 'Administrador'
-  AND NOT ("permissions" @> ARRAY['VIEW_TEAM_MEMBER_NAMES', 'VIEW_REQUESTER_CONTACT_INFO', 'POST_INTERNAL_NOTES', 'ASSIGN_TICKETS', 'OPEN_TICKETS_ON_BEHALF', 'USE_INTERNAL_SERVICE_DESKS', 'LAUNCH_WORKLOG_ON_BEHALF', 'DELETE_ANY_WORKLOG', 'AUTHORIZE_WORKLOG_BONUS', 'SET_WORKLOG_MANUAL_VALUE', 'VIEW_CONTRACT_FINANCIALS', 'VIEW_COMMERCIAL_RESULT', 'DELETE_KNOWLEDGE_ARTICLES', 'VIEW_ALL_KNOWLEDGE_ARTICLES']::text[]);
+  AND NOT ("permissions" @> ARRAY['VIEW_TEAM_MEMBER_NAMES']::text[]);
 
 UPDATE "PermissionGroup"
 SET "permissions" = "permissions" || ARRAY(
@@ -30,7 +30,7 @@ WHERE "name" = 'Atendente'
   AND NOT ("permissions" @> ARRAY['VIEW_TEAM_MEMBER_NAMES', 'VIEW_REQUESTER_CONTACT_INFO', 'POST_INTERNAL_NOTES', 'ASSIGN_TICKETS', 'USE_INTERNAL_SERVICE_DESKS']::text[]);
 
 UPDATE "PermissionGroup"
-SET "permissions" = "permissions" || ARRAY(
+SET "permissions" = ARRAY(
       SELECT k FROM unnest(ARRAY['VIEW_CONTRACT_FINANCIALS']::text[]) AS k WHERE k <> ALL("permissions")
     ),
     "updatedAt" = CURRENT_TIMESTAMP

@@ -154,4 +154,24 @@ describe('Fase 1a: migração idempotente dos grupos padrão (#532)', () => {
     }
     expect(sql).not.toMatch(/array_remove|\bDELETE\b|\bDROP\b|\bTRUNCATE\b|\bINSERT\b/i);
   });
+
+  it('cada UPDATE acrescenta ao array existente (SET "permissions" = "permissions" || ARRAY(...)), nunca o substitui', () => {
+    const updates = statements(findMigration()?.sql ?? '').filter((stmt) => /\bUPDATE\b/i.test(stmt));
+    expect(updates).toHaveLength(4);
+    for (const stmt of updates) {
+      expect(stmt).toMatch(/SET "permissions" = "permissions" \|\| ARRAY\(/);
+    }
+  });
+
+  it('em cada UPDATE a lista da guarda @> é igual, como conjunto, à lista do unnest', () => {
+    const updates = statements(findMigration()?.sql ?? '').filter((stmt) => /\bUPDATE\b/i.test(stmt));
+    expect(updates).toHaveLength(4);
+    const keys = (list: string) => sorted([...list.matchAll(/'([A-Z_]+)'/g)].map((m) => m[1] as string));
+    for (const stmt of updates) {
+      const unnest = /unnest\(ARRAY\[([^\]]*)\]/.exec(stmt)?.[1] ?? '';
+      const guard = /@> ARRAY\[([^\]]*)\]/.exec(stmt)?.[1] ?? '';
+      expect(keys(unnest).length).toBeGreaterThan(0);
+      expect(keys(guard)).toEqual(keys(unnest));
+    }
+  });
 });
