@@ -177,6 +177,52 @@ describe.each(modes)('grupo Administrador: %s', (_label, flagOn) => {
     });
   });
 
+  describe('quem e o Administrador: pela defaultKey, nunca pelo nome', () => {
+    const renomeado = () => {
+      const ctx = build(flagOn);
+      ctx.admin().name = 'Superusuarios';
+      return ctx;
+    };
+
+    it('Administrador renomeado continua barrando esvaziar', async () => {
+      const { service, admin } = renomeado();
+      await expect(service.updatePermissions('g-admin', { permissions: [] })).rejects.toThrow(ConflictException);
+      expect(admin().permissions).toEqual(REQUIRED);
+    });
+
+    it('Administrador renomeado continua barrando lista incompleta', async () => {
+      const { service, admin } = renomeado();
+      await expect(service.updatePermissions('g-admin', { permissions: REQUIRED.filter((k) => k !== 'MANAGE_USERS') })).rejects.toThrow('MANAGE_USERS');
+      expect(admin().permissions).toEqual(REQUIRED);
+    });
+
+    it('Administrador renomeado continua barrando defaultKey no update', async () => {
+      const { service, admin } = renomeado();
+      await expect(service.update('g-admin', { defaultKey: null } as any)).rejects.toThrow(ConflictException);
+      expect(admin().defaultKey).toBe(ADMIN_KEY);
+    });
+
+    it('Administrador renomeado continua barrando nome em branco', async () => {
+      const { service, admin } = renomeado();
+      await expect(service.update('g-admin', { name: ' ' })).rejects.toThrow(ConflictException);
+      expect(admin().name).toBe('Superusuarios');
+    });
+
+    it.each([
+      ['sem defaultKey', null],
+      ['com a defaultKey de outro grupo padrao', DEFAULT_GROUP_KEY[Role.AGENT]],
+    ])('grupo chamado Administrador %s segue editavel, ate vazio', async (_l, defaultKey) => {
+      const { service, groups } = build(flagOn);
+      const falso = groups.find((g) => g.id === 'g-custom')!;
+      Object.assign(falso, { name: 'Administrador', defaultKey });
+      await service.updatePermissions('g-custom', { permissions: [] });
+      await service.update('g-custom', { name: ' ' });
+      expect(falso.permissions).toEqual([]);
+      expect(falso.name).toBe(' ');
+      expect(falso.defaultKey).toBe(defaultKey);
+    });
+  });
+
   describe('create', () => {
     it('nunca grava defaultKey vindo no corpo (nao da para forjar um segundo Administrador)', async () => {
       const { service, writes } = build(flagOn);
