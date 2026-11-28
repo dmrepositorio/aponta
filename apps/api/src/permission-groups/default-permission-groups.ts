@@ -113,6 +113,8 @@ export const DEFAULT_PERMISSION_GROUPS: Record<Role, { description: string; perm
       'VIEW_ASSIGNED_DESK_CONTRACTS',
       'VIEW_OWN_APPOINTMENTS',
       'REMOVE_TICKET_ATTACHMENTS',
+      'VIEW_OTHER_USERS_APPOINTMENTS',
+      'VIEW_INTERNAL_ABSENCES',
     ],
   },
   [Role.AGENT]: {
@@ -143,6 +145,7 @@ export const DEFAULT_PERMISSION_GROUPS: Record<Role, { description: string; perm
       'VIEW_ASSIGNED_DESK_CONTRACTS',
       'VIEW_OWN_APPOINTMENTS',
       'REMOVE_TICKET_ATTACHMENTS',
+      'VIEW_INTERNAL_ABSENCES',
     ],
   },
   [Role.CLIENT_MASTER]: {
