@@ -13,19 +13,25 @@ import { CurrentUserPayload } from '../tickets/decorators/current-user.decorator
 @Injectable()
 export class ContractAccess {
   constructor(
-    protected readonly flags: FeatureFlagsService,
-    protected readonly permissions: PermissionsService,
+    private readonly flags: FeatureFlagsService,
+    private readonly permissions: PermissionsService,
   ) {}
 
   canManageContracts(user: CurrentUserPayload): Promise<boolean> {
-    return Promise.resolve(user.role === Role.ADMIN);
+    return this.decide(user, 'MANAGE_CONTRACTS', () => user.role === Role.ADMIN);
   }
 
   canManageBilling(user: CurrentUserPayload): Promise<boolean> {
-    return Promise.resolve(user.role === Role.ADMIN);
+    return this.decide(user, 'MANAGE_BILLING', () => user.role === Role.ADMIN);
   }
 
+  /** Hoje so AGENT e AGENT_MASTER ficam sem os valores; os grupos padrao refletem isso. */
   canViewFinancials(user: CurrentUserPayload): Promise<boolean> {
-    return Promise.resolve(user.role !== Role.AGENT && user.role !== Role.AGENT_MASTER);
+    return this.decide(user, 'VIEW_CONTRACT_FINANCIALS', () => user.role !== Role.AGENT && user.role !== Role.AGENT_MASTER);
+  }
+
+  private async decide(user: CurrentUserPayload, key: string, byRole: () => boolean): Promise<boolean> {
+    if (!this.flags.isRbacPermissionOnly()) return byRole();
+    return this.permissions.hasPermission(user.id, key);
   }
 }
