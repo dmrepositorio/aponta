@@ -39,9 +39,8 @@ export class MaskAccess {
     );
   }
 
-  // RED: stub neutro, ainda decide so por perfil nos dois modos.
   private async decide(user: CurrentUserPayload, key: string, byRole: () => boolean): Promise<boolean> {
-    void this.flags; void this.permissions; void key;
-    return byRole();
+    if (!this.flags.isRbacPermissionOnly()) return byRole();
+    return this.permissions.hasPermission(user.id, key);
   }
 }
