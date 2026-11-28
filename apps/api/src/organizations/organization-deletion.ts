@@ -43,7 +43,7 @@ export async function checkOrganizationDeletion(
   id: string,
   canDeleteTickets: boolean,
   /** Sem usuário, nenhum apontamento conta como removível. */
-  user?: { id: string; role: Role },
+  user?: { id: string; role: Role; mayRemoveAnyWorklog?: boolean },
 ): Promise<OrganizationDeletionCheck> {
   const sample = { take: SAMPLE };
   const organization = await db.organization.findUnique({

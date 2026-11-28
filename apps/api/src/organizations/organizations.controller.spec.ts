@@ -6,6 +6,7 @@ import { OrganizationsService } from './organizations.service';
 import { CnpjLookupService } from './cnpj-lookup.service';
 import { PERMISSIONS_KEY } from '../auth/decorators/require-permission.decorator';
 import { PermissionsService } from '../permissions/permissions.service';
+import { FeatureFlagsService } from '../feature-flags/feature-flags.service';
 
 const mockOrganizationsService = {
   create: jest.fn(),
@@ -26,6 +27,7 @@ const mockOrganizationsService = {
 };
 
 const mockPermissions = { hasPermission: jest.fn(), canDeleteTickets: jest.fn() };
+const mockFlags = { isRbacPermissionOnly: jest.fn() };
 
 const mockCnpjLookupService = {
   lookup: jest.fn(),
@@ -41,6 +43,7 @@ describe('OrganizationsController', () => {
         { provide: OrganizationsService, useValue: mockOrganizationsService },
         { provide: CnpjLookupService, useValue: mockCnpjLookupService },
         { provide: PermissionsService, useValue: mockPermissions },
+        { provide: FeatureFlagsService, useValue: mockFlags },
         Reflector,
       ],
     }).compile();
@@ -140,11 +143,12 @@ describe('OrganizationsController', () => {
     it('AC-12 e AC-14: entrega ao serviço o id, se o usuário pode excluir tickets (só pelo grupo) e quem é o usuário', async () => {
       mockOrganizationsService.remove.mockResolvedValue({ id: 'org-1' });
       mockPermissions.canDeleteTickets.mockResolvedValue(true);
+      mockFlags.isRbacPermissionOnly.mockReturnValue(false);
 
       const result = await controller.remove('org-1', { id: 'user-1', role: 'ADMIN' } as never);
 
       expect(mockPermissions.canDeleteTickets).toHaveBeenCalledWith('user-1');
-      expect(mockOrganizationsService.remove).toHaveBeenCalledWith('org-1', true, { id: 'user-1', role: 'ADMIN' });
+      expect(mockOrganizationsService.remove).toHaveBeenCalledWith('org-1', true, { id: 'user-1', role: 'ADMIN', mayRemoveAnyWorklog: true });
       expect(result).toEqual({ id: 'org-1' });
     });
   });
@@ -153,12 +157,53 @@ describe('OrganizationsController', () => {
     it('AC-08: consulta os ids pedidos sabendo se o usuário pode excluir tickets', async () => {
       mockOrganizationsService.deletionCheck.mockResolvedValue([{ id: 'org-1', canDelete: true }]);
       mockPermissions.canDeleteTickets.mockResolvedValue(false);
+      mockFlags.isRbacPermissionOnly.mockReturnValue(false);
 
       const result = await controller.deletionCheck({ ids: ['org-1', 'org-2'] }, { id: 'user-1', role: 'AGENT' } as never);
 
       expect(mockPermissions.canDeleteTickets).toHaveBeenCalledWith('user-1');
-      expect(mockOrganizationsService.deletionCheck).toHaveBeenCalledWith(['org-1', 'org-2'], false, { id: 'user-1', role: 'AGENT' });
+      expect(mockOrganizationsService.deletionCheck).toHaveBeenCalledWith(['org-1', 'org-2'], false, { id: 'user-1', role: 'AGENT', mayRemoveAnyWorklog: false });
       expect(result).toEqual([{ id: 'org-1', canDelete: true }]);
+    });
+  });
+
+  describe('#542: quem remove qualquer apontamento ao excluir (DELETE_ANY_WORKLOG)', () => {
+    const actor = (role: string) => ({ id: 'user-1', role }) as never;
+    const removeWith = async (role: string) => {
+      mockOrganizationsService.remove.mockResolvedValue({ id: 'org-1' });
+      mockPermissions.canDeleteTickets.mockResolvedValue(true);
+      await controller.remove('org-1', actor(role));
+      return mockOrganizationsService.remove.mock.calls[0][2].mayRemoveAnyWorklog;
+    };
+
+    it.each([
+      ['ADMIN', true],
+      ['AGENT_MASTER', false],
+      ['AGENT', false],
+      ['CLIENT_MASTER', false],
+      ['CLIENT', false],
+    ])('flag desligada: %s decide por perfil (%s) e não consulta permissão', async (role, expected) => {
+      mockFlags.isRbacPermissionOnly.mockReturnValue(false);
+      expect(await removeWith(role)).toBe(expected);
+      expect(mockPermissions.hasPermission).not.toHaveBeenCalled();
+    });
+
+    it.each(['ADMIN', 'AGENT_MASTER', 'AGENT', 'CLIENT_MASTER', 'CLIENT'])('flag ligada: %s decide por DELETE_ANY_WORKLOG, não pelo perfil', async (role) => {
+      mockFlags.isRbacPermissionOnly.mockReturnValue(true);
+      mockPermissions.hasPermission.mockResolvedValue(true);
+      expect(await removeWith(role)).toBe(true);
+      expect(mockPermissions.hasPermission).toHaveBeenCalledWith('user-1', 'DELETE_ANY_WORKLOG');
+      mockOrganizationsService.remove.mockClear();
+      mockPermissions.hasPermission.mockResolvedValue(false);
+      expect(await removeWith(role)).toBe(false);
+    });
+
+    it('flag ligada: a consulta de exclusão também usa a permissão', async () => {
+      mockFlags.isRbacPermissionOnly.mockReturnValue(true);
+      mockPermissions.hasPermission.mockResolvedValue(true);
+      mockPermissions.canDeleteTickets.mockResolvedValue(true);
+      await controller.deletionCheck({ ids: ['org-1'] }, actor('AGENT'));
+      expect(mockOrganizationsService.deletionCheck).toHaveBeenCalledWith(['org-1'], true, { id: 'user-1', role: 'AGENT', mayRemoveAnyWorklog: true });
     });
   });
 

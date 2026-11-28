@@ -27,7 +27,8 @@ export const activeWorklogCount = (ticket: Pick<TicketDeletionFacts, 'worklogs' 
 /** Quem remove apontamento e pré-apontamento: um ADMIN ou o autor (regra do WorklogsService). */
 export function canRemoveWorklogs(
   ticket: Pick<TicketDeletionFacts, 'worklogs' | 'preAppointments'>,
-  user: { id: string; role: Role },
+  user: { id: string; role?: Role },
+  _mayRemoveAnyWorklog?: boolean,
 ): boolean {
   if (user.role === Role.ADMIN) return true;
   return [...ticket.worklogs.filter((worklog) => !worklog.voidedAt), ...ticket.preAppointments].every((row) => row.authorId === user.id);
