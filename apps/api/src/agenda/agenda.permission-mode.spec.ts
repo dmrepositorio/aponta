@@ -82,6 +82,12 @@ describe.each(modes)('agenda com grupos padrao: %s', (_label, flagOn) => {
     }
   });
 
+  it.each([Role.CLIENT_MASTER, Role.AGENT] as const)('%s: type diferente de ausencia segue aplicado, sem exigir VIEW_INTERNAL_ABSENCES', async (role) => {
+    const { prisma, service } = setup(flagOn, { [`u-${role}`]: [] });
+    await service.findAll({ type: 'VACATION' } as any, actors[role]);
+    expect(prisma.appointment.findMany.mock.calls[0][0].where.type).toBe('VACATION');
+  });
+
   it.each([Role.ADMIN, Role.AGENT_MASTER, Role.AGENT] as const)('%s: create respeita dto.organizationId; so ADMIN agenda em nome de outro', async (role) => {
     const { prisma, service } = setup(flagOn, defaultGrants());
     await service.create({ ...dto, userId: 'u-outro', organizationId: 'org-9' } as any, actors[role]);
