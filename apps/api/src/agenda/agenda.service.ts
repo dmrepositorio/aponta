@@ -3,6 +3,7 @@ import {
   ForbiddenException,
   Injectable,
   NotFoundException,
+  Optional,
 } from '@nestjs/common';
 import { AppointmentType, Prisma, Role } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
@@ -13,6 +14,7 @@ import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 import { QueryAppointmentDto } from './dto/query-appointment.dto';
 import { PermissionsService } from '../permissions/permissions.service';
 import { AgendaAccess } from './agenda-access';
+import { ScopeAccess } from '../core/security/scope-access';
 
 @Injectable()
 export class AgendaService {
@@ -20,10 +22,15 @@ export class AgendaService {
     private readonly prisma: PrismaService,
     private readonly permissions: PermissionsService,
     private readonly access: AgendaAccess,
+    @Optional() private readonly scope?: ScopeAccess,
   ) {}
 
+  private appointmentWhere(user: CurrentUserPayload) {
+    return this.scope ? this.scope.appointmentWhere(user) : TenantHelper.getAppointmentWhere(user);
+  }
+
   async findAll(query: QueryAppointmentDto, user: CurrentUserPayload) {
-    const baseWhere = TenantHelper.getAppointmentWhere(user);
+    const baseWhere = await this.appointmentWhere(user);
     const where: Prisma.AppointmentWhereInput = { ...baseWhere };
 
     if (query.userId) {
@@ -78,7 +85,7 @@ export class AgendaService {
   }
 
   async findOne(id: string, user: CurrentUserPayload) {
-    const baseWhere = TenantHelper.getAppointmentWhere(user);
+    const baseWhere = await this.appointmentWhere(user);
     const appointment = await this.prisma.appointment.findFirst({
       where: {
         id,

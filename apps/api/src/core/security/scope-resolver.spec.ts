@@ -160,20 +160,22 @@ describe('ScopeResolver: sem vazamento entre organizacoes (avaliado em registros
   });
 });
 
-describe('ScopeResolver: ainda nao ligado a nenhum caller', () => {
-  it('nenhum arquivo de producao em src importa scope-resolver', () => {
+describe('ScopeResolver: so o ScopeAccess o liga em producao', () => {
+  it('apenas core/security/scope-access.ts importa scope-resolver em src', () => {
     const root = join(__dirname, '..', '..');
     const offenders: string[] = [];
     const walk = (dir: string) => {
       for (const name of readdirSync(dir)) {
         const p = join(dir, name);
         if (statSync(p).isDirectory()) walk(p);
-        else if (p.endsWith('.ts') && !p.endsWith('.spec.ts') && !p.endsWith('scope-resolver.ts')) {
+        else if (p.endsWith('.ts') && !p.endsWith('.spec.ts') && !p.endsWith('scope-resolver.ts') && !p.endsWith('scope-access.ts')) {
           if (readFileSync(p, 'utf8').includes('scope-resolver')) offenders.push(p);
         }
       }
     };
     walk(root);
     expect(offenders).toEqual([]);
+    const access = readFileSync(join(root, 'core', 'security', 'scope-access.ts'), 'utf8');
+    expect(access).toContain('scope-resolver');
   });
 });

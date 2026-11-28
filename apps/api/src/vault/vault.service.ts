@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { CredentialAction } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateCredentialDto } from './dto/create-credential.dto';
@@ -12,6 +12,7 @@ import { CurrentUserPayload } from '../tickets/decorators/current-user.decorator
 import { TenantHelper } from '../core/security/tenant.helper';
 import { escapeLikePattern } from '../common/escape-like-pattern';
 import { VaultAccess } from './vault-access';
+import { ScopeAccess } from '../core/security/scope-access';
 
 const DENIED_SENTINEL = '00000000-0000-0000-0000-000000000000';
 
@@ -20,11 +21,13 @@ export class VaultService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly access: VaultAccess,
+    // Opcional: specs e modulos sem o escopo por permissao seguem com o TenantHelper (por perfil).
+    @Optional() private readonly scope?: ScopeAccess,
   ) {}
 
   /** Throws ForbiddenException for roles fail-closed by TenantHelper.getCredentialWhere (CLIENT/CLIENT_MASTER). */
-  private assertVaultAccess(user: CurrentUserPayload) {
-    const where = TenantHelper.getCredentialWhere(user);
+  private async assertVaultAccess(user: CurrentUserPayload) {
+    const where = this.scope ? await this.scope.credentialWhere(user) : TenantHelper.getCredentialWhere(user);
     if ((where as { id?: string }).id === DENIED_SENTINEL) {
       throw new ForbiddenException('Acesso negado ao Cofre de Senhas');
     }
@@ -84,7 +87,7 @@ export class VaultService {
   // ---------------------------------------------------------------------
 
   async findFolders(user: CurrentUserPayload) {
-    this.assertVaultAccess(user);
+    await this.assertVaultAccess(user);
 
     const folders = await this.prisma.credentialFolder.findMany({
       include: { _count: { select: { credentials: true } } },
@@ -170,7 +173,7 @@ export class VaultService {
   // ---------------------------------------------------------------------
 
   async findCredentials(query: CredentialQueryDto, user: CurrentUserPayload) {
-    this.assertVaultAccess(user);
+    await this.assertVaultAccess(user);
 
     const page = Math.max(parseInt(query.page ?? '1', 10) || 1, 1);
     const limit = Math.min(Math.max(parseInt(query.limit ?? '20', 10) || 20, 1), 100);
@@ -304,7 +307,7 @@ export class VaultService {
   // ---------------------------------------------------------------------
 
   async reveal(id: string, dto: RevealCredentialDto, user: CurrentUserPayload, ipAddress?: string) {
-    this.assertVaultAccess(user);
+    await this.assertVaultAccess(user);
 
     const credential = await this.prisma.credential.findFirst({ where: { id } });
     if (!credential) throw new NotFoundException('Credencial não encontrada');
