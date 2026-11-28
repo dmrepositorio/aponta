@@ -102,3 +102,26 @@ describe('comentários com flag ligada: só a permissão decide', () => {
     await expect(service.findByTicket('t1', user(Role.CLIENT))).rejects.toThrow('not found');
   });
 });
+describe.each(modes)('clone de withTransaction mantém a decisão de máscara: %s', (_label, flagOn) => {
+  it('create interno pelo clone: CLIENT_MASTER só grava interno com a flag desligada', async () => {
+    const { service, prisma } = setup(flagOn);
+    const clone = service.withTransaction(prisma, []);
+    await clone.create('t1', { content: 'n', isInternal: true }, user(Role.CLIENT_MASTER));
+    expect(prisma.comment.create.mock.calls[0][0].data.isInternal).toBe(!flagOn);
+  });
+
+  it('create interno pelo clone: AGENT grava interno', async () => {
+    const { service, prisma } = setup(flagOn);
+    const clone = service.withTransaction(prisma, []);
+    await clone.create('t1', { content: 'n', isInternal: true }, user(Role.AGENT));
+    expect(prisma.comment.create.mock.calls[0][0].data.isInternal).toBe(true);
+  });
+
+  it('findByTicket pelo clone: filtro de notas internas e nome da equipe seguem a máscara', async () => {
+    const { service, prisma } = setup(flagOn);
+    const clone = service.withTransaction(prisma, []);
+    const result = await clone.findByTicket('t1', user(Role.CLIENT_MASTER));
+    expect(prisma.comment.findMany.mock.calls[0][0].where).toEqual(flagOn ? { ticketId: 't1', isInternal: false } : { ticketId: 't1' });
+    expect(result).toHaveLength(2);
+  });
+});

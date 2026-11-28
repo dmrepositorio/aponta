@@ -62,3 +62,19 @@ describe('contato do solicitante com flag ligada: só a permissão decide', () =
     expect(prisma.ticket.findMany.mock.calls[0][0].where).toMatchObject({ requesterId: 'u-CLIENT' });
   });
 });
+describe.each(modes)('clone de withTransaction mantém a decisão de máscara: %s', (_label, flagOn) => {
+  it.each(roles)('%s: findAll pelo clone expõe phone e extension só para a equipe', async (role) => {
+    const { service, prisma } = setup(flagOn);
+    const clone = service.withTransaction(prisma, []);
+    await clone.findAll({} as any, user(role));
+    expect(selectOf(prisma).phone === true).toBe(isTeam(role));
+    expect(selectOf(prisma).extension === true).toBe(isTeam(role));
+  });
+
+  it('findAll pelo clone: só com a flag ligada a permissão decide (AGENT sem a chave)', async () => {
+    const { service, prisma } = setup(flagOn, { 'u-AGENT': ['VIEW_AND_OPEN_TICKETS'] });
+    const clone = service.withTransaction(prisma, []);
+    await clone.findAll({} as any, user(Role.AGENT));
+    expect(selectOf(prisma).phone === true).toBe(!flagOn);
+  });
+});
