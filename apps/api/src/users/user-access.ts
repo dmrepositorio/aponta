@@ -36,18 +36,31 @@ export class UserAccess {
     return { active: true, permissionGroupLinks: { some: { permissionGroup: { defaultKey: DEFAULT_GROUP_KEY[Role.ADMIN] } } } };
   }
 
-  /** STUB (RED, lote 2h): ainda nao define o administrador da guarda. */
+  /**
+   * Lote 2h (#578): quem sustenta o sistema na guarda do ultimo administrador. Ligada: ativo no grupo
+   * Administrador. Desligada: ativo com perfil ADMIN E no grupo, juntos (mais estrito que a regra por
+   * perfil do `setActiveMany`, de proposito: o sistema nunca fica sem administrador).
+   */
   lastAdminWhere(): Prisma.UserWhereInput {
-    return { id: { in: [] } };
+    const byGroup: Prisma.UserWhereInput = { active: true, permissionGroupLinks: { some: { permissionGroup: { defaultKey: DEFAULT_GROUP_KEY[Role.ADMIN] } } } };
+    return this.isPermissionOnly() ? byGroup : { ...byGroup, role: Role.ADMIN };
   }
 
-  /** STUB (RED, lote 2h): ainda nao barra nada. */
-  async assertAdminRemains(_db: Pick<Prisma.TransactionClient, 'user'>, _leavingIds: string[]): Promise<void> {
-    void ConflictException;
+  /**
+   * Barra a saida de `leavingIds` da condicao de administrador quando isso deixaria o sistema sem
+   * nenhum ativo. Quem sai e quem sobra usam a mesma regra; se ninguem que sai e administrador, nada a barrar.
+   * shortcut: sem isolamento serializavel, como no `setActiveMany`; duas saidas simultaneas podem passar juntas.
+   */
+  async assertAdminRemains(db: Pick<Prisma.TransactionClient, 'user'>, leavingIds: string[]): Promise<void> {
+    const admin = this.lastAdminWhere();
+    if ((await db.user.count({ where: { ...admin, id: { in: leavingIds } } })) === 0) return;
+    if ((await db.user.count({ where: { ...admin, id: { notIn: leavingIds } } })) === 0) {
+      throw new ConflictException('Não é possível remover o último administrador ativo.');
+    }
   }
 
-  /** STUB (RED, lote 2h): ainda nao barra nada. */
-  assertGroupDeletable(_group: { defaultKey: string | null }): void {
-    void ConflictException;
+  /** O grupo padrao Administrador (achado pela `defaultKey`) nunca e excluido: a exclusao leva todos os membros. */
+  assertGroupDeletable(group: { defaultKey: string | null }): void {
+    if (group.defaultKey === DEFAULT_GROUP_KEY[Role.ADMIN]) throw new ConflictException('O grupo Administrador não pode ser excluído.');
   }
 }
