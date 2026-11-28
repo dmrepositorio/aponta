@@ -13,4 +13,9 @@ export class FeatureFlagsService {
   isEnabled(key: string): boolean {
     return resolveFlags(this.flags, this.env)[key] === true;
   }
+
+  /** Leitura tipada de `rbac-permission-only` (#523). */
+  isRbacPermissionOnly(): boolean {
+    return false;
+  }
 }

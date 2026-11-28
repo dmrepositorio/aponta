@@ -74,6 +74,9 @@ export const FEATURE_FLAGS: readonly FeatureFlag[] = [
   },
 ];
 
+/** Chave tipada da flag "tudo por regras" (#523); env FEATURE_RBAC_PERMISSION_ONLY. */
+export const RBAC_PERMISSION_ONLY_FLAG = 'rbac-permission-only';
+
 export const FEATURE_FLAGS_TOKEN = 'FEATURE_FLAGS';
 export const FEATURE_ENV_TOKEN = 'FEATURE_ENV';
 

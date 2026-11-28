@@ -1,4 +1,4 @@
-import { FeatureFlag, flagProblems, resolveFlags, FEATURE_FLAGS } from './feature-flags';
+import { FeatureFlag, flagProblems, resolveFlags, FEATURE_FLAGS, RBAC_PERMISSION_ONLY_FLAG } from './feature-flags';
 import { FeatureFlagsController } from './feature-flags.controller';
 import { FeatureFlagsService } from './feature-flags.service';
 
@@ -119,5 +119,19 @@ describe('flag da consulta de CNPJ (DMTE-556)', () => {
     const registered = FEATURE_FLAGS.find((f) => f.key === 'consulta-cnpj-alternativa');
     expect(registered).toMatchObject({ owner: 'alfredo', defaultValue: true });
     expect(registered?.removeBy).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  });
+});
+
+describe('flag rbac-permission-only (#535, tracker #523)', () => {
+  it('está registrada, desligada por padrão e com dono e data de remoção', () => {
+    const registered = FEATURE_FLAGS.find((f) => f.key === RBAC_PERMISSION_ONLY_FLAG);
+    expect(registered).toMatchObject({ key: 'rbac-permission-only', owner: 'alfredo', defaultValue: false });
+    expect(registered?.removeBy).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  });
+
+  it('a leitura tipada fica desligada por padrão e acompanha o ambiente', () => {
+    expect(new FeatureFlagsService(FEATURE_FLAGS, {}).isRbacPermissionOnly()).toBe(false);
+    expect(new FeatureFlagsService(FEATURE_FLAGS, { FEATURE_RBAC_PERMISSION_ONLY: 'true' }).isRbacPermissionOnly()).toBe(true);
+    expect(new FeatureFlagsService(FEATURE_FLAGS, { FEATURE_RBAC_PERMISSION_ONLY: 'false' }).isRbacPermissionOnly()).toBe(false);
   });
 });
