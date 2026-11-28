@@ -15,6 +15,8 @@ import {
 import { TicketsService } from './tickets.service';
 import { MaskAccess } from '../comments/mask-access';
 import { legacyMaskAccess } from '../comments/mask-access.testing';
+import { TicketTransitionAccess } from './ticket-transition-access';
+import { legacyTransitionAccess } from './ticket-transition-access.testing';
 import * as sanitizer from './sanitize-ticket-description';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -152,6 +154,7 @@ describe('TicketsService', () => {
         { provide: PrismaService, useValue: mockPrismaService },
         { provide: EventEmitter2, useValue: { emit: jest.fn() } },
         { provide: MaskAccess, useValue: legacyMaskAccess() },
+        { provide: TicketTransitionAccess, useValue: legacyTransitionAccess() },
       ],
     }).compile();
 

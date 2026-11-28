@@ -11,6 +11,7 @@ import { AttachmentsService } from './attachments.service';
 import { PrismaModule } from '../prisma/prisma.module';
 import { FeatureFlagsModule } from '../feature-flags/feature-flags.module';
 import { AttachmentAccess } from './attachment-access';
+import { TicketTransitionAccess } from './ticket-transition-access';
 import { PermissionsModule } from '../permissions/permissions.module';
 import { CommentsModule } from '../comments/comments.module';
 
@@ -22,7 +23,7 @@ import { CommentsModule } from '../comments/comments.module';
     PublicCsatController,
     AttachmentsController,
   ],
-  providers: [TicketsService, CsatService, PublicCsatService, AttachmentsService, AttachmentAccess],
+  providers: [TicketsService, CsatService, PublicCsatService, AttachmentsService, AttachmentAccess, TicketTransitionAccess],
   exports: [TicketsService],
 })
 export class TicketsModule {}

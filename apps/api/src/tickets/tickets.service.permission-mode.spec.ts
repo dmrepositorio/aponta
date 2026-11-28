@@ -1,6 +1,7 @@
 import { Role } from '@prisma/client';
 import { TicketsService } from './tickets.service';
 import { MaskAccess } from '../comments/mask-access';
+import { legacyTransitionAccess } from './ticket-transition-access.testing';
 import { DEFAULT_PERMISSION_GROUPS } from '../permission-groups/default-permission-groups';
 
 /**
@@ -21,7 +22,7 @@ const setup = (flagOn: boolean, grants: Record<string, string[]> = defaultGrants
   const prisma: any = { ticket: { findMany: jest.fn().mockResolvedValue([]), count: jest.fn().mockResolvedValue(0) } };
   const permissions = { hasPermission: jest.fn(async (id: string, ...keys: string[]) => (grants[id] ?? []).some((k) => keys.includes(k))) };
   const access = new MaskAccess({ isRbacPermissionOnly: () => flagOn } as any, permissions as any);
-  return { prisma, service: new TicketsService(prisma, { emit: jest.fn() } as any, access) };
+  return { prisma, service: new TicketsService(prisma, { emit: jest.fn() } as any, access, legacyTransitionAccess()) };
 };
 const selectOf = (prisma: any) => prisma.ticket.findMany.mock.calls[0][0].include.requester.select;
 
