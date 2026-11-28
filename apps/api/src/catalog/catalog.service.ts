@@ -6,7 +6,7 @@ import { CreateCatalogItemDto } from './dto/create-catalog-item.dto';
 import { UpdateCatalogItemDto } from './dto/update-catalog-item.dto';
 import { CurrentUserPayload } from '../tickets/decorators/current-user.decorator';
 import { DeskAccess } from '../service-desks/desk-access';
-import { DESK_CATALOG_SELECT, deskServesOrganization, isClientRole, isDeskUsableBy } from '../service-desks/desk-policy';
+import { DESK_CATALOG_SELECT, deskServesOrganization, isDeskUsableBy } from '../service-desks/desk-policy';
 
 @Injectable()
 export class CatalogService {
@@ -44,7 +44,8 @@ export class CatalogService {
       orderBy: { name: 'asc' },
     });
     const actor = await this.deskAccess.resolve(user);
-    const isClient = isClientRole(user);
+    // Cliente = escopo restrito a organizacao; ignora o organizationId do pedido.
+    const isClient = actor.scope === 'ORGANIZATION';
     return categories
       .map((category) => ({
         ...category,

@@ -56,7 +56,7 @@ export function assertDeskAllowsOpen(params: {
   actor?: DeskActor;
 }): void {
   const { desk, user, requester } = params;
-  void params.actor; // RED: stub neutro, o GREEN passa a decidir pelo ator
+  const actor = params.actor ?? deskActorFromRole(user);
 
   if (!desk.active) {
     throw new BadRequestException('Esta mesa está inativa.');
@@ -64,10 +64,10 @@ export function assertDeskAllowsOpen(params: {
   if (!desk.acceptingNewTickets) {
     throw new BadRequestException('Esta mesa não está recebendo novos tickets.');
   }
-  if (desk.internalUse && isClientRole(user)) {
+  if (desk.internalUse && !actor.canUseInternalDesks) {
     throw new ForbiddenException('Esta mesa é de uso interno.');
   }
-  if (desk.openByAgentsOnly && isClientRole(user)) {
+  if (desk.openByAgentsOnly && !actor.canUseInternalDesks) {
     throw new ForbiddenException('Somente atendentes podem abrir tickets nesta mesa.');
   }
   if (params.semCatalogo && params.catalogItemId) {
@@ -101,7 +101,8 @@ export function assertDeskAllowsOpen(params: {
     throw new BadRequestException('Anexos são obrigatórios nesta mesa.');
   }
 
-  if (desk.listedGroupsOnly && (user.role === Role.AGENT || user.role === Role.AGENT_MASTER)) {
+  // So quem atua nas proprias mesas (escopo ASSIGNED) fica preso a lista; ADMIN e cliente passam.
+  if (desk.listedGroupsOnly && actor.scope === 'ASSIGNED') {
     const listed = isUserListedOnDesk(desk, user.id);
     if (!listed && !desk.unlistedCanCreateTicket) {
       throw new ForbiddenException('Você não tem acesso para criar tickets nesta mesa.');
@@ -181,8 +182,9 @@ export function assertListedAgentMayMutate(params: {
   actor?: DeskActor;
 }): void {
   const { desk, user } = params;
-  if (user.role === Role.ADMIN) return;
-  if (user.role !== Role.AGENT && user.role !== Role.AGENT_MASTER) return;
+  const actor = params.actor ?? deskActorFromRole(user);
+  // CARACTERIZACAO (#523): a trava so vale para escopo ASSIGNED; quem nao e atendente passa. Possivel defeito, preservado.
+  if (actor.scope !== 'ASSIGNED') return;
   if (!desk.listedGroupsOnly) return;
   if (!isUserListedOnDesk(desk, user.id)) {
     throw new ForbiddenException(
@@ -248,13 +250,14 @@ export function deskServesOrganization(
  * visibilidade de mesas (TenantHelper.getServiceDeskWhere) e de abertura
  * (assertDeskAllowsOpen), sem o que depende do chamado em si.
  */
-export function isDeskUsableBy(desk: DeskCatalogContext, user: CurrentUserPayload, _actor?: DeskActor): boolean {
+export function isDeskUsableBy(desk: DeskCatalogContext, user: CurrentUserPayload, actor: DeskActor = deskActorFromRole(user)): boolean {
   if (!desk.active || !desk.acceptingNewTickets) return false;
-  if (user.role === Role.ADMIN) return true;
-  if (isClientRole(user)) {
-    return !desk.internalUse && !desk.openByAgentsOnly && deskServesOrganization(desk, user.organizationId);
+  if (actor.scope === 'ALL') return true;
+  if (actor.scope === 'ORGANIZATION') {
+    const internalOk = actor.canUseInternalDesks || (!desk.internalUse && !desk.openByAgentsOnly);
+    return internalOk && deskServesOrganization(desk, user.organizationId);
   }
-  if (user.role === Role.AGENT || user.role === Role.AGENT_MASTER) {
+  if (actor.scope === 'ASSIGNED') {
     const listed = isUserListedOnDesk(desk, user.id);
     if (!listed && !desk.allowCrossDeskInteraction) return false;
     return !(desk.listedGroupsOnly && !listed && !desk.unlistedCanCreateTicket);
