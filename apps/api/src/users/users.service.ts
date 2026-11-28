@@ -18,6 +18,7 @@ import { UserQueryDto } from './dto/user-query.dto';
 import { normalizeEmail } from './dto/transforms';
 import type { User } from '@prisma/client';
 import {
+  DEFAULT_GROUP_KEY,
   findOrCreateDefaultGroup,
 } from '../permission-groups/default-permission-groups';
 import { TenantHelper } from '../core/security/tenant.helper';
@@ -386,6 +387,7 @@ export class UsersService {
       if (other && other.id !== id) throw new ConflictException(EMAIL_IN_USE);
     }
     await this.assertPermissionGroupsExist(dto.permissionGroupIds ?? []);
+    await this.assertKeepsAdmin(id, dto);
 
     const { permissionGroupIds, ...rest } = dto;
     // Só o que veio no corpo muda: campo ausente não pode virar `undefined` na gravação.
@@ -407,6 +409,23 @@ export class UsersService {
       }),
     );
     return this.findOne(id);
+  }
+
+  /**
+   * Lote 2h (#578): a edicao nao pode deixar o sistema sem administrador ativo. Sai da condicao quem perde o
+   * grupo Administrador (`permissionGroupIds` sem ele) e/ou, com a flag desligada, o perfil ADMIN; so barra se nao
+   * sobrar administrador por nenhum dos dois criterios.
+   */
+  private async assertKeepsAdmin(id: string, dto: UpdateUserDto): Promise<void> {
+    if (!this.access) return;
+    const keepsRole = this.access.isPermissionOnly() || dto.role === undefined || dto.role === Role.ADMIN;
+    let keepsGroup = dto.permissionGroupIds === undefined;
+    if (!keepsGroup) {
+      const adminGroup = await this.prisma.permissionGroup.findUnique({ where: { defaultKey: DEFAULT_GROUP_KEY[Role.ADMIN] }, select: { id: true } });
+      keepsGroup = adminGroup !== null && dto.permissionGroupIds!.includes(adminGroup.id);
+    }
+    if (keepsRole && keepsGroup) return;
+    await this.access.assertAdminRemains(this.prisma, [id], { group: !keepsGroup, role: !keepsRole });
   }
 
   /** Quem conta como administrador ativo: membro do grupo protegido (flag ligada) ou perfil ADMIN (hoje). */

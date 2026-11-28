@@ -1,5 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { Role } from '@prisma/client';
+import { UserAccess } from '../users/user-access';
+import { DEFAULT_GROUP_KEY } from './default-permission-groups';
 import { CreatePermissionGroupDto } from './dto/create-permission-group.dto';
 import { UpdatePermissionGroupDto } from './dto/update-permission-group.dto';
 import { UpdatePermissionGroupPermissionsDto } from './dto/update-permission-group-permissions.dto';
@@ -11,7 +14,11 @@ const INCLUDE_MEMBERS = {
 
 @Injectable()
 export class PermissionGroupsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    // Opcional: specs que montam o service sem a guarda do ultimo administrador (lote 2h).
+    @Optional() private readonly access?: UserAccess,
+  ) {}
 
   findAll() {
     return this.prisma.permissionGroup.findMany({
@@ -57,7 +64,8 @@ export class PermissionGroupsService {
   }
 
   async remove(id: string) {
-    await this.findOne(id);
+    const group = await this.findOne(id);
+    this.access?.assertGroupDeletable(group);
     return this.prisma.permissionGroup.delete({ where: { id } });
   }
 
@@ -71,7 +79,8 @@ export class PermissionGroupsService {
   }
 
   async removeUser(id: string, userId: string) {
-    await this.findOne(id);
+    const group = await this.findOne(id);
+    if (group.defaultKey === DEFAULT_GROUP_KEY[Role.ADMIN]) await this.access?.assertAdminRemains(this.prisma, [userId], { group: true, role: false });
     return this.prisma.permissionGroupUser.delete({
       where: { permissionGroupId_userId: { permissionGroupId: id, userId } },
     });
