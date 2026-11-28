@@ -13,11 +13,12 @@ import { WorklogAutoCloseService } from './worklog-autoclose.service';
 import { WorklogApprovalsService } from './worklog-approvals.service';
 import { WorklogApprovalsController } from './worklog-approvals.controller';
 import { DeskAccess } from '../service-desks/desk-access';
+import { ScopeAccess } from '../core/security/scope-access';
 
 @Module({
   imports: [PrismaModule, AuthModule, CommentsModule, TicketsModule, PermissionsModule, MailModule, FeatureFlagsModule, NotificationsModule],
   controllers: [WorklogsController, WorklogApprovalsController],
-  providers: [WorklogsService, WorklogAutoCloseService, WorklogApprovalsService, DeskAccess],
+  providers: [WorklogsService, WorklogAutoCloseService, WorklogApprovalsService, DeskAccess, ScopeAccess],
   exports: [WorklogsService, WorklogAutoCloseService],
 })
 export class WorklogsModule {}

@@ -251,13 +251,13 @@ describe.each(modes)('ReportsService.getSummary (%s): compromissos do dashboard'
   };
 
   it('CLIENT_MASTER de A com o grupo padrao: "todos" so da organizacao A', async () => {
-    const calls = await run(actor(Role.CLIENT_MASTER, 'org-a'), { 'u-x': [K.APPOINTMENTS_ORGANIZATION] });
+    const calls = await run(actor(Role.CLIENT_MASTER, 'org-a'), { 'u-x': [K.APPOINTMENTS_ORGANIZATION, K.TICKETS_ORGANIZATION] });
     expect(calls[0]).toEqual({ userId: 'u-x' });
     expect(calls[1]).toEqual({ organizationId: 'org-a', type: { not: AppointmentType.ABSENCE } });
   });
 
   it('AGENT com VIEW_ALL_APPOINTMENTS: so a flag ligada ve todos os compromissos', async () => {
-    const calls = await run(actor(Role.AGENT), { 'u-x': [K.APPOINTMENTS_ALL] });
+    const calls = await run(actor(Role.AGENT), { 'u-x': [K.APPOINTMENTS_ALL, K.TICKETS_DESKS] });
     expect(calls[1]).toEqual(flagOn ? {} : { userId: 'u-x' });
   });
 });

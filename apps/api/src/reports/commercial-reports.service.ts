@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, Optional } from '@nestjs/common';
 import { Role } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CurrentUserPayload } from '../tickets/decorators/current-user.decorator';
@@ -6,6 +6,7 @@ import { TenantHelper } from '../core/security/tenant.helper';
 import { splitBillingCycles } from '../worklogs/contract-valuation';
 import { PermissionsService } from '../permissions/permissions.service';
 import { FeatureFlagsService } from '../feature-flags/feature-flags.service';
+import { ScopeAccess } from '../core/security/scope-access';
 
 interface RecordedSegment {
   cycleStart: string;
@@ -25,6 +26,7 @@ export class CommercialReportsService {
     private readonly prisma: PrismaService,
     private readonly permissions: PermissionsService,
     private readonly flags: FeatureFlagsService,
+    @Optional() private readonly scope?: ScopeAccess,
   ) {}
 
   async getCommercial(user: CurrentUserPayload, filters: { contractId?: string; month?: string } = {}) {
@@ -53,7 +55,7 @@ export class CommercialReportsService {
     if (!contracts.length) return [];
     const worklogs = await this.prisma.worklog.findMany({
       where: {
-        contractId: { in: contracts.map(contract => contract.id) }, voidedAt: null, ticket: TenantHelper.getTicketWhere(user),
+        contractId: { in: contracts.map(contract => contract.id) }, voidedAt: null, ticket: this.scope ? await this.scope.ticketWhere(user) : TenantHelper.getTicketWhere(user),
         ...(selectedBounds ? { startTime: { lt: selectedBounds.to }, endTime: { gt: selectedBounds.from } } : {}),
       },
       select: { contractId: true, minutes: true, startTime: true, billable: true, valuationType: true, valueCents: true, value: true, costCents: true, valuationSnapshot: true },

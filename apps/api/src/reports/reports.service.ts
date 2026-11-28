@@ -29,10 +29,15 @@ export class ReportsService {
     @Optional() private readonly scope?: ScopeAccess,
   ) {}
 
+  /** Escopo de chamados: pelo ScopeAccess (flag ligada = permissoes) ou, sem ele, pelo perfil. */
+  private ticketWhere(user: CurrentUserPayload) {
+    return this.scope ? this.scope.ticketWhere(user) : TenantHelper.getTicketWhere(user);
+  }
+
   async getWorkload(user: CurrentUserPayload, targetAgentId?: string): Promise<WorkloadReportItemDto[]> {
     const filterAgentId = (await this.isOwnWorkloadOnly(user)) ? user.id : targetAgentId;
 
-    const baseWhere = TenantHelper.getTicketWhere(user);
+    const baseWhere = await this.ticketWhere(user);
     if (baseWhere.id === '00000000-0000-0000-0000-000000000000') {
       throw new ForbiddenException('Acesso negado aos relatórios');
     }
@@ -107,7 +112,7 @@ export class ReportsService {
       throw new ForbiddenException('Valores de tickets exigem a permissão VIEW_TICKET_VALUES');
     }
 
-    const baseWhere = TenantHelper.getTicketWhere(user);
+    const baseWhere = await this.ticketWhere(user);
     if (baseWhere.id === '00000000-0000-0000-0000-000000000000') {
       throw new ForbiddenException('Restrição organizacional');
     }
@@ -175,7 +180,7 @@ export class ReportsService {
     user: CurrentUserPayload,
     referenceDate: Date = new Date(),
   ): Promise<ResponseTimeComparisonDto> {
-    const baseWhere = TenantHelper.getTicketWhere(user);
+    const baseWhere = await this.ticketWhere(user);
     if (baseWhere.id === '00000000-0000-0000-0000-000000000000') {
       throw new ForbiddenException('Acesso negado aos relatórios');
     }
@@ -247,7 +252,7 @@ export class ReportsService {
   }
 
   async getSummary(user: CurrentUserPayload): Promise<DashboardSummaryDto> {
-    const baseWhere = TenantHelper.getTicketWhere(user);
+    const baseWhere = await this.ticketWhere(user);
     if (baseWhere.id === '00000000-0000-0000-0000-000000000000') {
       throw new ForbiddenException('Acesso negado ao dashboard');
     }
