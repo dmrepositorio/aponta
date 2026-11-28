@@ -5,9 +5,9 @@ import {
 } from '@nestjs/common';
 import { unlink } from 'fs/promises';
 import { join } from 'path';
-import { Role } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CurrentUserPayload } from './decorators/current-user.decorator';
+import { AttachmentAccess } from './attachment-access';
 
 interface CreateAttachmentInput {
   ticketId: string;
@@ -20,7 +20,10 @@ interface CreateAttachmentInput {
 
 @Injectable()
 export class AttachmentsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly access: AttachmentAccess,
+  ) {}
 
   create(input: CreateAttachmentInput) {
     return this.prisma.ticketAttachment.create({ data: input });
@@ -42,9 +45,7 @@ export class AttachmentsService {
       throw new NotFoundException('Anexo não encontrado');
     }
     const isOwner = attachment.uploaderId === user.id;
-    const isPrivileged = (
-      [Role.ADMIN, Role.AGENT_MASTER, Role.AGENT] as Role[]
-    ).includes(user.role);
+    const isPrivileged = !isOwner && (await this.access.canRemoveAny(user));
     if (!isOwner && !isPrivileged) {
       throw new ForbiddenException(
         'Você não tem permissão para remover este anexo',

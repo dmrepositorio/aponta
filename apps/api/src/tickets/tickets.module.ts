@@ -9,17 +9,19 @@ import { PublicCsatService } from './public-csat.service';
 import { AttachmentsController } from './attachments.controller';
 import { AttachmentsService } from './attachments.service';
 import { PrismaModule } from '../prisma/prisma.module';
+import { FeatureFlagsModule } from '../feature-flags/feature-flags.module';
+import { AttachmentAccess } from './attachment-access';
 import { PermissionsModule } from '../permissions/permissions.module';
 
 @Module({
-  imports: [PrismaModule, PermissionsModule, EventEmitterModule.forRoot()],
+  imports: [PrismaModule, PermissionsModule, FeatureFlagsModule, EventEmitterModule.forRoot()],
   controllers: [
     TicketsController,
     CsatController,
     PublicCsatController,
     AttachmentsController,
   ],
-  providers: [TicketsService, CsatService, PublicCsatService, AttachmentsService],
+  providers: [TicketsService, CsatService, PublicCsatService, AttachmentsService, AttachmentAccess],
   exports: [TicketsService],
 })
 export class TicketsModule {}
