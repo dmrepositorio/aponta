@@ -106,7 +106,7 @@ describe('WorklogsService', () => {
         { provide: CommentsService, useValue: mockCommentsService },
         { provide: TicketsService, useValue: mockTicketsService },
         { provide: PermissionsService, useValue: mockPermissions },
-        { provide: FeatureFlagsService, useValue: { isEnabled: jest.fn().mockReturnValue(true) } },
+        { provide: FeatureFlagsService, useValue: { isEnabled: jest.fn().mockReturnValue(true), isRbacPermissionOnly: jest.fn().mockReturnValue(false) } },
         { provide: WorklogApprovalsService, useValue: { notifyPending: jest.fn().mockResolvedValue(undefined) } },
       ],
     }).compile();

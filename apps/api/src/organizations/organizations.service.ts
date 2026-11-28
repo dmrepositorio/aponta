@@ -3,8 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrganizationDto } from './dto/create-organization.dto';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
 import { Prisma } from '@prisma/client';
-import { checkOrganizationDeletion, OrganizationDeletionCheck } from './organization-deletion';
-import { CurrentUserPayload } from '../tickets/decorators/current-user.decorator';
+import { checkOrganizationDeletion, DeletionActor, OrganizationDeletionCheck } from './organization-deletion';
 import { CreateOrganizationAddressDto } from './dto/create-organization-address.dto';
 import { CreateOrganizationContactDto } from './dto/create-organization-contact.dto';
 
@@ -106,12 +105,12 @@ export class OrganizationsService {
   }
 
   /** DMTE-560: para cada cliente, o que impede a exclusão e o que sairia junto. */
-  async deletionCheck(ids: string[], canDeleteTickets: boolean, user?: Pick<CurrentUserPayload, 'id' | 'role'>): Promise<OrganizationDeletionCheck[]> {
+  async deletionCheck(ids: string[], canDeleteTickets: boolean, user?: DeletionActor): Promise<OrganizationDeletionCheck[]> {
     return Promise.all([...new Set(ids)].map((id) => checkOrganizationDeletion(this.prisma, id, canDeleteTickets, user)));
   }
 
   /** DMTE-560: exclusão definitiva (substitui o "só inativa" da DMTE-481); a checagem é refeita sob trava de linha. */
-  async remove(id: string, canDeleteTickets: boolean, actor: Pick<CurrentUserPayload, 'id' | 'role'>) {
+  async remove(id: string, canDeleteTickets: boolean, actor: DeletionActor) {
     try {
       await this.prisma.$transaction(
         async (db) => {

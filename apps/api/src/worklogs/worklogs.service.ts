@@ -16,6 +16,7 @@ import { assertListedAgentMayMutate } from '../service-desks/desk-policy';
 import { TenantHelper } from '../core/security/tenant.helper';
 import { TicketsService } from '../tickets/tickets.service';
 import { PermissionsService } from '../permissions/permissions.service';
+import { mayWorklog, WorklogCapability } from './worklog-access';
 import { allocateCommercialSegments, isCompleteCommercialTerm } from './commercial-valuation';
 import { evaluateWorklogWindow, WINDOW_LEAD_MS } from './agenda-window';
 import { brasiliaHhMm, ClockPre, workedMs } from './pre-appointment-clock';
@@ -42,8 +43,16 @@ export class WorklogsService {
     private readonly approvals: WorklogApprovalsService,
   ) {}
 
+  /** #542: decisão por perfil (flag desligada) ou por permissão (ligada); ver worklog-access.ts. */
+  private can(capability: WorklogCapability, user: { id: string; role: Role }) {
+    return mayWorklog(capability, user, {
+      permissionOnly: this.flags.isRbacPermissionOnly(),
+      hasPermission: (userId, key) => this.permissions.hasPermission(userId, key),
+    });
+  }
+
   async eligibleContracts(ticketId: string, startTime: string, endTime: string, user: CurrentUserPayload) {
-    if (!([Role.ADMIN, Role.AGENT, Role.AGENT_MASTER] as Role[]).includes(user.role)) {
+    if (!(await this.can('OPERATE', user))) {
       throw new ForbiddenException('Acesso negado');
     }
     const start = new Date(startTime);
@@ -52,12 +61,13 @@ export class WorklogsService {
       throw new BadRequestException('Informe um intervalo válido');
     }
     const canViewValues = await this.permissions.canViewTicketValues(user.id);
+    const showRate = (await this.can('CONTRACT_RATE', user)) && canViewValues;
     return this.prisma.$transaction(async database => {
       const { contracts } = await this.commercialContext(database, ticketId, user, start, end);
       return contracts.map(contract => ({ id: contract.id, name: contract.name, type: contract.type,
         organizationId: contract.organizationId, active: contract.active, approved: contract.approved,
         startsAt: contract.startsAt, endsAt: contract.endsAt, includedMinutes: contract.includedMinutes,
-        hoursLimit: contract.hoursLimit, excessHourlyRateCents: user.role === Role.ADMIN && canViewValues ? contract.excessHourlyRateCents : null }));
+        hoursLimit: contract.hoursLimit, excessHourlyRateCents: showRate ? contract.excessHourlyRateCents : null }));
     });
   }
 
@@ -84,7 +94,7 @@ export class WorklogsService {
       throw new NotFoundException(`Chamado com ID ${ticketId} não encontrado`);
     }
 
-    if (!([Role.ADMIN, Role.AGENT, Role.AGENT_MASTER] as Role[]).includes(currentUser.role)) {
+    if (!(await this.can('OPERATE', currentUser))) {
       throw new ForbiddenException('Clientes não têm permissão para registrar apontamentos');
     }
 
@@ -110,7 +120,7 @@ export class WorklogsService {
 
     let authorId = currentUser.id;
 
-    if (currentUser.role === Role.ADMIN) {
+    if (await this.can('ON_BEHALF', currentUser)) {
       if (dto.authorId) {
         const targetUser = await this.prisma.user.findUnique({
           where: { id: dto.authorId },
@@ -118,7 +128,7 @@ export class WorklogsService {
         if (!targetUser) {
           throw new NotFoundException(`Usuário ${dto.authorId} não encontrado`);
         }
-        if (!([Role.ADMIN, Role.AGENT, Role.AGENT_MASTER] as Role[]).includes(targetUser.role)) {
+        if (!(await this.can('OPERATE', targetUser))) {
           throw new BadRequestException('O autor do apontamento deve ser um técnico');
         }
         authorId = dto.authorId;
@@ -134,8 +144,7 @@ export class WorklogsService {
     const valuationType = dto.valuationType ?? ValuationType.CONTRACT;
     if (
       valuationType === ValuationType.GUARANTEE &&
-      currentUser.role !== Role.ADMIN &&
-      !(await this.permissions.hasPermission(currentUser.id, 'LAUNCH_WORKLOG_GUARANTEE'))
+      !(await this.can('GUARANTEE', currentUser))
     ) {
       throw new ForbiddenException('Sem permissão para lançar garantia');
     }
@@ -144,7 +153,7 @@ export class WorklogsService {
     if (courtesy && dto.billable === true) {
       throw new BadRequestException('Garantia ou bonificação não pode ser faturável');
     }
-    if (valuationType === ValuationType.BONUS && currentUser.role !== Role.ADMIN) {
+    if (valuationType === ValuationType.BONUS && !(await this.can('BONUS', currentUser))) {
       throw new ForbiddenException('Somente admin pode autorizar bonificação');
     }
     if (courtesy && (!dto.bonusReason?.trim() || dto.bonusReason.trim().length > 1000)) {
@@ -154,7 +163,7 @@ export class WorklogsService {
       throw new BadRequestException('Use Garantia ou Bonificação com motivo para horas não faturáveis');
     }
     if (valuationType === ValuationType.MANUAL &&
-      (currentUser.role !== Role.ADMIN || !(await this.permissions.canViewTicketValues(currentUser.id)))) {
+      (!(await this.can('MANUAL_VALUE', currentUser)) || !(await this.permissions.canViewTicketValues(currentUser.id)))) {
       throw new ForbiddenException('Somente admin com permissão de ver valores pode informar valor manual');
     }
     if (valuationType === ValuationType.MANUAL &&
@@ -347,7 +356,7 @@ export class WorklogsService {
         listedGroupsOnly: true, agents: { select: { id: true } }, agentGroups: { select: { members: { select: { id: true } } } },
       } } } });
     if (!ticket) throw new NotFoundException('Chamado não encontrado');
-    if (!([Role.ADMIN, Role.AGENT, Role.AGENT_MASTER] as Role[]).includes(user.role)) throw new ForbiddenException('Acesso negado');
+    if (!(await this.can('OPERATE', user))) throw new ForbiddenException('Acesso negado');
     assertListedAgentMayMutate({ desk: ticket.serviceDesk, user });
     const organizationId = ticket.commercialOrganizationId;
     if (!organizationId) throw new BadRequestException('Chamado sem empresa comercial; solicite regularização ao administrador');
@@ -362,7 +371,7 @@ export class WorklogsService {
   }
 
   async setCommercialOrganization(ticketId: string, organizationId: string, user: CurrentUserPayload) {
-    if (user.role !== Role.ADMIN) throw new ForbiddenException('Apenas admin pode regularizar a empresa comercial');
+    if (!(await this.can('COMMERCIAL_ORGANIZATION', user))) throw new ForbiddenException('Apenas admin pode regularizar a empresa comercial');
     return this.prisma.$transaction(async database => {
       await database.$queryRaw(Prisma.sql`SELECT id FROM "Ticket" WHERE id = ${ticketId} FOR UPDATE`);
       const ticket = await database.ticket.findUnique({ where: { id: ticketId } });
@@ -395,7 +404,7 @@ export class WorklogsService {
       throw new NotFoundException(`Chamado com ID ${ticketId} não encontrado`);
     }
 
-    if (!([Role.ADMIN, Role.AGENT, Role.AGENT_MASTER] as Role[]).includes(currentUser.role)) {
+    if (!(await this.can('OPERATE', currentUser))) {
       throw new ForbiddenException('Clientes não têm permissão para visualizar apontamentos de horas');
     }
 
@@ -430,7 +439,7 @@ export class WorklogsService {
       throw new NotFoundException(`Apontamento com ID ${worklogId} não encontrado no chamado`);
     }
 
-    if (currentUser.role !== Role.ADMIN && worklog.authorId !== currentUser.id) {
+    if (worklog.authorId !== currentUser.id && !(await this.can('REMOVE_ANY', currentUser))) {
       throw new ForbiddenException('Você não tem permissão para remover o apontamento de outro usuário');
     }
 
@@ -451,6 +460,7 @@ export class WorklogsService {
   }
 
   async auditByTicket(ticketId: string, currentUser: CurrentUserPayload) {
+    // Fica por perfil até existir a chave AUDIT_WORKLOGS no catálogo (lacuna do lote 1e, #540).
     if (currentUser.role !== Role.ADMIN || !(await this.permissions.canViewTicketValues(currentUser.id))) {
       throw new ForbiddenException('Auditoria restrita ao administrador com permissão de ver valores');
     }
@@ -480,7 +490,7 @@ export class WorklogsService {
       throw new NotFoundException(`Chamado com ID ${ticketId} não encontrado`);
     }
 
-    if (!([Role.ADMIN, Role.AGENT, Role.AGENT_MASTER] as Role[]).includes(currentUser.role)) {
+    if (!(await this.can('OPERATE', currentUser))) {
       throw new ForbiddenException('Clientes não têm permissão para pré-apontamentos');
     }
 
@@ -627,7 +637,7 @@ export class WorklogsService {
       throw new NotFoundException(`Pré-apontamento ${preAppointmentId} não encontrado no chamado`);
     }
 
-    if (currentUser.role !== Role.ADMIN && pre.authorId !== currentUser.id) {
+    if (pre.authorId !== currentUser.id && !(await this.can('MANAGE_PRE', currentUser))) {
       throw new ForbiddenException('Você não tem permissão para encerrar o pré-apontamento de outro usuário');
     }
 
@@ -669,7 +679,7 @@ export class WorklogsService {
     if (!pre || pre.ticketId !== ticketId) {
       throw new NotFoundException(`Pré-apontamento ${preAppointmentId} não encontrado no chamado`);
     }
-    if (currentUser.role !== Role.ADMIN && pre.authorId !== currentUser.id) {
+    if (pre.authorId !== currentUser.id && !(await this.can('MANAGE_PRE', currentUser))) {
       throw new ForbiddenException('Você não tem permissão para alterar o pré-apontamento de outro usuário');
     }
     if (pre.ending) throw new BadRequestException('Este cronômetro já foi encerrado');
@@ -715,7 +725,7 @@ export class WorklogsService {
       throw new NotFoundException(`Pré-apontamento ${preAppointmentId} não encontrado no chamado`);
     }
 
-    if (currentUser.role !== Role.ADMIN && pre.authorId !== currentUser.id) {
+    if (pre.authorId !== currentUser.id && !(await this.can('MANAGE_PRE', currentUser))) {
       throw new ForbiddenException('Você não tem permissão para remover o pré-apontamento de outro usuário');
     }
 
