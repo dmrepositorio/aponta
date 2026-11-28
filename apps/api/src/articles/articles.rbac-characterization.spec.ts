@@ -1,6 +1,7 @@
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { ArticleVisibility, Role } from '@prisma/client';
 import { ArticlesService } from './articles.service';
+import { legacyArticleAccess } from './article-access.testing';
 
 /**
  * Caracterização por perfil dos artigos (#527, Fase 0b-3 do tracker #523).
@@ -40,7 +41,7 @@ describe('ArticlesService: matriz por perfil (caracterização)', () => {
         delete: jest.fn().mockResolvedValue({ id: 'a1' }),
       },
     };
-    service = new ArticlesService(prisma);
+    service = new ArticlesService(prisma, legacyArticleAccess());
   });
 
   describe('findAll: regra de visibilidade por perfil', () => {

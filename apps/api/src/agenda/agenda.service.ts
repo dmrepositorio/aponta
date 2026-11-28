@@ -12,12 +12,14 @@ import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 import { QueryAppointmentDto } from './dto/query-appointment.dto';
 import { PermissionsService } from '../permissions/permissions.service';
+import { AgendaAccess } from './agenda-access';
 
 @Injectable()
 export class AgendaService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly permissions: PermissionsService,
+    private readonly access: AgendaAccess,
   ) {}
 
   async findAll(query: QueryAppointmentDto, user: CurrentUserPayload) {
@@ -31,7 +33,7 @@ export class AgendaService {
     }
 
     if (query.organizationId) {
-      if (user.role !== Role.CLIENT_MASTER) {
+      if (!(await this.access.isOrganizationScoped(user))) {
         where.organizationId = query.organizationId;
       }
     }
@@ -122,12 +124,12 @@ export class AgendaService {
     }
 
     let targetUserId = user.id;
-    if (user.role === Role.ADMIN && dto.userId) {
+    if (dto.userId && (await this.access.canManageSchedules(user))) {
       targetUserId = dto.userId;
     }
 
     let targetOrgId = dto.organizationId;
-    if (user.role === Role.CLIENT_MASTER) {
+    if (await this.access.isOrganizationScoped(user)) {
       targetOrgId = user.organizationId ?? undefined;
     }
 
@@ -213,8 +215,9 @@ export class AgendaService {
 
   async update(id: string, dto: UpdateAppointmentDto, user: CurrentUserPayload) {
     const existing = await this.findOne(id, user);
+    const canManage = await this.access.canManageSchedules(user);
 
-    if (user.role !== Role.ADMIN && existing.userId !== user.id) {
+    if (!canManage && existing.userId !== user.id) {
       throw new ForbiddenException('Sem permissão para alterar este compromisso');
     }
 
@@ -250,7 +253,7 @@ export class AgendaService {
         startTime: dto.startTime ? start : undefined,
         endTime: dto.endTime ? end : undefined,
         type: dto.type,
-        userId: user.role === Role.ADMIN && dto.userId ? dto.userId : undefined,
+        userId: canManage && dto.userId ? dto.userId : undefined,
         organizationId: organizationId !== undefined ? organizationId : undefined,
         ticketId: dto.ticketId !== undefined ? dto.ticketId : undefined,
       },
@@ -274,7 +277,7 @@ export class AgendaService {
   async remove(id: string, user: CurrentUserPayload) {
     const existing = await this.findOne(id, user);
 
-    if (user.role !== Role.ADMIN && existing.userId !== user.id) {
+    if (!(await this.access.canManageSchedules(user)) && existing.userId !== user.id) {
       throw new ForbiddenException('Sem permissão para excluir este compromisso');
     }
 

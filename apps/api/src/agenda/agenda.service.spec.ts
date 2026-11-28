@@ -5,6 +5,8 @@ import { AgendaService } from './agenda.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CurrentUserPayload } from '../tickets/decorators/current-user.decorator';
 import { PermissionsService } from '../permissions/permissions.service';
+import { AgendaAccess } from './agenda-access';
+import { legacyAgendaAccess } from './agenda-access.testing';
 
 describe('AgendaService', () => {
   let service: AgendaService;
@@ -63,6 +65,7 @@ describe('AgendaService', () => {
         AgendaService,
         { provide: PrismaService, useValue: prisma },
         { provide: PermissionsService, useValue: permissions },
+        { provide: AgendaAccess, useValue: legacyAgendaAccess() },
       ],
     }).compile();
 

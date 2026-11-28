@@ -1,5 +1,6 @@
 import { Role } from '@prisma/client';
 import { ArticlesService } from './articles.service';
+import { legacyArticleAccess } from './article-access.testing';
 
 // #393: os curingas do LIKE (%, _ e \) da busca viram literais.
 const bs = String.fromCharCode(92);
@@ -13,7 +14,7 @@ const cases: Array<[string, string]> = [
 describe('ArticlesService busca: curingas do LIKE literais', () => {
   it.each(cases)('search %s casa literalmente no título e no conteúdo', async (term, escaped) => {
     const findMany = jest.fn().mockResolvedValue([]);
-    const service = new ArticlesService({ article: { findMany } } as any);
+    const service = new ArticlesService({ article: { findMany } } as any, legacyArticleAccess());
     await service.findAll({ id: 'a1', role: Role.ADMIN }, { search: term });
     const where = findMany.mock.calls[0][0].where;
     expect(JSON.stringify(where)).toContain(JSON.stringify({ title: { contains: escaped, mode: 'insensitive' } }));
