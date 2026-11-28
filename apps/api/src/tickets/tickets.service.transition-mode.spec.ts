@@ -115,3 +115,35 @@ describe('reabertura com flag desligada: so o perfil decide', () => {
     expect(prisma.comment.create.mock.calls[0][0].data).toMatchObject({ content: 'Reaberto sem faturamento' });
   });
 });
+
+describe('reabertura: o que so vale quando a reabertura e permitida', () => {
+  it('flag ligada, ADMIN sem a permissao: nem consulta apontamentos nem grava resposta padrao', async () => {
+    const { service, prisma } = setup(true, { 'u-ADMIN': [] }, deskRow());
+    await expect(service.changeStatus('t1', S.OPEN, user(Role.ADMIN))).rejects.toThrow(BadRequestException);
+    expect(prisma.worklog.findMany).not.toHaveBeenCalled();
+    expect(prisma.comment.create).not.toHaveBeenCalled();
+  });
+
+  it.each(modes)('%s: transicao comum com mesa nao consulta apontamentos nem grava resposta de reabertura', async (_label, flagOn) => {
+    const { service, prisma } = setup(flagOn, defaultGrants(), deskRow());
+    prisma.ticket.findUnique.mockResolvedValue({ id: 't1', status: S.OPEN, serviceDeskId: 'desk-1' });
+    await service.changeStatus('t1', S.IN_PROGRESS, user(Role.ADMIN));
+    expect(prisma.worklog.findMany).not.toHaveBeenCalled();
+    expect(prisma.comment.create).not.toHaveBeenCalled();
+  });
+
+  it('flag ligada: o allowedStatuses respeita a trava de faturado da mesa para quem reabre por permissao', async () => {
+    const grants = { 'u-AGENT': ['REVIEW_REOPEN_CLOSED_TICKETS'] };
+    const blocked = setup(true, grants, deskRow({ allowReopenBilled: false }));
+    blocked.prisma.worklog.findMany.mockResolvedValue([{ billable: true, valuationType: 'FIXED', value: 100 }]);
+    const result = (await blocked.service.findOne('t1', user(Role.AGENT))) as unknown as { allowedStatuses: TicketStatus[] };
+    expect(result.allowedStatuses).toEqual([]);
+    expect(blocked.prisma.worklog.findMany).toHaveBeenCalled();
+  });
+
+  it('flag ligada, ADMIN sem a permissao: o findOne nao consulta apontamentos', async () => {
+    const { service, prisma } = setup(true, { 'u-ADMIN': [] }, deskRow());
+    await service.findOne('t1', user(Role.ADMIN));
+    expect(prisma.worklog.findMany).not.toHaveBeenCalled();
+  });
+});
