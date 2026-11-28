@@ -260,6 +260,13 @@ describe('modo desligado: perfil E grupo juntos (mais estrito que antes)', () =>
     expect(db.users[0].role).toBe(Role.ADMIN);
   });
 
+  it('reenviar o mesmo perfil ADMIN do ultimo administrador, sem tirar do grupo, passa (formulario de edicao completo)', async () => {
+    const { db, users } = build(false, [user('a', ['g-admin'])]);
+    await users.update('a', { name: 'Novo nome', role: Role.ADMIN }, true);
+    expect(db.users[0].name).toBe('Novo nome');
+    expect(groupsOf(db, 'a')).toEqual(['g-admin']);
+  });
+
   it('trocar o perfil de um administrador com outro ativo passa', async () => {
     const { db, users } = build(false, [user('a', ['g-admin']), user('b', ['g-admin'])]);
     await users.update('a', { role: Role.AGENT }, true);
@@ -272,6 +279,13 @@ describe('modo ligado: so o grupo conta, o perfil e rotulo', () => {
     const { db, users } = build(true, [user('a', ['g-admin']), user('b', ['g-admin'], { role: Role.AGENT })]);
     await users.update('a', { permissionGroupIds: [] }, false);
     expect(groupsOf(db, 'a')).toEqual([]);
+  });
+
+  it('reenviar o mesmo perfil ADMIN do ultimo administrador, sem tirar do grupo, passa', async () => {
+    const { db, users } = build(true, [user('a', ['g-admin'])]);
+    await users.update('a', { name: 'Novo nome', role: Role.ADMIN }, true);
+    expect(db.users[0].name).toBe('Novo nome');
+    expect(groupsOf(db, 'a')).toEqual(['g-admin']);
   });
 
   it('trocar o perfil do ultimo administrador nao e barrado (rotulo), o grupo segue', async () => {
