@@ -1,5 +1,6 @@
 import { Role } from '@prisma/client';
 import { CatalogService } from './catalog.service';
+import { legacyDeskAccess } from '../service-desks/desk-access.testing';
 
 /**
  * Fase 0b-1 (#525, tracker #523): caracterização do recorte por Cliente em
@@ -45,7 +46,7 @@ describe('CatalogService.findActiveCatalog: recorte por Cliente e perfil (0b-1)'
 
   beforeEach(() => {
     findMany = jest.fn().mockResolvedValue(catalog());
-    service = new CatalogService({ serviceCatalogCategory: { findMany } } as any);
+    service = new CatalogService({ serviceCatalogCategory: { findMany } } as any, legacyDeskAccess());
   });
 
   it.each([Role.CLIENT, Role.CLIENT_MASTER])(

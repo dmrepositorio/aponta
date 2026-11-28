@@ -4,9 +4,10 @@ import { CatalogController } from './catalog.controller';
 import { PrismaModule } from '../prisma/prisma.module';
 import { AuthModule } from '../auth/auth.module';
 import { PermissionsModule } from '../permissions/permissions.module';
+import { ServiceDesksModule } from '../service-desks/service-desks.module';
 
 @Module({
-  imports: [PrismaModule, AuthModule, PermissionsModule],
+  imports: [PrismaModule, AuthModule, PermissionsModule, ServiceDesksModule],
   controllers: [CatalogController],
   providers: [CatalogService],
   exports: [CatalogService],

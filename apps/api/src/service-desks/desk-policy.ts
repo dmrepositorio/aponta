@@ -10,6 +10,19 @@ import {
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { CurrentUserPayload } from '../tickets/decorators/current-user.decorator';
 
+/**
+ * Lote 2d do tracker #523 (#548): o que a politica de mesas precisa saber de quem age,
+ * resolvido em um unico lugar (DeskAccess). Flag `rbac-permission-only` desligada: sai do
+ * perfil (`deskActorFromRole`). Ligada: so de permissoes.
+ */
+export type DeskScope = 'ALL' | 'ASSIGNED' | 'ORGANIZATION' | 'NONE';
+export interface DeskActor {
+  /** Abre mesa de uso interno e mesa so para atendentes (USE_INTERNAL_SERVICE_DESKS). */
+  canUseInternalDesks: boolean;
+  /** Alcance sobre mesas: todas, as em que atua, as da organizacao ou nenhum. */
+  scope: DeskScope;
+}
+
 export type DeskOpenContext = Pick<
   ServiceDesk,
   | 'active'
@@ -40,8 +53,10 @@ export function assertDeskAllowsOpen(params: {
   priority?: TicketPriority;
   resourceGroup?: string;
   attachmentCount: number;
+  actor?: DeskActor;
 }): void {
   const { desk, user, requester } = params;
+  const actor = params.actor ?? deskActorFromRole(user);
 
   if (!desk.active) {
     throw new BadRequestException('Esta mesa está inativa.');
@@ -49,10 +64,10 @@ export function assertDeskAllowsOpen(params: {
   if (!desk.acceptingNewTickets) {
     throw new BadRequestException('Esta mesa não está recebendo novos tickets.');
   }
-  if (desk.internalUse && isClientRole(user)) {
+  if (desk.internalUse && !actor.canUseInternalDesks) {
     throw new ForbiddenException('Esta mesa é de uso interno.');
   }
-  if (desk.openByAgentsOnly && isClientRole(user)) {
+  if (desk.openByAgentsOnly && !actor.canUseInternalDesks) {
     throw new ForbiddenException('Somente atendentes podem abrir tickets nesta mesa.');
   }
   if (params.semCatalogo && params.catalogItemId) {
@@ -86,7 +101,8 @@ export function assertDeskAllowsOpen(params: {
     throw new BadRequestException('Anexos são obrigatórios nesta mesa.');
   }
 
-  if (desk.listedGroupsOnly && (user.role === Role.AGENT || user.role === Role.AGENT_MASTER)) {
+  // So quem atua nas proprias mesas (escopo ASSIGNED) fica preso a lista; ADMIN e cliente passam.
+  if (desk.listedGroupsOnly && actor.scope === 'ASSIGNED') {
     const listed = isUserListedOnDesk(desk, user.id);
     if (!listed && !desk.unlistedCanCreateTicket) {
       throw new ForbiddenException('Você não tem acesso para criar tickets nesta mesa.');
@@ -163,10 +179,12 @@ export function assertDeskAllowsReopen(
 export function assertListedAgentMayMutate(params: {
   desk: Pick<DeskOpenContext, 'listedGroupsOnly' | 'agents' | 'agentGroups'>;
   user: CurrentUserPayload;
+  actor?: DeskActor;
 }): void {
   const { desk, user } = params;
-  if (user.role === Role.ADMIN) return;
-  if (user.role !== Role.AGENT && user.role !== Role.AGENT_MASTER) return;
+  const actor = params.actor ?? deskActorFromRole(user);
+  // CARACTERIZACAO (#523): a trava so vale para escopo ASSIGNED; quem nao e atendente passa. Possivel defeito, preservado.
+  if (actor.scope !== 'ASSIGNED') return;
   if (!desk.listedGroupsOnly) return;
   if (!isUserListedOnDesk(desk, user.id)) {
     throw new ForbiddenException(
@@ -177,6 +195,19 @@ export function assertListedAgentMayMutate(params: {
 
 export function isClientRole(user: Pick<CurrentUserPayload, 'role'>): boolean {
   return user.role === Role.CLIENT || user.role === Role.CLIENT_MASTER;
+}
+
+/** Ator de mesas derivado do perfil: comportamento de hoje (flag desligada). */
+export function deskActorFromRole(user: Pick<CurrentUserPayload, 'role'>): DeskActor {
+  const scope: DeskScope =
+    user.role === Role.ADMIN
+      ? 'ALL'
+      : user.role === Role.AGENT || user.role === Role.AGENT_MASTER
+        ? 'ASSIGNED'
+        : isClientRole(user)
+          ? 'ORGANIZATION'
+          : 'NONE';
+  return { canUseInternalDesks: !isClientRole(user), scope };
 }
 
 /** Campos da mesa que isDeskUsableBy lê; o catálogo seleciona exatamente estes. */
@@ -219,13 +250,14 @@ export function deskServesOrganization(
  * visibilidade de mesas (TenantHelper.getServiceDeskWhere) e de abertura
  * (assertDeskAllowsOpen), sem o que depende do chamado em si.
  */
-export function isDeskUsableBy(desk: DeskCatalogContext, user: CurrentUserPayload): boolean {
+export function isDeskUsableBy(desk: DeskCatalogContext, user: CurrentUserPayload, actor: DeskActor = deskActorFromRole(user)): boolean {
   if (!desk.active || !desk.acceptingNewTickets) return false;
-  if (user.role === Role.ADMIN) return true;
-  if (isClientRole(user)) {
-    return !desk.internalUse && !desk.openByAgentsOnly && deskServesOrganization(desk, user.organizationId);
+  if (actor.scope === 'ALL') return true;
+  if (actor.scope === 'ORGANIZATION') {
+    const internalOk = actor.canUseInternalDesks || (!desk.internalUse && !desk.openByAgentsOnly);
+    return internalOk && deskServesOrganization(desk, user.organizationId);
   }
-  if (user.role === Role.AGENT || user.role === Role.AGENT_MASTER) {
+  if (actor.scope === 'ASSIGNED') {
     const listed = isUserListedOnDesk(desk, user.id);
     if (!listed && !desk.allowCrossDeskInteraction) return false;
     return !(desk.listedGroupsOnly && !listed && !desk.unlistedCanCreateTicket);
