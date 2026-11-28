@@ -139,6 +139,25 @@ export const PERMISSION_CATALOG: PermissionDefinition[] = [
   { key: 'EDIT_SERVICE_CATALOG_ON_CLOSED_TICKET', category: PermissionCategory.TECHNICAL, label: 'Editar catálogo de serviços de um ticket fechado' },
   { key: 'MANAGE_CHECKLISTS', category: PermissionCategory.TECHNICAL, label: 'Gerenciar checklists' },
   { key: 'CANCEL_CHATS', category: PermissionCategory.TECHNICAL, label: 'Cancelar chats' },
+
+  // Fase 1a do tracker #523 (#532): chaves que vão substituir as decisões por
+  // perfil (User.role) dentro dos services. Aditivas: nenhum código de decisão
+  // as consulta ainda; os grupos padrão as recebem pela migração
+  // 20261127120000_rbac_1a_default_group_permissions.
+  { key: 'VIEW_TEAM_MEMBER_NAMES', category: PermissionCategory.TECHNICAL, label: 'Visualizar o nome dos membros da equipe nos comentários' },
+  { key: 'VIEW_REQUESTER_CONTACT_INFO', category: PermissionCategory.TECHNICAL, label: 'Visualizar telefone e ramal do solicitante' },
+  { key: 'POST_INTERNAL_NOTES', category: PermissionCategory.TECHNICAL, label: 'Publicar notas internas nos tickets' },
+  { key: 'ASSIGN_TICKETS', category: PermissionCategory.TECHNICAL, label: 'Atribuir tickets a um responsável' },
+  { key: 'OPEN_TICKETS_ON_BEHALF', category: PermissionCategory.TECHNICAL, label: 'Abrir tickets em nome de outro solicitante' },
+  { key: 'USE_INTERNAL_SERVICE_DESKS', category: PermissionCategory.TECHNICAL, label: 'Usar mesas de uso interno e mesas só para atendentes' },
+  { key: 'LAUNCH_WORKLOG_ON_BEHALF', category: PermissionCategory.TECHNICAL, label: 'Lançar apontamento em nome de outro técnico' },
+  { key: 'DELETE_ANY_WORKLOG', category: PermissionCategory.TECHNICAL, label: 'Excluir apontamento de outro usuário' },
+  { key: 'AUTHORIZE_WORKLOG_BONUS', category: PermissionCategory.TECHNICAL, label: 'Autorizar bonificação em apontamentos' },
+  { key: 'SET_WORKLOG_MANUAL_VALUE', category: PermissionCategory.TECHNICAL, label: 'Informar valor manual em apontamentos' },
+  { key: 'DELETE_KNOWLEDGE_ARTICLES', category: PermissionCategory.TECHNICAL, label: 'Excluir artigos da base de conhecimento de outros autores' },
+  { key: 'VIEW_ALL_KNOWLEDGE_ARTICLES', category: PermissionCategory.TECHNICAL, label: 'Visualizar todos os artigos da base de conhecimento, inclusive privados' },
+  { key: 'VIEW_CONTRACT_FINANCIALS', category: PermissionCategory.ADMINISTRATIVE, label: 'Visualizar valores financeiros dos contratos' },
+  { key: 'VIEW_COMMERCIAL_RESULT', category: PermissionCategory.ADMINISTRATIVE, label: 'Visualizar resultado e custos comerciais' },
 ];
 
 export const PERMISSION_KEYS: readonly string[] = PERMISSION_CATALOG.map((p) => p.key);
