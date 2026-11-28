@@ -5,11 +5,15 @@ import { UpdateCategoryDto } from './dto/update-category.dto';
 import { CreateCatalogItemDto } from './dto/create-catalog-item.dto';
 import { UpdateCatalogItemDto } from './dto/update-catalog-item.dto';
 import { CurrentUserPayload } from '../tickets/decorators/current-user.decorator';
+import { DeskAccess } from '../service-desks/desk-access';
 import { DESK_CATALOG_SELECT, deskServesOrganization, isClientRole, isDeskUsableBy } from '../service-desks/desk-policy';
 
 @Injectable()
 export class CatalogService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly deskAccess: DeskAccess,
+  ) {}
 
   async findAllCategories(includeItems = false, onlyActive = false) {
     return this.prisma.serviceCatalogCategory.findMany({
@@ -39,13 +43,14 @@ export class CatalogService {
       },
       orderBy: { name: 'asc' },
     });
+    const actor = await this.deskAccess.resolve(user);
     const isClient = isClientRole(user);
     return categories
       .map((category) => ({
         ...category,
         // flatMap tira a mesa da resposta: ela carrega ids de atendentes e grupos.
         items: category.items.flatMap(({ defaultServiceDesk: desk, ...item }) =>
-          isDeskUsableBy(desk, user) &&
+          isDeskUsableBy(desk, user, actor) &&
           (isClient || !organizationId || deskServesOrganization(desk, organizationId))
             ? [item]
             : [],

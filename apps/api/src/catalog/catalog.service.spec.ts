@@ -1,6 +1,7 @@
 import { NotFoundException } from '@nestjs/common';
 import { Role } from '@prisma/client';
 import { CatalogService } from './catalog.service';
+import { legacyDeskAccess } from '../service-desks/desk-access.testing';
 
 describe('CatalogService', () => {
   let service: CatalogService;
@@ -25,7 +26,7 @@ describe('CatalogService', () => {
         findUnique: jest.fn(),
       },
     };
-    service = new CatalogService(mockPrisma as any);
+    service = new CatalogService(mockPrisma as any, legacyDeskAccess());
   });
 
   describe('findAllCategories', () => {

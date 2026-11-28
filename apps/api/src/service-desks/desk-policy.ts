@@ -10,6 +10,19 @@ import {
 import { BadRequestException, ForbiddenException } from '@nestjs/common';
 import { CurrentUserPayload } from '../tickets/decorators/current-user.decorator';
 
+/**
+ * Lote 2d do tracker #523 (#548): o que a politica de mesas precisa saber de quem age,
+ * resolvido em um unico lugar (DeskAccess). Flag `rbac-permission-only` desligada: sai do
+ * perfil (`deskActorFromRole`). Ligada: so de permissoes.
+ */
+export type DeskScope = 'ALL' | 'ASSIGNED' | 'ORGANIZATION' | 'NONE';
+export interface DeskActor {
+  /** Abre mesa de uso interno e mesa so para atendentes (USE_INTERNAL_SERVICE_DESKS). */
+  canUseInternalDesks: boolean;
+  /** Alcance sobre mesas: todas, as em que atua, as da organizacao ou nenhum. */
+  scope: DeskScope;
+}
+
 export type DeskOpenContext = Pick<
   ServiceDesk,
   | 'active'
@@ -40,8 +53,10 @@ export function assertDeskAllowsOpen(params: {
   priority?: TicketPriority;
   resourceGroup?: string;
   attachmentCount: number;
+  actor?: DeskActor;
 }): void {
   const { desk, user, requester } = params;
+  void params.actor; // RED: stub neutro, o GREEN passa a decidir pelo ator
 
   if (!desk.active) {
     throw new BadRequestException('Esta mesa está inativa.');
@@ -163,6 +178,7 @@ export function assertDeskAllowsReopen(
 export function assertListedAgentMayMutate(params: {
   desk: Pick<DeskOpenContext, 'listedGroupsOnly' | 'agents' | 'agentGroups'>;
   user: CurrentUserPayload;
+  actor?: DeskActor;
 }): void {
   const { desk, user } = params;
   if (user.role === Role.ADMIN) return;
@@ -177,6 +193,19 @@ export function assertListedAgentMayMutate(params: {
 
 export function isClientRole(user: Pick<CurrentUserPayload, 'role'>): boolean {
   return user.role === Role.CLIENT || user.role === Role.CLIENT_MASTER;
+}
+
+/** Ator de mesas derivado do perfil: comportamento de hoje (flag desligada). */
+export function deskActorFromRole(user: Pick<CurrentUserPayload, 'role'>): DeskActor {
+  const scope: DeskScope =
+    user.role === Role.ADMIN
+      ? 'ALL'
+      : user.role === Role.AGENT || user.role === Role.AGENT_MASTER
+        ? 'ASSIGNED'
+        : isClientRole(user)
+          ? 'ORGANIZATION'
+          : 'NONE';
+  return { canUseInternalDesks: !isClientRole(user), scope };
 }
 
 /** Campos da mesa que isDeskUsableBy lê; o catálogo seleciona exatamente estes. */
@@ -219,7 +248,7 @@ export function deskServesOrganization(
  * visibilidade de mesas (TenantHelper.getServiceDeskWhere) e de abertura
  * (assertDeskAllowsOpen), sem o que depende do chamado em si.
  */
-export function isDeskUsableBy(desk: DeskCatalogContext, user: CurrentUserPayload): boolean {
+export function isDeskUsableBy(desk: DeskCatalogContext, user: CurrentUserPayload, _actor?: DeskActor): boolean {
   if (!desk.active || !desk.acceptingNewTickets) return false;
   if (user.role === Role.ADMIN) return true;
   if (isClientRole(user)) {
