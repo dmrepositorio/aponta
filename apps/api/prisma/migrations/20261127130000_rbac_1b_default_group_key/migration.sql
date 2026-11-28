@@ -1,0 +1,1 @@
+-- RED stub (Fase 1b, #533): migracao neutra, preenchida no commit GREEN.
