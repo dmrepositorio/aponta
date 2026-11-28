@@ -5,10 +5,12 @@ import { PrismaModule } from '../prisma/prisma.module';
 import { CostRatesController } from './cost-rates.controller';
 import { CostRatesService } from './cost-rates.service';
 import { PermissionsModule } from '../permissions/permissions.module';
+import { FeatureFlagsModule } from '../feature-flags/feature-flags.module';
+import { ContractAccess } from './contract-access';
 
 @Module({
-  imports: [PrismaModule, PermissionsModule],
+  imports: [PrismaModule, PermissionsModule, FeatureFlagsModule],
   controllers: [CostRatesController, ContractsController],
-  providers: [ContractsService, CostRatesService],
+  providers: [ContractsService, CostRatesService, ContractAccess],
 })
 export class ContractsModule {}

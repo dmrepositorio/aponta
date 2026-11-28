@@ -1,14 +1,15 @@
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { Role } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { ContractAccess } from './contract-access';
 import { CurrentUserPayload } from '../tickets/decorators/current-user.decorator';
 
 @Injectable()
 export class CostRatesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService, private readonly access: ContractAccess) {}
 
   async list(user: CurrentUserPayload) {
-    this.requireAdmin(user);
+    await this.requireAdmin(user);
     return this.prisma.technicianCostRate.findMany({
       orderBy: [{ userId: 'asc' }, { effectiveFrom: 'desc' }],
       include: { user: { select: { id: true, name: true } } },
@@ -16,7 +17,7 @@ export class CostRatesService {
   }
 
   async create(dto: { userId: string; effectiveFrom: string; hourlyCostCents: number }, user: CurrentUserPayload) {
-    this.requireAdmin(user);
+    await this.requireAdmin(user);
     const effectiveFrom = new Date(dto.effectiveFrom);
     if (!dto.userId || !Number.isFinite(effectiveFrom.getTime()) || !Number.isInteger(dto.hourlyCostCents) || dto.hourlyCostCents < 0 || dto.hourlyCostCents > 2147483647) {
       throw new BadRequestException('Técnico, vigência e custo inteiro em centavos são obrigatórios');
@@ -41,7 +42,7 @@ export class CostRatesService {
     });
   }
 
-  private requireAdmin(user: CurrentUserPayload) {
-    if (user.role !== Role.ADMIN) throw new ForbiddenException('Custos individuais são restritos ao administrador');
+  private async requireAdmin(user: CurrentUserPayload) {
+    if (!(await this.access.canManageBilling(user))) throw new ForbiddenException('Custos individuais são restritos ao administrador');
   }
 }

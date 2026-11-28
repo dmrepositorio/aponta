@@ -1,4 +1,5 @@
 import { Role } from '@prisma/client';
+import { legacyContractAccess } from './contract-access.testing';
 import { CostRatesService } from './cost-rates.service';
 
 describe('CostRatesService', () => {
@@ -9,7 +10,7 @@ describe('CostRatesService', () => {
   beforeEach(() => {
     db = { $executeRaw: jest.fn(), user: { findUnique: jest.fn().mockResolvedValue({ id: 'u', role: Role.AGENT }) }, technicianCostRate: { findFirst: jest.fn().mockResolvedValue(null), create: jest.fn().mockImplementation(({ data }) => data), findMany: jest.fn().mockResolvedValue([]) }, worklog: { findFirst: jest.fn().mockResolvedValue(null) } };
     db.$transaction = jest.fn(callback => callback(db));
-    service = new CostRatesService(db);
+    service = new CostRatesService(db, legacyContractAccess());
   });
   it('denies non administrators before reading individual costs', async () => {
     await expect(service.list({ id: 'u', role: Role.AGENT_MASTER })).rejects.toThrow();

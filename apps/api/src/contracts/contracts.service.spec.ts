@@ -1,4 +1,5 @@
 import { ContractsService } from './contracts.service';
+import { legacyContractAccess } from './contract-access.testing';
 import { Role } from '@prisma/client';
 import { BadRequestException, ConflictException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { TenantHelper } from '../core/security/tenant.helper';
@@ -21,7 +22,7 @@ describe('ContractsService', () => {
       },
       worklog: { count: jest.fn().mockResolvedValue(0) },
     };
-    service = new ContractsService(mockPrisma as any);
+    service = new ContractsService(mockPrisma as any, legacyContractAccess());
   });
 
   it.each([Role.AGENT, Role.AGENT_MASTER])('masks explicit rates in list and detail for %s', async (role) => {
