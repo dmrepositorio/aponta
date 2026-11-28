@@ -1,5 +1,6 @@
 import { ConflictException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { VaultService } from './vault.service';
+import { VaultAccess } from './vault-access';
 import { CredentialAction, Role } from '@prisma/client';
 
 describe('VaultService', () => {
@@ -36,7 +37,7 @@ describe('VaultService', () => {
         findUnique: jest.fn().mockResolvedValue({ name: 'Ana Admin' }),
       },
     };
-    service = new VaultService(mockPrisma as any);
+    service = new VaultService(mockPrisma as any, new VaultAccess({ isRbacPermissionOnly: () => false } as any, { hasPermission: jest.fn() } as any));
   });
 
   const adminUser = { id: 'admin-1', role: Role.ADMIN };

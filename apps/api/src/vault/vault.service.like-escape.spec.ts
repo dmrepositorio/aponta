@@ -1,5 +1,6 @@
 import { Role } from '@prisma/client';
 import { VaultService } from './vault.service';
+import { VaultAccess } from './vault-access';
 
 // #393: os curingas do LIKE (%, _ e \) da busca viram literais.
 const bs = String.fromCharCode(92);
@@ -17,7 +18,7 @@ function makeService() {
     credentialAuditLog: { findMany: jest.fn().mockResolvedValue([]), count: jest.fn().mockResolvedValue(0) },
     organization: { findFirst: jest.fn().mockResolvedValue({ id: 'org-admin' }) },
   };
-  return { prisma, service: new VaultService(prisma) };
+  return { prisma, service: new VaultService(prisma, new VaultAccess({ isRbacPermissionOnly: () => false } as any, { hasPermission: jest.fn() } as any)) };
 }
 
 describe('VaultService busca: curingas do LIKE literais', () => {

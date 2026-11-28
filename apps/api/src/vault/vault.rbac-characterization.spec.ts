@@ -1,6 +1,7 @@
 import { ForbiddenException } from '@nestjs/common';
 import { CredentialAction, Role } from '@prisma/client';
 import { VaultService } from './vault.service';
+import { VaultAccess } from './vault-access';
 import { VaultController } from './vault.controller';
 import { PERMISSIONS_KEY } from '../auth/decorators/require-permission.decorator';
 
@@ -50,7 +51,7 @@ describe('VaultService: matriz por perfil (caracterização)', () => {
       organization: { findFirst: jest.fn().mockResolvedValue({ id: 'org-1' }) },
       user: { findUnique: jest.fn().mockResolvedValue({ name: 'Ator' }) },
     };
-    service = new VaultService(prisma);
+    service = new VaultService(prisma, new VaultAccess({ isRbacPermissionOnly: () => false } as any, { hasPermission: jest.fn() } as any));
   });
 
   const touchedAnything = () =>
