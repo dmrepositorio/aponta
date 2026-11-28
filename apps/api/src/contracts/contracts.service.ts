@@ -4,7 +4,8 @@ import { CreateContractDto } from './dto/create-contract.dto';
 import { UpdateContractDto } from './dto/update-contract.dto';
 import { CurrentUserPayload } from '../tickets/decorators/current-user.decorator';
 import { TenantHelper } from '../core/security/tenant.helper';
-import { Contract, ContractType, Prisma, Role } from '@prisma/client';
+import { Contract, ContractType, Prisma } from '@prisma/client';
+import { ContractAccess } from './contract-access';
 import { escapeLikePattern } from '../common/escape-like-pattern';
 
 const conditions = ['type', 'includedMinutes', 'hourlyRateCents', 'excessHourlyRateCents', 'monthlyFeeCents', 'fixedPriceCents', 'estimatedMinutes', 'scope'] as const;
@@ -13,7 +14,7 @@ const relations = { organization: true, serviceDesks: { select: { id: true, name
 
 @Injectable()
 export class ContractsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService, private readonly access: ContractAccess) {}
 
   private readableWhere(user: CurrentUserPayload) {
     const where = TenantHelper.getContractWhere(user);
@@ -23,8 +24,8 @@ export class ContractsService {
     return where;
   }
 
-  private mask<T extends Contract>(contract: T, user: CurrentUserPayload): T {
-    if (user.role === Role.AGENT || user.role === Role.AGENT_MASTER) {
+  private mask<T extends Contract>(contract: T, canViewFinancials: boolean): T {
+    if (!canViewFinancials) {
       const hide = (value: object) => ({ ...value, ...Object.fromEntries(finances.map(field => [field, null])) });
       const terms = (contract as T & { terms?: object[] }).terms;
       return { ...hide(contract), ...(terms ? { terms: terms.map(hide) } : {}) } as T;
@@ -34,6 +35,7 @@ export class ContractsService {
 
   async findAll(user: CurrentUserPayload, search?: string) {
     const where = this.readableWhere(user);
+    const canViewFinancials = await this.access.canViewFinancials(user);
     if (search?.trim()) {
       where.OR = [
         { name: { contains: escapeLikePattern(search.trim()), mode: 'insensitive' } },
@@ -47,7 +49,7 @@ export class ContractsService {
       orderBy: { createdAt: 'desc' },
     });
 
-    return contracts.map((contract) => this.mask(contract, user));
+    return contracts.map((contract) => this.mask(contract, canViewFinancials));
   }
 
   async findOne(id: string, user: CurrentUserPayload) {
@@ -56,7 +58,7 @@ export class ContractsService {
       where: { ...where, id }, include: relations,
     });
     if (!contract) throw new NotFoundException('Contrato não encontrado');
-    return this.mask(contract, user);
+    return this.mask(contract, await this.access.canViewFinancials(user));
   }
 
   private validate(data: Omit<Partial<Contract>, 'startsAt' | 'endsAt' | 'adjustmentDate'> & {
@@ -135,7 +137,7 @@ export class ContractsService {
   }
 
   async create(dto: CreateContractDto, user: CurrentUserPayload) {
-    if (user.role !== Role.ADMIN) throw new ForbiddenException('Apenas admin pode gerir contratos');
+    if (!(await this.access.canManageContracts(user))) throw new ForbiddenException('Apenas admin pode gerir contratos');
     this.validate(dto);
     const data = { ...this.persistenceData(dto), organizationId: dto.organizationId };
     const commercial = dto.approved || dto.serviceDeskIds !== undefined || ['HOURLY','FIXED_PROJECT','MONTHLY_HOURS'].includes(dto.type ?? '');
@@ -153,7 +155,7 @@ export class ContractsService {
   }
 
   async update(id: string, dto: UpdateContractDto, user: CurrentUserPayload) {
-    if (user.role !== Role.ADMIN) throw new ForbiddenException('Apenas admin pode gerir contratos');
+    if (!(await this.access.canManageContracts(user))) throw new ForbiddenException('Apenas admin pode gerir contratos');
     return this.prisma.$transaction(async db => {
       const initial = await db.contract.findUnique({where:{id}});
       if (!initial) throw new NotFoundException('Contrato não encontrado');
@@ -206,7 +208,7 @@ export class ContractsService {
   }
 
   async preflight(user: CurrentUserPayload) {
-    if (user.role !== Role.ADMIN) throw new ForbiddenException('Apenas admin pode regularizar contratos');
+    if (!(await this.access.canManageContracts(user))) throw new ForbiddenException('Apenas admin pode regularizar contratos');
     const rows = await this.prisma.contract.findMany({include:{...relations,organization:{include:{serviceDesks:{select:{id:true}}}}},orderBy:{createdAt:'asc'}});
     return rows.map(contract=>({id:contract.id,name:contract.name,organizationId:contract.organizationId,type:contract.type,approved:contract.approved,
       issues: [...(!contract.approved?['NOT_APPROVED']:[]),...(!contract.startsAt?['MISSING_START']:[]),...(!contract.serviceDesks.length?['MISSING_DESKS']:[]),...(['FIXED_COVERAGE','HOURS_LIMIT'].includes(contract.type)?['LEGACY_TYPE']:[]),
@@ -219,7 +221,7 @@ export class ContractsService {
   }
 
   async remove(id: string, user: CurrentUserPayload) {
-    if (user.role !== Role.ADMIN) throw new ForbiddenException('Restricted');
+    if (!(await this.access.canManageContracts(user))) throw new ForbiddenException('Restricted');
     try {
       return await this.prisma.contract.delete({ where: { id } });
     } catch (error) {

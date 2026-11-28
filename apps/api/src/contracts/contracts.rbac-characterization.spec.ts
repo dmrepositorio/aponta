@@ -1,4 +1,5 @@
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
+import { legacyContractAccess } from './contract-access.testing';
 import { Role } from '@prisma/client';
 import { ContractsService } from './contracts.service';
 import { CostRatesService } from './cost-rates.service';
@@ -51,7 +52,7 @@ describe('ContractsService: matriz por perfil (caracterização)', () => {
       },
       $transaction: jest.fn(),
     };
-    service = new ContractsService(prisma);
+    service = new ContractsService(prisma, legacyContractAccess());
   });
 
   const expectMasked = (c: any) => {
@@ -185,7 +186,7 @@ describe('CostRatesService: custo individual ADMIN-only (cost-rates.service.ts)'
       technicianCostRate: { findMany: jest.fn().mockResolvedValue([]) },
       $transaction: jest.fn().mockImplementation((fn: any) => fn(tx)),
     };
-    service = new CostRatesService(prisma);
+    service = new CostRatesService(prisma, legacyContractAccess());
   });
 
   it.each([

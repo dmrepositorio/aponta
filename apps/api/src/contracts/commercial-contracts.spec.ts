@@ -1,4 +1,5 @@
 import { ContractsService } from './contracts.service';
+import { legacyContractAccess } from './contract-access.testing';
 import { BadRequestException, ConflictException } from '@nestjs/common';
 import { Role } from '@prisma/client';
 import { plainToInstance } from 'class-transformer';
@@ -18,7 +19,7 @@ describe('Commercial contract conditions', () => {
       contractTerm: { findFirst: jest.fn().mockResolvedValue(null), create: jest.fn() },
       worklog: { count: jest.fn().mockResolvedValue(0), findFirst: jest.fn().mockResolvedValue(null) },
     };
-    service = new ContractsService(db);
+    service = new ContractsService(db, legacyContractAccess());
   });
   it.each([{hourlyRateCents: null}, {serviceDeskIds: []}, {startsAt:null}, {type:'HOURS_LIMIT'}])('cannot approve incomplete or legacy contract %j', async patch => {
     await expect(service.create({...dto, ...patch}, admin)).rejects.toThrow(BadRequestException);
