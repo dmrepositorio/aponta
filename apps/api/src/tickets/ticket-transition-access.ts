@@ -20,8 +20,7 @@ export class TicketTransitionAccess {
   ) {}
 
   async canReopenClosed(user: CurrentUserPayload): Promise<boolean> {
-    void this.flags;
-    void this.permissions;
-    return user.role === Role.ADMIN;
+    if (!this.flags.isRbacPermissionOnly()) return user.role === Role.ADMIN;
+    return this.permissions.hasPermission(user.id, 'REVIEW_REOPEN_CLOSED_TICKETS');
   }
 }

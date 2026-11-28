@@ -42,14 +42,17 @@ export type StatusDeskPolicy = Parameters<
   allowReopenBilled: boolean;
 };
 
+/** CLOSED -> OPEN: a única volta permitida; quem pode fazê-la é decidido por TicketTransitionAccess. */
+export function isReopenTransition(from: TicketStatus, to: TicketStatus): boolean {
+  return from === TicketStatus.CLOSED && to === TicketStatus.OPEN;
+}
+
 export function isReopenByAdmin(
   from: TicketStatus,
   to: TicketStatus,
   role: Role | string,
 ): boolean {
-  return (
-    from === TicketStatus.CLOSED && to === TicketStatus.OPEN && role === 'ADMIN'
-  );
+  return isReopenTransition(from, to) && role === 'ADMIN';
 }
 
 export interface StatusChangeCheck {
@@ -74,8 +77,9 @@ export function assertStatusChangeAllowed({
   from,
   to,
   billed,
+  canReopen,
 }: StatusChangeCheck): void {
-  const reopen = isReopenByAdmin(from, to, user.role);
+  const reopen = isReopenTransition(from, to) && (canReopen ?? user.role === 'ADMIN');
   if (desk) {
     assertListedAgentMayMutate({ desk, user });
     assertDeskAllowsPauseResume(desk, from, to);
@@ -106,7 +110,7 @@ export function allowedStatusesFor(
   params: Omit<StatusChangeCheck, 'to'>,
 ): TicketStatus[] {
   const candidates = [...(FORWARD_TRANSITIONS[params.from] ?? [])];
-  if (params.user.role === 'ADMIN' && params.from === TicketStatus.CLOSED) {
+  if (params.from === TicketStatus.CLOSED && (params.canReopen ?? params.user.role === 'ADMIN')) {
     candidates.push(TicketStatus.OPEN);
   }
   return candidates.filter((to) => {

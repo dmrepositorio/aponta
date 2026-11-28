@@ -41,7 +41,7 @@ import {
 import {
   allowedStatusesFor,
   assertStatusChangeAllowed,
-  isReopenByAdmin as isReopenByAdminTransition,
+  isReopenTransition,
   StatusDeskPolicy,
 } from './ticket-status-transitions';
 
@@ -881,12 +881,9 @@ export class TicketsService {
     currentUser: CurrentUserPayload,
   ): Promise<TicketStatus[]> {
     const desk = (ticket.serviceDesk ?? null) as StatusDeskPolicy | null;
+    const canReopen = await this.transitionAccess.canReopenClosed(currentUser);
     let billed = false;
-    if (
-      desk &&
-      ticket.status === TicketStatus.CLOSED &&
-      currentUser.role === Role.ADMIN
-    ) {
+    if (desk && ticket.status === TicketStatus.CLOSED && canReopen) {
       const worklogs = await this.prisma.worklog.findMany({
         where: { ticketId: ticket.id, voidedAt: null },
         select: { billable: true, valuationType: true, value: true },
@@ -898,6 +895,7 @@ export class TicketsService {
       user: currentUser,
       from: ticket.status,
       billed,
+      canReopen,
     });
   }
 
@@ -1102,15 +1100,12 @@ export class TicketsService {
     }
 
     const desk = await this.loadDeskPolicy(existing.serviceDeskId);
-    const isReopenByAdmin = isReopenByAdminTransition(
-      existing.status,
-      newStatus,
-      currentUser.role,
-    );
+    const canReopen = await this.transitionAccess.canReopenClosed(currentUser);
+    const isReopen = isReopenTransition(existing.status, newStatus) && canReopen;
 
     let reopenReply: string | null = null;
     let billed = false;
-    if (isReopenByAdmin && desk) {
+    if (isReopen && desk) {
       const worklogs = await this.prisma.worklog.findMany({
         where: { ticketId: id, voidedAt: null },
         select: { billable: true, valuationType: true, value: true },
@@ -1131,6 +1126,7 @@ export class TicketsService {
       from: existing.status,
       to: newStatus,
       billed,
+      canReopen,
     });
 
     const updateData: Prisma.TicketUpdateInput = { status: newStatus };
@@ -1141,7 +1137,7 @@ export class TicketsService {
     // reopened ticket doesn't keep reporting a stale closing date.
     if (CLOSED_STATUSES.includes(newStatus)) {
       updateData.closedAt = new Date();
-    } else if (isReopenByAdmin) {
+    } else if (isReopen) {
       updateData.closedAt = null;
     }
 
