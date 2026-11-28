@@ -279,3 +279,48 @@ describe.each(modes)('WorklogsService (%s): escopo de chamados nos apontamentos'
     expect(prisma.ticket.findUnique.mock.calls[0][0].where).toEqual({ id: 't1', AND: [flagOn ? { id: ZERO } : {}] });
   });
 });
+
+describe('callers sem ScopeAccess (specs que montam o service a mao): where do TenantHelper, como hoje', () => {
+  const agent = actor(Role.AGENT);
+  const expected = TenantHelper.getTicketWhere(agent);
+
+  it('WorklogsService.findByTicket', async () => {
+    const prisma: any = { ticket: { findUnique: jest.fn().mockResolvedValue(null) } };
+    const service = new WorklogsService(prisma, {} as any, {} as any, {} as any, { isRbacPermissionOnly: () => false } as any, {} as any);
+    await expect(service.findByTicket('t1', agent)).rejects.toThrow(NotFoundException);
+    expect(prisma.ticket.findUnique.mock.calls[0][0].where).toEqual({ id: 't1', AND: [expected] });
+  });
+
+  it('AgendaService.create com chamado', async () => {
+    const prisma: any = { ticket: { findFirst: jest.fn().mockResolvedValue(null) } };
+    const access = { canManageSchedules: async () => false, isOrganizationScoped: async () => false };
+    const service = new AgendaService(prisma, {} as any, access as any);
+    const dto = { ticketId: 't1', startTime: '2026-01-01T10:00:00Z', endTime: '2026-01-01T11:00:00Z' } as any;
+    await expect(service.create(dto, agent)).rejects.toThrow(NotFoundException);
+    expect(prisma.ticket.findFirst.mock.calls[0][0].where).toEqual({ id: 't1', ...expected });
+  });
+
+  it('ReportsService.getSummary', async () => {
+    const prisma: any = {
+      ticket: { findMany: jest.fn().mockResolvedValue([]) },
+      worklog: { findMany: jest.fn().mockResolvedValue([]) },
+      serviceDesk: { findMany: jest.fn().mockResolvedValue([]) },
+      user: { findMany: jest.fn().mockResolvedValue([]) },
+      appointment: { findMany: jest.fn().mockResolvedValue([]) },
+    };
+    const service = new ReportsService(prisma, {} as any, { isRbacPermissionOnly: () => false } as any);
+    await service.getSummary(agent).catch(() => undefined);
+    expect(prisma.ticket.findMany.mock.calls[0][0].where).toEqual(expected);
+  });
+
+  it('CommercialReportsService.getCommercial', async () => {
+    const prisma: any = {
+      contract: { findMany: jest.fn().mockResolvedValue([{ id: 'k1', organization: { name: 'o' }, terms: [], lifecycleEvents: [] }]) },
+      worklog: { findMany: jest.fn().mockResolvedValue([]) },
+    };
+    const permissions: any = { canViewTicketValues: async () => true };
+    const service = new CommercialReportsService(prisma, permissions, { isRbacPermissionOnly: () => false } as any);
+    await service.getCommercial(actor(Role.ADMIN, 'org-a') as any, { contractId: 'k1' }).catch(() => undefined);
+    expect(prisma.worklog.findMany.mock.calls[0][0].where.ticket).toEqual({});
+  });
+});

@@ -144,3 +144,18 @@ describe('CommentsService.withTransaction propaga o ScopeAccess (flag ligada, pe
     expect(tx.comment.create).not.toHaveBeenCalled();
   });
 });
+
+describe('CommentsService sem ScopeAccess (specs que montam o service a mao): so o CLIENT e barrado, como hoje', () => {
+  it.each(roles)('%s em chamado alheio', async (role) => {
+    const { service } = makeService('someone-else', undefined);
+    const result = service.findByTicket('t1', userOf(role, 'org-a'));
+    if (role === Role.CLIENT) await expect(result).rejects.toThrow(NotFoundException);
+    else await expect(result).resolves.toEqual([]);
+  });
+
+  it('CLIENT le o proprio chamado', async () => {
+    const user = userOf(Role.CLIENT);
+    const { service } = makeService(user.id, undefined);
+    await expect(service.findByTicket('t1', user)).resolves.toEqual([]);
+  });
+});

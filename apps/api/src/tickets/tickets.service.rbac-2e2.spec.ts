@@ -254,3 +254,22 @@ describe('TicketsService.withTransaction propaga o ScopeAccess (flag ligada, per
     expect(tx.ticket.count).toHaveBeenCalledTimes(1);
   });
 });
+
+describe('TicketsService sem ScopeAccess (specs que montam o service a mao): decide por perfil como hoje', () => {
+  it.each(roles)('findAll de %s usa o where do TenantHelper, sem consultar permissoes', async (role) => {
+    const prisma = makePrisma();
+    const user = userOf(role, 'org-a');
+    await serviceOf(prisma, undefined).findAll({} as never, user);
+    expect(prisma.ticket.findMany.mock.calls[0][0].where).toEqual(TenantHelper.getTicketWhere(user));
+  });
+
+  it('CLIENT_MASTER de A continua preso a organizacao A e ADMIN continua sem filtro', async () => {
+    const master = makePrisma();
+    await serviceOf(master, undefined).findAll({} as never, userOf(Role.CLIENT_MASTER, 'org-a'));
+    expect(master.ticket.findMany.mock.calls[0][0].where.requester).toEqual({ organizationId: 'org-a' });
+    const admin = makePrisma();
+    await serviceOf(admin, undefined).findAll({} as never, userOf(Role.ADMIN, 'org-a'));
+    expect(admin.ticket.findMany.mock.calls[0][0].where.requester).toBeUndefined();
+    expect(admin.ticket.findMany.mock.calls[0][0].where.requesterId).toBeUndefined();
+  });
+});
