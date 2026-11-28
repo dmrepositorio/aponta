@@ -102,6 +102,11 @@ export const DEFAULT_PERMISSION_GROUPS: Record<Role, { description: string; perm
       'ADD_SLA_TIME',
       'MANAGE_SERVICE_CATALOGS',
       'MANAGE_SERVICE_DESKS',
+      'VIEW_TEAM_MEMBER_NAMES',
+      'VIEW_REQUESTER_CONTACT_INFO',
+      'POST_INTERNAL_NOTES',
+      'ASSIGN_TICKETS',
+      'USE_INTERNAL_SERVICE_DESKS',
     ],
   },
   [Role.AGENT]: {
@@ -121,6 +126,11 @@ export const DEFAULT_PERMISSION_GROUPS: Record<Role, { description: string; perm
       'VIEW_CONTRACTS_ADMIN',
       'ADD_SLA_TIME',
       'MANAGE_SERVICE_CATALOGS',
+      'VIEW_TEAM_MEMBER_NAMES',
+      'VIEW_REQUESTER_CONTACT_INFO',
+      'POST_INTERNAL_NOTES',
+      'ASSIGN_TICKETS',
+      'USE_INTERNAL_SERVICE_DESKS',
     ],
   },
   [Role.CLIENT_MASTER]: {
@@ -134,6 +144,7 @@ export const DEFAULT_PERMISSION_GROUPS: Record<Role, { description: string; perm
       'VIEW_CLIENT_CONSUMPTION_STATEMENT_REPORT',
       'VIEW_LAST_30_DAYS_TICKETS_WIDGET',
       'VIEW_WORKLOG_INFO',
+      'VIEW_CONTRACT_FINANCIALS',
     ],
   },
   [Role.CLIENT]: {
