@@ -80,7 +80,7 @@ export class PermissionGroupsService {
 
   async removeUser(id: string, userId: string) {
     const group = await this.findOne(id);
-    if (group.defaultKey === DEFAULT_GROUP_KEY[Role.ADMIN]) await this.access?.assertAdminRemains(this.prisma, [userId]);
+    if (group.defaultKey === DEFAULT_GROUP_KEY[Role.ADMIN]) await this.access?.assertAdminRemains(this.prisma, [userId], { group: true, role: false });
     return this.prisma.permissionGroupUser.delete({
       where: { permissionGroupId_userId: { permissionGroupId: id, userId } },
     });

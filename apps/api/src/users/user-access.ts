@@ -42,27 +42,35 @@ export class UserAccess {
     return { active: true, permissionGroupLinks: { some: { permissionGroup: { defaultKey: DEFAULT_GROUP_KEY[Role.ADMIN] } } } };
   }
 
-  /**
-   * Lote 2h (#578): quem sustenta o sistema na guarda do ultimo administrador. Ligada: ativo no grupo
-   * Administrador. Desligada: ativo com perfil ADMIN E no grupo, juntos (mais estrito que a regra por
-   * perfil do `setActiveMany`, de proposito: o sistema nunca fica sem administrador).
-   */
-  lastAdminWhere(): Prisma.UserWhereInput {
-    const byGroup: Prisma.UserWhereInput = { active: true, permissionGroupLinks: { some: { permissionGroup: { defaultKey: DEFAULT_GROUP_KEY[Role.ADMIN] } } } };
-    return this.isPermissionOnly() ? byGroup : { ...byGroup, role: Role.ADMIN };
+  private inAdminGroup(): Prisma.UserWhereInput {
+    return { permissionGroupLinks: { some: { permissionGroup: { defaultKey: DEFAULT_GROUP_KEY[Role.ADMIN] } } } };
   }
 
   /**
-   * Barra a saida de `leavingIds` da condicao de administrador quando isso deixaria o sistema sem
-   * nenhum ativo. Quem sai e quem sobra usam a mesma regra; se ninguem que sai e administrador, nada a barrar.
+   * Lote 2h (#578): quem sustenta o sistema na guarda do ultimo administrador. Ligada: ativo no grupo
+   * Administrador. Desligada: ativo com perfil ADMIN OU no grupo (uniao), porque hoje o perfil ainda
+   * da acesso; cobre tambem o grupo e os caminhos que antes nao tinham guarda.
+   */
+  lastAdminWhere(): Prisma.UserWhereInput {
+    if (this.isPermissionOnly()) return { active: true, ...this.inAdminGroup() };
+    return { active: true, OR: [{ role: Role.ADMIN }, this.inAdminGroup()] };
+  }
+
+  /**
+   * Barra a operacao que deixaria o sistema sem nenhum administrador ativo. `lose` diz o que `leavingIds`
+   * perde (grupo e/ou perfil): quem perde so um dos dois segue administrador pelo outro (so no modo
+   * desligado; ligado, o perfil e rotulo). Se ninguem em `leavingIds` e administrador, nada a barrar.
    * shortcut: sem isolamento serializavel, como no `setActiveMany`; duas saidas simultaneas podem passar juntas.
    */
-  async assertAdminRemains(db: Pick<Prisma.TransactionClient, 'user'>, leavingIds: string[], _lose: AdminLoss = { group: true, role: true }): Promise<void> {
+  async assertAdminRemains(db: Pick<Prisma.TransactionClient, 'user'>, leavingIds: string[], lose: AdminLoss = { group: true, role: true }): Promise<void> {
     const admin = this.lastAdminWhere();
     if ((await db.user.count({ where: { ...admin, id: { in: leavingIds } } })) === 0) return;
-    if ((await db.user.count({ where: { ...admin, id: { notIn: leavingIds } } })) === 0) {
-      throw new ConflictException('Não é possível remover o último administrador ativo.');
-    }
+    if ((await db.user.count({ where: { ...admin, id: { notIn: leavingIds } } })) > 0) return;
+    const keeps: Prisma.UserWhereInput[] = [];
+    if (!lose.group) keeps.push(this.inAdminGroup());
+    if (!lose.role && !this.isPermissionOnly()) keeps.push({ role: Role.ADMIN });
+    if (keeps.length && (await db.user.count({ where: { active: true, OR: keeps, id: { in: leavingIds } } })) > 0) return;
+    throw new ConflictException('Não é possível remover o último administrador ativo.');
   }
 
   /** O grupo padrao Administrador (achado pela `defaultKey`) nunca e excluido: a exclusao leva todos os membros. */

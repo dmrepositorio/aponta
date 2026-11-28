@@ -413,7 +413,8 @@ export class UsersService {
 
   /**
    * Lote 2h (#578): a edicao nao pode deixar o sistema sem administrador ativo. Sai da condicao quem perde o
-   * grupo Administrador (`permissionGroupIds` sem ele) ou, com a flag desligada, o perfil ADMIN.
+   * grupo Administrador (`permissionGroupIds` sem ele) e/ou, com a flag desligada, o perfil ADMIN; so barra se nao
+   * sobrar administrador por nenhum dos dois criterios.
    */
   private async assertKeepsAdmin(id: string, dto: UpdateUserDto): Promise<void> {
     if (!this.access) return;
@@ -424,7 +425,7 @@ export class UsersService {
       keepsGroup = adminGroup !== null && dto.permissionGroupIds!.includes(adminGroup.id);
     }
     if (keepsRole && keepsGroup) return;
-    await this.access.assertAdminRemains(this.prisma, [id]);
+    await this.access.assertAdminRemains(this.prisma, [id], { group: !keepsGroup, role: !keepsRole });
   }
 
   /** Quem conta como administrador ativo: membro do grupo protegido (flag ligada) ou perfil ADMIN (hoje). */

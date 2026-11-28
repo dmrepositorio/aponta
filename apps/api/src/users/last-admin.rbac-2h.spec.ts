@@ -38,6 +38,7 @@ const build = (flagOn: boolean, users: UserRow[], technicalLinks: { permissionGr
       switch (k) {
         case 'active': return u.active === v;
         case 'role': return u.role === v;
+        case 'OR': return v.some((w: any) => matches(u, w));
         case 'id': return v.in ? v.in.includes(u.id) : v.notIn ? !v.notIn.includes(u.id) : false;
         case 'permissionGroupLinks': return u.groups.some((g) => keyOf(g) === v.some.permissionGroup.defaultKey);
         default: throw new Error(`where nao suportado: ${k}`);
