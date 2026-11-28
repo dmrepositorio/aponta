@@ -76,6 +76,18 @@ describe('PermissionGroupsController', () => {
       expect(catalog.length).toBeGreaterThan(0);
     });
 
+    it('getCatalog expõe as chaves das decisões abertas do lote 1i (#588) com rótulo em português, para a tela de permissões', () => {
+      const catalog = controller.getCatalog();
+      const expected: Record<string, string> = {
+        RELEASE_PENDING_APPROVAL_TICKETS: 'Liberar chamado em aprovação pendente',
+        VIEW_ALLOWED_STATUSES: 'Receber a lista de status permitidos no chamado',
+        CREATE_APPOINTMENTS_ON_AGENDA: 'Criar compromissos na agenda',
+      };
+      for (const [key, label] of Object.entries(expected)) {
+        expect(catalog.filter((p) => p.key === key)).toEqual([{ key, category: 'TECHNICAL', label }]);
+      }
+    });
+
     it('findAll delegates to the service', async () => {
       await controller.findAll();
       expect(mockService.findAll).toHaveBeenCalled();
