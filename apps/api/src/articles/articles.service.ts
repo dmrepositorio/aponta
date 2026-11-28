@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { unlink } from 'fs/promises';
 import { join } from 'path';
-import { ArticleVisibility, Prisma, Role } from '@prisma/client';
+import { ArticleVisibility, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateArticleDto } from './dto/create-article.dto';
 import { UpdateArticleDto } from './dto/update-article.dto';

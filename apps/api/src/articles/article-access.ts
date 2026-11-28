@@ -38,6 +38,7 @@ export class ArticleAccess {
   }
 
   private async decide(user: CurrentUserPayload, key: string, byRole: () => boolean): Promise<boolean> {
-    return byRole();
+    if (!this.flags.isRbacPermissionOnly()) return byRole();
+    return this.permissions.hasPermission(user.id, key);
   }
 }

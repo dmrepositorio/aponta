@@ -37,6 +37,13 @@ describe('AgendaAccess: grupos padrao dao o mesmo resultado nos dois modos', () 
 });
 
 describe('AgendaAccess: flag ligada decide so por permissao', () => {
+  it('isOrganizationScoped: o escopo mais amplo vence (VIEW_ALL_APPOINTMENTS solta a organizacao)', async () => {
+    const both = build(true, { 'u-CLIENT': ['VIEW_ORGANIZATION_APPOINTMENTS', 'VIEW_ALL_APPOINTMENTS'] });
+    expect(await both.access.isOrganizationScoped(user(Role.CLIENT))).toBe(false);
+    const onlyAll = build(true, { 'u-CLIENT': ['VIEW_ALL_APPOINTMENTS'] });
+    expect(await onlyAll.access.isOrganizationScoped(user(Role.CLIENT))).toBe(false);
+  });
+
   it.each([
     ['canManageSchedules', 'MANAGE_SCHEDULES_ADMIN'],
     ['isOrganizationScoped', 'VIEW_ORGANIZATION_APPOINTMENTS'],
