@@ -6,6 +6,7 @@ import { CreateCommentDto } from './dto/create-comment.dto';
 import { CurrentUserPayload } from '../tickets/decorators/current-user.decorator';
 import { assertListedAgentMayMutate } from '../service-desks/desk-policy';
 import { DeskAccess } from '../service-desks/desk-access';
+import { ScopeAccess } from '../core/security/scope-access';
 import { MaskAccess } from './mask-access';
 
 /** Autor do comentário: SOMENTE id, nome e papel (nunca e-mail, telefone etc.). */
@@ -38,6 +39,7 @@ export class CommentsService {
     private readonly eventEmitter: EventEmitter2,
     private readonly maskAccess: MaskAccess,
     @Optional() private readonly deskAccess?: DeskAccess,
+    @Optional() protected readonly scope?: ScopeAccess,
   ) {}
 
   withTransaction(database: Prisma.TransactionClient, afterCommit: Array<() => void>) {

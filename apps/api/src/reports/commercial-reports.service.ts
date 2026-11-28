@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, Optional } from '@nestjs/common';
 import { Role } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CurrentUserPayload } from '../tickets/decorators/current-user.decorator';
@@ -6,6 +6,7 @@ import { TenantHelper } from '../core/security/tenant.helper';
 import { splitBillingCycles } from '../worklogs/contract-valuation';
 import { PermissionsService } from '../permissions/permissions.service';
 import { FeatureFlagsService } from '../feature-flags/feature-flags.service';
+import { ScopeAccess } from '../core/security/scope-access';
 
 interface RecordedSegment {
   cycleStart: string;
@@ -25,6 +26,7 @@ export class CommercialReportsService {
     private readonly prisma: PrismaService,
     private readonly permissions: PermissionsService,
     private readonly flags: FeatureFlagsService,
+    @Optional() protected readonly scope?: ScopeAccess,
   ) {}
 
   async getCommercial(user: CurrentUserPayload, filters: { contractId?: string; month?: string } = {}) {

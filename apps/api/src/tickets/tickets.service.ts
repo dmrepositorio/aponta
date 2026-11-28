@@ -28,6 +28,7 @@ import { CurrentUserPayload } from './decorators/current-user.decorator';
 import { MaskAccess } from '../comments/mask-access';
 import { TicketTransitionAccess } from './ticket-transition-access';
 import { TenantHelper } from '../core/security/tenant.helper';
+import { ScopeAccess } from '../core/security/scope-access';
 import { escapeLikePattern } from '../common/escape-like-pattern';
 import { addBusinessHours } from '../scheduling/business-hours';
 import { getSlaStatus } from '../scheduling/sla-status';
@@ -217,6 +218,7 @@ export class TicketsService {
     private readonly transitionAccess: TicketTransitionAccess,
     // Opcional: specs que montam o service sem a flag seguem com o ator da mesa por perfil.
     @Optional() private readonly deskAccess?: DeskAccess,
+    @Optional() protected readonly scope?: ScopeAccess,
   ) {}
 
   withTransaction(

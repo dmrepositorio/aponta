@@ -23,6 +23,7 @@ import { allocateCommercialSegments, isCompleteCommercialTerm } from './commerci
 import { evaluateWorklogWindow, WINDOW_LEAD_MS } from './agenda-window';
 import { brasiliaHhMm, ClockPre, workedMs } from './pre-appointment-clock';
 import { FeatureFlagsService } from '../feature-flags/feature-flags.service';
+import { ScopeAccess } from '../core/security/scope-access';
 import { WorklogApprovalsService } from './worklog-approvals.service';
 import { explainEntryBreak, explainSystemClosed, EntryBreak } from './worklog-approval';
 
@@ -44,6 +45,7 @@ export class WorklogsService {
     private readonly flags: FeatureFlagsService,
     private readonly approvals: WorklogApprovalsService,
     @Optional() private readonly deskAccess?: DeskAccess,
+    @Optional() protected readonly scope?: ScopeAccess,
   ) {}
 
   /** #542: decisão por perfil (flag desligada) ou por permissão (ligada); ver worklog-access.ts. */
