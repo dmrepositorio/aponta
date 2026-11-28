@@ -7,6 +7,9 @@ import { canRemoveWorklogs, hasNoWayOut, TicketDeletionReason, ticketDeletionRea
 
 const SAMPLE = 5;
 
+/** Quem exclui. `mayRemoveAnyWorklog` (DELETE_ANY_WORKLOG) vem resolvido pelo controller; sem ele vale o de hoje: só o ADMIN. */
+export type DeletionActor = { id: string; role: Role; mayRemoveAnyWorklog?: boolean };
+
 export type DeletionBlockerCode = 'TICKETS' | 'SERVICE_DESKS' | 'CONTRACTS' | 'USERS' | 'VAULT' | 'APPOINTMENTS';
 
 export interface DeletionBlocker {
@@ -43,7 +46,7 @@ export async function checkOrganizationDeletion(
   id: string,
   canDeleteTickets: boolean,
   /** Sem usuário, nenhum apontamento conta como removível. */
-  user?: { id: string; role: Role; mayRemoveAnyWorklog?: boolean },
+  user?: DeletionActor,
 ): Promise<OrganizationDeletionCheck> {
   const sample = { take: SAMPLE };
   const organization = await db.organization.findUnique({
@@ -84,7 +87,7 @@ export async function checkOrganizationDeletion(
   if (tickets.length > 0) {
     const rows = tickets.map((ticket) => {
       const rules = ticketDeletionReasons(ticket);
-      const mayRemoveWorklogs = !!user && canRemoveWorklogs(ticket, user);
+      const mayRemoveWorklogs = !!user && canRemoveWorklogs(ticket, user, user.mayRemoveAnyWorklog ?? user.role === Role.ADMIN);
       const reasons = rules.map((code) => (code === 'HAS_WORKLOGS' && !mayRemoveWorklogs ? notAuthorText : ticketReasonText[code]));
       if (!canDeleteTickets) reasons.push('sem permissão para excluir tickets');
       return { ticket, reasons, resolvable: canDeleteTickets && !hasNoWayOut(rules, mayRemoveWorklogs) };

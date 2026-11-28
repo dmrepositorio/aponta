@@ -7,6 +7,8 @@ import { CreateOrganizationAddressDto } from './dto/create-organization-address.
 import { CreateOrganizationContactDto } from './dto/create-organization-contact.dto';
 import { DeletionCheckDto } from './dto/deletion-check.dto';
 import { PermissionsService } from '../permissions/permissions.service';
+import { FeatureFlagsService } from '../feature-flags/feature-flags.service';
+import { mayWorklog } from '../worklogs/worklog-access';
 import { CreateAgentGroupDto } from './dto/create-agent-group.dto';
 import { UpdateAgentGroupDto } from './dto/update-agent-group.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -21,7 +23,17 @@ export class OrganizationsController {
     private readonly organizationsService: OrganizationsService,
     private readonly cnpjLookupService: CnpjLookupService,
     private readonly permissionsService: PermissionsService,
+    private readonly flags: FeatureFlagsService,
   ) {}
+
+  /** #542: o usuário com a permissão de remover qualquer apontamento (por perfil com a flag desligada). */
+  private async deletionActor(user: CurrentUserPayload) {
+    const mayRemoveAnyWorklog = await mayWorklog('REMOVE_ANY', user, {
+      permissionOnly: this.flags.isRbacPermissionOnly(),
+      hasPermission: (userId, key) => this.permissionsService.hasPermission(userId, key),
+    });
+    return { id: user.id, role: user.role, mayRemoveAnyWorklog };
+  }
 
   @Get('cnpj-lookup')
   @UseGuards(PermissionsGuard)
@@ -59,14 +71,14 @@ export class OrganizationsController {
   @UseGuards(PermissionsGuard)
   @RequirePermission('MANAGE_CLIENTS_AND_RESOURCE_GROUPS')
   async remove(@Param('id') id: string, @CurrentUser() user: CurrentUserPayload) {
-    return this.organizationsService.remove(id, await this.permissionsService.canDeleteTickets(user.id), user);
+    return this.organizationsService.remove(id, await this.permissionsService.canDeleteTickets(user.id), await this.deletionActor(user));
   }
 
   @Post('deletion-check')
   @UseGuards(PermissionsGuard)
   @RequirePermission('MANAGE_CLIENTS_AND_RESOURCE_GROUPS')
   async deletionCheck(@Body() dto: DeletionCheckDto, @CurrentUser() user: CurrentUserPayload) {
-    return this.organizationsService.deletionCheck(dto.ids, await this.permissionsService.canDeleteTickets(user.id), user);
+    return this.organizationsService.deletionCheck(dto.ids, await this.permissionsService.canDeleteTickets(user.id), await this.deletionActor(user));
   }
 
   @Post(':id/addresses')

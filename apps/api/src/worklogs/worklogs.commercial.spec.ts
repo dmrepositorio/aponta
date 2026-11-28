@@ -11,7 +11,7 @@ describe('mandatory commercial authorization', () => {
   let db: any;
   let service: WorklogsService;
   let permissions: { canViewTicketValues: jest.Mock; canEditWorklogStartTime: jest.Mock; hasPermission: jest.Mock };
-  let flags: { isEnabled: jest.Mock };
+  let flags: { isEnabled: jest.Mock; isRbacPermissionOnly: jest.Mock };
   let approvals: { notifyPending: jest.Mock };
   beforeEach(() => {
     const contract = { id: 'contract', organizationId: 'org', approved: true, active: true, type: 'HOURLY', name: 'Avulso',
@@ -27,7 +27,7 @@ describe('mandatory commercial authorization', () => {
       preAppointment: { create: jest.fn(({ data }) => Promise.resolve({ id: 'timer', ...data })), delete: jest.fn(), findUnique: jest.fn(), findFirst: jest.fn().mockResolvedValue(null), update: jest.fn() },
       appointment: { findMany: jest.fn().mockResolvedValue([]) } };
     permissions = { canViewTicketValues: jest.fn().mockResolvedValue(true), canEditWorklogStartTime: jest.fn().mockResolvedValue(true), hasPermission: jest.fn().mockResolvedValue(true) };
-    flags = { isEnabled: jest.fn().mockReturnValue(true) };
+    flags = { isEnabled: jest.fn().mockReturnValue(true), isRbacPermissionOnly: jest.fn().mockReturnValue(false) };
     approvals = { notifyPending: jest.fn().mockResolvedValue(undefined) };
     service = new WorklogsService(db, {} as any, {} as any, permissions as any, flags as any, approvals as any);
   });

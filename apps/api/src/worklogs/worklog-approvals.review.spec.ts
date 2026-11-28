@@ -55,7 +55,7 @@ describe('achados do code-review do T5 (DMTE-462)', () => {
         worklog: { create: jest.fn(({ data }) => Promise.resolve({ id: 'log', ...data })), findUnique: jest.fn(), findMany: jest.fn().mockResolvedValue([]), aggregate: jest.fn().mockResolvedValue({ _sum: { minutes: 0 } }) },
         preAppointment: { findUnique: jest.fn() }, appointment: { findMany: jest.fn().mockResolvedValue([]) } };
       const permissions = { canViewTicketValues: jest.fn().mockResolvedValue(true), canEditWorklogStartTime: jest.fn().mockResolvedValue(false), hasPermission: jest.fn().mockResolvedValue(true) };
-      service = new WorklogsService(db, {} as any, {} as any, permissions as any, { isEnabled: jest.fn().mockReturnValue(true) } as any, { notifyPending: jest.fn().mockResolvedValue(undefined) } as any);
+      service = new WorklogsService(db, {} as any, {} as any, permissions as any, { isEnabled: jest.fn().mockReturnValue(true), isRbacPermissionOnly: jest.fn().mockReturnValue(false) } as any, { notifyPending: jest.fn().mockResolvedValue(undefined) } as any);
     });
 
     it('AC-26: o pendente guarda quem lançou, para o ADMIN que lança em nome de outro não decidir depois', async () => {

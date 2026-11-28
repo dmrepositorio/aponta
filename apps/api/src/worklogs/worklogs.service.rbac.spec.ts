@@ -114,7 +114,7 @@ describe('WorklogsService: matriz por perfil (caracterização)', () => {
       {} as any,
       {} as any,
       permissions as any,
-      { isEnabled: jest.fn().mockReturnValue(false) } as any,
+      { isEnabled: jest.fn().mockReturnValue(false), isRbacPermissionOnly: jest.fn().mockReturnValue(false) } as any,
       approvals as any,
     );
   });
