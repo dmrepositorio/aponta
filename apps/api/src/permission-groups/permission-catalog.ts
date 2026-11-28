@@ -190,6 +190,12 @@ export const PERMISSION_CATALOG: PermissionDefinition[] = [
   // Fase 1h do tracker #523 (#577): lista de agentes sem escopo de mesa (hoje ADMIN em UsersService.findAgents).
   // Nenhum caller a consulta ainda; só o Administrador a recebe (migração 20261128150000_rbac_1h_agent_directory_key). Não é GROUP_ONLY.
   { key: 'VIEW_AGENT_DIRECTORY', category: PermissionCategory.TECHNICAL, label: 'Visualizar a lista de agentes de todas as mesas' },
+
+  // Fase 1i do tracker #523 (#588): chaves das decisões abertas (lote 2j). Nenhum caller as consulta ainda;
+  // atribuídas pela migração 20261128160000_rbac_1i_decision_keys. Nenhuma é GROUP_ONLY.
+  { key: 'RELEASE_PENDING_APPROVAL_TICKETS', category: PermissionCategory.TECHNICAL, label: 'Liberar chamado em aprovação pendente' },
+  { key: 'VIEW_ALLOWED_STATUSES', category: PermissionCategory.TECHNICAL, label: 'Receber a lista de status permitidos no chamado' },
+  { key: 'CREATE_APPOINTMENTS_ON_AGENDA', category: PermissionCategory.TECHNICAL, label: 'Criar compromissos na agenda' },
 ];
 
 export const PERMISSION_KEYS: readonly string[] = PERMISSION_CATALOG.map((p) => p.key);
