@@ -176,6 +176,10 @@ export const PERMISSION_CATALOG: PermissionDefinition[] = [
   { key: 'VIEW_ALL_APPOINTMENTS', category: PermissionCategory.TECHNICAL, label: 'Visualizar todos os compromissos' },
   { key: 'VIEW_ORGANIZATION_APPOINTMENTS', category: PermissionCategory.TECHNICAL, label: 'Visualizar os compromissos da organização' },
   { key: 'VIEW_OWN_APPOINTMENTS', category: PermissionCategory.TECHNICAL, label: 'Visualizar apenas os próprios compromissos' },
+
+  // Fase 1f do tracker #523 (#566): chave complementar da Fase 2. Nenhum caller a consulta
+  // ainda; só o grupo Administrador a recebe (migração 20261128130000_rbac_1f_audit_worklogs). Não é GROUP_ONLY.
+  { key: 'AUDIT_WORKLOGS', category: PermissionCategory.TECHNICAL, label: 'Auditar os apontamentos de um ticket' },
 ];
 
 export const PERMISSION_KEYS: readonly string[] = PERMISSION_CATALOG.map((p) => p.key);
