@@ -180,6 +180,14 @@ describe('DeskAccess: flag ligada decide so por permissao', () => {
     expect(() => open({ ...openDesk, openByAgentsOnly: true }, user(Role.AGENT), actor)).toThrow(ForbiddenException);
   });
 
+  it('VIEW_ALL_SERVICE_DESKS sozinha nao abre mesa interna: a chave de uso interno e independente do escopo', async () => {
+    const { access } = build(true, { 'u-ADMIN': ['VIEW_ALL_SERVICE_DESKS'] });
+    const actor = await access.resolve(user(Role.ADMIN));
+    expect(actor).toEqual({ canUseInternalDesks: false, scope: 'ALL' });
+    expect(() => open({ ...openDesk, internalUse: true }, user(Role.ADMIN), actor)).toThrow(ForbiddenException);
+    expect(() => open({ ...openDesk, openByAgentsOnly: true }, user(Role.ADMIN), actor)).toThrow(ForbiddenException);
+  });
+
   it('CLIENT com USE_INTERNAL_SERVICE_DESKS abre mesa interna e usa mesa interna da organizacao', async () => {
     const { access } = build(true, { 'u-CLIENT': ['VIEW_ORGANIZATION_SERVICE_DESKS', 'USE_INTERNAL_SERVICE_DESKS'] });
     const actor = await access.resolve(user(Role.CLIENT));
