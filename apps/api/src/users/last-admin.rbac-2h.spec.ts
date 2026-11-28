@@ -275,6 +275,12 @@ describe('modo desligado: perfil OU grupo (uniao), o sistema so trava se nao sob
     expect(groupsOf(db, 'a')).toEqual([]);
   });
 
+  it('unico administrador com perfil ADMIN: removelo do grupo Administrador pelo modulo de grupos passa (segue pelo perfil)', async () => {
+    const { db, groups } = build(false, [admin('a', ['g-admin'])]);
+    await groups.removeUser('g-admin', 'a');
+    expect(groupsOf(db, 'a')).toEqual([]);
+  });
+
   it('unico administrador: rebaixar mantendo o grupo passa (segue administrador pelo grupo)', async () => {
     const { db, users } = build(false, [admin('a', ['g-admin'])]);
     await users.update('a', { role: Role.AGENT }, true);
