@@ -67,6 +67,14 @@ const NEW_FOR_ROLE: Record<Role, string[]> = {
   [Role.CLIENT]: [],
 };
 
+/** Fase 1e (#540): chaves de escopo (e REMOVE_TICKET_ATTACHMENTS dos atendentes) que os grupos padrão ganharam depois do 1a. */
+const SCOPE_1E: Record<Exclude<Role, 'ADMIN'>, string[]> = {
+  [Role.AGENT_MASTER]: ['VIEW_DESK_TICKETS', 'VIEW_ASSIGNED_SERVICE_DESKS', 'VIEW_ALL_CREDENTIALS', 'VIEW_ASSIGNED_DESK_CONTRACTS', 'VIEW_OWN_APPOINTMENTS', 'REMOVE_TICKET_ATTACHMENTS'],
+  [Role.AGENT]: ['VIEW_DESK_TICKETS', 'VIEW_ASSIGNED_SERVICE_DESKS', 'VIEW_ALL_CREDENTIALS', 'VIEW_ASSIGNED_DESK_CONTRACTS', 'VIEW_OWN_APPOINTMENTS', 'REMOVE_TICKET_ATTACHMENTS'],
+  [Role.CLIENT_MASTER]: ['VIEW_OWN_TICKETS', 'VIEW_ORGANIZATION_SERVICE_DESKS', 'VIEW_ORGANIZATION_CONTRACTS', 'VIEW_ORGANIZATION_APPOINTMENTS'],
+  [Role.CLIENT]: ['VIEW_OWN_TICKETS', 'VIEW_ORGANIZATION_SERVICE_DESKS'],
+};
+
 const sorted = (list: readonly string[]) => [...list].sort();
 
 describe('Fase 1a: catálogo (#532)', () => {
@@ -84,7 +92,7 @@ describe('Fase 1a: catálogo (#532)', () => {
 
 describe('Fase 1a: grupos padrão = conjunto anterior + novas chaves equivalentes (#532)', () => {
   it.each([Role.AGENT_MASTER, Role.AGENT, Role.CLIENT_MASTER, Role.CLIENT] as const)('%s', (role) => {
-    expect(sorted(DEFAULT_PERMISSION_GROUPS[role].permissions)).toEqual(sorted([...PREVIOUS[role], ...NEW_FOR_ROLE[role]]));
+    expect(sorted(DEFAULT_PERMISSION_GROUPS[role].permissions)).toEqual(sorted([...PREVIOUS[role], ...NEW_FOR_ROLE[role], ...SCOPE_1E[role]]));
   });
 
   it('ADMIN recebe todas as chaves do catálogo exceto GROUP_ONLY_KEYS (sem bypass futuro)', () => {

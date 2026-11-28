@@ -158,6 +158,24 @@ export const PERMISSION_CATALOG: PermissionDefinition[] = [
   { key: 'VIEW_ALL_KNOWLEDGE_ARTICLES', category: PermissionCategory.TECHNICAL, label: 'Visualizar todos os artigos da base de conhecimento, inclusive privados' },
   { key: 'VIEW_CONTRACT_FINANCIALS', category: PermissionCategory.ADMINISTRATIVE, label: 'Visualizar valores financeiros dos contratos' },
   { key: 'VIEW_COMMERCIAL_RESULT', category: PermissionCategory.ADMINISTRATIVE, label: 'Visualizar resultado e custos comerciais' },
+
+  // Fase 1e do tracker #523 (#540): chaves de alcance de dados (SCOPE_KEYS do resolvedor
+  // de escopo em core/security). VIEW_ALL_CLIENT_TICKETS já existe acima.
+  // Nenhum caller as consulta ainda; os grupos padrão as recebem pela migração
+  // 20261128120000_rbac_1e_default_group_scope_keys. Nenhuma é GROUP_ONLY.
+  { key: 'VIEW_ALL_TICKETS', category: PermissionCategory.TECHNICAL, label: 'Visualizar todos os tickets' },
+  { key: 'VIEW_DESK_TICKETS', category: PermissionCategory.TECHNICAL, label: 'Visualizar os tickets das mesas em que atua' },
+  { key: 'VIEW_OWN_TICKETS', category: PermissionCategory.TECHNICAL, label: 'Visualizar apenas os próprios tickets' },
+  { key: 'VIEW_ALL_SERVICE_DESKS', category: PermissionCategory.TECHNICAL, label: 'Visualizar todas as mesas de serviço' },
+  { key: 'VIEW_ORGANIZATION_SERVICE_DESKS', category: PermissionCategory.TECHNICAL, label: 'Visualizar as mesas de serviço disponíveis para a organização' },
+  { key: 'VIEW_ASSIGNED_SERVICE_DESKS', category: PermissionCategory.TECHNICAL, label: 'Visualizar as mesas de serviço em que atua' },
+  { key: 'VIEW_ALL_CREDENTIALS', category: PermissionCategory.TECHNICAL, label: 'Visualizar todas as credenciais' },
+  { key: 'VIEW_ALL_CONTRACTS', category: PermissionCategory.TECHNICAL, label: 'Visualizar todos os contratos' },
+  { key: 'VIEW_ORGANIZATION_CONTRACTS', category: PermissionCategory.TECHNICAL, label: 'Visualizar os contratos da organização' },
+  { key: 'VIEW_ASSIGNED_DESK_CONTRACTS', category: PermissionCategory.TECHNICAL, label: 'Visualizar os contratos ativos das mesas em que atua' },
+  { key: 'VIEW_ALL_APPOINTMENTS', category: PermissionCategory.TECHNICAL, label: 'Visualizar todos os compromissos' },
+  { key: 'VIEW_ORGANIZATION_APPOINTMENTS', category: PermissionCategory.TECHNICAL, label: 'Visualizar os compromissos da organização' },
+  { key: 'VIEW_OWN_APPOINTMENTS', category: PermissionCategory.TECHNICAL, label: 'Visualizar apenas os próprios compromissos' },
 ];
 
 export const PERMISSION_KEYS: readonly string[] = PERMISSION_CATALOG.map((p) => p.key);
