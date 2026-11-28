@@ -34,6 +34,16 @@ export class AgendaAccess {
     return this.permissions.hasPermission(user.id, 'VIEW_ORGANIZATION_APPOINTMENTS');
   }
 
+  /** STUB neutro do RED (ignora a flag). */
+  async canViewOtherUsers(user: CurrentUserPayload): Promise<boolean> {
+    return user.role === Role.ADMIN || user.role === Role.AGENT_MASTER;
+  }
+
+  /** STUB neutro do RED (ignora a flag). */
+  async canViewInternalAbsences(user: CurrentUserPayload): Promise<boolean> {
+    return user.role !== Role.CLIENT_MASTER;
+  }
+
   private async decide(user: CurrentUserPayload, key: string, byRole: () => boolean): Promise<boolean> {
     if (!this.flags.isRbacPermissionOnly()) return byRole();
     return this.permissions.hasPermission(user.id, key);
