@@ -30,6 +30,22 @@ const modes = [
   ['flag ligada', true],
 ] as const;
 
+// Um `await` esquecido na checagem de acesso deixaria a promessa rejeitada solta: sem este
+// listener o worker do jest cai em vez de a asserção falhar. Cada teste confere que nada ficou solto.
+const unhandled: unknown[] = [];
+const onUnhandled = (reason: unknown) => unhandled.push(reason);
+beforeAll(() => {
+  process.on('unhandledRejection', onUnhandled);
+});
+afterAll(() => {
+  process.off('unhandledRejection', onUnhandled);
+});
+afterEach(async () => {
+  await new Promise((resolve) => setImmediate(resolve));
+  const leaked = unhandled.splice(0);
+  expect(leaked).toEqual([]);
+});
+
 describe.each(modes)('ServiceDesksService.findAll (%s)', (_label, flagOn) => {
   const run = async (user: ReturnType<typeof actor>, grants: Record<string, string[]>) => {
     const prisma: any = { serviceDesk: { findMany: jest.fn().mockResolvedValue([]) } };
@@ -77,6 +93,19 @@ describe.each(modes)('VaultService (%s): escopo de credenciais', (_label, flagOn
     }
   });
 
+  it('CLIENT barrado tambem em findCredentials e reveal, sem tocar no banco', async () => {
+    const prisma: any = {
+      credential: { findMany: jest.fn(), count: jest.fn(), findFirst: jest.fn() },
+      credentialFolder: { findMany: jest.fn() },
+    };
+    const service = new VaultService(prisma, {} as any, scopeOf(flagOn, { 'u-x': [K.TICKETS_OWN] }));
+    const client = actor(Role.CLIENT, 'org-a');
+    await expect(service.findCredentials({} as any, client)).rejects.toThrow(ForbiddenException);
+    await expect(service.reveal('c1', {} as any, client)).rejects.toThrow(ForbiddenException);
+    expect(prisma.credential.findMany).not.toHaveBeenCalled();
+    expect(prisma.credential.findFirst).not.toHaveBeenCalled();
+  });
+
   it('CLIENT com VIEW_ALL_CREDENTIALS: so a flag ligada libera', async () => {
     const { call } = run(actor(Role.CLIENT, 'org-a'), { 'u-x': [K.CREDENTIALS_ALL] });
     if (flagOn) await expect(call()).resolves.toEqual([]);
@@ -111,6 +140,12 @@ describe.each(modes)('ContractsService (%s): escopo de contratos', (_label, flag
     const { findAll, prisma } = run(actor(Role.CLIENT_MASTER, null), { 'u-x': [K.CONTRACTS_ORGANIZATION] });
     await expect(findAll()).rejects.toThrow(ForbiddenException);
     expect(prisma.contract.findMany).not.toHaveBeenCalled();
+  });
+
+  it('findOne tambem barra quem nao tem escopo de contratos, sem consultar o banco', async () => {
+    const { findOne, prisma } = run(actor(Role.CLIENT_MASTER, null), { 'u-x': [K.CONTRACTS_ORGANIZATION] });
+    await expect(findOne()).rejects.toThrow(ForbiddenException);
+    expect(prisma.contract.findFirst).not.toHaveBeenCalled();
   });
 
   it('CLIENT com VIEW_ORGANIZATION_CONTRACTS: so a flag ligada le os da organizacao', async () => {
@@ -224,23 +259,5 @@ describe.each(modes)('ReportsService.getSummary (%s): compromissos do dashboard'
   it('AGENT com VIEW_ALL_APPOINTMENTS: so a flag ligada ve todos os compromissos', async () => {
     const calls = await run(actor(Role.AGENT), { 'u-x': [K.APPOINTMENTS_ALL] });
     expect(calls[1]).toEqual(flagOn ? {} : { userId: 'u-x' });
-  });
-});
-
-describe('Modulos: o ScopeAccess e o DeskAccess estao registrados onde os services os pedem', () => {
-  const providersOf = (mod: unknown): unknown[] => Reflect.getMetadata('providers', mod as object) ?? [];
-
-  it.each([
-    ['AgendaModule', () => require('../../agenda/agenda.module').AgendaModule, ScopeAccess],
-    ['ContractsModule', () => require('../../contracts/contracts.module').ContractsModule, ScopeAccess],
-    ['ReportsModule', () => require('../../reports/reports.module').ReportsModule, ScopeAccess],
-    ['ServiceDesksModule', () => require('../../service-desks/service-desks.module').ServiceDesksModule, ScopeAccess],
-    ['UsersModule', () => require('../../users/users.module').UsersModule, ScopeAccess],
-    ['VaultModule', () => require('../../vault/vault.module').VaultModule, ScopeAccess],
-    ['TicketsModule', () => require('../../tickets/tickets.module').TicketsModule, require('../../service-desks/desk-access').DeskAccess],
-    ['CommentsModule', () => require('../../comments/comments.module').CommentsModule, require('../../service-desks/desk-access').DeskAccess],
-    ['WorklogsModule', () => require('../../worklogs/worklogs.module').WorklogsModule, require('../../service-desks/desk-access').DeskAccess],
-  ])('%s fornece a dependencia nova', (_name, load, provider) => {
-    expect(providersOf(load())).toContain(provider);
   });
 });

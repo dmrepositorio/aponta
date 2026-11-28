@@ -5,8 +5,8 @@ import { CurrentUserPayload } from '../tickets/decorators/current-user.decorator
 import { DeskActor, DeskScope, deskActorFromRole } from './desk-policy';
 
 const USE_INTERNAL_KEY = 'USE_INTERNAL_SERVICE_DESKS';
-// Mesmas chaves de escopo de mesas do resolvedor de escopo (Fase 1c). Nao o importa: o guard da Fase 1c
-// proibe caller de producao ate o lote 2e ligar o TenantHelper.
+// Mesmas chaves de escopo de mesas do resolvedor de escopo (Fase 1c). Nao o importa: o guard de
+// guard do spec do resolvedor so deixa core/security/scope-access.ts importa-lo em producao (lote 2e1).
 const SCOPE_ALL_KEY = 'VIEW_ALL_SERVICE_DESKS';
 const SCOPE_ASSIGNED_KEY = 'VIEW_ASSIGNED_SERVICE_DESKS';
 const SCOPE_ORGANIZATION_KEY = 'VIEW_ORGANIZATION_SERVICE_DESKS';
