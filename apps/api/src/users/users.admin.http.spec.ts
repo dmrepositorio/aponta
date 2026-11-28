@@ -105,6 +105,17 @@ describe('Usuários: HTTP do cadastro (DMTE-550)', () => {
       expect(stored.password).toBeNull();
     });
 
+    it('#533: grupo padrão renomeado continua sendo o vínculo do usuário novo (por chave), sem criar outro', async () => {
+      h.grant(ID.gestor, 'CREATE_USERS');
+      h.prisma.tables.permissionGroup.push({ id: 'pg-padrao-renomeado', name: 'Atendimento Nível 1', defaultKey: 'default-agent', permissions: [] });
+      const before = h.prisma.tables.permissionGroup.length;
+      const res = await create({ ...body(), permissionGroupIds: [] });
+
+      expect(res.status).toBe(201);
+      expect(res.body.permissionGroups.map((g: { name: string }) => g.name)).toEqual(['Atendimento Nível 1']);
+      expect(h.prisma.tables.permissionGroup).toHaveLength(before);
+    });
+
     it('AC-06: ADMIN cria sem precisar da chave (bypass do guard)', async () => {
       const res = await create(body(), ID.admin);
       expect(res.status).toBe(201);

@@ -1005,6 +1005,8 @@ model Appointment {
 model PermissionGroup {
   id          String   @id @default(uuid())
   name        String
+  /// #533: chave estável do grupo padrão (renomear o grupo não quebra o vínculo); null nos personalizados.
+  defaultKey  String?  @unique
   description String?
   permissions String[] @default([])
 

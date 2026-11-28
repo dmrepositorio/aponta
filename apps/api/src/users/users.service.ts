@@ -17,8 +17,7 @@ import { UserQueryDto } from './dto/user-query.dto';
 import { normalizeEmail } from './dto/transforms';
 import type { User } from '@prisma/client';
 import {
-  DEFAULT_PERMISSION_GROUPS,
-  ROLE_GROUP_NAME,
+  findOrCreateDefaultGroup,
 } from '../permission-groups/default-permission-groups';
 import { TenantHelper } from '../core/security/tenant.helper';
 import { CurrentUserPayload } from '../tickets/decorators/current-user.decorator';
@@ -131,8 +130,8 @@ export class UsersService {
   // encontra nenhum PermissionGroup vinculado a um usuário recém-criado e
   // ele nasce sem nenhuma permissão (ADMIN tem bypass no PermissionsGuard,
   // os demais papéis não) — reusa o mesmo mapeamento Role -> grupo padrão
-  // que o seed usa para os 2 usuários fixos (find-or-create pelo `name`,
-  // já que PermissionGroup não tem unique constraint nesse campo).
+  // que o seed usa para os 2 usuários fixos (find-or-create pela `defaultKey`,
+  // #533: o nome do grupo pode ser renomeado sem quebrar o vínculo).
   private async linkToDefaultPermissionGroup(user: User): Promise<void> {
     const groupId = await this.defaultGroupId(this.prisma, user.role);
     await this.prisma.permissionGroupUser.create({
@@ -140,18 +139,8 @@ export class UsersService {
     });
   }
 
-  private async defaultGroupId(db: Pick<PrismaService, 'permissionGroup'>, role: Role): Promise<string> {
-    const name = ROLE_GROUP_NAME[role];
-    const group =
-      (await db.permissionGroup.findFirst({ where: { name } })) ??
-      (await db.permissionGroup.create({
-        data: {
-          name,
-          description: DEFAULT_PERMISSION_GROUPS[role].description,
-          permissions: DEFAULT_PERMISSION_GROUPS[role].permissions,
-        },
-      }));
-    return group.id;
+  private defaultGroupId(db: Pick<PrismaService, 'permissionGroup'>, role: Role): Promise<string> {
+    return findOrCreateDefaultGroup(db, role);
   }
 
   /**

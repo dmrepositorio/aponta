@@ -6,6 +6,7 @@ import { UsersService, PaginatedUsers, UserWithGroups } from './users.service';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   DEFAULT_PERMISSION_GROUPS,
+  DEFAULT_GROUP_KEY,
   ROLE_GROUP_NAME,
 } from '../permission-groups/default-permission-groups';
 
@@ -23,6 +24,7 @@ describe('UsersService', () => {
     };
     $transaction: jest.Mock;
     permissionGroup: {
+      findUnique: jest.Mock;
       findFirst: jest.Mock;
       create: jest.Mock;
     };
@@ -46,6 +48,7 @@ describe('UsersService', () => {
         count: jest.fn(),
       },
       permissionGroup: {
+        findUnique: jest.fn(),
         findFirst: jest.fn(),
         create: jest.fn(),
       },
@@ -119,7 +122,7 @@ describe('UsersService', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
       });
-      prisma.permissionGroup.findFirst.mockResolvedValue({ id: 'group-client' });
+      prisma.permissionGroup.findUnique.mockResolvedValue({ id: 'group-client' });
 
       const result = await service.create({ ...dto, role: Role.CLIENT });
 
@@ -142,19 +145,38 @@ describe('UsersService', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
       });
-      prisma.permissionGroup.findFirst.mockResolvedValue({
+      prisma.permissionGroup.findUnique.mockResolvedValue({
         id: 'group-agent',
         name: ROLE_GROUP_NAME[Role.AGENT],
       });
 
       await service.create({ ...dto, role: Role.AGENT });
 
-      expect(prisma.permissionGroup.findFirst).toHaveBeenCalledWith({
-        where: { name: ROLE_GROUP_NAME[Role.AGENT] },
+      expect(prisma.permissionGroup.findUnique).toHaveBeenCalledWith({
+        where: { defaultKey: DEFAULT_GROUP_KEY[Role.AGENT] },
       });
+      expect(prisma.permissionGroup.findFirst).not.toHaveBeenCalled();
       expect(prisma.permissionGroup.create).not.toHaveBeenCalled();
       expect(prisma.permissionGroupUser.create).toHaveBeenCalledWith({
         data: { permissionGroupId: 'group-agent', userId: 'user-1' },
+      });
+    });
+
+    it('links to the default group by key even after the administrator renamed it', async () => {
+      prisma.user.findFirst.mockResolvedValue(null);
+      prisma.user.create.mockResolvedValue({
+        id: 'user-1', name: dto.name, email: dto.email, password: 'hashed', role: Role.AGENT,
+        createdAt: new Date(), updatedAt: new Date(),
+      });
+      prisma.permissionGroup.findUnique.mockImplementation(({ where }: { where: { defaultKey: string } }) =>
+        Promise.resolve(where.defaultKey === DEFAULT_GROUP_KEY[Role.AGENT] ? { id: 'group-renamed', name: 'Atendimento Nível 1' } : null),
+      );
+
+      await service.create({ ...dto, role: Role.AGENT });
+
+      expect(prisma.permissionGroup.create).not.toHaveBeenCalled();
+      expect(prisma.permissionGroupUser.create).toHaveBeenCalledWith({
+        data: { permissionGroupId: 'group-renamed', userId: 'user-1' },
       });
     });
 
@@ -169,7 +191,7 @@ describe('UsersService', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
       });
-      prisma.permissionGroup.findFirst.mockResolvedValue(null);
+      prisma.permissionGroup.findUnique.mockResolvedValue(null);
       prisma.permissionGroup.create.mockResolvedValue({
         id: 'new-group-agent-master',
         name: ROLE_GROUP_NAME[Role.AGENT_MASTER],
@@ -180,6 +202,7 @@ describe('UsersService', () => {
       expect(prisma.permissionGroup.create).toHaveBeenCalledWith({
         data: {
           name: ROLE_GROUP_NAME[Role.AGENT_MASTER],
+          defaultKey: DEFAULT_GROUP_KEY[Role.AGENT_MASTER],
           description: DEFAULT_PERMISSION_GROUPS[Role.AGENT_MASTER].description,
           permissions: DEFAULT_PERMISSION_GROUPS[Role.AGENT_MASTER].permissions,
         },

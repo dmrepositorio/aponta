@@ -1,4 +1,4 @@
-import { Role } from '@prisma/client';
+import { Prisma, Role } from '@prisma/client';
 import { PERMISSION_KEYS } from './permission-catalog';
 
 export const GROUP_ONLY_KEYS = ['VIEW_TICKET_VALUES', 'EDIT_WORKLOG_START_TIME', 'RELEASE_WORKLOG_WITHOUT_SCHEDULE', 'RECEIVE_WORKLOG_AUTOCLOSE_ALERT', 'APPROVE_WORKLOG_ENTRY', 'APPROVE_WORKLOG_SYSTEM_CLOSED', 'DELETE_TICKETS'];
@@ -160,3 +160,30 @@ export const ROLE_GROUP_NAME: Record<Role, string> = {
   [Role.CLIENT_MASTER]: 'Cliente Master',
   [Role.CLIENT]: 'Cliente',
 };
+
+/**
+ * Fase 1b do tracker #523 (#533): chave estável de cada grupo padrão. O nome pode
+ * ser renomeado pelo administrador; a ligação do usuário novo usa esta chave.
+ */
+export const DEFAULT_GROUP_KEY: Record<Role, string> = {
+  [Role.ADMIN]: 'default-admin',
+  [Role.AGENT_MASTER]: 'default-agent-master',
+  [Role.AGENT]: 'default-agent',
+  [Role.CLIENT_MASTER]: 'default-client-master',
+  [Role.CLIENT]: 'default-client',
+};
+
+/** Acha (ou cria) o grupo padrão do papel pela chave, nunca pelo nome; compartilhado por UsersService e pelo seed. */
+export async function findOrCreateDefaultGroup(db: Pick<Prisma.TransactionClient, 'permissionGroup'>, role: Role): Promise<string> {
+  const group =
+    (await db.permissionGroup.findUnique({ where: { defaultKey: DEFAULT_GROUP_KEY[role] } })) ??
+    (await db.permissionGroup.create({
+      data: {
+        name: ROLE_GROUP_NAME[role],
+        defaultKey: DEFAULT_GROUP_KEY[role],
+        description: DEFAULT_PERMISSION_GROUPS[role].description,
+        permissions: DEFAULT_PERMISSION_GROUPS[role].permissions,
+      },
+    }));
+  return group.id;
+}

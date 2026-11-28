@@ -27,7 +27,7 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import * as bcrypt from 'bcryptjs';
 import {
   DEFAULT_PERMISSION_GROUPS,
-  ROLE_GROUP_NAME,
+  findOrCreateDefaultGroup,
 } from '../src/permission-groups/default-permission-groups';
 import { ticketDescriptionFields } from '../src/tickets/ticket-description-fields';
 
@@ -142,23 +142,10 @@ async function main() {
     // each seeded user to the group matching their own role, so the new
     // Configurações > Usuários > Grupos de permissões screen has real data
     // from the very first run instead of an empty list.
+    // #533: o grupo padrão é achado pela chave estável (`defaultKey`), não pelo nome.
     const roleToGroup = new Map<Role, { id: string }>();
     for (const role of Object.values(Role)) {
-      const name = ROLE_GROUP_NAME[role];
-      let group = await prisma.permissionGroup.findFirst({ where: { name } });
-      if (!group) {
-        group = await prisma.permissionGroup.create({
-          data: {
-            name,
-            description: DEFAULT_PERMISSION_GROUPS[role].description,
-            permissions: DEFAULT_PERMISSION_GROUPS[role].permissions,
-          },
-        });
-        console.log(`Created permission group: ${group.name}`);
-      } else {
-        console.log(`Permission group already exists: ${group.name}`);
-      }
-      roleToGroup.set(role, group);
+      roleToGroup.set(role, { id: await findOrCreateDefaultGroup(prisma, role) });
     }
 
     for (const seededUser of [user, admin]) {
