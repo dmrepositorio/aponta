@@ -1,5 +1,5 @@
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { CredentialAction, Role } from '@prisma/client';
+import { CredentialAction } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateCredentialDto } from './dto/create-credential.dto';
 import { UpdateCredentialDto } from './dto/update-credential.dto';
@@ -29,12 +29,6 @@ export class VaultService {
       throw new ForbiddenException('Acesso negado ao Cofre de Senhas');
     }
     return where;
-  }
-
-  private assertAdmin(user: CurrentUserPayload) {
-    if (user.role !== Role.ADMIN) {
-      throw new ForbiddenException('Apenas Administradores podem gerenciar o cofre');
-    }
   }
 
   /**
@@ -108,7 +102,7 @@ export class VaultService {
   }
 
   async createFolder(dto: CreateFolderDto, user: CurrentUserPayload, ipAddress?: string) {
-    this.assertAdmin(user);
+    await this.access.assertCanManage(user);
 
     const org = await this.prisma.organization.findFirst();
     if (!org) throw new NotFoundException('No organizations exist');
@@ -133,7 +127,7 @@ export class VaultService {
   // enum (only CREATE_FOLDER/DELETE_FOLDER are audited) — ipAddress is kept
   // in the signature for call-site symmetry with the other mutating methods.
   async updateFolder(id: string, dto: UpdateFolderDto, user: CurrentUserPayload, _ipAddress?: string) {
-    this.assertAdmin(user);
+    await this.access.assertCanManage(user);
 
     const folder = await this.prisma.credentialFolder.findUnique({ where: { id } });
     if (!folder) throw new NotFoundException('Pasta não encontrada');
@@ -145,7 +139,7 @@ export class VaultService {
   }
 
   async removeFolder(id: string, user: CurrentUserPayload, ipAddress?: string) {
-    this.assertAdmin(user);
+    await this.access.assertCanManage(user);
 
     const folder = await this.prisma.credentialFolder.findUnique({
       where: { id },
@@ -225,7 +219,7 @@ export class VaultService {
   }
 
   async createCredential(dto: CreateCredentialDto, user: CurrentUserPayload, ipAddress?: string) {
-    this.assertAdmin(user);
+    await this.access.assertCanManage(user);
 
     const org = await this.prisma.organization.findFirst();
     if (!org) throw new NotFoundException('No organizations exist');
@@ -256,7 +250,7 @@ export class VaultService {
   }
 
   async updateCredential(id: string, dto: UpdateCredentialDto, user: CurrentUserPayload, ipAddress?: string) {
-    this.assertAdmin(user);
+    await this.access.assertCanManage(user);
 
     const credential = await this.prisma.credential.findUnique({ where: { id } });
     if (!credential) throw new NotFoundException('Credencial não encontrada');
@@ -285,7 +279,7 @@ export class VaultService {
   }
 
   async removeCredential(id: string, user: CurrentUserPayload, ipAddress?: string) {
-    this.assertAdmin(user);
+    await this.access.assertCanManage(user);
 
     const credential = await this.prisma.credential.findFirst({ where: { id } });
     if (!credential) throw new NotFoundException('Credencial não encontrada');
@@ -346,7 +340,7 @@ export class VaultService {
   // ---------------------------------------------------------------------
 
   async findAudit(query: AuditQueryDto, user: CurrentUserPayload) {
-    this.assertAdmin(user);
+    await this.access.assertCanViewAudit(user);
 
     const page = Math.max(parseInt(query.page ?? '1', 10) || 1, 1);
     const limit = Math.min(Math.max(parseInt(query.limit ?? '20', 10) || 20, 1), 100);

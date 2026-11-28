@@ -27,8 +27,13 @@ export class VaultAccess {
     return this.assert(user, 'VIEW_PASSWORD_VAULT_AUDIT');
   }
 
-  // Stub neutro do RED: ainda ignora a flag e decide so por perfil.
-  private async assert(user: CurrentUserPayload, _key: string): Promise<void> {
-    if (user.role !== Role.ADMIN) throw new ForbiddenException('Apenas Administradores podem gerenciar o cofre');
+  private async assert(user: CurrentUserPayload, key: string): Promise<void> {
+    if (!this.flags.isRbacPermissionOnly()) {
+      if (user.role !== Role.ADMIN) throw new ForbiddenException('Apenas Administradores podem gerenciar o cofre');
+      return;
+    }
+    if (!(await this.permissions.hasPermission(user.id, key))) {
+      throw new ForbiddenException('Sem permissão para esta ação no cofre');
+    }
   }
 }
