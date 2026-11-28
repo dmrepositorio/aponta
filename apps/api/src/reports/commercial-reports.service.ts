@@ -5,6 +5,7 @@ import { CurrentUserPayload } from '../tickets/decorators/current-user.decorator
 import { TenantHelper } from '../core/security/tenant.helper';
 import { splitBillingCycles } from '../worklogs/contract-valuation';
 import { PermissionsService } from '../permissions/permissions.service';
+import { FeatureFlagsService } from '../feature-flags/feature-flags.service';
 
 interface RecordedSegment {
   cycleStart: string;
@@ -23,6 +24,7 @@ export class CommercialReportsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly permissions: PermissionsService,
+    private readonly flags: FeatureFlagsService,
   ) {}
 
   async getCommercial(user: CurrentUserPayload, filters: { contractId?: string; month?: string } = {}) {

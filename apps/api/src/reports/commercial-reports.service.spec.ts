@@ -11,7 +11,7 @@ describe('CommercialReportsService', () => {
   beforeEach(() => {
     db = { contract: { findMany: jest.fn().mockResolvedValue([]) }, worklog: { findMany: jest.fn().mockResolvedValue([]) } };
     canViewTicketValues = jest.fn().mockResolvedValue(true);
-    service = new CommercialReportsService(db, { canViewTicketValues } as any);
+    service = new CommercialReportsService(db, { canViewTicketValues } as any, { isRbacPermissionOnly: () => false } as any);
   });
   it('DMTE-479 AC-02: recusa ADMIN sem VIEW_TICKET_VALUES antes de ler contratos', async () => {
     canViewTicketValues.mockResolvedValue(false);

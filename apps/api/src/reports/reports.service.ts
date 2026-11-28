@@ -10,6 +10,7 @@ import { getSlaStatus } from '../scheduling/sla-status';
 import { PermissionsService } from '../permissions/permissions.service';
 import { getClosedMonthRanges } from './closed-month-range';
 import { compareResponseTimes } from './response-time-comparison';
+import { FeatureFlagsService } from '../feature-flags/feature-flags.service';
 
 const CLOSED_STATUSES: TicketStatus[] = [TicketStatus.RESOLVED, TicketStatus.CLOSED];
 
@@ -23,6 +24,7 @@ export class ReportsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly permissions: PermissionsService,
+    private readonly flags: FeatureFlagsService,
   ) {}
 
   async getWorkload(user: CurrentUserPayload, targetAgentId?: string): Promise<WorkloadReportItemDto[]> {
