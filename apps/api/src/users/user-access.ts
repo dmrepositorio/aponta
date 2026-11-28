@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { Prisma, Role } from '@prisma/client';
 import { FeatureFlagsService } from '../feature-flags/feature-flags.service';
 import { DEFAULT_GROUP_KEY } from '../permission-groups/default-permission-groups';
@@ -34,5 +34,20 @@ export class UserAccess {
   protectedAdminWhere(): Prisma.UserWhereInput | undefined {
     if (!this.isPermissionOnly()) return undefined;
     return { active: true, permissionGroupLinks: { some: { permissionGroup: { defaultKey: DEFAULT_GROUP_KEY[Role.ADMIN] } } } };
+  }
+
+  /** STUB (RED, lote 2h): ainda nao define o administrador da guarda. */
+  lastAdminWhere(): Prisma.UserWhereInput {
+    return { id: { in: [] } };
+  }
+
+  /** STUB (RED, lote 2h): ainda nao barra nada. */
+  async assertAdminRemains(_db: Pick<Prisma.TransactionClient, 'user'>, _leavingIds: string[]): Promise<void> {
+    void ConflictException;
+  }
+
+  /** STUB (RED, lote 2h): ainda nao barra nada. */
+  assertGroupDeletable(_group: { defaultKey: string | null }): void {
+    void ConflictException;
   }
 }

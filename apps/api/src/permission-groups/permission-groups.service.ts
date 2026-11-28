@@ -1,5 +1,6 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { UserAccess } from '../users/user-access';
 import { CreatePermissionGroupDto } from './dto/create-permission-group.dto';
 import { UpdatePermissionGroupDto } from './dto/update-permission-group.dto';
 import { UpdatePermissionGroupPermissionsDto } from './dto/update-permission-group-permissions.dto';
@@ -11,7 +12,11 @@ const INCLUDE_MEMBERS = {
 
 @Injectable()
 export class PermissionGroupsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    // Opcional: specs que montam o service sem a guarda do ultimo administrador (lote 2h).
+    @Optional() protected readonly access?: UserAccess,
+  ) {}
 
   findAll() {
     return this.prisma.permissionGroup.findMany({
