@@ -5,7 +5,7 @@ import { PermissionsService } from '../permissions/permissions.service';
 import { CurrentUserPayload } from '../tickets/decorators/current-user.decorator';
 
 /**
- * Lote 2a5 do tracker #523 (#545): decide, em um unico lugar, quem gere a agenda
+ * Lotes 2a5 e 2a5b do tracker #523 (#545, #575): decide, em um unico lugar, quem gere a agenda
  * de outros usuarios e quem fica preso a propria organizacao. Flag
  * `rbac-permission-only` desligada: decisao por perfil (comportamento de hoje).
  * Ligada: so por permissao, sem olhar `User.role`.
@@ -34,14 +34,21 @@ export class AgendaAccess {
     return this.permissions.hasPermission(user.id, 'VIEW_ORGANIZATION_APPOINTMENTS');
   }
 
-  /** STUB neutro do RED (ignora a flag). */
-  async canViewOtherUsers(user: CurrentUserPayload): Promise<boolean> {
-    return user.role === Role.ADMIN || user.role === Role.AGENT_MASTER;
+  /** Ler a agenda de outro usuario (query.userId). Hoje ADMIN e AGENT_MASTER. */
+  canViewOtherUsers(user: CurrentUserPayload): Promise<boolean> {
+    return this.decide(
+      user,
+      'VIEW_OTHER_USERS_APPOINTMENTS',
+      () => user.role === Role.ADMIN || user.role === Role.AGENT_MASTER,
+    );
   }
 
-  /** STUB neutro do RED (ignora a flag). */
-  async canViewInternalAbsences(user: CurrentUserPayload): Promise<boolean> {
-    return user.role !== Role.CLIENT_MASTER;
+  /**
+   * Consultar ausencia interna (type=ABSENCE). Hoje so o CLIENT_MASTER e vedado; o CLIENT nao
+   * tem a chave no grupo padrao, mas o escopo base ja nega tudo a ele (sem efeito observavel).
+   */
+  canViewInternalAbsences(user: CurrentUserPayload): Promise<boolean> {
+    return this.decide(user, 'VIEW_INTERNAL_ABSENCES', () => user.role !== Role.CLIENT_MASTER);
   }
 
   private async decide(user: CurrentUserPayload, key: string, byRole: () => boolean): Promise<boolean> {
