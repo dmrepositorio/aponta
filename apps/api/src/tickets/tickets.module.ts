@@ -10,9 +10,10 @@ import { AttachmentsController } from './attachments.controller';
 import { AttachmentsService } from './attachments.service';
 import { PrismaModule } from '../prisma/prisma.module';
 import { PermissionsModule } from '../permissions/permissions.module';
+import { CommentsModule } from '../comments/comments.module';
 
 @Module({
-  imports: [PrismaModule, PermissionsModule, EventEmitterModule.forRoot()],
+  imports: [PrismaModule, PermissionsModule, CommentsModule, EventEmitterModule.forRoot()],
   controllers: [
     TicketsController,
     CsatController,

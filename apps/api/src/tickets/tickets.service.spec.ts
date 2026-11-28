@@ -13,6 +13,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { TicketsService } from './tickets.service';
+import { MaskAccess } from '../comments/mask-access';
+import { legacyMaskAccess } from '../comments/mask-access.testing';
 import * as sanitizer from './sanitize-ticket-description';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -149,6 +151,7 @@ describe('TicketsService', () => {
         TicketsService,
         { provide: PrismaService, useValue: mockPrismaService },
         { provide: EventEmitter2, useValue: { emit: jest.fn() } },
+        { provide: MaskAccess, useValue: legacyMaskAccess() },
       ],
     }).compile();
 

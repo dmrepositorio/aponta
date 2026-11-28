@@ -3,6 +3,8 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { BadRequestException, ValidationPipe } from '@nestjs/common';
 import { Role, TicketStatus } from '@prisma/client';
 import { TicketsService } from './tickets.service';
+import { MaskAccess } from '../comments/mask-access';
+import { legacyMaskAccess } from '../comments/mask-access.testing';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -77,6 +79,7 @@ describe('TicketsService.create: não catalogado (DMTE-485)', () => {
         TicketsService,
         { provide: PrismaService, useValue: prisma },
         { provide: EventEmitter2, useValue: { emit: jest.fn() } },
+        { provide: MaskAccess, useValue: legacyMaskAccess() },
       ],
     }).compile();
     service = module.get(TicketsService);
