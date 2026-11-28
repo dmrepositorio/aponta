@@ -83,6 +83,14 @@ const ADDED_1G: Record<Exclude<Role, 'ADMIN'>, string[]> = {
   [Role.CLIENT]: [],
 };
 
+/** Fase 1i (#588): chaves das decisões abertas que os grupos padrão ganharam depois do 1g (só acrescenta). */
+const ADDED_1I: Record<Exclude<Role, 'ADMIN'>, string[]> = {
+  [Role.AGENT_MASTER]: ['RELEASE_PENDING_APPROVAL_TICKETS', 'VIEW_ALLOWED_STATUSES', 'CREATE_APPOINTMENTS_ON_AGENDA'],
+  [Role.AGENT]: ['VIEW_ALLOWED_STATUSES', 'CREATE_APPOINTMENTS_ON_AGENDA'],
+  [Role.CLIENT_MASTER]: ['RELEASE_PENDING_APPROVAL_TICKETS', 'VIEW_ALLOWED_STATUSES'],
+  [Role.CLIENT]: [],
+};
+
 const sorted = (list: readonly string[]) => [...list].sort();
 
 describe('Fase 1a: catálogo (#532)', () => {
@@ -100,7 +108,7 @@ describe('Fase 1a: catálogo (#532)', () => {
 
 describe('Fase 1a: grupos padrão = conjunto anterior + novas chaves equivalentes (#532)', () => {
   it.each([Role.AGENT_MASTER, Role.AGENT, Role.CLIENT_MASTER, Role.CLIENT] as const)('%s', (role) => {
-    expect(sorted(DEFAULT_PERMISSION_GROUPS[role].permissions)).toEqual(sorted([...PREVIOUS[role], ...NEW_FOR_ROLE[role], ...SCOPE_1E[role], ...ADDED_1G[role]]));
+    expect(sorted(DEFAULT_PERMISSION_GROUPS[role].permissions)).toEqual(sorted([...PREVIOUS[role], ...NEW_FOR_ROLE[role], ...SCOPE_1E[role], ...ADDED_1G[role], ...ADDED_1I[role]]));
   });
 
   it('ADMIN recebe todas as chaves do catálogo exceto GROUP_ONLY_KEYS (sem bypass futuro)', () => {
